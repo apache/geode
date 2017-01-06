@@ -61,6 +61,8 @@ public class LuceneTestUtilities {
       "Cannot create Region /region with [] async event ids because another cache has the same region defined with [index#_region] async event ids";
   public static final String CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_INDEXES_2 =
       "Cannot create Region /region with [index#_region, index2#_region] async event ids because another cache has the same region defined with [index#_region] async event ids";
+  public static final String CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_INDEXES_3 =
+      "Cannot create Region /region with [index#_region] async event ids because another cache has the same region defined with [] async event ids";
 
   public static void verifyInternalRegions(LuceneService luceneService, Cache cache,
       Consumer<LocalRegion> verify) {

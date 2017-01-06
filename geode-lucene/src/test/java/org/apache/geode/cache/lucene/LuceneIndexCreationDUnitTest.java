@@ -194,6 +194,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
         .invoke(() -> initDataStore(createIndex2, CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_INDEXES_1));
   }
 
+
   @Test
   public void verifyDifferentIndexesFails2() {
     SerializableRunnableIF createIndex1 = getFieldsIndexWithOneField();
@@ -206,6 +207,17 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     };
     dataStore2
         .invoke(() -> initDataStore(createIndex2, CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_INDEXES_2));
+  }
+
+  @Test
+  public void verifyMemberWithoutIndexCreatedFirstFails() {
+    SerializableRunnableIF createIndex1 = () -> {
+      /* Do nothing */};
+    dataStore1.invoke(() -> initDataStore(createIndex1));
+
+    SerializableRunnableIF createIndex2 = getFieldsIndexWithOneField();
+    dataStore2
+        .invoke(() -> initDataStore(createIndex2, CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_INDEXES_3));
   }
 
   @Test
