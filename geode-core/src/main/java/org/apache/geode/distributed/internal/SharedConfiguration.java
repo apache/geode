@@ -304,9 +304,6 @@ public class SharedConfiguration {
 
   /**
    * read the jar bytes in the file system
-   * 
-   * @return
-   * @throws Exception
    */
   // used when creating cluster config response
   // and used when uploading the jars to another locator
