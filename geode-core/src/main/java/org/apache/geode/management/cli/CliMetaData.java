@@ -14,12 +14,12 @@
  */
 package org.apache.geode.management.cli;
 
+import org.apache.geode.management.internal.cli.CliAroundInterceptor;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import org.apache.geode.management.internal.cli.CliAroundInterceptor;
 
 /**
  * An annotation to define additional meta-data for commands.
@@ -48,10 +48,6 @@ public @interface CliMetaData {
    * configuration
    */
   boolean isPersisted() default false;
-
-  boolean readsSharedConfiguration() default false;
-
-  boolean writesToSharedConfiguration() default false;
 
   /** In help, topics that are related to this command **/
   String[] relatedTopic() default org.apache.geode.management.internal.cli.i18n.CliStrings.DEFAULT_TOPIC_GEODE;

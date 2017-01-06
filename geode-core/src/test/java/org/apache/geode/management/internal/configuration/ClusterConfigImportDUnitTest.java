@@ -20,13 +20,17 @@ import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.Locator;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.Server;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -67,20 +71,66 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
     }
   }
 
-  @Test
-  public void testImportWithRunningServer() throws Exception {
-    lsRule.startServerVM(1, serverProps, locator.getPort());
 
-    CommandResult result = gfshConnector.executeCommand(
-        "import cluster-configuration --zip-file-name=" + EXPORTED_CLUSTER_CONFIG_PATH);
+  @Test
+  public void testImportWithRunningServerWithData() throws Exception {
+    Server server = lsRule.startServerVM(1, serverProps, locator.getPort());
+    String regionName = "regionA";
+    server.invoke(() -> {
+      Cache cache = LocatorServerStartupRule.serverStarter.cache;
+      Region region = cache.createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
+      region.put("key", "value");
+    });
+
+    CommandResult result = gfshConnector
+        .executeCommand("import cluster-configuration --zip-file-name=" + CLUSTER_CONFIG_ZIP_PATH);
 
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(result.getContent().toString()).contains("existing data in regions: " + regionName);
+  }
+
+  @Test
+  public void testImportWithRunningServer() throws Exception {
+    Server server1 = lsRule.startServerVM(1, serverProps, locator.getPort());
+
+    // create a testRegion and verify that after import, this region does not exist anymore
+    server1.invoke(() -> {
+      Cache cache = LocatorServerStartupRule.serverStarter.cache;
+      cache.createRegionFactory(RegionShortcut.REPLICATE).create("testRegion");
+    });
+
+    serverProps.setProperty("groups", "group2");
+    Server server2 = lsRule.startServerVM(2, serverProps, locator.getPort());
+
+    // even though we have a region recreated, we can still import since there is no data
+    // in the region
+    CommandResult result = gfshConnector
+        .executeCommand("import cluster-configuration --zip-file-name=" + CLUSTER_CONFIG_ZIP_PATH);
+
+    assertThat(result.getStatus()).isEqualTo(Result.Status.OK)
+        .describedAs(result.getContent().toString());
+    assertThat(result.getContent().toString())
+        .contains("Successfully applied the imported cluster configuration on server-1");
+    assertThat(result.getContent().toString())
+        .contains("Successfully applied the imported cluster configuration on server-2");
+    new ClusterConfig(CLUSTER).verify(server1);
+    new ClusterConfig(CLUSTER, GROUP2).verify(server2);
+
+    // verify "testRegion" does not exist in either server anymore
+    server1.invoke(() -> {
+      Cache cache = GemFireCacheImpl.getInstance();
+      assertThat(cache.getRegion("testRegion")).isNull();
+    });
+    server2.invoke(() -> {
+      Cache cache = GemFireCacheImpl.getInstance();
+      assertThat(cache.getRegion("testRegion")).isNull();
+    });
   }
 
   @Test
   public void testImportClusterConfig() throws Exception {
-    CommandResult result = gfshConnector.executeCommand(
-        "import cluster-configuration --zip-file-name=" + EXPORTED_CLUSTER_CONFIG_PATH);
+    CommandResult result = gfshConnector
+        .executeCommand("import cluster-configuration --zip-file-name=" + CLUSTER_CONFIG_ZIP_PATH);
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
     // Make sure that a backup of the old clusterConfig was created
@@ -113,8 +163,8 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
         "localhost[" + locator.getPort() + "],localhost[" + locator1.getPort() + "]");
     Locator locator2 = lsRule.startLocatorVM(2, locatorProps);
 
-    CommandResult result = gfshConnector.executeCommand(
-        "import cluster-configuration --zip-file-name=" + EXPORTED_CLUSTER_CONFIG_PATH);
+    CommandResult result = gfshConnector
+        .executeCommand("import cluster-configuration --zip-file-name=" + CLUSTER_CONFIG_ZIP_PATH);
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
     CONFIG_FROM_ZIP.verify(locator);

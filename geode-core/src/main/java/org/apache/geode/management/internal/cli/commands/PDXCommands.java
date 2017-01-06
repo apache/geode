@@ -48,7 +48,7 @@ public class PDXCommands extends AbstractCommandsSupport {
 
 
   @CliCommand(value = CliStrings.CONFIGURE_PDX, help = CliStrings.CONFIGURE_PDX__HELP)
-  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION, writesToSharedConfiguration = true)
+  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result configurePDX(@CliOption(key = CliStrings.CONFIGURE_PDX__READ__SERIALIZED,
       unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,

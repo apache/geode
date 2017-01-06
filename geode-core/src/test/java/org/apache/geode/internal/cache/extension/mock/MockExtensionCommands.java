@@ -15,17 +15,12 @@
 
 package org.apache.geode.internal.cache.extension.mock;
 
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
-
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.CliUtil;
@@ -37,10 +32,12 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-
-import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
+
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Mock Extension gfsh commands.
@@ -75,7 +72,6 @@ public class MockExtensionCommands extends AbstractCommandsSupport {
    * @since GemFire 8.1
    */
   @CliCommand(value = CREATE_MOCK_REGION_EXTENSION)
-  @CliMetaData(writesToSharedConfiguration = true)
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result createMockRegionExtension(
       @CliOption(key = OPTION_REGION_NAME, mandatory = true) final String regionName,
@@ -94,7 +90,6 @@ public class MockExtensionCommands extends AbstractCommandsSupport {
    * @since GemFire 8.1
    */
   @CliCommand(value = ALTER_MOCK_REGION_EXTENSION)
-  @CliMetaData(writesToSharedConfiguration = true)
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result alterMockRegionExtension(
       @CliOption(key = OPTION_REGION_NAME, mandatory = true) final String regionName,
@@ -112,7 +107,6 @@ public class MockExtensionCommands extends AbstractCommandsSupport {
    * @since GemFire 8.1
    */
   @CliCommand(value = DESTROY_MOCK_REGION_EXTENSION)
-  @CliMetaData(writesToSharedConfiguration = true)
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result destroyMockRegionExtension(
       @CliOption(key = OPTION_REGION_NAME, mandatory = true) final String regionName) {
@@ -129,7 +123,6 @@ public class MockExtensionCommands extends AbstractCommandsSupport {
    * @since GemFire 8.1
    */
   @CliCommand(value = CREATE_MOCK_CACHE_EXTENSION)
-  @CliMetaData(writesToSharedConfiguration = true)
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result createMockCacheExtension(
       @CliOption(key = OPTION_VALUE, mandatory = true) final String value) {
@@ -147,7 +140,6 @@ public class MockExtensionCommands extends AbstractCommandsSupport {
    */
   @CliCommand(value = ALTER_MOCK_CACHE_EXTENSION)
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
-  @CliMetaData(writesToSharedConfiguration = true)
   public Result alterMockCacheExtension(
       @CliOption(key = OPTION_VALUE, mandatory = true) final String value) {
     return executeFunctionOnAllMembersTabulateResultPersist(
@@ -163,7 +155,6 @@ public class MockExtensionCommands extends AbstractCommandsSupport {
    */
   @CliCommand(value = DESTROY_MOCK_CACHE_EXTENSION)
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
-  @CliMetaData(writesToSharedConfiguration = true)
   public Result destroyMockCacheExtension() {
     return executeFunctionOnAllMembersTabulateResultPersist(
         DestroyMockCacheExtensionFunction.INSTANCE, false);

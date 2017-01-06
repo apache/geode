@@ -26,6 +26,7 @@ import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.JarClassLoader;
 import org.apache.geode.internal.JarDeployer;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.test.dunit.rules.Locator;
@@ -140,7 +141,7 @@ public class ClusterConfig implements Serializable {
 
     // verify config exists in memory
     server.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.cache;
+      Cache cache = GemFireCacheImpl.getInstance();
 
       // TODO: set compare to fail if there are extra regions
       for (String region : this.getRegions()) {

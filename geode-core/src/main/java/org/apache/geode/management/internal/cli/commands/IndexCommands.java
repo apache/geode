@@ -172,8 +172,7 @@ public class IndexCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = CliStrings.CREATE_INDEX, help = CliStrings.CREATE_INDEX__HELP)
   @CliMetaData(shellOnly = false,
-      relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA},
-      writesToSharedConfiguration = true)
+      relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
   // TODO : Add optionContext for indexName
   public Result createIndex(@CliOption(key = CliStrings.CREATE_INDEX__NAME, mandatory = true,
       help = CliStrings.CREATE_INDEX__NAME__HELP) final String indexName,
@@ -325,8 +324,7 @@ public class IndexCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = CliStrings.DESTROY_INDEX, help = CliStrings.DESTROY_INDEX__HELP)
   @CliMetaData(shellOnly = false,
-      relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA},
-      writesToSharedConfiguration = true)
+      relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
   public Result destroyIndex(@CliOption(key = CliStrings.DESTROY_INDEX__NAME, mandatory = false,
       unspecifiedDefaultValue = "",
       help = CliStrings.DESTROY_INDEX__NAME__HELP) final String indexName,
@@ -465,8 +463,7 @@ public class IndexCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = CliStrings.DEFINE_INDEX, help = CliStrings.DEFINE_INDEX__HELP)
   @CliMetaData(shellOnly = false,
-      relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA},
-      writesToSharedConfiguration = true)
+      relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
   // TODO : Add optionContext for indexName
   public Result defineIndex(@CliOption(key = CliStrings.DEFINE_INDEX_NAME, mandatory = true,
       help = CliStrings.DEFINE_INDEX__HELP) final String indexName,
@@ -533,8 +530,7 @@ public class IndexCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = CliStrings.CREATE_DEFINED_INDEXES, help = CliStrings.CREATE_DEFINED__HELP)
   @CliMetaData(shellOnly = false,
-      relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA},
-      writesToSharedConfiguration = true)
+      relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   // TODO : Add optionContext for indexName
   public Result createDefinedIndexes(
@@ -639,8 +635,7 @@ public class IndexCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = CliStrings.CLEAR_DEFINED_INDEXES, help = CliStrings.CLEAR_DEFINED__HELP)
   @CliMetaData(shellOnly = false,
-      relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA},
-      writesToSharedConfiguration = true)
+      relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   // TODO : Add optionContext for indexName
   public Result clearDefinedIndexes() {

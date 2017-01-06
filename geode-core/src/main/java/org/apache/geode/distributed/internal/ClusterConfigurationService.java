@@ -117,23 +117,6 @@ public class ClusterConfigurationService {
   private GemFireCacheImpl cache;
   private final DistributedLockService sharedConfigLockingService;
 
-  /**
-   * Gets or creates (if not created) shared configuration lock service
-   */
-  public static DistributedLockService getSharedConfigLockService(DistributedSystem ds) {
-    DistributedLockService sharedConfigDls =
-        DLockService.getServiceNamed(SHARED_CONFIG_LOCK_SERVICE_NAME);
-    try {
-      if (sharedConfigDls == null) {
-        sharedConfigDls = DLockService.create(SHARED_CONFIG_LOCK_SERVICE_NAME,
-            (InternalDistributedSystem) ds, true, true);
-      }
-    } catch (IllegalArgumentException e) {
-      return DLockService.getServiceNamed(SHARED_CONFIG_LOCK_SERVICE_NAME);
-    }
-    return sharedConfigDls;
-  }
-
   public ClusterConfigurationService(Cache cache) throws IOException {
     this.cache = (GemFireCacheImpl) cache;
     Properties properties = cache.getDistributedSystem().getProperties();
@@ -160,81 +143,39 @@ public class ClusterConfigurationService {
     status.set(SharedConfigurationStatus.NOT_STARTED);
   }
 
+  /**
+   * Gets or creates (if not created) shared configuration lock service
+   */
+  private DistributedLockService getSharedConfigLockService(DistributedSystem ds) {
+    DistributedLockService sharedConfigDls =
+        DLockService.getServiceNamed(SHARED_CONFIG_LOCK_SERVICE_NAME);
+    try {
+      if (sharedConfigDls == null) {
+        sharedConfigDls = DLockService.create(SHARED_CONFIG_LOCK_SERVICE_NAME,
+            (InternalDistributedSystem) ds, true, true);
+      }
+    } catch (IllegalArgumentException e) {
+      return DLockService.getServiceNamed(SHARED_CONFIG_LOCK_SERVICE_NAME);
+    }
+    return sharedConfigDls;
+  }
 
   /**
    * Adds/replaces the xml entity in the shared configuration we don't need to trigger the change
    * listener for this modification, so it's ok to operate on the original configuration object
    */
   public void addXmlEntity(XmlEntity xmlEntity, String[] groups) {
-    Region<String, Configuration> configRegion = getConfigurationRegion();
-    if (groups == null || groups.length == 0) {
-      groups = new String[] {ClusterConfigurationService.CLUSTER_CONFIG};
-    }
-    for (String group : groups) {
-      Configuration configuration = (Configuration) configRegion.get(group);
-      if (configuration == null) {
-        configuration = new Configuration(group);
+    lockSharedConfiguration();
+    try {
+      Region<String, Configuration> configRegion = getConfigurationRegion();
+      if (groups == null || groups.length == 0) {
+        groups = new String[] {ClusterConfigurationService.CLUSTER_CONFIG};
       }
-      String xmlContent = configuration.getCacheXmlContent();
-      if (xmlContent == null || xmlContent.isEmpty()) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        CacheXmlGenerator.generateDefault(pw);
-        xmlContent = sw.toString();
-      }
-      try {
-        final Document doc = XmlUtils.createAndUpgradeDocumentFromXml(xmlContent);
-        XmlUtils.addNewNode(doc, xmlEntity);
-        configuration.setCacheXmlContent(XmlUtils.prettyXml(doc));
-        configRegion.put(group, configuration);
-      } catch (Exception e) {
-        logger.error("error updating cluster configuration for group " + group, e);
-      }
-    }
-  }
-
-  /**
-   * Deletes the xml entity from the shared configuration.
-   */
-  public void deleteXmlEntity(final XmlEntity xmlEntity, String[] groups) {
-    Region<String, Configuration> configRegion = getConfigurationRegion();
-    // No group is specified, so delete in every single group if it exists.
-    if (groups == null) {
-      Set<String> groupSet = configRegion.keySet();
-      groups = groupSet.toArray(new String[groupSet.size()]);
-    }
-    for (String group : groups) {
-      Configuration configuration = (Configuration) configRegion.get(group);
-      if (configuration != null) {
-        String xmlContent = configuration.getCacheXmlContent();
-        try {
-          if (xmlContent != null && !xmlContent.isEmpty()) {
-            Document doc = XmlUtils.createAndUpgradeDocumentFromXml(xmlContent);
-            XmlUtils.deleteNode(doc, xmlEntity);
-            configuration.setCacheXmlContent(XmlUtils.prettyXml(doc));
-            configRegion.put(group, configuration);
-          }
-        } catch (Exception e) {
-          logger.error("error updating cluster configuration for group " + group, e);
+      for (String group : groups) {
+        Configuration configuration = (Configuration) configRegion.get(group);
+        if (configuration == null) {
+          configuration = new Configuration(group);
         }
-      }
-    }
-  }
-
-  // we don't need to trigger the change listener for this modification, so it's ok to
-  // operate on the original configuration object
-  public void modifyXmlAndProperties(Properties properties, XmlEntity xmlEntity, String[] groups) {
-    if (groups == null) {
-      groups = new String[] {ClusterConfigurationService.CLUSTER_CONFIG};
-    }
-    Region<String, Configuration> configRegion = getConfigurationRegion();
-    for (String group : groups) {
-      Configuration configuration = configRegion.get(group);
-      if (configuration == null) {
-        configuration = new Configuration(group);
-      }
-
-      if (xmlEntity != null) {
         String xmlContent = configuration.getCacheXmlContent();
         if (xmlContent == null || xmlContent.isEmpty()) {
           StringWriter sw = new StringWriter();
@@ -243,20 +184,93 @@ public class ClusterConfigurationService {
           xmlContent = sw.toString();
         }
         try {
-          Document doc = XmlUtils.createAndUpgradeDocumentFromXml(xmlContent);
-          // Modify the cache attributes
-          XmlUtils.modifyRootAttributes(doc, xmlEntity);
-          // Change the xml content of the configuration and put it the config region
+          final Document doc = XmlUtils.createAndUpgradeDocumentFromXml(xmlContent);
+          XmlUtils.addNewNode(doc, xmlEntity);
           configuration.setCacheXmlContent(XmlUtils.prettyXml(doc));
+          configRegion.put(group, configuration);
         } catch (Exception e) {
           logger.error("error updating cluster configuration for group " + group, e);
         }
       }
+    } finally {
+      unlockSharedConfiguration();
+    }
+  }
 
-      if (properties != null) {
-        configuration.getGemfireProperties().putAll(properties);
+  /**
+   * Deletes the xml entity from the shared configuration.
+   */
+  public void deleteXmlEntity(final XmlEntity xmlEntity, String[] groups) {
+    lockSharedConfiguration();
+    try {
+      Region<String, Configuration> configRegion = getConfigurationRegion();
+      // No group is specified, so delete in every single group if it exists.
+      if (groups == null) {
+        Set<String> groupSet = configRegion.keySet();
+        groups = groupSet.toArray(new String[groupSet.size()]);
       }
-      configRegion.put(group, configuration);
+      for (String group : groups) {
+        Configuration configuration = (Configuration) configRegion.get(group);
+        if (configuration != null) {
+          String xmlContent = configuration.getCacheXmlContent();
+          try {
+            if (xmlContent != null && !xmlContent.isEmpty()) {
+              Document doc = XmlUtils.createAndUpgradeDocumentFromXml(xmlContent);
+              XmlUtils.deleteNode(doc, xmlEntity);
+              configuration.setCacheXmlContent(XmlUtils.prettyXml(doc));
+              configRegion.put(group, configuration);
+            }
+          } catch (Exception e) {
+            logger.error("error updating cluster configuration for group " + group, e);
+          }
+        }
+      }
+    } finally {
+      unlockSharedConfiguration();
+    }
+  }
+
+  // we don't need to trigger the change listener for this modification, so it's ok to
+  // operate on the original configuration object
+  public void modifyXmlAndProperties(Properties properties, XmlEntity xmlEntity, String[] groups) {
+    lockSharedConfiguration();
+    try {
+      if (groups == null) {
+        groups = new String[] {ClusterConfigurationService.CLUSTER_CONFIG};
+      }
+      Region<String, Configuration> configRegion = getConfigurationRegion();
+      for (String group : groups) {
+        Configuration configuration = configRegion.get(group);
+        if (configuration == null) {
+          configuration = new Configuration(group);
+        }
+
+        if (xmlEntity != null) {
+          String xmlContent = configuration.getCacheXmlContent();
+          if (xmlContent == null || xmlContent.isEmpty()) {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            CacheXmlGenerator.generateDefault(pw);
+            xmlContent = sw.toString();
+          }
+          try {
+            Document doc = XmlUtils.createAndUpgradeDocumentFromXml(xmlContent);
+            // Modify the cache attributes
+            XmlUtils.modifyRootAttributes(doc, xmlEntity);
+            // Change the xml content of the configuration and put it the config region
+            configuration.setCacheXmlContent(XmlUtils.prettyXml(doc));
+          } catch (Exception e) {
+            logger.error("error updating cluster configuration for group " + group, e);
+          }
+        }
+
+        if (properties != null) {
+          configuration.getGemfireProperties().putAll(properties);
+        }
+        configRegion.put(group, configuration);
+      }
+    } finally {
+      unlockSharedConfiguration();
     }
   }
 
@@ -269,6 +283,7 @@ public class ClusterConfigurationService {
    */
   public boolean addJarsToThisLocator(String[] jarNames, byte[][] jarBytes, String[] groups) {
     boolean success = true;
+    lockSharedConfiguration();
     try {
       if (groups == null) {
         groups = new String[] {ClusterConfigurationService.CLUSTER_CONFIG};
@@ -304,6 +319,41 @@ public class ClusterConfigurationService {
     } catch (Exception e) {
       success = false;
       logger.info(e.getMessage(), e);
+    } finally {
+      unlockSharedConfiguration();
+    }
+    return success;
+  }
+
+  /**
+   * Removes the jar files from the shared configuration. used when undeploy jars
+   *
+   * @param jarNames Names of the jar files.
+   * @param groups Names of the groups which had the jar file deployed.
+   * @return true on success.
+   */
+  public boolean removeJars(final String[] jarNames, String[] groups) {
+    boolean success = true;
+    lockSharedConfiguration();
+    try {
+      Region<String, Configuration> configRegion = getConfigurationRegion();
+      if (groups == null) {
+        groups = configRegion.keySet().stream().toArray(String[]::new);
+      }
+      for (String group : groups) {
+        Configuration configuration = configRegion.get(group);
+        if (configuration == null) {
+          break;
+        }
+        Configuration configurationCopy = new Configuration(configuration);
+        configurationCopy.removeJarNames(jarNames);
+        configRegion.put(group, configurationCopy);
+      }
+    } catch (Exception e) {
+      logger.info("Exception occurred while deleting the jar files", e);
+      success = false;
+    } finally {
+      unlockSharedConfiguration();
     }
     return success;
   }
@@ -323,36 +373,6 @@ public class ClusterConfigurationService {
     }
 
     return FileUtils.readFileToByteArray(jar);
-  }
-
-  /**
-   * Removes the jar files from the shared configuration. used when undeploy jars
-   *
-   * @param jarNames Names of the jar files.
-   * @param groups Names of the groups which had the jar file deployed.
-   * @return true on success.
-   */
-  public boolean removeJars(final String[] jarNames, String[] groups) {
-    boolean success = true;
-    try {
-      Region<String, Configuration> configRegion = getConfigurationRegion();
-      if (groups == null) {
-        groups = configRegion.keySet().stream().toArray(String[]::new);
-      }
-      for (String group : groups) {
-        Configuration configuration = configRegion.get(group);
-        if (configuration == null) {
-          break;
-        }
-        Configuration configurationCopy = new Configuration(configuration);
-        configurationCopy.removeJarNames(jarNames);
-        configRegion.put(group, configurationCopy);
-      }
-    } catch (Exception e) {
-      logger.info("Exception occurred while deleting the jar files", e);
-      success = false;
-    }
-    return success;
   }
 
   // used in the cluster config change listener when jarnames are changed in the internal region
@@ -375,7 +395,6 @@ public class ClusterConfigurationService {
     FileUtils.writeByteArrayToFile(jarToWrite, jarBytes);
   }
 
-
   // used when creating cluster config response
   public Map<String, byte[]> getAllJarsFromThisLocator(Set<String> groups) throws Exception {
     Map<String, byte[]> jarNamesToJarBytes = new HashMap<>();
@@ -396,11 +415,6 @@ public class ClusterConfigurationService {
     return jarNamesToJarBytes;
   }
 
-  public void clearSharedConfiguration() throws Exception {
-    Region<String, Configuration> configRegion = getConfigurationRegion();
-    configRegion.clear();
-  }
-
   /**
    * Creates the shared configuration service
    * 
@@ -411,19 +425,18 @@ public class ClusterConfigurationService {
     status.set(SharedConfigurationStatus.STARTED);
     Region<String, Configuration> configRegion = this.getConfigurationRegion();
     lockSharedConfiguration();
-
     try {
       if (loadSharedConfigFromDir) {
         logger.info("Reading cluster configuration from '{}' directory",
             ClusterConfigurationService.CLUSTER_CONFIG_ARTIFACTS_DIR_NAME);
-        this.loadSharedConfigurationFromDisk();
+        loadSharedConfigurationFromDisk();
       } else {
-        putSecurityPropsIntoClusterConfig(configRegion);
+        persistSecuritySettings(configRegion);
+        // for those groups that have jar files, need to download the jars from other locators
+        // if it doesn't exist yet
         Set<String> groups = configRegion.keySet();
         for (String group : groups) {
           Configuration config = configRegion.get(group);
-          // for those groups that have jar files, need to download the jars from other locators
-          // if it doesn't exist yet
           for (String jar : config.getJarNames()) {
             if (!(getPathToJarOnThisLocator(group, jar).toFile()).exists()) {
               downloadJarFromOtherLocators(group, jar);
@@ -438,8 +451,9 @@ public class ClusterConfigurationService {
     status.set(SharedConfigurationStatus.RUNNING);
   }
 
-  private void putSecurityPropsIntoClusterConfig(final Region<String, Configuration> configRegion) {
+  private void persistSecuritySettings(final Region<String, Configuration> configRegion) {
     Properties securityProps = cache.getDistributedSystem().getSecurityProperties();
+
     Configuration clusterPropertiesConfig =
         configRegion.get(ClusterConfigurationService.CLUSTER_CONFIG);
     if (clusterPropertiesConfig == null) {
@@ -448,6 +462,7 @@ public class ClusterConfigurationService {
     }
     // put security-manager and security-post-processor in the cluster config
     Properties clusterProperties = clusterPropertiesConfig.getGemfireProperties();
+
     if (securityProps.containsKey(SECURITY_MANAGER)) {
       clusterProperties.setProperty(SECURITY_MANAGER, securityProps.getProperty(SECURITY_MANAGER));
     }
@@ -585,20 +600,28 @@ public class ClusterConfigurationService {
    * Loads the internal region with the configuration in the configDirPath
    */
   public void loadSharedConfigurationFromDisk() throws Exception {
+    lockSharedConfiguration();
     File[] groupNames =
         new File(configDirPath).listFiles((FileFilter) DirectoryFileFilter.INSTANCE);
     Map<String, Configuration> sharedConfiguration = new HashMap<String, Configuration>();
 
-    for (File groupName : groupNames) {
-      Configuration configuration = readConfiguration(groupName);
-      sharedConfiguration.put(groupName.getName(), configuration);
+    try {
+      for (File groupName : groupNames) {
+        Configuration configuration = readConfiguration(groupName);
+        sharedConfiguration.put(groupName.getName(), configuration);
+      }
+      Region clusterRegion = getConfigurationRegion();
+      clusterRegion.clear();
+      clusterRegion.putAll(sharedConfiguration);
+
+      // Overwrite the security settings using the locator's properties, ignoring whatever
+      // in the import
+      persistSecuritySettings(clusterRegion);
+
+    } finally {
+      unlockSharedConfiguration();
     }
-
-    getConfigurationRegion().clear();
-    getConfigurationRegion().putAll(sharedConfiguration);
   }
-
-
 
   public void renameExistingSharedConfigDirectory() {
     File configDirFile = new File(configDirPath);
@@ -616,7 +639,7 @@ public class ClusterConfigurationService {
 
 
   // Write the content of xml and properties into the file system for exporting purpose
-  public void writeConfig(final Configuration configuration) throws Exception {
+  public void writeConfigToFile(final Configuration configuration) throws Exception {
     File configDir = createConfigDirIfNecessary(configuration.getConfigName());
 
     File propsFile = new File(configDir, configuration.getPropertiesFileName());
@@ -744,5 +767,22 @@ public class ClusterConfigurationService {
     }
 
     return configDir;
+  }
+
+  // check if it's ok from populate the properties from one member to another
+  public static boolean isMisConfigured(Properties fromProps, Properties toProps, String key) {
+    String fromPropValue = fromProps.getProperty(key);
+    String toPropValue = toProps.getProperty(key);
+
+    // if this to prop is not specified, this is always OK.
+    if (org.apache.commons.lang.StringUtils.isBlank(toPropValue))
+      return false;
+
+    // to props is not blank, but from props is blank, NOT OK.
+    if (org.apache.commons.lang.StringUtils.isBlank(fromPropValue))
+      return true;
+
+    // at this point check for eqality
+    return !fromPropValue.equals(toPropValue);
   }
 }

@@ -38,7 +38,6 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
@@ -75,7 +74,7 @@ public final class DeployCommands extends AbstractCommandsSupport {
   @CliCommand(value = {CliStrings.DEPLOY}, help = CliStrings.DEPLOY__HELP)
   @CliMetaData(
       interceptor = "org.apache.geode.management.internal.cli.commands.DeployCommands$Interceptor",
-      relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG}, writesToSharedConfiguration = true)
+      relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   public final Result deploy(
       @CliOption(key = {CliStrings.DEPLOY__GROUP}, help = CliStrings.DEPLOY__GROUP__HELP,
           optionContext = ConverterHint.MEMBERGROUP) @CliMetaData(
@@ -166,7 +165,7 @@ public final class DeployCommands extends AbstractCommandsSupport {
    * @return The result of the attempt to undeploy
    */
   @CliCommand(value = {CliStrings.UNDEPLOY}, help = CliStrings.UNDEPLOY__HELP)
-  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG}, writesToSharedConfiguration = true)
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public final Result undeploy(
       @CliOption(key = {CliStrings.UNDEPLOY__GROUP}, help = CliStrings.UNDEPLOY__GROUP__HELP,

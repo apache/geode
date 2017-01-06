@@ -783,6 +783,8 @@ public class GemFireCacheImpl
     return basicCreate(system, existingOk, cacheConfig, null, false, ASYNC_EVENT_LISTENERS, null);
   }
 
+
+
   private static GemFireCacheImpl basicCreate(DistributedSystem system, boolean existingOk,
       CacheConfig cacheConfig, PoolFactory pf, boolean isClient, boolean asyncEventListeners,
       TypeRegistry typeRegistry) throws CacheExistsException, TimeoutException,
@@ -1980,6 +1982,10 @@ public class GemFireCacheImpl
 
   public void close() {
     close(false);
+  }
+
+  public void close(String reason, boolean keepalive, boolean keepDS) {
+    close(reason, null, keepalive, keepDS);
   }
 
   public void close(boolean keepalive) {

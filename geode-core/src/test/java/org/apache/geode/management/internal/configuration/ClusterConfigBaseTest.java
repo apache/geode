@@ -27,9 +27,9 @@ import org.junit.Rule;
 import java.util.Properties;
 
 public class ClusterConfigBaseTest extends JUnit4DistributedTestCase {
-  public static final String EXPORTED_CLUSTER_CONFIG_ZIP_FILENAME = "cluster_config.zip";
-  public static final String EXPORTED_CLUSTER_CONFIG_PATH =
-      ClusterConfigBaseTest.class.getResource(EXPORTED_CLUSTER_CONFIG_ZIP_FILENAME).getPath();
+  public static final String CLUSTER_CONFIG_ZIP_FILENAME = "cluster_config.zip";
+  public static final String CLUSTER_CONFIG_ZIP_PATH =
+      ClusterConfigBaseTest.class.getResource(CLUSTER_CONFIG_ZIP_FILENAME).getPath();
 
   public static final ConfigGroup CLUSTER = new ConfigGroup("cluster").regions("regionForCluster")
       .jars("cluster.jar").maxLogFileSize("5000").configFiles("cluster.properties", "cluster.xml");
