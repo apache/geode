@@ -20,58 +20,42 @@ import org.apache.geode.cache.Region;
 
 /**
  * 
- * A callback for partitioned regions, invoked when a partition region is created or any bucket in a
- * partitioned region becomes primary.<br>
+ * A callback for partitioned regions, invoked when a partition region is created or any bucket is
+ * created/deleted or any bucket in a partitioned region becomes primary.<br>
  * <br>
- * A sample implementation of this interface to colocate partition regions using a primary key
- * without having to honor the redundancy contract for every colocate partition regions is as
- * follows : <br>
- * 
+ * It is highly recommended that implementations of this listener should be quick and not try to
+ * manipulate regions and data because the the callbacks are invoked while holding locks that may
+ * block region operations. <br>
+ *
  * <pre>
- * public class ColocatingPartitionListener extends PartitionListenerAdapter implements Declarable {
- *   private Cache cache;
- * 
- *   private List&lt;String&gt; viewRegionNames = new ArrayList&lt;String&gt;();
- * 
- *   public ColocatingPartitionListener() {}
+ * package com.myCompany.MyPartitionListener;
+ *
+ * public class MyPartitionListener extends PartitionListenerAdapter implements Declarable {
+ *   private String regionName;
+ *
+ *   public MyPartitionListener() {}
  * 
  *   public void afterPrimary(int bucketId) {
- *     for (String viewRegionName : viewRegionNames) {
- *       Region viewRegion = cache.getRegion(viewRegionName);
- *       PartitionManager.createPrimaryBucket(viewRegion, bucketId, true, true);
- *     }
- *   }
- * 
- *   public void init(Properties props) {
- *     String viewRegions = props.getProperty(&quot;viewRegions&quot;);
- *     StringTokenizer tokenizer = new StringTokenizer(viewRegions, &quot;,&quot;);
- *     while (tokenizer.hasMoreTokens()) {
- *       viewRegionNames.add(tokenizer.nextToken());
- *     }
+ *     System.out.println("bucket:" + bucketId + " has become primary on " + this.regionName);
  *   }
  * 
  *   public void afterRegionCreate(Region&lt;?, ?&gt; region) {
- *     cache = region.getCache();
+ *     this.regionName = region.getName();
  *   }
  * }
  * </pre>
  * 
- * A sample declaration of the ColocatingPartitionListener in cache.xml as follows :<br>
+ * A sample declaration of the MyPartitionListener in cache.xml as follows :<br>
  * 
  * <pre>
  * &lt;partition-attributes redundant-copies=&quot;1&quot;&gt;
  *     &lt;partition-listener&gt;
- *         &lt;class-name&gt;com.myCompany.ColocatingPartitionListener&lt;/class-name&gt;
- *          &lt;parameter name=&quot;viewRegions&quot;&gt;
- *              &lt;string&gt;/customer/ViewA,/customer/ViewB&lt;/string&gt;
- *          &lt;/parameter&gt;             
+ *         &lt;class-name&gt;com.myCompany.MyPartitionListener&lt;/class-name&gt;
  *     &lt;/partition-listener&gt;
  * &lt;/partition-attributes&gt;
  * </pre>
  * 
  * @see PartitionAttributesFactory#addPartitionListener(PartitionListener)
- * 
- *      Note : Please contact support@gemstone.com before using these APIs
  * 
  * @since GemFire 6.5
  * 
