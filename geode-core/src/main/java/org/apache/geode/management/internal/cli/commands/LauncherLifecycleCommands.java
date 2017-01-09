@@ -95,6 +95,7 @@ import org.apache.geode.management.internal.cli.util.CauseFinder;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.cli.util.ConnectionEndpoint;
 import org.apache.geode.management.internal.cli.util.JConsoleNotFoundException;
+import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
 import org.apache.geode.management.internal.cli.util.VisualVmNotFoundException;
 import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
@@ -197,13 +198,19 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
     return ATTACH_API_AVAILABLE.get();
   }
 
+  private final ThreePhraseGenerator nameGenerator;
+
+  public LauncherLifecycleCommands() {
+    nameGenerator = new ThreePhraseGenerator();
+  }
+
   @CliCommand(value = CliStrings.START_LOCATOR, help = CliStrings.START_LOCATOR__HELP)
   @CliMetaData(shellOnly = true,
       relatedTopic = {CliStrings.TOPIC_GEODE_LOCATOR, CliStrings.TOPIC_GEODE_LIFECYCLE})
   public Result startLocator(
-      @CliOption(key = CliStrings.START_LOCATOR__MEMBER_NAME, mandatory = true,
+      @CliOption(key = CliStrings.START_LOCATOR__MEMBER_NAME, mandatory = false,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          help = CliStrings.START_LOCATOR__MEMBER_NAME__HELP) final String memberName,
+          help = CliStrings.START_LOCATOR__MEMBER_NAME__HELP) String memberName,
       @CliOption(key = CliStrings.START_LOCATOR__BIND_ADDRESS,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.START_LOCATOR__BIND_ADDRESS__HELP) final String bindAddress,
@@ -271,6 +278,11 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
       @CliOption(key = CliStrings.START_LOCATOR__CLUSTER__CONFIG__DIR, unspecifiedDefaultValue = "",
           help = CliStrings.START_LOCATOR__CLUSTER__CONFIG__DIR__HELP) final String clusterConfigDir) {
     try {
+      if (StringUtils.isBlank(memberName)) {
+        // when the user doesn't give us a name, we make one up!
+        memberName = nameGenerator.generate('-');
+      }
+
       if (workingDirectory == null) {
         // attempt to use or make sub-directory using memberName...
         File locatorWorkingDirectory = new File(memberName);
@@ -1333,6 +1345,9 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
   @CliMetaData(shellOnly = true,
       relatedTopic = {CliStrings.TOPIC_GEODE_SERVER, CliStrings.TOPIC_GEODE_LIFECYCLE})
   public Result startServer(
+      @CliOption(key = CliStrings.START_SERVER__NAME, mandatory = false,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.START_SERVER__NAME__HELP) String memberName,
       @CliOption(key = CliStrings.START_SERVER__ASSIGN_BUCKETS, unspecifiedDefaultValue = "false",
           specifiedDefaultValue = "true",
           help = CliStrings.START_SERVER__ASSIGN_BUCKETS__HELP) final Boolean assignBuckets,
@@ -1444,9 +1459,6 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
       @CliOption(key = CliStrings.START_SERVER__MESSAGE__TIME__TO__LIVE,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.START_SERVER__MESSAGE__TIME__TO__LIVE__HELP) final Integer messageTimeToLive,
-      @CliOption(key = CliStrings.START_SERVER__NAME, mandatory = true,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          help = CliStrings.START_SERVER__NAME__HELP) final String memberName,
       @CliOption(key = CliStrings.START_SERVER__OFF_HEAP_MEMORY_SIZE,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.START_SERVER__OFF_HEAP_MEMORY_SIZE__HELP) final String offHeapMemorySize,
@@ -1494,6 +1506,11 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
   // NOTICE: keep the parameters in alphabetical order based on their CliStrings.START_SERVER_* text
   {
     try {
+      if (StringUtils.isBlank(memberName)) {
+        // when the user doesn't give us a name, we make one up!
+        memberName = nameGenerator.generate('-');
+      }
+
       // prompt for password is username is specified in the command
       if (!StringUtils.isBlank(userName)) {
         if (StringUtils.isBlank(passwordToUse)) {

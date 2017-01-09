@@ -519,17 +519,6 @@ public class ServerLauncherTest {
     assertNull(launcher.getMemberName());
   }
 
-  @Test(expected = IllegalStateException.class)
-  public void testBuildNoMemberNameOnStart() {
-    try {
-      new Builder().setCommand(Command.START).build();
-    } catch (IllegalStateException expected) {
-      assertEquals(LocalizedStrings.Launcher_Builder_MEMBER_NAME_VALIDATION_ERROR_MESSAGE
-          .toLocalizedString("Server"), expected.getMessage());
-      throw expected;
-    }
-  }
-
   @Test
   public void testIsServing() {
     final Cache mockCache = mockContext.mock(Cache.class, "Cache");
