@@ -23,9 +23,9 @@ import org.junit.runners.Suite;
     FailWithLineMissingFromMiddleOfOutputJUnitTest.class,
     FailWithLoggerErrorInOutputJUnitTest.class, FailWithLoggerFatalInOutputJUnitTest.class,
     FailWithLoggerWarnInOutputJUnitTest.class, FailWithSevereInOutputJUnitTest.class,
-    FailWithTimeoutOfWaitForOutputToMatchJUnitTest.class, FailWithWarningInOutputJUnitTest.class,
-    PassJUnitTest.class, PassWithExpectedErrorJUnitTest.class,
-    PassWithExpectedSevereJUnitTest.class, PassWithExpectedWarningJUnitTest.class,})
+    FailWithWarningInOutputJUnitTest.class, PassJUnitTest.class,
+    PassWithExpectedErrorJUnitTest.class, PassWithExpectedSevereJUnitTest.class,
+    PassWithExpectedWarningJUnitTest.class,})
 /**
  * Suite of tests for the test.golden Golden Test framework classes.
  */
