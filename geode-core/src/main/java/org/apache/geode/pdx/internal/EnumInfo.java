@@ -58,7 +58,7 @@ public class EnumInfo implements DataSerializableFixedID {
   }
 
   public EnumInfo() {}
-  
+
   public int getDSFID() {
     return ENUM_INFO;
   }
