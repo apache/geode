@@ -182,7 +182,7 @@ public class ExportImportSharedConfigurationCommands extends AbstractCommandsSup
 
       if (!zip.endsWith(".zip")) {
         return ResultBuilder
-            .createUserErrorResult(CliStrings.format(CliStrings.INVALID_FILE_EXTENTION, ".zip"));
+            .createUserErrorResult(CliStrings.format(CliStrings.INVALID_FILE_EXTENSION, ".zip"));
       }
       return ResultBuilder.createInfoResult("OK");
     }
@@ -244,7 +244,7 @@ public class ExportImportSharedConfigurationCommands extends AbstractCommandsSup
       }
       if (!zip.endsWith(CliStrings.ZIP_FILE_EXTENSION)) {
         return ResultBuilder.createUserErrorResult(
-            CliStrings.format(CliStrings.INVALID_FILE_EXTENTION, CliStrings.ZIP_FILE_EXTENSION));
+            CliStrings.format(CliStrings.INVALID_FILE_EXTENSION, CliStrings.ZIP_FILE_EXTENSION));
       }
 
       FileResult fileResult;

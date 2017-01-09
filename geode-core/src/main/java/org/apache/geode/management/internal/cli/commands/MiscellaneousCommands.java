@@ -590,7 +590,7 @@ public class MiscellaneousCommands implements CommandMarker {
     try {
       if (!filename.endsWith(".txt")) {
         return ResultBuilder
-            .createUserErrorResult(CliStrings.format(CliStrings.INVALID_FILE_EXTENTION, ".txt"));
+            .createUserErrorResult(CliStrings.format(CliStrings.INVALID_FILE_EXTENSION, ".txt"));
       }
       Cache cache = CacheFactory.getAnyInstance();
 
@@ -1174,7 +1174,7 @@ public class MiscellaneousCommands implements CommandMarker {
       if (export_to_report_to != null && !export_to_report_to.isEmpty()) {
         if (!export_to_report_to.endsWith(".csv")) {
           return ResultBuilder
-              .createUserErrorResult(CliStrings.format(CliStrings.INVALID_FILE_EXTENTION, ".csv"));
+              .createUserErrorResult(CliStrings.format(CliStrings.INVALID_FILE_EXTENSION, ".csv"));
         }
       }
       if (regionName != null && !regionName.isEmpty()) {
