@@ -174,10 +174,10 @@ public class PeerTypeRegistration implements TypeRegistration {
       public void beforeCreate(EntryEvent<Object, Object> event) throws CacheWriterException {
         Object newValue = event.getNewValue();
         if (newValue instanceof PdxType) {
-          logger.info("Adding type to PdxTypes: {}",
+          logger.info("Adding new type: {}",
               ((PdxType) event.getNewValue()).toFormattedString());
         } else {
-          logger.info("Adding enum to PdxTypes: {} {}", event.getKey(),
+          logger.info("Adding new type: {} {}", event.getKey(),
               ((EnumInfo)newValue).toFormattedString());
         }
       }

@@ -159,7 +159,7 @@ public class EnumInfo implements DataSerializableFixedID {
   }
 
   public String toFormattedString() {
-    return getClass().getSimpleName() + "[\n" + clazz + "." + name + "]";
+    return getClass().getSimpleName() + "[\n        " + clazz + "." + name + "]";
   }
 
   @Override
