@@ -30,43 +30,35 @@
 #   item, use the pattern “/about/*/”; “/about/*” will also select the parent,
 #   because “*” matches zero or more characters.
 
-passthrough /\/(bootstrap|css|font|img|js|static)\/.*/
+passthrough /\/(bootstrap|css|font|img|js|static|guide|fonts|images|javascripts|stylesheets|subnavs)\/.*/
 
-compile '/docs/*' do
+compile '/docs/**/*' do
   @docs = true
   filter :erb
-  layout 'docs'
+  layout '/docs.*'
 end
 
-compile '/community/*' do
+compile '/community/**/*' do
   @community = true
   filter :erb
-  layout 'community'
+  layout '/community.*'
 end
 
-compile '/releases/*' do
+compile '/releases/**/*' do
   @releases = true
   filter :erb
-  layout 'releases'
+  layout '/releases.*'
 end
 
-compile '*' do
+compile '/**/*' do
   if item.binary?
     # don’t filter binary items
   else
     filter :erb
-    layout 'default'
+    layout '/default.*'
   end
 end
 
-route '*' do
-  if item.binary?
-    # Write item with identifier /foo/ to /foo.ext
-    item.identifier.chop + '.' + item[:extension]
-  else
-    # Write item with identifier /foo/ to /foo/index.html
-    item.identifier + 'index.html'
-  end
-end
 
-layout '*', :erb
+
+layout '/**/*', :erb
