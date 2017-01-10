@@ -1,0 +1,12 @@
+<div class="header-dropdown">
+  <a class="header-dropdown-link" >
+    <%= menu_title %>
+  </a>
+  <div class="header-dropdown-content">
+    <ul>
+      <% for link in dropdown_links %>
+        <li><a href="<%= link.values.first %>"><%= link.keys.first %></a></li>
+      <% end %>
+    </ul>
+  </div>
+</div>
