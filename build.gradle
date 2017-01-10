@@ -102,14 +102,3 @@ subprojects {
   }
 }
 
-task cleanExamples(type: GradleBuild) {
-  buildFile = "${rootProject.projectDir}/geode-examples/build.gradle"
-  tasks = ['clean']
-}
-
-clean.dependsOn cleanExamples
-
-task buildExamples(type: GradleBuild, dependsOn: ':geode-assembly:installDist') {
-  buildFile = "${rootProject.projectDir}/geode-examples/build.gradle"
-  tasks = ['build']
-}
