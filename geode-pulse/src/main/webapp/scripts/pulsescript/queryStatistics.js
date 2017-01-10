@@ -61,7 +61,7 @@ var customSortFunction = function(cell, rowObject) {
 function createQueryStatisticsGrid() {
 
   $.ajax({
-    url : 'pulse/getQueryStatisticsGridModel',
+    url : 'getQueryStatisticsGridModel',
     type : 'GET',
     dataType : 'json',
     async : false,

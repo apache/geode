@@ -74,6 +74,7 @@ public class PulseAutomatedTest extends PulseBase {
   @Before
   public void setupPulseTestUtils() {
     PulseTestUtils.setDriverProvider(() -> webDriverRule.getDriver());
+    getWebDriver().get(getPulseURL() + "clusterDetail.html");
   }
 
   @Test

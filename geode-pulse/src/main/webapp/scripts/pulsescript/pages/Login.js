@@ -26,7 +26,7 @@ function pageOnLoad(){
   // get Pulse Version Details
   getPulseVersion();
   
-  $.getJSON("pulse/authenticateUser", function(data) {
+  $.getJSON("authenticateUser", function(data) {
     
     // return isUserLoggedIn
     if(data.isUserLoggedIn){
