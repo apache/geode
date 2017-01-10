@@ -18,8 +18,8 @@ package org.apache.geode.management.internal.configuration.functions;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.SharedConfiguration;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.logging.log4j.Logger;
@@ -37,7 +37,7 @@ public class UploadJarFunction implements Function, InternalEntity {
     String jarName = (String) args[1];
 
     if (locator != null && group != null && jarName != null) {
-      SharedConfiguration sharedConfig = locator.getSharedConfiguration();
+      ClusterConfigurationService sharedConfig = locator.getSharedConfiguration();
       if (sharedConfig != null) {
         try {
           byte[] jarBytes = sharedConfig.getJarBytesFromThisLocator(group, jarName);

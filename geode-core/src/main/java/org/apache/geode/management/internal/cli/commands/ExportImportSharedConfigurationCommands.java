@@ -16,7 +16,7 @@ package org.apache.geode.management.internal.cli.commands;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.SharedConfiguration;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.logging.LogService;
@@ -69,7 +69,7 @@ public class ExportImportSharedConfigurationCommands extends AbstractCommandsSup
       return ResultBuilder.createGemFireErrorResult(CliStrings.SHARED_CONFIGURATION_NOT_STARTED);
     }
 
-    SharedConfiguration sc = locator.getSharedConfiguration();
+    ClusterConfigurationService sc = locator.getSharedConfiguration();
     File zipFile = new File(zipFileName);
     zipFile.getParentFile().mkdirs();
 
@@ -130,7 +130,7 @@ public class ExportImportSharedConfigurationCommands extends AbstractCommandsSup
     Result result;
     File zipFile = new File(zipFileName);
     try {
-      SharedConfiguration sc = locator.getSharedConfiguration();
+      ClusterConfigurationService sc = locator.getSharedConfiguration();
 
       // backup the old config
       for (Configuration config : sc.getEntireConfiguration().values()) {

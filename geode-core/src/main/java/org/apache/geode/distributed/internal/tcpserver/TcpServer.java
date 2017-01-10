@@ -17,13 +17,13 @@ package org.apache.geode.distributed.internal.tcpserver;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.distributed.internal.PooledExecutorWithDMStats;
-import org.apache.geode.distributed.internal.SharedConfiguration;
 import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.Version;
@@ -190,7 +190,7 @@ public class TcpServer {
   }
 
   public void restarting(InternalDistributedSystem ds, GemFireCacheImpl cache,
-      SharedConfiguration sharedConfig) throws IOException {
+      ClusterConfigurationService sharedConfig) throws IOException {
     this.shuttingDown = false;
     this.handler.restarting(ds, cache, sharedConfig);
     startServerThread();

@@ -80,7 +80,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
 @SuppressWarnings({"deprecation", "unchecked"})
-public class SharedConfiguration {
+public class ClusterConfigurationService {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -134,7 +134,7 @@ public class SharedConfiguration {
     return sharedConfigDls;
   }
 
-  public SharedConfiguration(Cache cache) throws IOException {
+  public ClusterConfigurationService(Cache cache) throws IOException {
     this.cache = (GemFireCacheImpl) cache;
     Properties properties = cache.getDistributedSystem().getProperties();
     // resolve the cluster config dir
@@ -168,7 +168,7 @@ public class SharedConfiguration {
   public void addXmlEntity(XmlEntity xmlEntity, String[] groups) {
     Region<String, Configuration> configRegion = getConfigurationRegion();
     if (groups == null || groups.length == 0) {
-      groups = new String[] {SharedConfiguration.CLUSTER_CONFIG};
+      groups = new String[] {ClusterConfigurationService.CLUSTER_CONFIG};
     }
     for (String group : groups) {
       Configuration configuration = (Configuration) configRegion.get(group);
@@ -225,7 +225,7 @@ public class SharedConfiguration {
   // operate on the original configuration object
   public void modifyXmlAndProperties(Properties properties, XmlEntity xmlEntity, String[] groups) {
     if (groups == null) {
-      groups = new String[] {SharedConfiguration.CLUSTER_CONFIG};
+      groups = new String[] {ClusterConfigurationService.CLUSTER_CONFIG};
     }
     Region<String, Configuration> configRegion = getConfigurationRegion();
     for (String group : groups) {
@@ -271,7 +271,7 @@ public class SharedConfiguration {
     boolean success = true;
     try {
       if (groups == null) {
-        groups = new String[] {SharedConfiguration.CLUSTER_CONFIG};
+        groups = new String[] {ClusterConfigurationService.CLUSTER_CONFIG};
       }
       Region<String, Configuration> configRegion = getConfigurationRegion();
       for (String group : groups) {
@@ -415,7 +415,7 @@ public class SharedConfiguration {
     try {
       if (loadSharedConfigFromDir) {
         logger.info("Reading cluster configuration from '{}' directory",
-            SharedConfiguration.CLUSTER_CONFIG_ARTIFACTS_DIR_NAME);
+            ClusterConfigurationService.CLUSTER_CONFIG_ARTIFACTS_DIR_NAME);
         this.loadSharedConfigurationFromDisk();
       } else {
         putSecurityPropsIntoClusterConfig(configRegion);
@@ -440,10 +440,11 @@ public class SharedConfiguration {
 
   private void putSecurityPropsIntoClusterConfig(final Region<String, Configuration> configRegion) {
     Properties securityProps = cache.getDistributedSystem().getSecurityProperties();
-    Configuration clusterPropertiesConfig = configRegion.get(SharedConfiguration.CLUSTER_CONFIG);
+    Configuration clusterPropertiesConfig =
+        configRegion.get(ClusterConfigurationService.CLUSTER_CONFIG);
     if (clusterPropertiesConfig == null) {
-      clusterPropertiesConfig = new Configuration(SharedConfiguration.CLUSTER_CONFIG);
-      configRegion.put(SharedConfiguration.CLUSTER_CONFIG, clusterPropertiesConfig);
+      clusterPropertiesConfig = new Configuration(ClusterConfigurationService.CLUSTER_CONFIG);
+      configRegion.put(ClusterConfigurationService.CLUSTER_CONFIG, clusterPropertiesConfig);
     }
     // put security-manager and security-post-processor in the cluster config
     Properties clusterProperties = clusterPropertiesConfig.getGemfireProperties();
@@ -458,7 +459,7 @@ public class SharedConfiguration {
 
   /**
    * Creates a ConfigurationResponse based on the configRequest, configuration response contains the
-   * requested shared configuration This method locks the SharedConfiguration
+   * requested shared configuration This method locks the ClusterConfigurationService
    */
   public ConfigurationResponse createConfigurationReponse(final ConfigurationRequest configRequest)
       throws Exception {
@@ -470,7 +471,7 @@ public class SharedConfiguration {
       try {
         if (isLocked) {
           Set<String> groups = configRequest.getGroups();
-          groups.add(SharedConfiguration.CLUSTER_CONFIG);
+          groups.add(ClusterConfigurationService.CLUSTER_CONFIG);
           logger.info("Building up configuration response with following configurations: {}",
               groups);
 
@@ -557,8 +558,8 @@ public class SharedConfiguration {
   }
 
   /**
-   * Gets the current status of the SharedConfiguration If the status is started , it determines if
-   * the shared configuration is waiting for new configuration on other locators
+   * Gets the current status of the ClusterConfigurationService If the status is started , it
+   * determines if the shared configuration is waiting for new configuration on other locators
    * 
    * @return {@link SharedConfigurationStatus}
    */

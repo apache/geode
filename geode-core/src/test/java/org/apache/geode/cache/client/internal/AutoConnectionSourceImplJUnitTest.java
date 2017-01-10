@@ -26,15 +26,13 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.distributed.internal.SharedConfiguration;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.PoolStats;
 import org.apache.geode.internal.cache.tier.InternalClientMembership;
-import org.apache.geode.internal.cache.tier.sockets.HandShake;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.management.membership.ClientMembershipEvent;
 import org.apache.geode.management.membership.ClientMembershipListener;
 import org.apache.geode.test.junit.categories.ClientServerTest;
@@ -270,7 +268,7 @@ public class AutoConnectionSourceImplJUnitTest {
     public void endResponse(Object request, long startTime) {}
 
     public void restarting(DistributedSystem ds, GemFireCache cache,
-        SharedConfiguration sharedConfig) {}
+        ClusterConfigurationService sharedConfig) {}
 
   }
 

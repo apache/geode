@@ -32,7 +32,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.UnmodifiableException;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.SharedConfiguration;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.JarClassLoader;
@@ -103,7 +103,7 @@ public class ClusterConfigurationLoader {
 
     // apply the cluster config first
     Configuration clusterConfiguration =
-        requestedConfiguration.get(SharedConfiguration.CLUSTER_CONFIG);
+        requestedConfiguration.get(ClusterConfigurationService.CLUSTER_CONFIG);
     if (clusterConfiguration != null) {
       String cacheXmlContent = clusterConfiguration.getCacheXmlContent();
       if (!StringUtils.isBlank(cacheXmlContent)) {
@@ -155,7 +155,7 @@ public class ClusterConfigurationLoader {
 
     // apply the cluster config first
     Configuration clusterConfiguration =
-        requestedConfiguration.get(SharedConfiguration.CLUSTER_CONFIG);
+        requestedConfiguration.get(ClusterConfigurationService.CLUSTER_CONFIG);
     if (clusterConfiguration != null) {
       runtimeProps.putAll(clusterConfiguration.getGemfireProperties());
     }
@@ -198,7 +198,7 @@ public class ClusterConfigurationLoader {
     List<String> groups = ClusterConfigurationLoader.getGroups(config);
     ConfigurationRequest request = new ConfigurationRequest();
 
-    request.addGroups(SharedConfiguration.CLUSTER_CONFIG);
+    request.addGroups(ClusterConfigurationService.CLUSTER_CONFIG);
     for (String group : groups) {
       request.addGroups(group);
     }

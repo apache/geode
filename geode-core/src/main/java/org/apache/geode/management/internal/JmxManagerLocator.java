@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
@@ -29,7 +30,6 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.SharedConfiguration;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
@@ -71,7 +71,7 @@ public class JmxManagerLocator implements TcpHandler {
   }
 
   public void restarting(DistributedSystem ds, GemFireCache cache,
-      SharedConfiguration sharedConfig) {
+      ClusterConfigurationService sharedConfig) {
     this.cache = (GemFireCacheImpl) cache;
   }
 

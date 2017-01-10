@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.SharedConfiguration;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.JarClassLoader;
 import org.apache.geode.internal.JarDeployer;
@@ -91,7 +91,7 @@ public class ClusterConfig implements Serializable {
     // verify info exists in memeory
     locator.invoke(() -> {
       InternalLocator internalLocator = LocatorServerStartupRule.locatorStarter.locator;
-      SharedConfiguration sc = internalLocator.getSharedConfiguration();
+      ClusterConfigurationService sc = internalLocator.getSharedConfiguration();
 
       // verify no extra configs exist in memory
       Set<String> actualGroupConfigs = sc.getEntireConfiguration().keySet();

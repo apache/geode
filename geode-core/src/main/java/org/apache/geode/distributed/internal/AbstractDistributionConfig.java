@@ -16,20 +16,7 @@ package org.apache.geode.distributed.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 
-import java.lang.reflect.Method;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
-
 import org.apache.commons.lang.StringUtils;
-
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.InvalidValueException;
 import org.apache.geode.UnmodifiableException;
@@ -41,6 +28,18 @@ import org.apache.geode.internal.logging.LogWriterImpl;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.memcached.GemFireMemcachedServer;
+
+import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 
 /**
  * Provides an implementation of <code>DistributionConfig</code> that knows how to read the
@@ -1084,7 +1083,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         LocalizedStrings.AbstractDistributionConfig_USE_SHARED_CONFIGURATION.toLocalizedString());
     m.put(LOAD_CLUSTER_CONFIGURATION_FROM_DIR,
         LocalizedStrings.AbstractDistributionConfig_LOAD_SHARED_CONFIGURATION_FROM_DIR
-            .toLocalizedString(SharedConfiguration.CLUSTER_CONFIG_ARTIFACTS_DIR_NAME));
+            .toLocalizedString(ClusterConfigurationService.CLUSTER_CONFIG_ARTIFACTS_DIR_NAME));
     m.put(CLUSTER_CONFIGURATION_DIR,
         LocalizedStrings.AbstractDistributionConfig_CLUSTER_CONFIGURATION_DIR.toLocalizedString());
     m.put(SSL_SERVER_ALIAS, LocalizedStrings.AbstractDistributionConfig_SERVER_SSL_ALIAS_0

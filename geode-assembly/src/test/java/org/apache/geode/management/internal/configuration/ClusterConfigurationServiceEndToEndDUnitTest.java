@@ -14,6 +14,33 @@
  */
 package org.apache.geode.management.internal.configuration;
 
+import static org.apache.geode.cache.RegionShortcut.PARTITION;
+import static org.apache.geode.cache.RegionShortcut.REPLICATE;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
+import static org.apache.geode.internal.FileUtil.delete;
+import static org.apache.geode.internal.FileUtil.deleteMatching;
+import static org.apache.geode.internal.lang.StringUtils.isBlank;
+import static org.apache.geode.management.internal.cli.CliUtil.getAllNormalMembers;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertFalse;
+import static org.apache.geode.test.dunit.Assert.assertNotNull;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.apache.geode.test.dunit.Wait.waitForCriterion;
+
+import org.apache.commons.io.FileUtils;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.RegionShortcut;
@@ -35,7 +62,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
-import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -47,22 +73,8 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
-import static org.apache.geode.cache.RegionShortcut.PARTITION;
-import static org.apache.geode.cache.RegionShortcut.REPLICATE;
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
-import static org.apache.geode.internal.FileUtil.delete;
-import static org.apache.geode.internal.FileUtil.deleteMatching;
-import static org.apache.geode.internal.lang.StringUtils.isBlank;
-import static org.apache.geode.management.internal.cli.CliUtil.getAllNormalMembers;
-import static org.apache.geode.test.dunit.Assert.*;
-import static org.apache.geode.test.dunit.Host.getHost;
-import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
-import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
-import static org.apache.geode.test.dunit.Wait.waitForCriterion;
-
 @Category(DistributedTest.class)
-public class SharedConfigurationEndToEndDUnitTest extends CliCommandTestBase {
+public class ClusterConfigurationServiceEndToEndDUnitTest extends CliCommandTestBase {
 
   private static final int TIMEOUT = 10000;
   private static final int INTERVAL = 500;

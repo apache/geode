@@ -36,7 +36,7 @@ import org.apache.geode.test.junit.runner.SuiteRunner;
     MiscellaneousCommandsExportLogsPart2DUnitTest.class,
     MiscellaneousCommandsExportLogsPart3DUnitTest.class,
     MiscellaneousCommandsExportLogsPart4DUnitTest.class, QueueCommandsDUnitTest.class,
-    SharedConfigurationCommandsDUnitTest.class, ShellCommandsDUnitTest.class,
+    ClusterConfigurationServiceCommandsDUnitTest.class, ShellCommandsDUnitTest.class,
     ShowDeadlockDUnitTest.class, ShowMetricsDUnitTest.class, ShowStackTraceDUnitTest.class,
     UserCommandsDUnitTest.class})
 public class CommandOverHttpDUnitTest {

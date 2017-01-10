@@ -34,6 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.geode.InternalGemFireException;
 
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
@@ -41,7 +42,6 @@ import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LocatorStats;
-import org.apache.geode.distributed.internal.SharedConfiguration;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.NetView;
@@ -56,7 +56,6 @@ import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedObjectInput;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.net.*;
 
 import static org.apache.geode.internal.i18n.LocalizedStrings.LOCATOR_UNABLE_TO_RECOVER_VIEW;
 
@@ -340,7 +339,7 @@ public class GMSLocator implements Locator, NetLocator {
 
   @Override
   public void restarting(DistributedSystem ds, GemFireCache cache,
-      SharedConfiguration sharedConfig) {
+      ClusterConfigurationService sharedConfig) {
     setMembershipManager(((InternalDistributedSystem) ds).getDM().getMembershipManager());
   }
 

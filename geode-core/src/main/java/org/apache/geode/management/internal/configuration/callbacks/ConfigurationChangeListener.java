@@ -15,7 +15,7 @@
 package org.apache.geode.management.internal.configuration.callbacks;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.geode.distributed.internal.SharedConfiguration;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.EntryEvent;
@@ -35,9 +35,9 @@ import java.util.Set;
 public class ConfigurationChangeListener extends CacheListenerAdapter<String, Configuration> {
   private static final Logger logger = LogService.getLogger();
 
-  private final SharedConfiguration sharedConfig;
+  private final ClusterConfigurationService sharedConfig;
 
-  public ConfigurationChangeListener(SharedConfiguration sharedConfig) {
+  public ConfigurationChangeListener(ClusterConfigurationService sharedConfig) {
     this.sharedConfig = sharedConfig;
   }
 

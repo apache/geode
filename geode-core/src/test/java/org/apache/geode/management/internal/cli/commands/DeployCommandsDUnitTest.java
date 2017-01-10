@@ -33,7 +33,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.SharedConfiguration;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.ClassBuilder;
@@ -444,7 +444,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
     Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        SharedConfiguration sharedConfig =
+        ClusterConfigurationService sharedConfig =
             ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
         try {
           assertTrue(sharedConfig.getConfiguration(groupName).getJarNames()
@@ -479,7 +479,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
     Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        SharedConfiguration sharedConfig =
+        ClusterConfigurationService sharedConfig =
             ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
         try {
           assertFalse(sharedConfig.getConfiguration(groupName).getJarNames()

@@ -47,7 +47,7 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.SharedConfiguration;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
@@ -539,7 +539,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        SharedConfiguration sharedConfig =
+        ClusterConfigurationService sharedConfig =
             ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
         Properties gemfireProperties = null;
 

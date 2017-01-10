@@ -49,8 +49,8 @@ import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.compression.SnappyCompressor;
 import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.SharedConfiguration;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.ClassBuilder;
@@ -942,7 +942,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
 
     // Make sure the region exists in the shared config
     Host.getHost(0).getVM(0).invoke(() -> {
-      SharedConfiguration sharedConfig =
+      ClusterConfigurationService sharedConfig =
           ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
       try {
         assertTrue(
@@ -984,7 +984,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
 
     // Make sure the region was altered in the shared config
     Host.getHost(0).getVM(0).invoke(() -> {
-      SharedConfiguration sharedConfig =
+      ClusterConfigurationService sharedConfig =
           ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
       try {
         assertTrue(sharedConfig.getConfiguration(groupName).getCacheXmlContent().contains("45635"));
@@ -1091,7 +1091,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
 
     // Make sure the region exists in the shared config
     Host.getHost(0).getVM(0).invoke(() -> {
-      SharedConfiguration sharedConfig =
+      ClusterConfigurationService sharedConfig =
           ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
       try {
         assertTrue(
@@ -1110,7 +1110,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
 
     // Make sure the region was removed from the shared config
     Host.getHost(0).getVM(0).invoke(() -> {
-      SharedConfiguration sharedConfig =
+      ClusterConfigurationService sharedConfig =
           ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
       try {
         assertFalse(

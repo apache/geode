@@ -28,7 +28,7 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.distributed.AbstractLauncher.Status;
 import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.LocatorState;
-import org.apache.geode.distributed.internal.SharedConfiguration;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.DistributionLocator;
 import org.junit.runners.Parameterized;
@@ -67,7 +67,7 @@ public abstract class AbstractLocatorLauncherIntegrationTestCase
         String.valueOf(this.locatorPort));
     this.workingDirectory = this.temporaryFolder.getRoot().getCanonicalPath();
     this.clusterConfigDirectory = this.temporaryFolder
-        .newFolder(SharedConfiguration.CLUSTER_CONFIG_DISK_DIR_PREFIX + getUniqueName())
+        .newFolder(ClusterConfigurationService.CLUSTER_CONFIG_DISK_DIR_PREFIX + getUniqueName())
         .getCanonicalPath();
   }
 

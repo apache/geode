@@ -19,9 +19,9 @@ import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.SharedConfiguration;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -31,7 +31,6 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.configuration.handlers.ConfigurationRequestHandler;
 import org.apache.geode.management.internal.configuration.messages.ConfigurationRequest;
 import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
-import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
@@ -55,7 +54,7 @@ import static org.apache.geode.test.dunit.Wait.waitForCriterion;
  * {@link ConfigurationRequestHandler}
  */
 @Category(DistributedTest.class)
-public class SharedConfigurationDUnitTest extends JUnit4CacheTestCase {
+public class ClusterConfigurationServiceDUnitTest extends JUnit4CacheTestCase {
 
   private static final String REGION1 = "region1";
   private static final int TIMEOUT = 10000;
@@ -177,7 +176,7 @@ public class SharedConfigurationDUnitTest extends JUnit4CacheTestCase {
 
     locator1Vm.invoke(() -> {
       InternalLocator locator = (InternalLocator) Locator.getLocator();
-      SharedConfiguration sharedConfig = locator.getSharedConfiguration();
+      ClusterConfigurationService sharedConfig = locator.getSharedConfiguration();
       sharedConfig.destroySharedConfiguration();
       locator.stop();
       return null;
@@ -271,7 +270,7 @@ public class SharedConfigurationDUnitTest extends JUnit4CacheTestCase {
     });
 
     locator1Vm.invoke(() -> {
-      SharedConfiguration sc = InternalLocator.getLocator().getSharedConfiguration();
+      ClusterConfigurationService sc = InternalLocator.getLocator().getSharedConfiguration();
       sc.addXmlEntity(xmlEntity, new String[] {testGroup});
 
       // Modify property and cache attributes
@@ -333,9 +332,10 @@ public class SharedConfigurationDUnitTest extends JUnit4CacheTestCase {
       }
 
       InternalLocator locator = (InternalLocator) Locator.getLocator();
-      SharedConfiguration sharedConfig = locator.getSharedConfiguration();
+      ClusterConfigurationService sharedConfig = locator.getSharedConfiguration();
       Map<String, Configuration> entireConfiguration = sharedConfig.getEntireConfiguration();
-      Configuration clusterConfig = entireConfiguration.get(SharedConfiguration.CLUSTER_CONFIG);
+      Configuration clusterConfig =
+          entireConfiguration.get(ClusterConfigurationService.CLUSTER_CONFIG);
       assertNotNull(clusterConfig);
       assertNotNull(clusterConfig.getJarNames());
       assertTrue(clusterConfig.getJarNames().contains("foo.jar"));
@@ -377,7 +377,7 @@ public class SharedConfigurationDUnitTest extends JUnit4CacheTestCase {
       Map<String, Configuration> requestedConfiguration =
           configResponse.getRequestedConfiguration();
       Configuration clusterConfiguration =
-          requestedConfiguration.get(SharedConfiguration.CLUSTER_CONFIG);
+          requestedConfiguration.get(ClusterConfigurationService.CLUSTER_CONFIG);
       assertNotNull(clusterConfiguration);
       assertTrue(configResponse.getJarNames().length == 0);
       assertTrue(configResponse.getJars().length == 0);

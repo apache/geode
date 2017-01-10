@@ -32,8 +32,8 @@ import com.jayway.awaitility.Awaitility;
 import com.jayway.awaitility.core.ConditionFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.SharedConfiguration;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -52,7 +52,7 @@ import java.util.Arrays;
 import java.util.Properties;
 
 @Category({DistributedTest.class, FlakyTest.class}) // GEODE-1165
-public class SharedConfigurationUsingDirDUnitTest extends JUnit4CacheTestCase {
+public class ClusterConfigurationServiceUsingDirDUnitTest extends JUnit4CacheTestCase {
 
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
@@ -64,7 +64,7 @@ public class SharedConfigurationUsingDirDUnitTest extends JUnit4CacheTestCase {
           return;
         }
 
-        SharedConfiguration sharedConfig = locator.getSharedConfiguration();
+        ClusterConfigurationService sharedConfig = locator.getSharedConfiguration();
         if (sharedConfig != null) {
           sharedConfig.destroySharedConfiguration();
         }
@@ -261,7 +261,7 @@ public class SharedConfigurationUsingDirDUnitTest extends JUnit4CacheTestCase {
   private void copyClusterXml(final VM vm, final String clusterXml) {
     vm.invoke("Copying new cluster.xml from " + clusterXml, () -> {
       String clusterXmlPath =
-          TestUtil.getResourcePath(SharedConfigurationUsingDirDUnitTest.class, clusterXml);
+          TestUtil.getResourcePath(ClusterConfigurationServiceUsingDirDUnitTest.class, clusterXml);
       InputStream cacheXml = new FileInputStream(clusterXmlPath);
       assertNotNull("Could not create InputStream from " + clusterXmlPath, cacheXml);
       Files.createDirectories(Paths.get("cluster_config", "cluster"));

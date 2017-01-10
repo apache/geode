@@ -14,8 +14,8 @@
  */
 package org.apache.geode.management.internal.configuration;
 
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.SharedConfiguration;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.internal.JUnit3DistributedTestCase;
 
@@ -26,7 +26,7 @@ public class SharedConfigurationTestUtils {
     public void run() {
       InternalLocator locator = InternalLocator.getLocator();
       if (locator != null) {
-        SharedConfiguration sharedConfig = locator.getSharedConfiguration();
+        ClusterConfigurationService sharedConfig = locator.getSharedConfiguration();
         if (sharedConfig != null) {
           sharedConfig.destroySharedConfiguration();
         }

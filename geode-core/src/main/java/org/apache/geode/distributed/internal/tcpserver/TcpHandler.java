@@ -18,7 +18,7 @@ import java.io.IOException;
 
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.SharedConfiguration;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
 
 /**
  * A handler which responds to messages for the {@link TcpServer}
@@ -49,7 +49,8 @@ public interface TcpHandler {
    * 
    * @param sharedConfig TODO
    */
-  void restarting(DistributedSystem ds, GemFireCache cache, SharedConfiguration sharedConfig);
+  void restarting(DistributedSystem ds, GemFireCache cache,
+      ClusterConfigurationService sharedConfig);
 
   /**
    * Initialize the handler with the TcpServer. Called before the TcpServer starts accepting

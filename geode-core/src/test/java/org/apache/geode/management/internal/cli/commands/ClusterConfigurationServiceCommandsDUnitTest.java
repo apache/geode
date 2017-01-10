@@ -19,7 +19,7 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.SharedConfiguration;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.internal.ClassBuilder;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.Result.Status;
@@ -57,7 +57,7 @@ import static org.apache.geode.test.dunit.Wait.waitForCriterion;
  */
 @Category(DistributedTest.class)
 @SuppressWarnings("unchecked")
-public class SharedConfigurationCommandsDUnitTest extends CliCommandTestBase {
+public class ClusterConfigurationServiceCommandsDUnitTest extends CliCommandTestBase {
 
   private static final int TIMEOUT = 10000;
   private static final int INTERVAL = 500;
@@ -274,7 +274,7 @@ public class SharedConfigurationCommandsDUnitTest extends CliCommandTestBase {
       @Override
       public Object call() throws Exception {
         InternalLocator locator = InternalLocator.getLocator();
-        SharedConfiguration sc = locator.getSharedConfiguration();
+        ClusterConfigurationService sc = locator.getSharedConfiguration();
         assertNotNull(sc);
         sc.clearSharedConfiguration();
         return null;
@@ -318,13 +318,14 @@ public class SharedConfigurationCommandsDUnitTest extends CliCommandTestBase {
           };
           waitForCriterion(wc, 5000, 500, true);
 
-          SharedConfiguration sc = locator.getSharedConfiguration();
+          ClusterConfigurationService sc = locator.getSharedConfiguration();
           assertNotNull(sc);
           Configuration groupConfig = sc.getConfiguration(groupName);
           assertNotNull(groupConfig);
           assertTrue(groupConfig.getCacheXmlContent().contains(region1Name));
 
-          Configuration clusterConfig = sc.getConfiguration(SharedConfiguration.CLUSTER_CONFIG);
+          Configuration clusterConfig =
+              sc.getConfiguration(ClusterConfigurationService.CLUSTER_CONFIG);
           assertNotNull(clusterConfig);
           assertTrue(clusterConfig.getCacheXmlContent().contains(region2Name));
           assertTrue(clusterConfig.getJarNames().contains(deployedJarName));

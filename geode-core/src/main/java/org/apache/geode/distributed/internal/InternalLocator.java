@@ -44,7 +44,6 @@ import org.apache.geode.cache.client.internal.locator.GetAllServersRequest;
 import org.apache.geode.cache.client.internal.locator.LocatorListRequest;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusRequest;
 import org.apache.geode.cache.client.internal.locator.QueueConnectionRequest;
-import org.apache.geode.cache.client.internal.locator.ServerLocationRequest;
 import org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListener;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
@@ -192,7 +191,7 @@ public class InternalLocator extends Locator implements ConnectListener {
 
   private final AtomicBoolean shutdownHandled = new AtomicBoolean(false);
 
-  private SharedConfiguration sharedConfig;
+  private ClusterConfigurationService sharedConfig;
 
   private volatile boolean isSharedConfigurationStarted = false;
 
@@ -558,7 +557,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     server.start();
   }
 
-  public SharedConfiguration getSharedConfiguration() {
+  public ClusterConfigurationService getSharedConfiguration() {
     return this.sharedConfig;
   }
 
@@ -645,7 +644,7 @@ public class InternalLocator extends Locator implements ConnectListener {
       try {
         if (locator.sharedConfig == null) {
           // locator.sharedConfig will already be created in case of auto-reconnect
-          locator.sharedConfig = new SharedConfiguration(locator.myCache);
+          locator.sharedConfig = new ClusterConfigurationService(locator.myCache);
         }
         locator.sharedConfig.initSharedConfiguration(locator.loadFromSharedConfigDir());
         locator.installSharedConfigDistribution();
@@ -1151,7 +1150,7 @@ public class InternalLocator extends Locator implements ConnectListener {
       ((InternalDistributedSystem) myDs).setDependentLocator(this);
       logger.info("Locator restart: initializing TcpServer");
       if (isSharedConfigurationEnabled()) {
-        this.sharedConfig = new SharedConfiguration(newCache);
+        this.sharedConfig = new ClusterConfigurationService(newCache);
       }
       this.server.restarting(newSystem, newCache, this.sharedConfig);
       if (this.productUseLog.isClosed()) {
@@ -1297,7 +1296,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     }
 
     public void restarting(DistributedSystem ds, GemFireCache cache,
-        SharedConfiguration sharedConfig) {
+        ClusterConfigurationService sharedConfig) {
       if (ds != null) {
         for (TcpHandler handler : this.allHandlers) {
           handler.restarting(ds, cache, sharedConfig);

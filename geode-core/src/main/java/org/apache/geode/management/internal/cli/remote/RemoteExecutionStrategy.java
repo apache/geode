@@ -22,7 +22,7 @@ import org.springframework.util.ReflectionUtils;
 
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.SharedConfiguration;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.management.ManagementService;
@@ -100,14 +100,14 @@ public class RemoteExecutionStrategy {
         // TODO: why do we need to care about this here?
         if (gfc.getDistributionManager().isSharedConfigurationServiceEnabledForDS()
             && (writesToSharedConfiguration(method) || readsFromSharedConfiguration(method))) {
-          DistributedLockService dls = SharedConfiguration
+          DistributedLockService dls = ClusterConfigurationService
               .getSharedConfigLockService(InternalDistributedSystem.getAnyInstance());
-          if (dls.lock(SharedConfiguration.SHARED_CONFIG_LOCK_NAME, 10000, -1)) {
+          if (dls.lock(ClusterConfigurationService.SHARED_CONFIG_LOCK_NAME, 10000, -1)) {
             try {
               result = (Result) ReflectionUtils.invokeMethod(gfshParseResult.getMethod(),
                   gfshParseResult.getInstance(), gfshParseResult.getArguments());
             } finally {
-              dls.unlock(SharedConfiguration.SHARED_CONFIG_LOCK_NAME);
+              dls.unlock(ClusterConfigurationService.SHARED_CONFIG_LOCK_NAME);
             }
           } else {
             return ResultBuilder.createGemFireErrorResult(

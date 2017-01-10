@@ -102,7 +102,7 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.ResourceEventsListener;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.distributed.internal.SharedConfiguration;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.i18n.LogWriterI18n;
@@ -1033,7 +1033,7 @@ public class GemFireCacheImpl
       logger.info(response.describeConfig());
 
       Configuration clusterConfig =
-          response.getRequestedConfiguration().get(SharedConfiguration.CLUSTER_CONFIG);
+          response.getRequestedConfiguration().get(ClusterConfigurationService.CLUSTER_CONFIG);
       Properties clusterSecProperties =
           (clusterConfig == null) ? new Properties() : clusterConfig.getGemfireProperties();
 
