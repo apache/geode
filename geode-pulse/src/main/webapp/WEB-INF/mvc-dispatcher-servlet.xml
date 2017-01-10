@@ -31,5 +31,5 @@
     <context:component-scan base-package="org.apache.geode.tools.pulse.internal" />
 
     <mvc:annotation-driven />
-     
+    <mvc:default-servlet-handler />
 </beans>

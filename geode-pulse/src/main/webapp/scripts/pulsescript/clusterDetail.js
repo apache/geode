@@ -1953,7 +1953,7 @@ function showMembersDefaultRgraphPanel() {
   // populateMemberRGraph using pulseUpdate
   var pulseData = new Object();
   pulseData.ClusterMembersRGraph = "";
-  ajaxPost("pulse/pulseUpdate", pulseData, translateGetClusterMemberRGraphBack);
+  ajaxPost("pulseUpdate", pulseData, translateGetClusterMemberRGraphBack);
 
 }
 
@@ -1965,7 +1965,7 @@ function showMembersDefaultTreemapPanel() {
   // populate Member TreeMap using pulseUpdate
   var pulseData = new Object();
   pulseData.ClusterMembers = "";
-  ajaxPost("pulse/pulseUpdate", pulseData, translateGetClusterMemberBack);
+  ajaxPost("pulseUpdate", pulseData, translateGetClusterMemberBack);
 
 
 }
@@ -1978,7 +1978,7 @@ function showMembersDefaultGridPanel() {
   // populate Member Grid using pulseUpdate
   var pulseData = new Object();
   pulseData.ClusterMembers = ""; // getClusterMembersBack
-  ajaxPost("pulse/pulseUpdate", pulseData, translateGetClusterMemberBack);
+  ajaxPost("pulseUpdate", pulseData, translateGetClusterMemberBack);
 
   $('#default_grid_block').hide();
   destroyScrollPane('gview_memberList');
@@ -2003,7 +2003,7 @@ function showMembersSGTreemapPanel() {
   // populate Member TreeMap using pulseUpdate
   var pulseData = new Object();
   pulseData.ClusterMembers = "";
-  ajaxPost("pulse/pulseUpdate", pulseData, translateGetClusterMemberBack);
+  ajaxPost("pulseUpdate", pulseData, translateGetClusterMemberBack);
 
 }
 
@@ -2015,7 +2015,7 @@ function showMembersSGGridPanel() {
   // populate Member Grid using pulseUpdate
   var pulseData = new Object();
   pulseData.ClusterMembers = ""; // getClusterMembersBack
-  ajaxPost("pulse/pulseUpdate", pulseData, translateGetClusterMemberBack);
+  ajaxPost("pulseUpdate", pulseData, translateGetClusterMemberBack);
 
   $('#servergroups_grid_block').hide();
   destroyScrollPane('gview_memberListSG');
@@ -2040,7 +2040,7 @@ function showMembersRZTreemapPanel() {
   // populate Member TreeMap using pulseUpdate
   var pulseData = new Object();
   pulseData.ClusterMembers = "";
-  ajaxPost("pulse/pulseUpdate", pulseData, translateGetClusterMemberBack);
+  ajaxPost("pulseUpdate", pulseData, translateGetClusterMemberBack);
 }
 
 //Show Members Redundancy Zones Grid View and hide rest
@@ -2051,7 +2051,7 @@ function showMembersRZGridPanel() {
   // populate Member Grid using pulseUpdate
   var pulseData = new Object();
   pulseData.ClusterMembers = "";
-  ajaxPost("pulse/pulseUpdate", pulseData, translateGetClusterMemberBack);
+  ajaxPost("pulseUpdate", pulseData, translateGetClusterMemberBack);
 
   $('#redundancyzones_grid_block').hide();
   destroyScrollPane('gview_memberListRZ');
@@ -2076,7 +2076,7 @@ function showDataTreemapPanel() {
   // populate Region TreeMap using pulseUpdate
   var pulseData = new Object();
   pulseData.ClusterRegions = "";
-  ajaxPost("pulse/pulseUpdate", pulseData, translateGetClusterRegionsBack);
+  ajaxPost("pulseUpdate", pulseData, translateGetClusterRegionsBack);
 
 }
 
@@ -2088,7 +2088,7 @@ function showDataGridPanel() {
   // populate Regions Grid using pulseUpdate
   var pulseData = new Object();
   pulseData.ClusterRegions = "";
-  ajaxPost("pulse/pulseUpdate", pulseData, translateGetClusterRegionsBack);
+  ajaxPost("pulseUpdate", pulseData, translateGetClusterRegionsBack);
 
   $('#data_grid_block').hide();
   destroyScrollPane('gview_regionsList');

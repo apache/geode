@@ -30,8 +30,8 @@ import java.io.InputStream;
 import java.util.Properties;
 
 public class ServerRule extends ExternalResource {
-  public static final String LOCALHOST = "localhost";
-  public static final String PULSE_CONTEXT = "/pulse";
+  private static final String LOCALHOST = "localhost";
+  private static final String PULSE_CONTEXT = "/pulse/";
 
   private org.eclipse.jetty.server.Server jetty;
   private Server server;
