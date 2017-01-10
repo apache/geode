@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 import java.text.SimpleDateFormat;
+import java.util.List;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -274,6 +275,53 @@ public class JSONFormatterJUnitTest {
     region.put(2, JSONFormatter.fromJSON(js2));
 
     assertEquals(pdxTypes + 1, c.getRegion(PeerTypeRegistration.REGION_FULL_PATH).keys().size());
+  }
+
+  @Test
+  public void testJSONStringSortedFields() {
+
+    try {
+      System.setProperty(JSONFormatter.SORT_JSON_FIELD_NAMES_PROPERTY, "true");
+
+      Cache c = CacheFactory.getAnyInstance();
+
+      Region region = c.getRegion("primitiveKVStore");
+
+      String js = "{b:\"b\", age:14, c:\"c' go\", bb:23}";
+
+      region.put(1, JSONFormatter.fromJSON(js));
+
+      PdxInstance ret = (PdxInstance) region.get(1);
+      List<String> fieldNames = ret.getFieldNames();
+
+      assertEquals("There should be four fields", 4, fieldNames.size());
+
+      boolean sorted = true;
+      for (int i = 0; i < fieldNames.size() - 1; i++) {
+        if (fieldNames.get(i).compareTo(fieldNames.get(i + 1)) >= 0) {
+          sorted = false;
+        }
+      }
+
+      assertTrue("Json fields should be sorted", sorted);
+
+      // Now do put with another jsonstring with same fields but different order
+      // then verify we don't create another pdxtype
+
+      int pdxTypes = 0;
+
+      if (c.getRegion(PeerTypeRegistration.REGION_FULL_PATH) != null) {
+        pdxTypes = c.getRegion(PeerTypeRegistration.REGION_FULL_PATH).keys().size();
+      }
+
+      String js2 = "{c:\"c' go\", bb:23, b:\"b\", age:14 }";
+      region.put(2, JSONFormatter.fromJSON(js2));
+
+      assertEquals(pdxTypes, c.getRegion(PeerTypeRegistration.REGION_FULL_PATH).keys().size());
+
+    } finally {
+      System.setProperty(JSONFormatter.SORT_JSON_FIELD_NAMES_PROPERTY, "false");
+    }
   }
 }
 

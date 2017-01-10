@@ -93,6 +93,46 @@ public class JSONPdxClientServerDUnitTest extends JUnit4CacheTestCase {
     });
   }
 
+  @Test
+  public void testSimplePutWithSortedJSONField() {
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+    VM vm2 = host.getVM(2);
+    VM vm3 = host.getVM(3);
+
+
+    createServerRegion(vm0);
+    int port = createServerRegion(vm3);
+    createClientRegion(vm1, port);
+    createClientRegion(vm2, port);
+
+    vm1.invoke(new SerializableCallable() {
+      public Object call() throws Exception {
+        try {
+          System.setProperty(JSONFormatter.SORT_JSON_FIELD_NAMES_PROPERTY, "true");
+          JSONAllStringTest();
+        } finally {
+          System.setProperty(JSONFormatter.SORT_JSON_FIELD_NAMES_PROPERTY, "false");
+        }
+
+        return null;
+      }
+    });
+
+    vm2.invoke(new SerializableCallable() {
+      public Object call() throws Exception {
+        try {
+          System.setProperty(JSONFormatter.SORT_JSON_FIELD_NAMES_PROPERTY, "true");
+          JSONAllByteArrayTest();
+        } finally {
+          System.setProperty(JSONFormatter.SORT_JSON_FIELD_NAMES_PROPERTY, "false");
+        }
+        return null;
+      }
+    });
+  }
+
   // this is for unquote fielnames in json string
   @Test
   public void testSimplePut2() {
@@ -338,8 +378,14 @@ public class JSONPdxClientServerDUnitTest extends JUnit4CacheTestCase {
 
     String o1 = jsonParse(jd.getJsonString());
     String o2 = jsonParse(getJsonString);
-    assertEquals("Json Strings are not equal " + jd.getFileName() + " "
-        + Boolean.getBoolean("pdxToJson.unqouteFieldNames"), o1, o2);
+    if (!Boolean.getBoolean(JSONFormatter.SORT_JSON_FIELD_NAMES_PROPERTY)) {
+      assertEquals("Json Strings are not equal " + jd.getFileName() + " "
+          + Boolean.getBoolean("pdxToJson.unqouteFieldNames"), o1, o2);
+    } else {
+      // we just need to compare length as blob will be different because fields are sorted
+      assertEquals("Json Strings are not equal " + jd.getFileName() + " "
+          + Boolean.getBoolean("pdxToJson.unqouteFieldNames"), o1.length(), o2.length());
+    }
 
     PdxInstance pdx2 = JSONFormatter.fromJSON(getJsonString);
 
@@ -396,6 +442,9 @@ public class JSONPdxClientServerDUnitTest extends JUnit4CacheTestCase {
     if (b1.length != b2.length)
       throw new IllegalStateException(
           "Json byte array length are not equal " + b1.length + " ; " + b2.length);
+
+    if (Boolean.getBoolean(JSONFormatter.SORT_JSON_FIELD_NAMES_PROPERTY))
+      return;// we just need to compare length as blob will be different because fields are sorted
 
     for (int i = 0; i < b1.length; i++) {
       if (b1[i] != b2[i])

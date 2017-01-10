@@ -17,14 +17,20 @@ package org.apache.geode.pdx;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Properties;
+
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonParser.Feature;
 import com.fasterxml.jackson.core.JsonParser.NumberType;
 import com.fasterxml.jackson.core.JsonToken;
+
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.pdx.internal.json.JSONToPdxMapper;
 import org.apache.geode.pdx.internal.json.PdxInstanceHelper;
+import org.apache.geode.pdx.internal.json.PdxInstanceSortedHelper;
 import org.apache.geode.pdx.internal.json.PdxListHelper;
 import org.apache.geode.pdx.internal.json.PdxToJSON;
 
@@ -91,6 +97,14 @@ import org.apache.geode.pdx.internal.json.PdxToJSON;
 public class JSONFormatter {
 
   public static final String JSON_CLASSNAME = "__GEMFIRE_JSON";
+
+  /***
+   * By setting "gemfire.sort-json-field-names" to true, enables serialization of JSON field in JSON
+   * document to be sorted. That can help to reduce the number of pdx typeId generation if different
+   * JSON documents have same fields in the different order.
+   */
+  public static final String SORT_JSON_FIELD_NAMES_PROPERTY =
+      DistributionConfig.GEMFIRE_PREFIX + "pdx.mapper.sort-json-field-names";
 
   enum states {
     NONE, ObJECT_START, FIELD_NAME, SCALER_FOUND, LIST_FOUND, LIST_ENDS, OBJECT_ENDS
@@ -179,11 +193,19 @@ public class JSONFormatter {
     }
   }
 
-  private PdxInstanceHelper getPdxInstance(JsonParser jp, states currentState,
-      PdxInstanceHelper currentPdxInstance) throws JsonParseException, IOException {
+  private static JSONToPdxMapper createJSONToPdxMapper(String className, JSONToPdxMapper parent) {
+    if (Boolean.getBoolean(SORT_JSON_FIELD_NAMES_PROPERTY)) {
+      return new PdxInstanceSortedHelper(className, parent);
+    } else {
+      return new PdxInstanceHelper(className, parent);
+    }
+  }
+
+  private JSONToPdxMapper getPdxInstance(JsonParser jp, states currentState,
+      JSONToPdxMapper currentPdxInstance) throws JsonParseException, IOException {
     String currentFieldName = null;
     if (currentState == states.ObJECT_START && currentPdxInstance == null)
-      currentPdxInstance = new PdxInstanceHelper(null, null);// from getlist
+      currentPdxInstance = createJSONToPdxMapper(null, null);// from getlist
     while (true) {
       JsonToken nt = jp.nextToken();
 
@@ -197,7 +219,7 @@ public class JSONFormatter {
           // need to create new PdxInstance
           // root object will not name, so create classname lazily from all members.
           // child object will have name; but create this as well lazily from all members
-          PdxInstanceHelper tmp = new PdxInstanceHelper(currentFieldName, currentPdxInstance);
+          JSONToPdxMapper tmp = createJSONToPdxMapper(currentFieldName, currentPdxInstance);
           currentPdxInstance = tmp;
           break;
         }
@@ -208,7 +230,7 @@ public class JSONFormatter {
           currentPdxInstance.endObjectField("endobject");
           if (currentPdxInstance.getParent() == null)
             return currentPdxInstance;// inner pdxinstance in list
-          PdxInstanceHelper tmp = currentPdxInstance;
+          JSONToPdxMapper tmp = currentPdxInstance;
           currentPdxInstance = currentPdxInstance.getParent();
           currentPdxInstance.addObjectField(tmp.getPdxFieldName(), tmp.getPdxInstance());
           break;
@@ -304,7 +326,7 @@ public class JSONFormatter {
     }
   }
 
-  private void setNumberField(JsonParser jp, PdxInstanceHelper pih, String fieldName)
+  private void setNumberField(JsonParser jp, JSONToPdxMapper pih, String fieldName)
       throws IOException {
     try {
       NumberType nt = jp.getNumberType();
@@ -408,7 +430,7 @@ public class JSONFormatter {
           // need to create new PdxInstance
           // root object will not name, so create classname lazily from all members.
           // child object will have name; but create this as well lazily from all members
-          PdxInstanceHelper tmp = getPdxInstance(jp, currentState, null);
+          JSONToPdxMapper tmp = getPdxInstance(jp, currentState, null);
           currentPdxList.addObjectField(currentFieldName, tmp);
           currentState = states.OBJECT_ENDS;
           break;

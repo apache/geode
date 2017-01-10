@@ -29,15 +29,15 @@ import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
 /*
  * This class is intermediate class to create PdxInstance.
  */
-public class PdxInstanceHelper {
+public class PdxInstanceHelper implements JSONToPdxMapper {
   private static final Logger logger = LogService.getLogger();
 
-  PdxInstanceHelper m_parent;
+  JSONToPdxMapper m_parent;
   PdxInstanceFactoryImpl m_pdxInstanceFactory;
   PdxInstance m_pdxInstance;
   String m_PdxName;// when pdx is member, else null if part of lists
 
-  public PdxInstanceHelper(String className, PdxInstanceHelper parent) {
+  public PdxInstanceHelper(String className, JSONToPdxMapper parent) {
     GemFireCacheImpl gci = (GemFireCacheImpl) CacheFactory.getAnyInstance();
     if (logger.isTraceEnabled()) {
       logger.trace("ClassName {}", className);
@@ -48,7 +48,7 @@ public class PdxInstanceHelper {
         (PdxInstanceFactoryImpl) gci.createPdxInstanceFactory(JSONFormatter.JSON_CLASSNAME, false);
   }
 
-  public PdxInstanceHelper getParent() {
+  public JSONToPdxMapper getParent() {
     return m_parent;
   }
 
@@ -63,7 +63,7 @@ public class PdxInstanceHelper {
     if (logger.isTraceEnabled()) {
       logger.trace("addStringField fieldName: {}; value: {}", fieldName, value);
     }
-    m_pdxInstanceFactory.writeString(fieldName, value);
+    m_pdxInstanceFactory.writeObject(fieldName, value);
   }
 
   public void addByteField(String fieldName, byte value) {

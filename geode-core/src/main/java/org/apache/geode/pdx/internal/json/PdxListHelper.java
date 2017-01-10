@@ -149,7 +149,7 @@ public class PdxListHelper {
     return m_parent;
   }
 
-  public void addObjectField(String fieldName, PdxInstanceHelper dpi) {
+  public void addObjectField(String fieldName, JSONToPdxMapper dpi) {
     if (fieldName != null)
       throw new IllegalStateException("addObjectField:list should have object no fieldname");
     if (logger.isTraceEnabled()) {
