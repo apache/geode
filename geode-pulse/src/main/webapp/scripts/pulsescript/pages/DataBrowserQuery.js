@@ -101,7 +101,7 @@ function executeDBQuery(){
     $('#memberAccordion').html('');
   }
 
-  $.getJSON("pulse/dataBrowserQuery", requestData, function(data) {
+  $.getJSON("dataBrowserQuery", requestData, function(data) {
     
     if(data != undefined && data != null){
       if(data.error != undefined && data.error != null){
@@ -958,7 +958,7 @@ function exportResult() {
     $.generateFile({
       filename : 'export.json',
       content : JSON.stringify(responseResult),
-      script : 'pulse/dataBrowserExport'
+      script : 'dataBrowserExport'
     });
   }
 }

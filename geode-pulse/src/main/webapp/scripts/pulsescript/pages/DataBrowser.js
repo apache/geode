@@ -52,7 +52,7 @@ $(document).ready(function() {
   
   var requestData = {};
   getRequestParams();
-  $.getJSON("pulse/authenticateUser", requestData, function(data) {
+  $.getJSON("authenticateUser", requestData, function(data) {
     
     // return isUserLoggedIn
     if(!data.isUserLoggedIn){
@@ -172,7 +172,7 @@ function initClusterRegions(){
 
 function updateDataBrowserRegionsData(){
   requestData = {};
-  $.getJSON("pulse/dataBrowserRegions", requestData, function(data) {
+  $.getJSON("dataBrowserRegions", requestData, function(data) {
     
     // set cluster name on tab link to cluster page
     if(data.clusterName != undefined && data.clusterName != null){
@@ -593,7 +593,7 @@ function dynamicSort(property, passedSortOrder) {
  * Function to get basic details on Data Browser Page
  */
 function getClusterBasicDetails(){
-  $.getJSON("pulse/dataBrowserBasicDetails", function(data) { 
+  $.getJSON("dataBrowserBasicDetails", function(data) {
 
     $('#userName').html(data.userName);
     

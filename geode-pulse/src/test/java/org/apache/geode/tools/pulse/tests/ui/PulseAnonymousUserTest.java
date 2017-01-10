@@ -48,12 +48,12 @@ public class PulseAnonymousUserTest {
 
   @Before
   public void setup() {
-    webDriverRule.getDriver().get(serverRule.getPulseURL() + "/clusterDetail.html");
+    webDriverRule.getDriver().get(serverRule.getPulseURL() + "clusterDetail.html");
   }
 
   @Test
   public void userCanGetToPulseLoginPage() {
-    webDriverRule.getDriver().get(serverRule.getPulseURL() + "/Login.html");
+    webDriverRule.getDriver().get(serverRule.getPulseURL() + "Login.html");
 
     WebElement userNameElement = webDriverRule.getDriver().findElement(By.id("user_name"));
     WebElement passwordElement = webDriverRule.getDriver().findElement(By.id("user_password"));
@@ -64,7 +64,7 @@ public class PulseAnonymousUserTest {
 
   @Test
   public void userCannotGetToPulseDetails() {
-    webDriverRule.getDriver().get(serverRule.getPulseURL() + "/pulse/pulseVersion");
+    webDriverRule.getDriver().get(serverRule.getPulseURL() + "pulseVersion");
 
     assertThat(webDriverRule.getDriver().getPageSource()).doesNotContain("sourceRevision");
   }

@@ -59,7 +59,7 @@ public class WebDriverRule extends ExternalResource {
   @Override
   protected void before() throws Throwable {
     setUpWebDriver();
-    driver.get(getPulseURL());
+    driver.get(getPulseURL() + "Login.html");
     if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
       login();
     }
@@ -78,7 +78,7 @@ public class WebDriverRule extends ExternalResource {
     passwordElement.sendKeys(password);
     passwordElement.submit();
 
-    driver.get(getPulseURL() + "/clusterDetail.html");
+    driver.get(getPulseURL() + "clusterDetail.html");
     WebElement userNameOnPulsePage =
         (new WebDriverWait(driver, 10)).until(new ExpectedCondition<WebElement>() {
           @Override

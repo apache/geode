@@ -174,7 +174,7 @@ function clearAlerts(alertType, flagClearAll) {
     requestData.alertType = -1;
   }
 
-  $.getJSON("pulse/clearAlerts", requestData, function(data) {
+  $.getJSON("clearAlerts", requestData, function(data) {
 
     // call system alerts callback handler
     getSystemAlertsBack(data);
@@ -259,7 +259,7 @@ function displayClusterStatus() {
       var data = {
         "pulseData" : this.toJSONObj(postData)
       };
-      $.post("pulse/pulseUpdate", data, function(data) {
+      $.post("pulseUpdate", data, function(data) {
         updateRGraphFlags();
         clusteRGraph.loadJSON(data.clustor);
         clusteRGraph.compute('end');
@@ -277,7 +277,7 @@ function displayClusterStatus() {
         "pulseData" : this.toJSONObj(postData)
       };
 
-      $.post("pulse/pulseUpdate", data, function(data) {
+      $.post("pulseUpdate", data, function(data) {
         var members = data.members;
         memberCount = members.length;
         var childerensVal = [];
@@ -1174,7 +1174,7 @@ function acknowledgeAlert(divId) {
     "alertId" : divId
   };
   $.getJSON(
-      "pulse/acknowledgeAlert",
+      "acknowledgeAlert",
       requestData,
       function(data) {
         // Change color of alert title
@@ -1419,7 +1419,7 @@ function prepareDataAndPost(functionTimingList) {
         + "var funcCall =  'pf.'+functionName + \"('\" +functionName+\"',postData);\";\n"
         + "eval(funcCall);\n"
         + "}\n"
-        + "ajaxPost(\"pulse/pulseUpdate\", postData, responseCallbackHandler);\n"
+        + "ajaxPost(\"pulseUpdate\", postData, responseCallbackHandler);\n"
         + "postData = null;\n" + "postData = new Object();\n" + "}," + timing
         + ");";
     var loadOnStart = "setTimeout(function() {\n"
@@ -1432,7 +1432,7 @@ function prepareDataAndPost(functionTimingList) {
         + "var funcCall =  'pf.'+functionName + \"('\" +functionName+\"',postData);\";\n"
         + "eval(funcCall);\n"
         + "}\n"
-        + "ajaxPost(\"pulse/pulseUpdate\", postData, responseCallbackHandler);\n"
+        + "ajaxPost(\"pulseUpdate\", postData, responseCallbackHandler);\n"
         + "postData = null;\n" + "postData = new Object();\n" + "},0);";
     functionArray[i] = func;
     functionStartArray[i] = loadOnStart;
@@ -1456,7 +1456,7 @@ function prepareDataAndPost(functionTimingList) {
  * j++) { var functionName = listOfPulseFunction[j]; //Create the function call
  * from function name and parameter. var funcCall = 'pf.'+functionName + "('" +
  * functionName + "',postData);"; //Call the function eval(funcCall); }
- * ajaxPost("pulse/pulseUpdate", postData, responseCallbackHandler); postData =
+ * ajaxPost("pulseUpdate", postData, responseCallbackHandler); postData =
  * null; postData = new Object(); }, timing); } }
  */
 
@@ -1476,13 +1476,13 @@ var responseCallbackHandler = function(data) {
 * Use this function to force periodic update of pulse data.
 */
 function forcePulseDataUpdate(postData){
-  ajaxPost("pulse/pulseUpdate", postData, responseCallbackHandler);
+  ajaxPost("pulseUpdate", postData, responseCallbackHandler);
 }
 
 // function used for getting pulse version
 function getPulseVersion() {
 
-  $.getJSON("pulse/pulseVersion", function(data) {
+  $.getJSON("pulseVersion", function(data) {
 
     var pulseVersion = data.pulseVersion;
     $('#pulseVersion').html(pulseVersion);

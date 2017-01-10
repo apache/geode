@@ -876,8 +876,8 @@ public abstract class PulseBase {
   }
 
   @Test
-  public void userCannotGetToPulseDetails() {
-    getWebDriver().get(getPulseURL() + "/pulse/pulseVersion");
+  public void userCanGetToPulseDetails() {
+    getWebDriver().get(getPulseURL() + "pulseVersion");
 
     assertTrue(getWebDriver().getPageSource().contains("sourceRevision"));
   }
