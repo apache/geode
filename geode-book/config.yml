@@ -21,8 +21,12 @@ public_host: localhost
 sections:
 - repository:
     name: geode-docs
-  directory: docs/guide/10
+  directory: docs/guide/11
   subnav_template: geode-subnav
+
+archive_menu:
+  - v1.1
+  - v1.0: index-10.html
 
 template_variables:
   support_url: http://geode.apache.org/community

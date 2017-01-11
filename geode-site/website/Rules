@@ -67,5 +67,4 @@ route '/**/*.html' do
   end
 end
 
-
 layout '/**/*', :erb
