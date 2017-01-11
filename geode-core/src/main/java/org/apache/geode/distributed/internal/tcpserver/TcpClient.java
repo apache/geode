@@ -284,8 +284,8 @@ public class TcpClient {
       try {
         Object readObject = DataSerializer.readObject(in);
         if (!(readObject instanceof VersionResponse)) {
-          throw new LocatorCancelException("Unrecognisable response received");
-          // throw new IOException("Unexpected response received from locator");
+          throw new LocatorCancelException(
+              "Unrecognisable response received: object is null. This could be the result of trying to connect a non-SSL-enabled locator to an SSL-enabled locator.");
         }
         VersionResponse response = (VersionResponse) readObject;
         if (response != null) {
