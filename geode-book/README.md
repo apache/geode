@@ -1,6 +1,6 @@
 # Apache Geode User Guide
 
-This document contains instructions for building and viewing the Apache Geode User Guide locally.
+This document contains instructions for building and viewing the Apache Geode User Guide locally and moving the built guide to the Apache Geode website for publication.
 
 - [About](#about)
 - [Prerequisites](#prerequisites)
@@ -63,30 +63,19 @@ For Geode, a preconfigured **book** is provided in the directory `{geode-project
 
    You can now view the local documentation at <http://localhost:9292>. 
 
-## Embedding the User Guide in the Geode Website
+## Publishing the User Guide to the Geode Website
 
-Once you have reviewed your local build of the User Guide, you can embed it in the Apache Geode website by doing the following:
+Once you have reviewed your local build of the User Guide, you can move it in the Apache Geode website by doing the following:
 
-1. Compile the website source *before adding the User Guide files*. In the `{geode-project-dir}/geode-site/website` directory, enter:
+1. Navigate to: `{geode-project-dir}/geode-book/final_app/public/docs/guide/NN`, where `NN` is the product version of your documentation (e.g., `{geode-project-dir}/geode-book/final_app/public/docs/guide/11` if you are building the documentation for Apache Geode 1.1).
 
-    ```
-    $ nanoc compile
-    ```
-
-2. Move the built User Guide files to the Geode website. Navigate to: `{geode-project-dir}/geode-book/final_app/public/` and enter:
+2. To move the directory, enter:
 
     ```
     $ tar cvf ~/Desktop/new-guide-content.tar .
-    $ cd ../../../geode-site/content
+    $ cd ../../../../../../geode-site/website/content/docs/guide/NN
     $ tar xvf ~/Desktop/new-guide-content.tar
     ```
+   **Note:** If the "`NN`" directory doesn't exist in the `{geode-project-dir}/geode-site/website/content/docs/guide/` directory, you will need to create it first.
 
-3. In the `{geode-project-dir}/geode-site/website` directory, enter:
-
-    ```
-    $ nanoc view
-    ```
-
-   You can now view the local website at http://localhost:3000.
-
-4. Once you have reviewed your changes, follow the instructions at `{geode-project-dir}/geode-site/website/README.md` for propagating changes to the `asf-site` branch.
+3. Follow the instructions at `{geode-project-dir}/geode-site/website/README.md` to build, review, and publish the Apache Geode website.

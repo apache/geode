@@ -6,7 +6,7 @@ Source files for the website are in `${geode-project-dir}/geode-site/website/con
 
 Generated files for the website are in `${geode-project-dir}/geode-site/content`.
 
-NOTE: To make changes to the [Apache Geode User Guide](http://geode.apache.org/docs/guide/About_Geode.html):
+**NOTE:** To make changes to the [Apache Geode User Guide](http://geode.apache.org/docs/), which is published to the website:
 
 - See `${geode-project-dir}/geode-docs/CONTRIBUTE.md` for information about contributing to the documentation source files.
 - See `${geode-project-dir}/geode-book/README.md` for information about building a local version of the guide and adding it to the website.
@@ -48,7 +48,7 @@ If you need to change the layout or styling of the site,
 then you will probably need to change an HTML, JS or CSS file 
 within the ``${geode-project-dir}/geode-site/website/content`` directory.
 
-NOTE: The [Apache Geode User Guide](http://geode.apache.org/docs/guide/About_Geode.html) source files are in `${geode-project-dir}/geode-docs/`. See `${geode-project-dir}/geode-docs/CONTRIBUTE.md` for more information.
+**NOTE:** The [Apache Geode User Guide](http://geode.apache.org/docs/guide/About_Geode.html) source files are in `${geode-project-dir}/geode-docs/`. See `${geode-project-dir}/geode-docs/CONTRIBUTE.md` for more information.
 
 ### 2. Locally generate the site and test your changes
 
@@ -62,8 +62,6 @@ With a cwd of ``${geode-project-dir}/geode-site/website``:
     $ nanoc compile
 Run ``git status`` and you should see your changes plus any updated files
 under the ``${geode-project-dir}/content`` directory.
-
-NOTE: Whether or not you have made changes to the Apache Geode User Guide, you must now build the User Guide and move the User Guide files to the Geode website. For instructions, see `${geode-project-dir}/geode-book/README.md`.
 
 To view your changes locally, use the view command to start a local web server. Check the website at [http://0.0.0.0:3000](http://0.0.0.0:3000)
 
