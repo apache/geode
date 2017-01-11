@@ -59,6 +59,13 @@ compile '/**/*' do
   end
 end
 
+route '/**/*.html' do
+  if item.identifier =~ '/index.*'
+    '/index.html'
+  else
+    item.identifier.without_ext + '.html'
+  end
+end
 
 
 layout '/**/*', :erb
