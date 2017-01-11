@@ -160,15 +160,10 @@ public class ClusterRegionsService implements PulseService {
         regionJSON.put("compressionCodec", this.VALUE_NA);
       }
 
-      if (PulseConstants.PRODUCT_NAME_SQLFIRE
-          .equalsIgnoreCase(PulseController.getPulseProductSupport())) {
-        // Convert region path to dot separated region path
-        regionJSON.put("regionPath", StringUtils.getTableNameFromRegionName(reg.getFullPath()));
-        regionJSON.put("id", StringUtils.getTableNameFromRegionName(reg.getFullPath()));
-      } else {
-        regionJSON.put("regionPath", reg.getFullPath());
-        regionJSON.put("id", reg.getFullPath());
-      }
+
+      regionJSON.put("regionPath", reg.getFullPath());
+      regionJSON.put("id", reg.getFullPath());
+
 
       regionJSON.put("memoryReadsTrend", mapper
           .valueToTree(reg.getRegionStatisticTrend(Cluster.Region.REGION_STAT_GETS_PER_SEC_TREND)));

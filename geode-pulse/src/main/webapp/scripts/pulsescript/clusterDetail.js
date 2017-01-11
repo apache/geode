@@ -42,24 +42,14 @@ $(document).ready(function() {
   // modify UI text as per requirement
   customizeUI();
 
-  if (CONST_BACKEND_PRODUCT_SQLFIRE == productname.toLowerCase()) {
-    alterHtmlContainer(CONST_BACKEND_PRODUCT_SQLFIRE);
+  alterHtmlContainer(CONST_BACKEND_PRODUCT_GEMFIRE);
 
-    // "ClusterDetails" service callback handler
-    getClusterDetailsBack = getClusterDetailsSQLfireBack;
+  // "ClusterDetails" service callback handler
+  getClusterDetailsBack = getClusterDetailsGemfireBack;
 
-    // "ClusterKeyStatistics" service callback handler
-    getClusterKeyStatisticsBack = getClusterKeyStatisticsSQLfireBack;
+  // "ClusterKeyStatistics" service callback handler
+  getClusterKeyStatisticsBack = getClusterKeyStatisticsGemfireBack;
 
-  } else {
-    alterHtmlContainer(CONST_BACKEND_PRODUCT_GEMFIRE);
-    
-    // "ClusterDetails" service callback handler
-    getClusterDetailsBack = getClusterDetailsGemfireBack;
-
-    // "ClusterKeyStatistics" service callback handler
-    getClusterKeyStatisticsBack = getClusterKeyStatisticsGemfireBack;
-  }
 
   // Add hostspot attributes
   hotspotAttributes = new Array();
@@ -106,17 +96,6 @@ $(document).ready(function() {
  * is sqlfire or gemfire 
  */
 function alterHtmlContainer(prodname){
-  if(CONST_BACKEND_PRODUCT_SQLFIRE == prodname.toLowerCase()){
-    // Hide HTML for following
-    $('#clusterUniqueCQsContainer').hide();
-    $('#SubscriptionsContainer').hide();
-    $('#queriesPerSecContainer').hide();
-    
-    // Show HTML for following
-    $('#subTabQueryStatistics').show();
-    $('#TxnCommittedContainer').show();
-    $('#TxnRollbackContainer').show(); 
-  }else{
     // Hide HTML for following
     $('#subTabQueryStatistics').hide();
     $('#TxnCommittedContainer').hide();
@@ -126,8 +105,6 @@ function alterHtmlContainer(prodname){
     $('#clusterUniqueCQsContainer').show();
     $('#SubscriptionsContainer').show();
     $('#queriesPerSecContainer').show();
-  }
-  
 }
 
 // Function called when Hotspot is changed 
@@ -1481,18 +1458,7 @@ function createRegionsGridDefault() {
             mRLC.css("position", "relative");
             mRLC.css('right', scrollPositionX);
           });
-          
-          // change col names depend on product
-          if(CONST_BACKEND_PRODUCT_SQLFIRE == productname.toLowerCase()){
-            jQuery("#regionsList").jqGrid('setLabel', 'name', jQuery.i18n.prop('pulse-regiontableName-custom'));
-            jQuery("#regionsList").jqGrid('setLabel', 'regionPath', jQuery.i18n.prop('pulse-regiontablePathColName-custom'));
-            jQuery("#regionsList").jqGrid('setLabel', 'getsRate', jQuery.i18n.prop('pulse-readsRate-custom'));
-            jQuery("#regionsList").jqGrid('setLabel', 'putsRate', jQuery.i18n.prop('pulse-writesRate-custom'));
-            jQuery("#regionsList").jqGrid('setLabel', 'writes', jQuery.i18n.prop('pulse-writes-custom'));
-            jQuery("#regionsList").jqGrid('setLabel', 'reads', jQuery.i18n.prop('pulse-reads-custom'));
-            jQuery("#regionsList").jqGrid('setLabel', 'systemRegionEntryCount', jQuery.i18n.prop('pulse-entrycount-custom'));
-            jQuery("#regionsList").jqGrid('setLabel', 'entrySize', jQuery.i18n.prop('pulse-entrysize-custom'));
-          }
+
         }
       });
 }
@@ -1987,7 +1953,7 @@ function showMembersDefaultRgraphPanel() {
   // populateMemberRGraph using pulseUpdate
   var pulseData = new Object();
   pulseData.ClusterMembersRGraph = "";
-  ajaxPost("pulse/pulseUpdate", pulseData, translateGetClusterMemberRGraphBack);
+  ajaxPost("pulseUpdate", pulseData, translateGetClusterMemberRGraphBack);
 
 }
 
@@ -1999,7 +1965,7 @@ function showMembersDefaultTreemapPanel() {
   // populate Member TreeMap using pulseUpdate
   var pulseData = new Object();
   pulseData.ClusterMembers = "";
-  ajaxPost("pulse/pulseUpdate", pulseData, translateGetClusterMemberBack);
+  ajaxPost("pulseUpdate", pulseData, translateGetClusterMemberBack);
 
 
 }
@@ -2012,7 +1978,7 @@ function showMembersDefaultGridPanel() {
   // populate Member Grid using pulseUpdate
   var pulseData = new Object();
   pulseData.ClusterMembers = ""; // getClusterMembersBack
-  ajaxPost("pulse/pulseUpdate", pulseData, translateGetClusterMemberBack);
+  ajaxPost("pulseUpdate", pulseData, translateGetClusterMemberBack);
 
   $('#default_grid_block').hide();
   destroyScrollPane('gview_memberList');
@@ -2037,7 +2003,7 @@ function showMembersSGTreemapPanel() {
   // populate Member TreeMap using pulseUpdate
   var pulseData = new Object();
   pulseData.ClusterMembers = "";
-  ajaxPost("pulse/pulseUpdate", pulseData, translateGetClusterMemberBack);
+  ajaxPost("pulseUpdate", pulseData, translateGetClusterMemberBack);
 
 }
 
@@ -2049,7 +2015,7 @@ function showMembersSGGridPanel() {
   // populate Member Grid using pulseUpdate
   var pulseData = new Object();
   pulseData.ClusterMembers = ""; // getClusterMembersBack
-  ajaxPost("pulse/pulseUpdate", pulseData, translateGetClusterMemberBack);
+  ajaxPost("pulseUpdate", pulseData, translateGetClusterMemberBack);
 
   $('#servergroups_grid_block').hide();
   destroyScrollPane('gview_memberListSG');
@@ -2074,7 +2040,7 @@ function showMembersRZTreemapPanel() {
   // populate Member TreeMap using pulseUpdate
   var pulseData = new Object();
   pulseData.ClusterMembers = "";
-  ajaxPost("pulse/pulseUpdate", pulseData, translateGetClusterMemberBack);
+  ajaxPost("pulseUpdate", pulseData, translateGetClusterMemberBack);
 }
 
 //Show Members Redundancy Zones Grid View and hide rest
@@ -2085,7 +2051,7 @@ function showMembersRZGridPanel() {
   // populate Member Grid using pulseUpdate
   var pulseData = new Object();
   pulseData.ClusterMembers = "";
-  ajaxPost("pulse/pulseUpdate", pulseData, translateGetClusterMemberBack);
+  ajaxPost("pulseUpdate", pulseData, translateGetClusterMemberBack);
 
   $('#redundancyzones_grid_block').hide();
   destroyScrollPane('gview_memberListRZ');
@@ -2110,7 +2076,7 @@ function showDataTreemapPanel() {
   // populate Region TreeMap using pulseUpdate
   var pulseData = new Object();
   pulseData.ClusterRegions = "";
-  ajaxPost("pulse/pulseUpdate", pulseData, translateGetClusterRegionsBack);
+  ajaxPost("pulseUpdate", pulseData, translateGetClusterRegionsBack);
 
 }
 
@@ -2122,7 +2088,7 @@ function showDataGridPanel() {
   // populate Regions Grid using pulseUpdate
   var pulseData = new Object();
   pulseData.ClusterRegions = "";
-  ajaxPost("pulse/pulseUpdate", pulseData, translateGetClusterRegionsBack);
+  ajaxPost("pulseUpdate", pulseData, translateGetClusterRegionsBack);
 
   $('#data_grid_block').hide();
   destroyScrollPane('gview_regionsList');

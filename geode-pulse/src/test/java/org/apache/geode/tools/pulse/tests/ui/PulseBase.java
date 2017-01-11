@@ -838,47 +838,11 @@ public abstract class PulseBase {
     }
   }
 
-  @Ignore("WIP")
   @Test
-  public void testDataBrowser() {
-
-    getWebDriver().findElement(By.linkText("Data Browser")).click();
-    // WebElement dataBrowserLabel = getWebDriver().findElement(By.xpath(""));
-    WebDriverWait wait = new WebDriverWait(getWebDriver(), 20);
-    wait.until(ExpectedConditions
-        .visibilityOf(getWebDriver().findElement(By.xpath("//label[text()='Data Browser']"))));
-
-    // Verify all elements must be displayed on data browser screen
-    assertTrue(getWebDriver().findElement(By.xpath("//a[text()='Data Regions']")).isDisplayed());
-    assertTrue(getWebDriver().findElement(By.id("linkColocatedRegions")).isDisplayed());
-    assertTrue(getWebDriver().findElement(By.linkText("All Regions")).isDisplayed());
-
-    assertTrue(getWebDriver().findElement(By.xpath("//a[text()='Region Members']")).isDisplayed());
-
-    assertTrue(getWebDriver().findElement(By.xpath("//a[text()='Queries']")).isDisplayed());
-    assertTrue(
-        getWebDriver().findElement(By.xpath("//label[text()='Query Editor']")).isDisplayed());
-    assertTrue(getWebDriver().findElement(By.xpath("//label[text()='Result']")).isDisplayed());
-    assertTrue(
-        getWebDriver().findElement(By.xpath("//input[@value='Export Result']")).isDisplayed());
-    assertTrue(getWebDriver().findElement(By.id("btnExecuteQuery")).isDisplayed());
-    assertTrue(getWebDriver().findElement(By.xpath("//input[@value='Clear']")).isDisplayed());
-    assertTrue(getWebDriver().findElement(By.id("dataBrowserQueryText")).isDisplayed());
-
-    assertTrue(getWebDriver().findElement(By.id("historyIcon")).isDisplayed());
-
-    // Actual query execution
-
-    getWebDriver().findElement(By.id("dataBrowserQueryText")).sendKeys("Query1");
-
-    // Assert data regions are displayed
-    assertTrue(getWebDriver().findElement(By.id("treeDemo_1")).isDisplayed());
-  }
-
-  @Test
-  public void userCannotGetToPulseDetails() {
-    getWebDriver().get(getPulseURL() + "/pulse/pulseVersion");
+  public void userCanGetToPulseDetails() {
+    getWebDriver().get(getPulseURL() + "pulseVersion");
 
     assertTrue(getWebDriver().getPageSource().contains("sourceRevision"));
   }
+
 }

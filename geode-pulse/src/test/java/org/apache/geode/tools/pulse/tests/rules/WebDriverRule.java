@@ -57,9 +57,9 @@ public class WebDriverRule extends ExternalResource {
   }
 
   @Override
-  protected void before() throws Throwable {
+  public void before() throws Throwable {
     setUpWebDriver();
-    driver.get(getPulseURL());
+    driver.get(getPulseURL() + "Login.html");
     if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
       login();
     }
@@ -67,20 +67,20 @@ public class WebDriverRule extends ExternalResource {
   }
 
   @Override
-  protected void after() {
+  public void after() {
     driver.quit();
   }
 
   private void login() {
-    WebElement userNameElement = waitForElementById("user_name");
+    WebElement userNameElement = waitForElementById("user_name", 60);
     WebElement passwordElement = waitForElementById("user_password");
     userNameElement.sendKeys(username);
     passwordElement.sendKeys(password);
     passwordElement.submit();
 
-    driver.get(getPulseURL() + "/clusterDetail.html");
+    driver.get(getPulseURL() + "clusterDetail.html");
     WebElement userNameOnPulsePage =
-        (new WebDriverWait(driver, 10)).until(new ExpectedCondition<WebElement>() {
+        (new WebDriverWait(driver, 30)).until(new ExpectedCondition<WebElement>() {
           @Override
           public WebElement apply(WebDriver d) {
             return d.findElement(By.id("userName"));
@@ -103,12 +103,17 @@ public class WebDriverRule extends ExternalResource {
   }
 
   public WebElement waitForElementById(final String id) {
-    WebElement element = (new WebDriverWait(driver, 10)).until(new ExpectedCondition<WebElement>() {
-      @Override
-      public WebElement apply(WebDriver d) {
-        return d.findElement(By.id(id));
-      }
-    });
+    return waitForElementById(id, 10);
+  }
+
+  public WebElement waitForElementById(final String id, int timeoutInSeconds) {
+    WebElement element =
+        (new WebDriverWait(driver, timeoutInSeconds)).until(new ExpectedCondition<WebElement>() {
+          @Override
+          public WebElement apply(WebDriver d) {
+            return d.findElement(By.id(id));
+          }
+        });
     assertNotNull(element);
     return element;
   }

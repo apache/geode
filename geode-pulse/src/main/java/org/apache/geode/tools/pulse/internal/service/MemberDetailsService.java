@@ -77,12 +77,7 @@ public class MemberDetailsService implements PulseService {
       responseJSON.put("regionsCount", clusterMember.getMemberRegionsList().length);
 
       // Number of member clients
-      if (PulseController.getPulseProductSupport()
-          .equalsIgnoreCase(PulseConstants.PRODUCT_NAME_SQLFIRE)) {
-        responseJSON.put("numClients", clusterMember.getNumSqlfireClients());
-      } else {
-        responseJSON.put("numClients", clusterMember.getMemberClientsHMap().size());
-      }
+      responseJSON.put("numClients", clusterMember.getMemberClientsHMap().size());
 
       Long diskUsageVal = clusterMember.getTotalDiskUsage();
       Double diskUsage = diskUsageVal.doubleValue() / 1024;

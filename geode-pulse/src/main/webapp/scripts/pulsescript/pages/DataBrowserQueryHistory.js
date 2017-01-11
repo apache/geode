@@ -26,7 +26,7 @@ function updateQueryHistory(action,queryId) {
     queryId:queryId
   };
 
-  $.getJSON("pulse/dataBrowserQueryHistory", requestData, function(data) {
+  $.getJSON("dataBrowserQueryHistory", requestData, function(data) {
     
     var queries = new Array();
     if(data.queryHistory != undefined && data.queryHistory != null){

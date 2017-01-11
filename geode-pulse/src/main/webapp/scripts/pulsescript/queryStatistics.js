@@ -32,12 +32,7 @@ $(document).ready(function() {
   // modify UI text as per requirement
   customizeUI();
 
-  if (CONST_BACKEND_PRODUCT_SQLFIRE == productname.toLowerCase()) {
-    // Do nothing
-  } else {
-    // Redirect to Cluster details page
-    openClusterDetail();
-  }
+  openClusterDetail();
   scanPageForWidgets();
 
   // creating blank query statistics grid
@@ -66,7 +61,7 @@ var customSortFunction = function(cell, rowObject) {
 function createQueryStatisticsGrid() {
 
   $.ajax({
-    url : 'pulse/getQueryStatisticsGridModel',
+    url : 'getQueryStatisticsGridModel',
     type : 'GET',
     dataType : 'json',
     async : false,
