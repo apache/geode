@@ -34,7 +34,7 @@ index_filenames: [ 'index.html' ]
 # Whether or not to generate a diff of the compiled content when compiling a
 # site. The diff will contain the differences between the compiled content
 # before and after the last site compilation.
-enable_output_diff: false
+enable_output_diff: true
 
 prune:
   # Whether to automatically remove files not managed by nanoc from the output
@@ -85,7 +85,7 @@ watcher:
   # because recompiling the site will cause these directories to change, which
   # will cause the site to be recompiled, which will cause these directories
   # to change, which will cause the site to be recompiled again, and so on.
-  dirs_to_watch: [ 'content/', 'layouts/', 'lib/' ]
+  dirs_to_watch: [ 'content', 'layouts', 'lib' ]
 
   # A list of single files to watch for changes. As mentioned above, don’t put
   # any files from the “output/” or “tmp/” directories in here.
