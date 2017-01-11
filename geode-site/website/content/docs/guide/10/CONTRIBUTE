@@ -1,0 +1,37 @@
+<h1>Contributing to the Apache Geode Documentation</h1>
+
+<p>Apache Geode welcomes your contributions to the community&rsquo;s documentation efforts. You can participate by writing new content, reviewing and editing existing content, or fixing bugs. This document covers the following topics:</p>
+
+<ul>
+<li><a href="#working-with-markdown-files">Working with Markdown Files</a></li>
+<li><a href="#working-with-images-and-graphics">Working with Images and Graphics</a></li>
+<li><a href="#writing-guidelines">Writing Guidelines</a></li>
+</ul>
+
+<p>For instructions on building the documentation locally, see <code>../geode-book/README.md</code>.</p>
+
+<h2>Working with Markdown Files</h2>
+
+<p>You can edit markdown files in any text editor. For more, read <a href="https://daringfireball.net/projects/markdown/syntax">Daring Fireball&rsquo;s Markdown Syntax page</a>.</p>
+
+<h2>Working with Images and Graphics</h2>
+
+<p>Image files in .gif or .png format are in the <code>docs/images</code> directory in the Apache Geode docs repo. Images in .svg format are in the <code>docs/images_svg</code> directory.</p>
+
+<p>Most of the Apache Geode image files have been converted to the open source SVG format. You can insert SVG images directly into an XML topic and modify images using a SVG editor.</p>
+
+<p>The Wikipedia page <a href="http://en.wikipedia.org/wiki/Comparison_of_vector_graphics_editors">Comparison of Vector Graphics Editors</a> provides a list and comparison of commercial and free vector graphics editors. Note, however, that not all of these programs support the SVG format.</p>
+
+<h2>Writing Guidelines</h2>
+
+<p>The most important advice we can provide for working with the Apache Geode docs is to spend some time becoming familiar with the existing source files and the structure of the project directory. In particular, note the following conventions and tips:</p>
+
+<ul>
+<li>Top-level subdirectories organize topics into &ldquo;books&rdquo;: basic_config, configuring, developing, etc.</li>
+<li>Use lowercase characters for all file and directory names. Separate words in filenames with an underscore (<code>_</code>) character.</li>
+<li>Use the <code>.md</code> file extension for topic files.</li>
+<li>Add new topics to the existing directories by subject type. Only create a new directory if you are starting a new subject or a new book.</li>
+<li>To start a new topic, you can make a copy of an existing file with similar content and edit it.</li>
+<li>Use the appropriate document type for the content you are writing. Create multiple topics if you are writing overview, procedural, and reference content.</li>
+<li>To edit elements in the navigation pane (the &ldquo;subnav&rdquo;) that appears on the left side of the documentation, navigate to <code>../geode-book/master_middleman/source/subnavs/geode-subnav.md</code>.</li>
+</ul>
