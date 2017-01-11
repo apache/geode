@@ -65,7 +65,7 @@ For Geode, a preconfigured **book** is provided in the directory `{geode-project
 
 ## Publishing the User Guide to the Geode Website
 
-Once you have reviewed your local build of the User Guide, you can move it in the Apache Geode website by doing the following:
+Once you have reviewed your local build of the User Guide, you can move it to the Apache Geode website by doing the following:
 
 1. Navigate to: `{geode-project-dir}/geode-book/final_app/public/docs/guide/NN`, where `NN` is the product version of your documentation (e.g., `{geode-project-dir}/geode-book/final_app/public/docs/guide/11` if you are building the documentation for Apache Geode 1.1).
 
