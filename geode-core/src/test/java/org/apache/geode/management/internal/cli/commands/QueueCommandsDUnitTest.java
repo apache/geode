@@ -14,7 +14,25 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertFalse;
+import static org.apache.geode.test.dunit.Assert.assertNotNull;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.Assert.fail;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.apache.geode.test.dunit.Wait.waitForCriterion;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
@@ -22,6 +40,7 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.SharedConfiguration;
 import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.ClassBuilder;
 import org.apache.geode.internal.FileUtil;
 import org.apache.geode.management.cli.Result;
@@ -41,15 +60,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.test.dunit.Assert.*;
-import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
-import static org.apache.geode.test.dunit.Wait.waitForCriterion;
 
 /**
  * A distributed test suite of test cases for testing the queue commands that are part of Gfsh.
@@ -257,22 +272,36 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
   @Test
   public void testCreateUpdatesSharedConfig() throws IOException {
     disconnectAllFromDS();
+    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    jmxPort = ports[0];
+    httpPort = ports[1];
+    try {
+      jmxHost = InetAddress.getLocalHost().getHostName();
+    } catch (UnknownHostException ignore) {
+      jmxHost = "localhost";
+    }
 
     final String queueName = "testAsyncEventQueueQueue";
     final String groupName = "testAsyncEventQueueSharedConfigGroup";
 
+    final Properties locatorProps = new Properties();
+    locatorProps.setProperty(NAME, "Locator");
+    locatorProps.setProperty(MCAST_PORT, "0");
+    locatorProps.setProperty(LOG_LEVEL, "fine");
+    locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
+    locatorProps.setProperty(JMX_MANAGER, "true");
+    locatorProps.setProperty(JMX_MANAGER_START, "true");
+    locatorProps.setProperty(JMX_MANAGER_BIND_ADDRESS, String.valueOf(jmxHost));
+    locatorProps.setProperty(JMX_MANAGER_PORT, String.valueOf(jmxPort));
+    locatorProps.setProperty(HTTP_SERVICE_PORT, String.valueOf(httpPort));
+
     // Start the Locator and wait for shared configuration to be available
     final int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    Host.getHost(0).getVM(3).invoke(new SerializableRunnable() {
+    Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
       @Override
       public void run() {
-
         final File locatorLogFile = new File("locator-" + locatorPort + ".log");
-        final Properties locatorProps = new Properties();
-        locatorProps.setProperty(NAME, "Locator");
-        locatorProps.setProperty(MCAST_PORT, "0");
-        locatorProps.setProperty(LOG_LEVEL, "fine");
-        locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
+
         try {
           final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort,
               locatorLogFile, null, locatorProps);
@@ -295,11 +324,7 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
       }
     });
 
-    // Start the default manager
-    Properties managerProps = new Properties();
-    managerProps.setProperty(MCAST_PORT, "0");
-    managerProps.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
-    setUpJmxManagerOnVm0ThenConnect(managerProps);
+    connect(jmxHost, jmxPort, httpPort, getDefaultShell());
 
     // Create a cache in VM 1
     VM vm = Host.getHost(0).getVM(1);
@@ -347,7 +372,7 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
     // Make sure the queue exists in the shared config
-    Host.getHost(0).getVM(3).invoke(new SerializableRunnable() {
+    Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
       @Override
       public void run() {
         SharedConfiguration sharedConfig =

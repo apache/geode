@@ -21,9 +21,12 @@ import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.SharedConfiguration;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.MemberNotFoundException;
@@ -97,6 +100,24 @@ public abstract class AbstractCommandsSupport implements CommandMarker {
     return (getGfsh() != null && getGfsh().isConnectedAndReady());
   }
 
+  protected SharedConfiguration getSharedConfiguration() {
+    InternalLocator locator = InternalLocator.getLocator();
+    return (locator == null) ? null : locator.getSharedConfiguration();
+  }
+
+  protected void persistClusterConfiguration(Result result, Runnable runnable) {
+    if (result == null) {
+      throw new IllegalArgumentException("Result should not be null");
+    }
+    SharedConfiguration sc = getSharedConfiguration();
+    if (sc == null) {
+      result.setCommandPersisted(false);
+    } else {
+      runnable.run();
+      result.setCommandPersisted(true);
+    }
+  }
+
   protected boolean isDebugging() {
     return (getGfsh() != null && getGfsh().getDebug());
   }
@@ -109,7 +130,7 @@ public abstract class AbstractCommandsSupport implements CommandMarker {
     return CacheFactory.getAnyInstance();
   }
 
-  protected Gfsh getGfsh() {
+  protected static Gfsh getGfsh() {
     return Gfsh.getCurrentInstance();
   }
 

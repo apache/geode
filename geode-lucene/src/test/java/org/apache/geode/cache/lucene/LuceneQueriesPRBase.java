@@ -32,11 +32,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.RebalanceResults;
 import org.apache.geode.cache.lucene.test.IndexRepositorySpy;
-import org.apache.geode.cache.lucene.internal.IndexRepositoryFactory;
-import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
-import org.apache.geode.cache.lucene.internal.PartitionedRepositoryManager;
-import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
-import org.apache.geode.cache.lucene.internal.repository.serializer.LuceneSerializer;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.DistributedMember;
@@ -127,9 +122,11 @@ public abstract class LuceneQueriesPRBase extends LuceneQueriesBase {
     executeTextSearch(accessor, "world", "text", NUM_BUCKETS);
   }
 
-  protected PartitionAttributes getPartitionAttributes() {
+  protected PartitionAttributes getPartitionAttributes(final boolean isAccessor) {
     PartitionAttributesFactory factory = new PartitionAttributesFactory();
-    factory.setLocalMaxMemory(100);
+    if (!isAccessor) {
+      factory.setLocalMaxMemory(100);
+    }
     factory.setTotalNumBuckets(NUM_BUCKETS);
     return factory.create();
   }

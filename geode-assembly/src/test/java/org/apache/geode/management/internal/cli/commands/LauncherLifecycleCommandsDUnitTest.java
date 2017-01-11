@@ -392,6 +392,57 @@ public class LauncherLifecycleCommandsDUnitTest extends CliCommandTestBase {
                 StringUtils.EMPTY_STRING, gemfirePropertiesPathname)));
   }
 
+  /**
+   * Test to verify GEODE-2138
+   * 
+   * @throws IOException
+   */
+  @Test
+  public void testVersionTitleForStartServerAndLocator() throws IOException {
+    final int locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
+
+    String pathname = (getClass().getSimpleName() + "_" + getTestMethodName());
+    String pathnameLoc = pathname + "_loc";
+    String pathnameSer = pathname + "_ser";
+
+    File workingDirectoryLoc = temporaryFolder.newFolder(pathnameLoc);
+    File workingDirectorySer = temporaryFolder.newFolder(pathnameSer);
+
+    assertTrue(workingDirectoryLoc.isDirectory() || workingDirectoryLoc.mkdir());
+    assertTrue(workingDirectorySer.isDirectory() || workingDirectorySer.mkdir());
+
+    try {
+      // verify the start locator output does not contain string "gemfire"
+      CommandStringBuilder locCommand = new CommandStringBuilder(CliStrings.START_LOCATOR);
+      locCommand.addOption(CliStrings.START_LOCATOR__MEMBER_NAME, pathnameLoc);
+      locCommand.addOption(CliStrings.START_LOCATOR__CONNECT, Boolean.FALSE.toString());
+      locCommand.addOption(CliStrings.START_LOCATOR__DIR, workingDirectoryLoc.getCanonicalPath());
+      locCommand.addOption(CliStrings.START_LOCATOR__PORT, String.valueOf(locatorPort));
+
+      CommandResult locResult = executeCommand(locCommand.toString());
+      assertNotNull(locResult);
+      assertEquals(Result.Status.OK, locResult.getStatus());
+      String locatorOutput = toString(locResult);
+      assertNotNull(locatorOutput);
+      assertTrue("Locator output was: " + locatorOutput, !locatorOutput.contains("Gemfire"));
+
+      // verify the start server output does not contain string "gemfire"
+      CommandStringBuilder serCommand = new CommandStringBuilder(CliStrings.START_SERVER);
+      serCommand.addOption(CliStrings.START_SERVER__NAME, pathnameSer);
+      serCommand.addOption(CliStrings.START_SERVER__DIR, workingDirectorySer.getCanonicalPath());
+
+      CommandResult serResult = executeCommand(serCommand.toString());
+      assertNotNull(serResult);
+      assertEquals(Result.Status.OK, serResult.getStatus());
+      String serverOutput = toString(serResult);
+
+      assertTrue("Server start output was: " + serverOutput, !serverOutput.contains("Gemfire"));
+    } finally {
+      stopLocator(workingDirectoryLoc);
+      stopServer(IOUtils.tryGetCanonicalPathElseGetAbsolutePath(workingDirectorySer));
+    }
+  }
+
   @Test
   public void test002StartLocatorFailsFastOnMissingGemFireSecurityPropertiesFile()
       throws IOException {

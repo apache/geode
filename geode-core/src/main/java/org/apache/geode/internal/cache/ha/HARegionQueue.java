@@ -466,7 +466,7 @@ public class HARegionQueue implements RegionQueue {
           while (iterator.hasNext()) {
             mapEntry = (Map.Entry) iterator.next();
             Conflatable val = (Conflatable) mapEntry.getValue();
-            if (val.getEventId() != null) { // bug #44959 null event ID caused NPE
+            if (val != null && val.getEventId() != null) {
               counterInRegion = ((Long) mapEntry.getKey()).intValue();
               // TODO: remove this assertion
               Assert.assertTrue(counterInRegion > max);
@@ -2177,7 +2177,7 @@ public class HARegionQueue implements RegionQueue {
     /**
      * Condition object on which peek & take threads will block
      */
-    private final StoppableCondition blockCond;
+    protected final StoppableCondition blockCond;
 
     /**
      * 
@@ -2380,9 +2380,6 @@ public class HARegionQueue implements RegionQueue {
      * retrieval or throw an Exception.It can never return false.
      * 
      * @throws InterruptedException
-     * 
-     *         <p>
-     *         author Asif
      */
     @Override
     boolean waitForData() throws InterruptedException {
@@ -2457,6 +2454,23 @@ public class HARegionQueue implements RegionQueue {
       this.ackedEvents = new HashMap();
       this.initialized.set(true);
 
+    }
+
+    @Override
+    boolean waitForData() throws InterruptedException {
+      region.getCache().getCancelCriterion().checkCancelInProgress(null);
+      boolean interrupted = Thread.currentThread().isInterrupted();
+      try {
+        blockCond.await(StoppableCondition.TIME_TO_WAIT);
+      } catch (InterruptedException ie) {
+        interrupted = true;
+        region.getCache().getCancelCriterion().checkCancelInProgress(ie);
+        throw new TimeoutException(ie);
+      } finally {
+        if (interrupted)
+          Thread.currentThread().interrupt();
+      }
+      return !this.internalIsEmpty();
     }
 
     @Override

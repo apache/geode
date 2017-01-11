@@ -14,10 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.*;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
@@ -42,7 +41,8 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 @Category(DistributedTest.class)
 public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
@@ -105,7 +105,6 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
 
   }
 
-  @Category(FlakyTest.class) // GEODE-1155: time sensitive, waitForCriterion
   @Test
   public void testNetSearchNormals() {
     Host host = Host.getHost(0);

@@ -38,7 +38,6 @@ import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
-import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.logging.LogService;
@@ -59,7 +58,6 @@ import org.xml.sax.SAXException;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -76,13 +74,10 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.xpath.XPathExpressionException;
 
 @SuppressWarnings({"deprecation", "unchecked"})
 public class SharedConfiguration {
@@ -141,9 +136,10 @@ public class SharedConfiguration {
 
   public SharedConfiguration(Cache cache) throws IOException {
     this.cache = (GemFireCacheImpl) cache;
+    Properties properties = cache.getDistributedSystem().getProperties();
     // resolve the cluster config dir
-    String clusterConfigRootDir =
-        cache.getDistributedSystem().getProperties().getProperty(CLUSTER_CONFIGURATION_DIR);
+    String clusterConfigRootDir = properties.getProperty(CLUSTER_CONFIGURATION_DIR);
+
     if (StringUtils.isBlank(clusterConfigRootDir)) {
       clusterConfigRootDir = System.getProperty("user.dir");
     } else {
@@ -169,7 +165,7 @@ public class SharedConfiguration {
    * Adds/replaces the xml entity in the shared configuration we don't need to trigger the change
    * listener for this modification, so it's ok to operate on the original configuration object
    */
-  public void addXmlEntity(XmlEntity xmlEntity, String[] groups) throws Exception {
+  public void addXmlEntity(XmlEntity xmlEntity, String[] groups) {
     Region<String, Configuration> configRegion = getConfigurationRegion();
     if (groups == null || groups.length == 0) {
       groups = new String[] {SharedConfiguration.CLUSTER_CONFIG};
@@ -186,17 +182,21 @@ public class SharedConfiguration {
         CacheXmlGenerator.generateDefault(pw);
         xmlContent = sw.toString();
       }
-      final Document doc = createAndUpgradeDocumentFromXml(xmlContent);
-      XmlUtils.addNewNode(doc, xmlEntity);
-      configuration.setCacheXmlContent(XmlUtils.prettyXml(doc));
-      configRegion.put(group, configuration);
+      try {
+        final Document doc = XmlUtils.createAndUpgradeDocumentFromXml(xmlContent);
+        XmlUtils.addNewNode(doc, xmlEntity);
+        configuration.setCacheXmlContent(XmlUtils.prettyXml(doc));
+        configRegion.put(group, configuration);
+      } catch (Exception e) {
+        logger.error("error updating cluster configuration for group " + group, e);
+      }
     }
   }
 
   /**
    * Deletes the xml entity from the shared configuration.
    */
-  public void deleteXmlEntity(final XmlEntity xmlEntity, String[] groups) throws Exception {
+  public void deleteXmlEntity(final XmlEntity xmlEntity, String[] groups) {
     Region<String, Configuration> configRegion = getConfigurationRegion();
     // No group is specified, so delete in every single group if it exists.
     if (groups == null) {
@@ -207,11 +207,15 @@ public class SharedConfiguration {
       Configuration configuration = (Configuration) configRegion.get(group);
       if (configuration != null) {
         String xmlContent = configuration.getCacheXmlContent();
-        if (xmlContent != null && !xmlContent.isEmpty()) {
-          Document doc = createAndUpgradeDocumentFromXml(xmlContent);
-          XmlUtils.deleteNode(doc, xmlEntity);
-          configuration.setCacheXmlContent(XmlUtils.prettyXml(doc));
-          configRegion.put(group, configuration);
+        try {
+          if (xmlContent != null && !xmlContent.isEmpty()) {
+            Document doc = XmlUtils.createAndUpgradeDocumentFromXml(xmlContent);
+            XmlUtils.deleteNode(doc, xmlEntity);
+            configuration.setCacheXmlContent(XmlUtils.prettyXml(doc));
+            configRegion.put(group, configuration);
+          }
+        } catch (Exception e) {
+          logger.error("error updating cluster configuration for group " + group, e);
         }
       }
     }
@@ -219,8 +223,7 @@ public class SharedConfiguration {
 
   // we don't need to trigger the change listener for this modification, so it's ok to
   // operate on the original configuration object
-  public void modifyXmlAndProperties(Properties properties, XmlEntity xmlEntity, String[] groups)
-      throws Exception {
+  public void modifyXmlAndProperties(Properties properties, XmlEntity xmlEntity, String[] groups) {
     if (groups == null) {
       groups = new String[] {SharedConfiguration.CLUSTER_CONFIG};
     }
@@ -239,14 +242,15 @@ public class SharedConfiguration {
           CacheXmlGenerator.generateDefault(pw);
           xmlContent = sw.toString();
         }
-
-        Document doc = createAndUpgradeDocumentFromXml(xmlContent);
-
-        // Modify the cache attributes
-        XmlUtils.modifyRootAttributes(doc, xmlEntity);
-
-        // Change the xml content of the configuration and put it the config region
-        configuration.setCacheXmlContent(XmlUtils.prettyXml(doc));
+        try {
+          Document doc = XmlUtils.createAndUpgradeDocumentFromXml(xmlContent);
+          // Modify the cache attributes
+          XmlUtils.modifyRootAttributes(doc, xmlEntity);
+          // Change the xml content of the configuration and put it the config region
+          configuration.setCacheXmlContent(XmlUtils.prettyXml(doc));
+        } catch (Exception e) {
+          logger.error("error updating cluster configuration for group " + group, e);
+        }
       }
 
       if (properties != null) {
@@ -290,7 +294,9 @@ public class SharedConfiguration {
         }
 
         // update the record after writing the jars to the file system, since the listener
-        // will need the jars on file to upload to other locators.
+        // will need the jars on file to upload to other locators. Need to update the jars
+        // using a new copy of the Configuration so that the change listener will pick up the jar
+        // name changes.
         Configuration configurationCopy = new Configuration(configuration);
         configurationCopy.addJarNames(jarNames);
         configRegion.put(group, configurationCopy);
@@ -310,12 +316,12 @@ public class SharedConfiguration {
   public byte[] getJarBytesFromThisLocator(String group, String jarName) throws Exception {
     Configuration configuration = getConfiguration(group);
 
-    // TODO: Should we check like this, or just check jar.exists below()?
-    if (configuration == null || !configuration.getJarNames().contains(jarName)) {
+    File jar = getPathToJarOnThisLocator(group, jarName).toFile();
+
+    if (configuration == null || !configuration.getJarNames().contains(jarName) || !jar.exists()) {
       return null;
     }
 
-    File jar = getPathToJarOnThisLocator(group, jarName).toFile();
     return FileUtils.readFileToByteArray(jar);
   }
 
@@ -737,25 +743,5 @@ public class SharedConfiguration {
     }
 
     return configDir;
-  }
-
-  /**
-   * Create a {@link Document} using {@link XmlUtils#createDocumentFromXml(String)} and if the
-   * version attribute is not equal to the current version then update the XML to the current schema
-   * and return the document.
-   * 
-   * @param xmlContent XML content to load and upgrade.
-   * @return {@link Document} from xmlContent.
-   * @since GemFire 8.1
-   */
-  static Document createAndUpgradeDocumentFromXml(final String xmlContent)
-      throws SAXException, ParserConfigurationException, IOException, XPathExpressionException {
-    Document doc = XmlUtils.createDocumentFromXml(xmlContent);
-    if (!CacheXml.VERSION_LATEST.equals(XmlUtils.getAttribute(doc.getDocumentElement(),
-        CacheXml.VERSION, CacheXml.GEODE_NAMESPACE))) {
-      doc = XmlUtils.upgradeSchema(doc, CacheXml.GEODE_NAMESPACE, CacheXml.LATEST_SCHEMA_LOCATION,
-          CacheXml.VERSION_LATEST);
-    }
-    return doc;
   }
 }

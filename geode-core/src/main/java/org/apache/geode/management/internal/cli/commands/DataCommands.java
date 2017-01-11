@@ -793,7 +793,7 @@ public class DataCommands implements CommandMarker {
 
     if (!filePath.endsWith(CliStrings.GEODE_DATA_FILE_EXTENSION)) {
       return ResultBuilder.createUserErrorResult(CliStrings
-          .format(CliStrings.INVALID_FILE_EXTENTION, CliStrings.GEODE_DATA_FILE_EXTENSION));
+          .format(CliStrings.INVALID_FILE_EXTENSION, CliStrings.GEODE_DATA_FILE_EXTENSION));
     }
     try {
       if (targetMember != null) {
@@ -853,7 +853,7 @@ public class DataCommands implements CommandMarker {
 
       if (!filePath.endsWith(CliStrings.GEODE_DATA_FILE_EXTENSION)) {
         return ResultBuilder.createUserErrorResult(CliStrings
-            .format(CliStrings.INVALID_FILE_EXTENTION, CliStrings.GEODE_DATA_FILE_EXTENSION));
+            .format(CliStrings.INVALID_FILE_EXTENSION, CliStrings.GEODE_DATA_FILE_EXTENSION));
       }
       if (targetMember != null) {
         final String args[] = {regionName, filePath};

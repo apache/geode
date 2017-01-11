@@ -53,8 +53,6 @@ import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.InfoResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
-import org.apache.geode.management.internal.configuration.SharedConfigurationWriter;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
@@ -69,16 +67,12 @@ import org.springframework.shell.core.annotation.CliOption;
  * @since GemFire 7.0
  *
  */
-public class ConfigCommands implements CommandMarker {
+public class ConfigCommands extends AbstractCommandsSupport {
   private final ExportConfigFunction exportConfigFunction = new ExportConfigFunction();
   private final GetMemberConfigInformationFunction getMemberConfigFunction =
       new GetMemberConfigInformationFunction();
   private final AlterRuntimeConfigFunction alterRunTimeConfigFunction =
       new AlterRuntimeConfigFunction();
-
-  private static Gfsh getGfsh() {
-    return Gfsh.getCurrentInstance();
-  }
 
   @CliCommand(value = {CliStrings.DESCRIBE_CONFIG}, help = CliStrings.DESCRIBE_CONFIG__HELP)
   @CliMetaData(shellOnly = false, relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
@@ -427,9 +421,9 @@ public class ConfigCommands implements CommandMarker {
           // Set the Cache attributes to be modified
           final XmlEntity xmlEntity = XmlEntity.builder().withType(CacheXml.CACHE)
               .withAttributes(rumTimeCacheAttributes).build();
-          result.setCommandPersisted(
-              new SharedConfigurationWriter().modifyPropertiesAndCacheAttributes(properties,
-                  xmlEntity, group != null ? group.split(",") : null));
+          persistClusterConfiguration(result,
+              () -> getSharedConfiguration().modifyXmlAndProperties(properties, xmlEntity,
+                  group != null ? group.split(",") : null));
           return result;
         } else {
           StringBuilder errorMessageBuilder = new StringBuilder();

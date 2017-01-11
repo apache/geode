@@ -40,6 +40,8 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.pdx.internal.PdxInstanceImpl;
+import org.apache.geode.pdx.internal.PeerTypeRegistration;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category({IntegrationTest.class, SerializationTest.class})
@@ -52,12 +54,6 @@ public class JSONFormatterJUnitTest {
   public void setUp() throws Exception {
     this.c = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").setPdxReadSerialized(true)
         .create();
-
-    // start cache-server
-    CacheServer server = c.addCacheServer();
-    final int serverPort = 40405;
-    server.setPort(serverPort);
-    server.start();
 
     // Create region, primitiveKVStore
     final AttributesFactory<Object, Object> af1 = new AttributesFactory<Object, Object>();
@@ -118,6 +114,7 @@ public class JSONFormatterJUnitTest {
       String json;
       try {
         json = objectMapper.writeValueAsString(expectedTestObject);
+
         String jsonWithClassType = expectedTestObject.addClassTypeToJson(json);
 
         // 3. Get PdxInstance from the Json String and Validate pi.getObject() API.
@@ -129,6 +126,7 @@ public class JSONFormatterJUnitTest {
         // and hence actualPI.equals(expectedPI) will returns false.
 
         Object actualTestObject = actualPI.getObject();
+
         if (actualTestObject instanceof TestObjectForJSONFormatter) {
           boolean isObjectEqual = actualTestObject.equals(expectedTestObject);
           Assert.assertTrue(isObjectEqual,
@@ -143,6 +141,47 @@ public class JSONFormatterJUnitTest {
       }
     } else {
       fail("receivedObject is expected to be of type PdxInstance");
+    }
+  }
+
+  // Testcase-2: validate Json->PdxInstance-->Java conversion
+  private void verifyJsonToPdxInstanceConversionWithJSONFormatter() {
+    TestObjectForJSONFormatter expectedTestObject = new TestObjectForJSONFormatter();
+    expectedTestObject.defaultInitialization();
+    Cache c = CacheFactory.getAnyInstance();
+    Region region = c.getRegion("primitiveKVStore");
+
+    // 1.gets pdxInstance using R.put() and R.get()
+    region.put("501", expectedTestObject);
+    Object receivedObject = region.get("501");
+    assertEquals("receivedObject is expected to be of type PdxInstance", PdxInstanceImpl.class,
+        receivedObject.getClass());
+
+    PdxInstance expectedPI = (PdxInstance) receivedObject;
+
+    String json;
+    try {
+      json = JSONFormatter.toJSON(expectedPI);
+
+      String jsonWithClassType = expectedTestObject.addClassTypeToJson(json);
+
+      // 3. Get PdxInstance from the Json String and Validate pi.getObject() API.
+      PdxInstance actualPI = JSONFormatter.fromJSON(jsonWithClassType);
+      // Note: expectedPI will contains those fields that are part of toData()
+      // expectedPI.className = "org.apache.geode.pdx.TestObjectForJSONFormatter"
+      // actualPI will contains all the fields that are member of the class.
+      // actualPI..className = __GEMFIRE_JSON
+      // and hence actualPI.equals(expectedPI) will returns false.
+
+      Object actualTestObject = actualPI.getObject();
+
+      assertEquals("receivedObject is expected to be of type PdxInstance",
+          TestObjectForJSONFormatter.class, actualTestObject.getClass());
+
+      assertEquals("actualTestObject and expectedTestObject should be equal", expectedTestObject,
+          actualTestObject);
+    } catch (JSONException e) {
+      fail("JSONException occurred:" + e.getMessage());
     }
   }
 
@@ -203,11 +242,38 @@ public class JSONFormatterJUnitTest {
   }
 
   @Test
-  @Category(value = FlakyTest.class) // GEODE-2239 this test uses fixed port 40405 & fails if it
-                                     // isn't available
   public void testJSONFormatterAPIs() {
     ValidatePdxInstanceToJsonConversion();
     verifyJsonToPdxInstanceConversion();
+    verifyJsonToPdxInstanceConversionWithJSONFormatter();
+  }
+
+  /**
+   * this test validates json document, where field has value and null Then it verifies we create
+   * only one pdx type id for that
+   */
+  @Test
+  public void testJSONStringAsPdxObject() {
+
+    Cache c = CacheFactory.getAnyInstance();
+
+    int pdxTypes = 0;
+
+    if (c.getRegion(PeerTypeRegistration.REGION_FULL_PATH) != null) {
+      pdxTypes = c.getRegion(PeerTypeRegistration.REGION_FULL_PATH).keys().size();
+    }
+
+    Region region = c.getRegion("primitiveKVStore");
+
+    String js = "{name:\"ValueExist\", age:14}";
+
+    region.put(1, JSONFormatter.fromJSON(js));
+
+    String js2 = "{name:null, age:14}";
+
+    region.put(2, JSONFormatter.fromJSON(js2));
+
+    assertEquals(pdxTypes + 1, c.getRegion(PeerTypeRegistration.REGION_FULL_PATH).keys().size());
   }
 }
 

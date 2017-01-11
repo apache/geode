@@ -60,10 +60,8 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     // 3) Replicate to Replicate, Partition To Partition
     // 4) Offheap to Offheap
     if (!withStorage) {
-      throw new IllegalStateException(
-          "The data region to create lucene index should be with storage");
-    }
-    if (withPersistence) {
+      regionShortCut = RegionShortcut.PARTITION_PROXY;
+    } else if (withPersistence) {
       // TODO: add PartitionedRegionAttributes instead
       regionShortCut = RegionShortcut.PARTITION_PERSISTENT;
     } else {

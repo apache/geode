@@ -134,12 +134,12 @@ public class CliStrings {
       "No caching members for group {0} could be found.  Please verify the group and try again.";
   public static final String NO_MEMBERS_FOUND_MESSAGE = "No Members Found";
   public static final String NO_CACHING_MEMBERS_FOUND_MESSAGE = "No caching members found.";
-  public static final String COMMAND_FAILURE_MESSAGE = "Error occured while executing : {0}";
+  public static final String COMMAND_FAILURE_MESSAGE = "Error occurred while executing : {0}";
   public static final String EXCEPTION_CLASS_AND_MESSAGE = "Exception : {0} , Message : {1}";
   public static final String GROUP_EMPTY_ERROR_MESSAGE = "No members found in group : {0}";
   public static final String REGION_NOT_FOUND = "Region : {0} not found";
   public static final String INVALID_REGION_NAME = "Invalid region name";
-  public static final String INVALID_FILE_EXTENTION =
+  public static final String INVALID_FILE_EXTENSION =
       "Invalid file type, the file extension must be \"{0}\"";
   public static final String GEODE_DATA_FILE_EXTENSION = ".gfd";
   public static final String LOCATOR_HEADER = "Locator";

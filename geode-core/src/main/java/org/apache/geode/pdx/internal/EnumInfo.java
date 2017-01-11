@@ -158,6 +158,10 @@ public class EnumInfo implements DataSerializableFixedID {
     return clazz + "." + name;
   }
 
+  public String toFormattedString() {
+    return getClass().getSimpleName() + "[\n        " + clazz + "." + name + "]";
+  }
+
   @Override
   public boolean equals(Object obj) {
     if (this == obj)

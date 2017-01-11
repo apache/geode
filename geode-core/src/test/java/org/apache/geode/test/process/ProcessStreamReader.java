@@ -25,18 +25,19 @@ import java.util.Queue;
  * Reads the output from a process stream and stores it for test validation.
  * </p>
  * Extracted from ProcessWrapper.
- * 
  */
+@SuppressWarnings("unused")
 public class ProcessStreamReader extends Thread {
 
   private volatile RuntimeException startStack;
+  private volatile IOException streamClosedStack;
 
   private final String command;
   private final BufferedReader reader;
   private final Queue<String> lineBuffer;
   private final List<String> allLines;
 
-  public int linecount = 0;
+  private int lineCount = 0;
 
   public ProcessStreamReader(final String command, final InputStream stream,
       final Queue<String> lineBuffer, final List<String> allLines) {
@@ -57,7 +58,7 @@ public class ProcessStreamReader extends Thread {
     try {
       String line;
       while ((line = this.reader.readLine()) != null) {
-        this.linecount++;
+        this.lineCount++;
         this.lineBuffer.offer(line);
         this.allLines.add(line);
       }
@@ -65,8 +66,12 @@ public class ProcessStreamReader extends Thread {
       // EOF
       this.reader.close();
     } catch (IOException streamClosed) {
-      this.startStack.initCause(streamClosed);
-      throw this.startStack;
+      this.streamClosedStack = streamClosed;
     }
+  }
+
+  // a test can use this to check if stream was closed cleanly or by tear-down
+  public IOException getStreamClosedStack() {
+    return this.streamClosedStack;
   }
 }

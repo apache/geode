@@ -14,11 +14,28 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertFalse;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.SharedConfiguration;
 import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.ClassBuilder;
 import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.management.cli.Result;
@@ -26,7 +43,13 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
 import org.apache.geode.management.internal.cli.remote.CommandProcessor;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.test.dunit.*;
+import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -34,11 +57,10 @@ import org.junit.experimental.categories.Category;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Properties;
 import java.util.regex.Pattern;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.test.dunit.Assert.*;
 
 /**
  * Unit tests for the DeployCommands class
@@ -315,24 +337,35 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
   @Test
   public void testEndToEnd() throws Exception {
     final String groupName = getName();
+    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    jmxPort = ports[0];
+    httpPort = ports[1];
+    try {
+      jmxHost = InetAddress.getLocalHost().getHostName();
+    } catch (UnknownHostException ignore) {
+      jmxHost = "localhost";
+    }
 
     // Start the Locator and wait for shared configuration to be available
     final int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String locatorLogPath = this.temporaryFolder.getRoot().getCanonicalPath() + File.separator
         + "locator-" + locatorPort + ".log";
 
-    Host.getHost(0).getVM(3).invoke(new SerializableRunnable() {
+    final Properties locatorProps = new Properties();
+    locatorProps.setProperty(NAME, "Locator");
+    locatorProps.setProperty(MCAST_PORT, "0");
+    locatorProps.setProperty(LOG_LEVEL, "fine");
+    locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
+    locatorProps.setProperty(JMX_MANAGER, "true");
+    locatorProps.setProperty(JMX_MANAGER_START, "true");
+    locatorProps.setProperty(JMX_MANAGER_BIND_ADDRESS, String.valueOf(jmxHost));
+    locatorProps.setProperty(JMX_MANAGER_PORT, String.valueOf(jmxPort));
+    locatorProps.setProperty(HTTP_SERVICE_PORT, String.valueOf(httpPort));
+
+    Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
       @Override
       public void run() {
-
         final File locatorLogFile = new File(locatorLogPath);
-
-        final Properties locatorProps = new Properties();
-        locatorProps.setProperty(NAME, "Locator");
-        locatorProps.setProperty(MCAST_PORT, "0");
-        locatorProps.setProperty(LOG_LEVEL, "fine");
-        locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
-
         try {
           final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort,
               locatorLogFile, null, locatorProps);
@@ -356,12 +389,15 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
       }
     });
 
-    // Start the default manager
-    Properties managerProps = new Properties();
-    managerProps.setProperty(MCAST_PORT, "0");
-    managerProps.setProperty(GROUPS, groupName);
-    managerProps.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
-    setUpJmxManagerOnVm0ThenConnect(managerProps);
+    connect(jmxHost, jmxPort, httpPort, getDefaultShell());
+
+    Host.getHost(0).getVM(1).invoke(() -> {
+      Properties properties = new Properties();
+      properties.setProperty("name", "Manager");
+      properties.setProperty("groups", groupName);
+      ServerStarterRule serverStarterRule = new ServerStarterRule(properties);
+      serverStarterRule.startServer(locatorPort);
+    });
 
     // Create a JAR file
     this.classBuilder.writeJarFromName("DeployCommandsDUnitA", this.newDeployableJarFile);
@@ -383,23 +419,29 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
 
     stringResult = commandResultToString(cmdResult);
     assertEquals(3, countLinesInString(stringResult, false));
-    assertTrue(stringContainsLine(stringResult, "Member.*JAR.*Un-Deployed From JAR Location"));
-    assertTrue(stringContainsLine(stringResult, "Manager.*DeployCommandsDUnit1.jar.*"
-        + JarDeployer.JAR_PREFIX + "DeployCommandsDUnit1.jar#1"));
+    assertThat(stringContainsLine(stringResult, "Member.*JAR.*Un-Deployed From JAR Location"))
+        .describedAs(stringResult).isTrue();
+    assertThat(stringContainsLine(stringResult, "Manager.*DeployCommandsDUnit1.jar.*"
+        + JarDeployer.JAR_PREFIX + "DeployCommandsDUnit1.jar#1")).describedAs(stringResult)
+            .isTrue();;
+
 
     // Deploy the JAR to a group
     cmdResult = executeCommand(
         "deploy --jar=" + this.newDeployableJarFile.getCanonicalPath() + " --group=" + groupName);
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
+    assertThat(cmdResult.getStatus()).describedAs(cmdResult.toString()).isEqualTo(Result.Status.OK);
 
     stringResult = commandResultToString(cmdResult);
     assertEquals(3, countLinesInString(stringResult, false));
-    assertTrue(stringContainsLine(stringResult, "Member.*JAR.*JAR Location"));
-    assertTrue(stringContainsLine(stringResult, "Manager.*DeployCommandsDUnit1.jar.*"
-        + JarDeployer.JAR_PREFIX + "DeployCommandsDUnit1.jar#1"));
+    assertThat(stringContainsLine(stringResult, "Member.*JAR.*JAR Location"))
+        .describedAs(stringResult).isTrue();
+
+    assertThat(stringContainsLine(stringResult, "Manager.*DeployCommandsDUnit1.jar.*"
+        + JarDeployer.JAR_PREFIX + "DeployCommandsDUnit1.jar#1")).describedAs(stringResult)
+            .isTrue();
 
     // Make sure the deployed jar in the shared config
-    Host.getHost(0).getVM(3).invoke(new SerializableRunnable() {
+    Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
       @Override
       public void run() {
         SharedConfiguration sharedConfig =
@@ -434,7 +476,7 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
         + JarDeployer.JAR_PREFIX + "DeployCommandsDUnit1.jar#1"));
 
     // Make sure the deployed jar was removed from the shared config
-    Host.getHost(0).getVM(3).invoke(new SerializableRunnable() {
+    Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
       @Override
       public void run() {
         SharedConfiguration sharedConfig =

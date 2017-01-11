@@ -200,7 +200,7 @@ public class TypeRegistry {
       this.idToType.put(id, newType);
       this.typeToId.put(newType, id);
       if (logger.isInfoEnabled()) {
-        logger.info("Defining: {}", newType.toFormattedString());
+        logger.info("Caching {}", newType.toFormattedString());
       }
     } else if (!oldType.equals(newType)) {
       Assert.fail("Old type does not equal new type for the same id. oldType=" + oldType
@@ -392,6 +392,9 @@ public class TypeRegistry {
     if (oldInfo == null) {
       this.idToEnum.put(id, newInfo);
       this.enumInfoToId.put(newInfo, id);
+      if (logger.isInfoEnabled()) {
+        logger.info("Caching PDX Enum: {}, dsid={} typenum={}", newInfo, id >> 24, id & 0xFFFFFF);
+      }
     } else if (!oldInfo.equals(newInfo)) {
       Assert.fail("Old enum does not equal new enum for the same id. oldEnum=" + oldInfo
           + " newEnum=" + newInfo);

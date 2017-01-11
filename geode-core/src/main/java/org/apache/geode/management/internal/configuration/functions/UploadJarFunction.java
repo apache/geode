@@ -21,10 +21,11 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.SharedConfiguration;
 import org.apache.geode.internal.InternalEntity;
-
-import java.io.IOException;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.logging.log4j.Logger;
 
 public class UploadJarFunction implements Function, InternalEntity {
+  private static final Logger logger = LogService.getLogger();
 
   private static final long serialVersionUID = 1L;
 
@@ -42,10 +43,8 @@ public class UploadJarFunction implements Function, InternalEntity {
           byte[] jarBytes = sharedConfig.getJarBytesFromThisLocator(group, jarName);
           context.getResultSender().lastResult(jarBytes);
 
-          // TODO: should we just return here if jarbytes was not null?
-        } catch (IOException e) {
-          context.getResultSender().sendException(e);
         } catch (Exception e) {
+          logger.error(e);
           context.getResultSender().sendException(e);
         }
       }

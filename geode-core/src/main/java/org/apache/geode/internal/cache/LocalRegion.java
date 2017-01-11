@@ -621,8 +621,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     this.isUsedForParallelGatewaySenderQueue =
         internalRegionArgs.isUsedForParallelGatewaySenderQueue();
     this.serialGatewaySender = internalRegionArgs.getSerialGatewaySender();
-    this.cacheServiceProfiles = internalRegionArgs.getCacheServiceProfiles() == null ? null
-        : Collections.unmodifiableMap(internalRegionArgs.getCacheServiceProfiles());
+    this.cacheServiceProfiles =
+        internalRegionArgs.getCacheServiceProfiles() == null ? Collections.emptyMap()
+            : Collections.unmodifiableMap(internalRegionArgs.getCacheServiceProfiles());
 
     if (!isUsedForMetaRegion && !isUsedForPartitionedRegionAdmin
         && !isUsedForPartitionedRegionBucket && !isUsedForSerialGatewaySenderQueue

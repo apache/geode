@@ -2537,16 +2537,20 @@ public class CacheClientProxy implements ClientSession {
           if (isStopped()) {
             break;
           }
-          // Process the message
-          long start = getStatistics().startTime();
-          //// BUGFIX for BUG#38206 and BUG#37791
-          boolean isDispatched = dispatchMessage(clientMessage);
-          getStatistics().endMessage(start);
-          if (isDispatched) {
-            this._messageQueue.remove();
-            if (clientMessage instanceof ClientMarkerMessageImpl) {
-              getProxy().markerEnqueued = false;
+          if (clientMessage != null) {
+            // Process the message
+            long start = getStatistics().startTime();
+            //// BUGFIX for BUG#38206 and BUG#37791
+            boolean isDispatched = dispatchMessage(clientMessage);
+            getStatistics().endMessage(start);
+            if (isDispatched) {
+              this._messageQueue.remove();
+              if (clientMessage instanceof ClientMarkerMessageImpl) {
+                getProxy().markerEnqueued = false;
+              }
             }
+          } else {
+            this._messageQueue.remove();
           }
           clientMessage = null;
         } catch (MessageTooLargeException e) {

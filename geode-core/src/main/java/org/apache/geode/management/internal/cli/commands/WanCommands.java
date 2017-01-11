@@ -27,6 +27,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.management.ObjectName;
 
 import org.apache.geode.cache.Cache;
@@ -50,8 +51,6 @@ import org.apache.geode.management.internal.cli.result.CommandResultException;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
-import org.apache.geode.management.internal.configuration.SharedConfigurationWriter;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
@@ -62,12 +61,7 @@ import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-public class WanCommands implements CommandMarker {
-
-  private Gfsh getGfsh() {
-    return Gfsh.getCurrentInstance();
-  }
-
+public class WanCommands extends AbstractCommandsSupport {
   @CliCommand(value = CliStrings.CREATE_GATEWAYSENDER, help = CliStrings.CREATE_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN, writesToSharedConfiguration = true)
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
@@ -140,7 +134,7 @@ public class WanCommands implements CommandMarker {
 
     Result result = null;
 
-    XmlEntity xmlEntity = null;
+    AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
     try {
       GatewaySenderFunctionArgs gatewaySenderFunctionArgs = new GatewaySenderFunctionArgs(id,
           remoteDistributedSystemId, parallel, manualStart, socketBufferSize, socketReadTimeout,
@@ -166,8 +160,8 @@ public class WanCommands implements CommandMarker {
         tabularResultData.accumulate("Status",
             (success ? "" : errorPrefix) + gatewaySenderCreateResult.getMessage());
 
-        if (success && xmlEntity == null) {
-          xmlEntity = gatewaySenderCreateResult.getXmlEntity();
+        if (success && xmlEntity.get() == null) {
+          xmlEntity.set(gatewaySenderCreateResult.getXmlEntity());
         }
       }
       result = ResultBuilder.buildResult(tabularResultData);
@@ -178,9 +172,9 @@ public class WanCommands implements CommandMarker {
       result = handleCommandResultException(crex);
     }
 
-    if (xmlEntity != null) {
-      result
-          .setCommandPersisted((new SharedConfigurationWriter()).addXmlEntity(xmlEntity, onGroups));
+    if (xmlEntity.get() != null) {
+      persistClusterConfiguration(result,
+          () -> getSharedConfiguration().addXmlEntity(xmlEntity.get(), onGroups));
     }
     return result;
   }
@@ -627,7 +621,7 @@ public class WanCommands implements CommandMarker {
 
     Result result = null;
 
-    XmlEntity xmlEntity = null;
+    AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
     try {
       GatewayReceiverFunctionArgs gatewayReceiverFunctionArgs =
           new GatewayReceiverFunctionArgs(manualStart, startPort, endPort, bindAddress,
@@ -652,8 +646,8 @@ public class WanCommands implements CommandMarker {
         tabularResultData.accumulate("Status",
             (success ? "" : errorPrefix) + gatewayReceiverCreateResult.getMessage());
 
-        if (success && xmlEntity == null) {
-          xmlEntity = gatewayReceiverCreateResult.getXmlEntity();
+        if (success && xmlEntity.get() == null) {
+          xmlEntity.set(gatewayReceiverCreateResult.getXmlEntity());
         }
       }
       result = ResultBuilder.buildResult(tabularResultData);
@@ -664,9 +658,9 @@ public class WanCommands implements CommandMarker {
       result = handleCommandResultException(crex);
     }
 
-    if (xmlEntity != null) {
-      result
-          .setCommandPersisted((new SharedConfigurationWriter()).addXmlEntity(xmlEntity, onGroups));
+    if (xmlEntity.get() != null) {
+      persistClusterConfiguration(result,
+          () -> getSharedConfiguration().addXmlEntity(xmlEntity.get(), onGroups));
     }
 
     return result;

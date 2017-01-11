@@ -14,29 +14,16 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.regex.Pattern;
-
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-
-import org.apache.geode.cache.*;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
 import org.apache.geode.LogWriter;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.PartitionResolver;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.distributed.DistributedMember;
@@ -72,14 +59,32 @@ import org.apache.geode.management.internal.cli.result.CommandResultException;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.cli.util.RegionPath;
-import org.apache.geode.management.internal.configuration.SharedConfigurationWriter;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 
 /**
- *
  * @since GemFire 7.0
  */
 public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
@@ -225,7 +230,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
   // NOTICE: keep the region attributes params in alphabetical order
   ) {
     Result result = null;
-    XmlEntity xmlEntity = null;
+    AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
 
     try {
       Cache cache = CacheFactory.getAnyInstance();
@@ -274,11 +279,9 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
               new Object[] {CliStrings.CREATE_REGION__USEATTRIBUTESFROM, useAttributesFrom}));
         }
 
-
         FetchRegionAttributesFunctionResult<Object, Object> regionAttributesResult =
             getRegionAttributes(cache, useAttributesFrom);
         RegionAttributes<?, ?> regionAttributes = regionAttributesResult.getRegionAttributes();
-
 
         // give preference to user specified plugins than the ones retrieved from other region
         String[] cacheListenerClasses = cacheListener != null && cacheListener.length != 0
@@ -296,7 +299,6 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
             concurrencyLevel, prColocatedWith, prLocalMaxMemory, prRecoveryDelay, prRedundantCopies,
             prStartupRecoveryDelay, prTotalMaxMemory, prTotalNumBuckets, offHeap, mcastEnabled,
             regionAttributes, partitionResolver);
-
 
         if (regionAttributes.getPartitionAttributes() == null
             && regionFunctionArgs.hasPartitionAttributes()) {
@@ -362,7 +364,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
             (success ? "" : errorPrefix) + regionCreateResult.getMessage());
 
         if (success) {
-          xmlEntity = regionCreateResult.getXmlEntity();
+          xmlEntity.set(regionCreateResult.getXmlEntity());
         }
       }
       result = ResultBuilder.buildResult(tabularResultData);
@@ -379,9 +381,11 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
       result = ResultBuilder.createGemFireErrorResult(e.getMessage());
 
     }
-    if (xmlEntity != null) {
-      result.setCommandPersisted((new SharedConfigurationWriter()).addXmlEntity(xmlEntity, groups));
+    if (xmlEntity.get() != null) {
+      persistClusterConfiguration(result,
+          () -> getSharedConfiguration().addXmlEntity(xmlEntity.get(), groups));
     }
+
     return result;
   }
 
@@ -478,7 +482,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, specifiedDefaultValue = "0",
           help = CliStrings.ALTER_REGION__EVICTIONMAX__HELP) Integer evictionMax) {
     Result result = null;
-    XmlEntity xmlEntity = null;
+    AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
 
     this.securityService.authorizeRegionManage(regionPath);
 
@@ -595,7 +599,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
         tabularResultData.accumulate("Member", regionAlterResult.getMemberIdOrName());
         if (success) {
           tabularResultData.accumulate("Status", regionAlterResult.getMessage());
-          xmlEntity = regionAlterResult.getXmlEntity();
+          xmlEntity.set(regionAlterResult.getXmlEntity());
         } else {
           tabularResultData.accumulate("Status", errorPrefix + regionAlterResult.getMessage());
           tabularResultData.setStatus(Status.ERROR);
@@ -612,8 +616,10 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
       LogWrapper.getInstance().info(e.getMessage(), e);
       result = ResultBuilder.createGemFireErrorResult(e.getMessage());
     }
-    if (xmlEntity != null) {
-      result.setCommandPersisted((new SharedConfigurationWriter()).addXmlEntity(xmlEntity, groups));
+
+    if (xmlEntity.get() != null) {
+      persistClusterConfiguration(result,
+          () -> getSharedConfiguration().addXmlEntity(xmlEntity.get(), groups));
     }
     return result;
   }
@@ -989,7 +995,6 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
       } // regionAssociatedMembers is not-empty
     } // attributes are null because do not exist on local member
 
-
     return attributes;
   }
 
@@ -1054,7 +1059,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
     }
 
     Result result = null;
-    XmlEntity xmlEntity = null;
+    AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
     try {
       String message = "";
       Cache cache = CacheFactory.getAnyInstance();
@@ -1087,7 +1092,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
       for (int i = 0; i < resultsList.size(); i++) {
         destroyRegionResult = resultsList.get(i);
         if (destroyRegionResult.isSuccessful()) {
-          xmlEntity = destroyRegionResult.getXmlEntity();
+          xmlEntity.set(destroyRegionResult.getXmlEntity());
         } else if (destroyRegionResult.getThrowable() != null) {
           Throwable t = destroyRegionResult.getThrowable();
           LogWrapper.getInstance().info(t.getMessage(), t);
@@ -1117,10 +1122,11 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
           new Object[] {regionPath, e.getMessage()}));
     }
 
-    if (xmlEntity != null) {
-      result
-          .setCommandPersisted((new SharedConfigurationWriter()).deleteXmlEntity(xmlEntity, null));
+    if (xmlEntity.get() != null) {
+      persistClusterConfiguration(result,
+          () -> getSharedConfiguration().deleteXmlEntity(xmlEntity.get(), null));
     }
+
     return result;
   }
 

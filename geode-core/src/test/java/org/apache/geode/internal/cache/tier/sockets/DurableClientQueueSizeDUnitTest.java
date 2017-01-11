@@ -14,12 +14,21 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.cache.query.functional.QueryREUpdateInProgressJUnitTest.regionName;
 import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.util.JSR166TestCase.m2;
 import static org.junit.Assert.*;
 
+import com.jayway.awaitility.Awaitility;
+
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -51,6 +60,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 @SuppressWarnings("serial")
 public class DurableClientQueueSizeDUnitTest extends JUnit4DistributedTestCase {
 
+  public static final String MY_DURABLE_CLIENT = "my-durable-client";
   private static VM vm0 = null;
   private static VM vm1 = null;
   private static VM vm2 = null;
@@ -131,6 +141,33 @@ public class DurableClientQueueSizeDUnitTest extends JUnit4DistributedTestCase {
     vm2.invoke(() -> DurableClientQueueSizeDUnitTest.readyForEvents());
     vm2.invoke(() -> DurableClientQueueSizeDUnitTest.verifyQueueSize(EXCEPTION));
 
+  }
+
+  // Slows down client consumption from queue, this should cause a delay from server queue dispatch
+  // and receiving an ack from the client. The server should still clean up acked events from the
+  // queue even if no more messages are being sent. Previously events would get stuck in the queue
+  // if no new messages were sent because clean up was only done while sending messages
+  @Test
+  public void ackedEventsShouldBeRemovedFromTheQueueEventuallyEvenIfNoNewMessagesAreSent()
+      throws Exception {
+    int num = 10;
+    CacheListener slowListener = new SlowListener();
+
+    vm1.invoke(() -> DurableClientQueueSizeDUnitTest.closeCache());
+
+    vm2.invoke(DurableClientQueueSizeDUnitTest.class, "createClientCache",
+        new Object[] {vm2.getHost(), new Integer[] {port0, port1}, "300", Boolean.TRUE,
+            Boolean.FALSE, slowListener});
+    vm2.invoke(() -> DurableClientQueueSizeDUnitTest.doRI());
+    vm2.invoke(() -> DurableClientQueueSizeDUnitTest.readyForEvents());
+
+    vm0.invoke(() -> DurableClientQueueSizeDUnitTest.doPutsIntoRegion(REGION_NAME, num));
+
+    vm0.invoke(() -> Awaitility.waitAtMost(45, TimeUnit.SECONDS).until(() -> {
+      CacheClientProxy ccp = DurableClientQueueSizeDUnitTest.getCacheClientProxy(MY_DURABLE_CLIENT);
+      assertEquals(0, ccp.getQueueSize());
+      assertEquals(0, ccp.getQueueSizeStat());
+    }));
   }
 
   @Test
@@ -296,7 +333,7 @@ public class DurableClientQueueSizeDUnitTest extends JUnit4DistributedTestCase {
 
   public static void createClientCache(Host host, Integer[] ports, String timeoutMilis,
       Boolean durable) throws Exception {
-    createClientCache(host, ports, timeoutMilis, durable, false);
+    createClientCache(host, ports, timeoutMilis, durable, false, null);
   }
 
   public static void setSpecialDurable(Boolean bool) {
@@ -305,13 +342,13 @@ public class DurableClientQueueSizeDUnitTest extends JUnit4DistributedTestCase {
 
   @SuppressWarnings("deprecation")
   public static void createClientCache(Host host, Integer[] ports, String timeoutSeconds,
-      Boolean durable, Boolean multiPool) throws Exception {
+      Boolean durable, Boolean multiPool, CacheListener cacheListener) throws Exception {
     if (multiPool) {
       System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "SPECIAL_DURABLE", "true");
     }
     Properties props = new Properties();
     if (durable) {
-      props.setProperty(DURABLE_CLIENT_ID, "my-durable-client");
+      props.setProperty(DURABLE_CLIENT_ID, MY_DURABLE_CLIENT);
       props.setProperty(DURABLE_CLIENT_TIMEOUT, timeoutSeconds);
     }
 
@@ -329,7 +366,9 @@ public class DurableClientQueueSizeDUnitTest extends JUnit4DistributedTestCase {
 
     ClientRegionFactory<String, String> crf =
         cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
-
+    if (cacheListener != null) {
+      crf.addCacheListener(cacheListener);
+    }
     crf.setPoolName(cache.getDefaultPool().getName());
     crf.create(REGION_NAME);
 
@@ -373,14 +412,33 @@ public class DurableClientQueueSizeDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  public static void verifyQueueSizeAtServer(String poolName, Integer num) throws Exception {
+  public static void doPutsIntoRegion(String regionName, Integer numOfPuts) throws Exception {
+    Region<String, String> region = cache.getRegion(regionName);
+
+    for (int j = 0; j < numOfPuts; j++) {
+      region.put("KEY_" + j, "VALUE_" + j);
+    }
+  }
+
+  public static void verifyQueueSizeAtServer(String poolName, Integer num) {
     Iterator<CacheClientProxy> it = CacheClientNotifier.getInstance().getClientProxies().iterator();
     while (it.hasNext()) {
       CacheClientProxy ccp = it.next();
       if (ccp.getDurableId().contains(poolName)) {
-        assertEquals(num.intValue(), ccp.getQueueSize());
+        assertEquals(num.intValue(), ccp.getStatistics().getMessagesQueued());
       }
     }
+  }
+
+  public static CacheClientProxy getCacheClientProxy(String durableClientName) {
+    Iterator<CacheClientProxy> it = CacheClientNotifier.getInstance().getClientProxies().iterator();
+    while (it.hasNext()) {
+      CacheClientProxy ccp = it.next();
+      if (ccp.getDurableId().contains(durableClientName)) {
+        return ccp;
+      }
+    }
+    return null;
   }
 
   public static void verifyQueueSize(Integer num) throws Exception {
@@ -399,6 +457,63 @@ public class DurableClientQueueSizeDUnitTest extends JUnit4DistributedTestCase {
       } catch (IllegalStateException ise) {
         assertEquals(EXCEPTION, num2.intValue());
       }
+    }
+  }
+
+  private class SlowListener implements CacheListener, Serializable {
+
+    @Override
+    public void afterCreate(final EntryEvent event) {
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
+    }
+
+    @Override
+    public void afterUpdate(final EntryEvent event) {
+
+    }
+
+    @Override
+    public void afterInvalidate(final EntryEvent event) {
+
+    }
+
+    @Override
+    public void afterDestroy(final EntryEvent event) {
+
+    }
+
+    @Override
+    public void afterRegionInvalidate(final RegionEvent event) {
+
+    }
+
+    @Override
+    public void afterRegionDestroy(final RegionEvent event) {
+
+    }
+
+    @Override
+    public void afterRegionClear(final RegionEvent event) {
+
+    }
+
+    @Override
+    public void afterRegionCreate(final RegionEvent event) {
+
+    }
+
+    @Override
+    public void afterRegionLive(final RegionEvent event) {
+
+    }
+
+    @Override
+    public void close() {
+
     }
   }
 }

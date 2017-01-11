@@ -29,13 +29,13 @@ public class LuceneQueriesPeerPRDUnitTest extends LuceneQueriesPRBase {
   protected void initDataStore(final SerializableRunnableIF createIndex) throws Exception {
     createIndex.run();
     getCache().createRegionFactory(RegionShortcut.PARTITION)
-        .setPartitionAttributes(getPartitionAttributes()).create(REGION_NAME);
+        .setPartitionAttributes(getPartitionAttributes(false)).create(REGION_NAME);
   }
 
   @Override
   protected void initAccessor(final SerializableRunnableIF createIndex) throws Exception {
     createIndex.run();
     getCache().createRegionFactory(RegionShortcut.PARTITION_PROXY)
-        .setPartitionAttributes(getPartitionAttributes()).create(REGION_NAME);
+        .setPartitionAttributes(getPartitionAttributes(true)).create(REGION_NAME);
   }
 }

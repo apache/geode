@@ -19,7 +19,6 @@ import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
 import static org.junit.Assert.*;
 
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
@@ -48,14 +47,14 @@ public class LuceneQueriesPeerPRRedundancyDUnitTest extends LuceneQueriesPRBase 
   protected void initDataStore(final SerializableRunnableIF createIndex) throws Exception {
     createIndex.run();
     Region region = getCache().createRegionFactory(RegionShortcut.PARTITION_REDUNDANT)
-        .setPartitionAttributes(getPartitionAttributes()).create(REGION_NAME);
+        .setPartitionAttributes(getPartitionAttributes(false)).create(REGION_NAME);
   }
 
   @Override
   protected void initAccessor(final SerializableRunnableIF createIndex) throws Exception {
     createIndex.run();
     Region region = getCache().createRegionFactory(RegionShortcut.PARTITION_PROXY_REDUNDANT)
-        .setPartitionAttributes(getPartitionAttributes()).create(REGION_NAME);
+        .setPartitionAttributes(getPartitionAttributes(true)).create(REGION_NAME);
   }
 
   @Test

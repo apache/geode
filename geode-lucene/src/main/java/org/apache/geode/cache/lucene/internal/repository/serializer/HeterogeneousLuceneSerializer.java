@@ -74,6 +74,10 @@ public class HeterogeneousLuceneSerializer implements LuceneSerializer {
   @Override
   public void toDocument(Object value, Document doc) {
 
+    if (value == null) {
+      return;
+    }
+
     LuceneSerializer mapper = getFieldMapper(value);
 
     mapper.toDocument(value, doc);

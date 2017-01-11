@@ -17,10 +17,15 @@ package org.apache.geode.management.internal;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
 import static org.junit.Assert.assertNotNull;
+
+import java.io.File;
+import java.nio.file.Path;
 
 @Category(IntegrationTest.class)
 public class AgentUtilJUnitTest {
@@ -28,8 +33,17 @@ public class AgentUtilJUnitTest {
   private AgentUtil agentUtil;
   private String version;
 
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+
   @Before
   public void setUp() {
+    // GEODE-958: We need to set gemfire.home to tell AgentUtil where to find wars in case the env
+    // variable GEMFIRE is not set
+    Path installDir = new File(".").getAbsoluteFile().toPath().resolve("build").resolve("install")
+        .resolve("apache-geode");
+    System.setProperty("gemfire.home", installDir.toString());
+
     version = GemFireVersion.getGemFireVersion();
     agentUtil = new AgentUtil(version);
   }

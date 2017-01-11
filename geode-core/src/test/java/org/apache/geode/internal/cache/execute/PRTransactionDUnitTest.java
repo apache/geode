@@ -26,6 +26,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 import org.assertj.core.api.Assertions;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -337,24 +338,38 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
    * @param bucketRedundancy redundancy for the colocated PRs
    */
   protected void basicPRTXWithNonColocatedGet(int bucketRedundancy) {
+    setupColocatedRegions(bucketRedundancy);
+
+    dataStore1.invoke(verifyNonColocated);
+    dataStore2.invoke(verifyNonColocated);
+
+    dataStore1.invoke(getTx);
+  }
+
+  @SuppressWarnings("unchecked")
+  private void setupColocatedRegions(int bucketRedundancy) {
     dataStore1.invoke(runGetCache);
     dataStore2.invoke(runGetCache);
     redundancy = new Integer(bucketRedundancy);
     localMaxmemory = new Integer(50);
     totalNumBuckets = new Integer(2);
 
-    setAttributes(CustomerPartitionedRegionName, null);
-
-    createPRInTwoNodes();
+    createColocatedRegionsInTwoNodes();
 
     // Put the customer 1-2 in CustomerPartitionedRegion
     dataStore1.invoke(
         () -> PRColocationDUnitTest.putCustomerPartitionedRegion(CustomerPartitionedRegionName, 2));
 
-    dataStore1.invoke(verifyNonColocated);
-    dataStore2.invoke(verifyNonColocated);
+    // Put the associated order in colocated OrderPartitionedRegion
+    dataStore1.invoke(
+        () -> PRColocationDUnitTest.putOrderPartitionedRegion(OrderPartitionedRegionName, 2));
+  }
 
-    dataStore1.invoke(getTx);
+  private void createColocatedRegionsInTwoNodes() {
+    setAttributes(CustomerPartitionedRegionName, null);
+    createPRInTwoNodes();
+    setAttributes(OrderPartitionedRegionName, CustomerPartitionedRegionName);
+    createPRInTwoNodes();
   }
 
 
@@ -461,13 +476,9 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
    * @param bucketRedundancy redundancy for the colocated PRs
    */
   @SuppressWarnings("unchecked")
-  protected void basicPRTXWithOpOnMovedBucket(Op op, int bucketRedundancy) {
-    setupMoveBucket(bucketRedundancy);
-
-    DistributedMember dm1 = (DistributedMember) dataStore1.invoke(getDM());
-    DistributedMember dm2 = (DistributedMember) dataStore2.invoke(getDM());
-
-    // First get transaction.
+  protected void basicPRTXWithOpOnMovedBucket(Op op, int bucketRedundancy, DistributedMember dm1,
+      DistributedMember dm2) {
+    // First transaction.
     TransactionId txId = (TransactionId) dataStore1.invoke(beginTx());
     dataStore1.invoke(resumeTx(op, txId, dm1, dm2));
 
@@ -522,13 +533,14 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   }
 
   enum Op {
-    GET, CONTAINSVALUEFORKEY, CONTAINSKEY;
+    GET, CONTAINSVALUEFORKEY, CONTAINSKEY, CREATE, PUT, INVALIDATE, DESTROY, GETENTRY;
   }
 
   private void _resumeTx(Op op, TransactionId txId, PartitionedRegion pr,
       CacheTransactionManager mgr) {
     CustId cust1 = new CustId(1);
     OrderId order1 = new OrderId(11, cust1);
+    OrderId neworder = new OrderId(111, cust1);
     mgr.resume(txId);
     try {
       switch (op) {
@@ -540,6 +552,21 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
           break;
         case CONTAINSKEY:
           pr.containsKey(order1);
+          break;
+        case CREATE:
+          pr.create(neworder, new Order("test"));
+          break;
+        case PUT:
+          pr.put(order1, new Order("test"));
+          break;
+        case INVALIDATE:
+          pr.invalidate(order1);
+          break;
+        case DESTROY:
+          pr.destroy(order1);
+          break;
+        case GETENTRY:
+          pr.getEntry(order1);
           break;
         default:
           throw new AssertionError("Unknown operations " + op);
@@ -570,6 +597,11 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
         break;
       case CONTAINSVALUEFORKEY:
       case CONTAINSKEY:
+      case CREATE:
+      case PUT:
+      case INVALIDATE:
+      case DESTROY:
+      case GETENTRY:
         PartitionRegionHelper.moveBucketByKey(prOrder, source, destination, order1);
         break;
       default:
@@ -619,13 +651,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
     localMaxmemory = new Integer(50);
     totalNumBuckets = new Integer(1);
 
-    setAttributes(CustomerPartitionedRegionName, null);
-
-    createPRInTwoNodes();
-
-    setAttributes(OrderPartitionedRegionName, CustomerPartitionedRegionName);
-
-    createPRInTwoNodes();
+    createColocatedRegionsInTwoNodes();
 
     // Put the customer 1 in CustomerPartitionedRegion
     dataStore1.invoke(
@@ -641,31 +667,124 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
     basicPRTXWithNonColocatedGet(0);
   }
 
-  @Test
-  public void testTxWithGetOnMovedBucket() {
-    Op op = Op.GET;
-    basicPRTXWithOpOnMovedBucket(op, 0);
+  /**
+   * This method executes a transaction with entry op on non colocated entries and expects the
+   * transaction to fail with TransactionDataNotColocatedException.
+   * 
+   * @param bucketRedundancy redundancy for the colocated PRs
+   */
+  protected void basicPRTXWithNonColocatedOp(Op op, int bucketRedundancy) {
+    dataStore1.invoke(verifyNonColocated);
+    dataStore2.invoke(verifyNonColocated);
+
+    // TXState and TXStateStub will be exectued on different nodes.
+    dataStore1.invoke(doOp(op));
+    dataStore2.invoke(doOp(op));
+  }
+
+  @SuppressWarnings("serial")
+  private SerializableRunnable doOp(Op op) {
+    return new SerializableRunnable("doOp") {
+      @Override
+      public void run() {
+        basicDoOp(op);
+      }
+    };
+  }
+
+  private void basicDoOp(Op op) {
+    CacheTransactionManager mgr = basicGetCache().getCacheTransactionManager();
+
+    Assertions.assertThatThrownBy(() -> doOp(op, mgr))
+        .isInstanceOf(TransactionDataNotColocatedException.class);
+  }
+
+  private void doOp(Op op, CacheTransactionManager mgr) {
+    PartitionedRegion cust = (PartitionedRegion) basicGetCache()
+        .getRegion(Region.SEPARATOR + CustomerPartitionedRegionName);
+    PartitionedRegion order = (PartitionedRegion) basicGetCache()
+        .getRegion(Region.SEPARATOR + OrderPartitionedRegionName);
+
+    CustId cust1 = new CustId(1);
+    CustId cust2 = new CustId(2);
+    OrderId order2 = new OrderId(21, cust2);
+    OrderId neworder2 = new OrderId(221, cust2);
+
+    mgr.begin();
+    cust.get(cust1); // touch 1 bucket
+
+    try {
+      switch (op) {
+        case GET:
+          order.get(order2);
+          break;
+        case CONTAINSVALUEFORKEY:
+          order.containsValueForKey(order2);
+          break;
+        case CONTAINSKEY:
+          order.containsKey(order2);
+          break;
+        case CREATE:
+          order.create(neworder2, new Order("test"));
+          break;
+        case PUT:
+          order.put(order2, new Order("test"));
+          break;
+        case INVALIDATE:
+          order.invalidate(order2);
+          break;
+        case DESTROY:
+          order.destroy(order2);
+          break;
+        case GETENTRY:
+          order.getEntry(order2);
+          break;
+        default:
+          throw new AssertionError("Unknown operations " + op);
+      }
+    } finally {
+      mgr.rollback();
+    }
   }
 
   @Test
-  public void testTxWithGetOnMovedBucketUsingBucketReadHook() {
-    Op op = Op.GET;
-    useBucketReadHook = true;
-    basicPRTXWithOpOnMovedBucket(op, 0);
+  public void testTxWithNonColocatedOps() {
+    setupColocatedRegions(0);
+
+    for (Op op : Op.values()) {
+      LogService.getLogger().info("Testing Operation: " + op.name());
+      basicPRTXWithNonColocatedOp(op, 0);
+    }
   }
 
   private boolean useBucketReadHook = false;
 
+  @SuppressWarnings("unchecked")
   @Test
-  public void testTxWithContainsValueForKeyOnMovedBucket() {
-    Op op = Op.CONTAINSVALUEFORKEY;
-    basicPRTXWithOpOnMovedBucket(op, 0);
+  public void testTxWithOpsOnMovedBucket() {
+    setupMoveBucket(0);
+
+    DistributedMember dm1 = (DistributedMember) dataStore1.invoke(getDM());
+    DistributedMember dm2 = (DistributedMember) dataStore2.invoke(getDM());
+
+    for (Op op : Op.values()) {
+      LogService.getLogger().info("Testing Operation: " + op.name());
+      basicPRTXWithOpOnMovedBucket(op, 0, dm1, dm2);
+    }
   }
 
+  @SuppressWarnings("unchecked")
   @Test
-  public void testTxWithContainsKeyOnMovedBucket() {
-    Op op = Op.CONTAINSKEY;
-    basicPRTXWithOpOnMovedBucket(op, 0);
+  public void testTxWithGetOnMovedBucketUsingBucketReadHook() {
+    setupMoveBucket(0);
+
+    DistributedMember dm1 = (DistributedMember) dataStore1.invoke(getDM());
+    DistributedMember dm2 = (DistributedMember) dataStore2.invoke(getDM());
+
+    Op op = Op.GET;
+    useBucketReadHook = true;
+    basicPRTXWithOpOnMovedBucket(op, 0, dm1, dm2);
+    useBucketReadHook = false;
   }
 
   @Test

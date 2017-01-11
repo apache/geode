@@ -28,6 +28,8 @@ import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.w3c.dom.Document;
@@ -235,5 +237,21 @@ public class XmlUtilsJUnitTest {
     assertEquals(ns1, root.getElementsByTagName("child").item(0).getNamespaceURI());
     assertEquals(ns2, root.getElementsByTagName("childWithNamespace").item(0).getNamespaceURI());
   }
+
+  @Test
+  public void testCreateAndUpgradeDocumentFromXml() throws Exception {
+    Document doc = XmlUtils.createAndUpgradeDocumentFromXml(
+        IOUtils.toString(this.getClass().getResourceAsStream("SharedConfigurationJUnitTest.xml")));
+
+    String schemaLocation = XmlUtils.getAttribute(doc.getDocumentElement(),
+        W3C_XML_SCHEMA_INSTANCE_ATTRIBUTE_SCHEMA_LOCATION, W3C_XML_SCHEMA_INSTANCE_NS_URI);
+
+    assertNotNull(schemaLocation);
+    assertEquals(CacheXml.GEODE_NAMESPACE + " " + CacheXml.LATEST_SCHEMA_LOCATION, schemaLocation);
+
+    assertEquals(CacheXml.VERSION_LATEST,
+        XmlUtils.getAttribute(doc.getDocumentElement(), "version"));
+  }
+
 
 }

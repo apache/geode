@@ -164,6 +164,24 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
   }
 
   @Test
+  public void nullValuesShouldNotCauseAnException() throws Exception {
+    luceneService.createIndex(INDEX_NAME, REGION_NAME, "title", "description");
+
+    // Configure PR with expiration operation set to destroy
+    Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
+    region.create(0, null);
+    region.put(113, new TestObject("hello world", "hello world"));
+    LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
+    // Wait for events to be flushed from AEQ.
+    index.waitUntilFlushed(WAIT_FOR_FLUSH_TIME);
+    // Execute query to fetch all the values for "description" field.
+    LuceneQuery query = luceneService.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME,
+        "description:\"hello world\"", DEFAULT_FIELD);
+    PageableLuceneQueryResults<Integer, TestObject> results = query.findPages();
+    assertEquals(1, results.size());
+  }
+
+  @Test
   public void entriesFlushedToIndexAfterWaitForFlushCalled() {
     luceneService.createIndex(INDEX_NAME, REGION_NAME, "title", "description");
 

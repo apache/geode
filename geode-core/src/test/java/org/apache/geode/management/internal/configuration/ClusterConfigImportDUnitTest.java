@@ -83,7 +83,10 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
         "import cluster-configuration --zip-file-name=" + EXPORTED_CLUSTER_CONFIG_PATH);
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    // TODO: For [GEODE-2229] we will want to assert that a backup is created
+    // Make sure that a backup of the old clusterConfig was created
+    assertThat(locator.getWorkingDir().listFiles())
+        .filteredOn((File file) -> file.getName().contains("cluster_config")).hasSize(2);
+
     CONFIG_FROM_ZIP.verify(locator);
 
     // start server1 with no group
@@ -102,11 +105,9 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
   }
 
   @Test
-  @Category(FlakyTest.class) // remove after GEODE-2261 is implemented
   public void testImportWithMultipleLocators() throws Exception {
     locatorProps.setProperty(LOCATORS, "localhost[" + locator.getPort() + "]");
     Locator locator1 = lsRule.startLocatorVM(1, locatorProps);
-
 
     locatorProps.setProperty(LOCATORS,
         "localhost[" + locator.getPort() + "],localhost[" + locator1.getPort() + "]");
@@ -116,6 +117,7 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
         "import cluster-configuration --zip-file-name=" + EXPORTED_CLUSTER_CONFIG_PATH);
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
+    CONFIG_FROM_ZIP.verify(locator);
     REPLICATED_CONFIG_FROM_ZIP.verify(locator1);
     REPLICATED_CONFIG_FROM_ZIP.verify(locator2);
   }
@@ -136,6 +138,8 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
     Path exportedZipPath = lsRule.getTempFolder().getRoot().toPath().resolve("exportedCC.zip");
     result = gfshConnector
         .executeCommand("export cluster-configuration --zip-file-name=" + exportedZipPath);
+    System.out.println(result.getContent());
+
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
     File exportedZip = exportedZipPath.toFile();

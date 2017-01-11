@@ -34,7 +34,6 @@ import org.apache.geode.management.internal.cli.result.CommandResultException;
 import org.apache.geode.management.internal.cli.result.FileResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
-import org.apache.geode.management.internal.configuration.SharedConfigurationWriter;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission.Operation;
@@ -59,7 +58,7 @@ import java.util.Set;
  * @see org.apache.geode.management.internal.cli.commands.AbstractCommandsSupport
  * @since GemFire 7.0
  */
-public final class DeployCommands extends AbstractCommandsSupport implements CommandMarker {
+public final class DeployCommands extends AbstractCommandsSupport {
 
   private final DeployFunction deployFunction = new DeployFunction();
   private final UndeployFunction undeployFunction = new UndeployFunction();
@@ -142,8 +141,8 @@ public final class DeployCommands extends AbstractCommandsSupport implements Com
 
       Result result = ResultBuilder.buildResult(tabularData);
       if (tabularData.getStatus().equals(Status.OK)) {
-        result.setCommandPersisted(
-            (new SharedConfigurationWriter()).addJars(jarNames, jarBytes, groups));
+        persistClusterConfiguration(result,
+            () -> getSharedConfiguration().addJarsToThisLocator(jarNames, jarBytes, groups));
       }
       return result;
     } catch (NotAuthorizedException e) {
@@ -218,8 +217,8 @@ public final class DeployCommands extends AbstractCommandsSupport implements Com
 
       Result result = ResultBuilder.buildResult(tabularData);
       if (tabularData.getStatus().equals(Status.OK)) {
-        result.setCommandPersisted((new SharedConfigurationWriter())
-            .deleteJars(jars == null ? null : jars.split(","), groups));
+        persistClusterConfiguration(result, () -> getSharedConfiguration()
+            .removeJars(jars == null ? null : jars.split(","), groups));
       }
       return result;
     } catch (VirtualMachineError e) {

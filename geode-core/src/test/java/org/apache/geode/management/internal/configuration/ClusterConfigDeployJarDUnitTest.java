@@ -66,7 +66,7 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigBaseTest {
   }
 
   @Test
-  public void testDeployToMultipleLocaotrs() throws Exception {
+  public void testDeployToMultipleLocators() throws Exception {
     Locator locator = lsRule.startLocatorVM(0, locatorProps);
     locatorProps.setProperty(LOCATORS, "localhost[" + locator.getPort() + "]");
     Locator locator2 = lsRule.startLocatorVM(1, locatorProps);
