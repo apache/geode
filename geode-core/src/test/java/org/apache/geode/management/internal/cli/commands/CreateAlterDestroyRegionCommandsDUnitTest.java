@@ -859,17 +859,6 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
       // Setup queues and gateway senders to be used by all tests
       cache.createRegionFactory(RegionShortcut.PARTITION).setStatisticsEnabled(true)
           .create(alterRegionName);
-      AsyncEventListener listener = new AsyncEventListener() {
-        @Override
-        public void close() {
-          // Nothing to do
-        }
-
-        @Override
-        public boolean processEvents(List<AsyncEvent> events) {
-          return true;
-        }
-      };
     });
 
     this.alterVm2 = Host.getHost(0).getVM(2);
@@ -886,16 +875,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     });
 
     deployJarFilesForRegionAlter();
-    regionAlterResetCacheListenersTest();
 
-    this.alterVm1.invoke(() -> {
-      getCache().getRegion(alterRegionName).destroyRegion();
-    });
-  }
-
-  private void regionAlterResetCacheListenersTest() {
-
-    // Start out by putting 3 entries into each of the plug-in sets
     CommandStringBuilder commandStringBuilder = new CommandStringBuilder(CliStrings.ALTER_REGION);
     commandStringBuilder.addOption(CliStrings.ALTER_REGION__REGION, "/" + this.alterRegionName);
     commandStringBuilder.addOption(CliStrings.ALTER_REGION__CACHELISTENER,
@@ -904,7 +884,8 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
         "com.cadrdunit.RegionAlterCacheListenerB");
     commandStringBuilder.addOption(CliStrings.ALTER_REGION__CACHELISTENER,
         "com.cadrdunit.RegionAlterCacheListenerC");
-    CommandResult cmdResult = executeCommand(commandStringBuilder.toString());
+
+    cmdResult = executeCommand(commandStringBuilder.toString());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
     String stringResult = commandResultToString(cmdResult);
 
