@@ -32,7 +32,10 @@
   </servlet>
   <servlet-mapping>
     <servlet-name>mvc-dispatcher</servlet-name>
-    <url-pattern>/pulse/*</url-pattern>
+    <url-pattern>/</url-pattern>
+    <!-- We expect Pulse to receive requests to URLs like /pulse/pulseVersion, but Jetty will match /pulse/
+    to the web app context for this WAR and only pass /pulseVersion into the servlet configured with this <url-pattern/>
+  -->
   </servlet-mapping>
   <listener>
     <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
