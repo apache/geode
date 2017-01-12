@@ -130,6 +130,8 @@ rat {
     'geode-site/website/content/css/font-awesome.min.css',
     'geode-site/website/lib/pandoc.template',
     'geode-site/website/content/font/**',
+    'geode-site/website/content/fonts/**',
+    'geode-site/website/content/stylesheets/**',
     'geode-site/content/**',
     // compiled logs and locks
     'geode-site/website/tmp/**',
