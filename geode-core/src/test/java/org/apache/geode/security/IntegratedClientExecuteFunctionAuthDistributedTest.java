@@ -32,14 +32,14 @@ public class IntegratedClientExecuteFunctionAuthDistributedTest
   private final static Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
 
   @Test
-  public void testExecuteRegionFunction() {
+  public void testExecuteRegionFunctionWithClientRegistration() {
 
     FunctionService.registerFunction(function);
-
     client1.invoke("logging in with dataReader", () -> {
       ClientCache cache = createClientCache("dataReader", "1234567", serverPort);
 
       FunctionService.registerFunction(function);
+
       assertNotAuthorized(() -> FunctionService.onServer(cache.getDefaultPool())
           .withArgs(Boolean.TRUE).execute(function.getId()), "DATA:WRITE");
     });
@@ -51,6 +51,17 @@ public class IntegratedClientExecuteFunctionAuthDistributedTest
       ResultCollector rc = FunctionService.onServer(cache.getDefaultPool()).withArgs(Boolean.TRUE)
           .execute(function.getId());
       rc.getResult();
+    });
+  }
+
+  @Test
+  // this would trigger the client to send a GetFunctionAttribute command before executing it
+  public void testExecuteRegionFunctionWithOutClientRegistration() {
+    FunctionService.registerFunction(function);
+    client1.invoke("logging in with dataReader", () -> {
+      ClientCache cache = createClientCache("dataReader", "1234567", serverPort);
+      assertNotAuthorized(() -> FunctionService.onServer(cache.getDefaultPool())
+          .withArgs(Boolean.TRUE).execute(function.getId()), "DATA:WRITE");
     });
   }
 }

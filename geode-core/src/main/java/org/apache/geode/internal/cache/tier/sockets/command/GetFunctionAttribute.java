@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
-import java.io.IOException;
-
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.cache.tier.Command;
@@ -24,6 +22,8 @@ import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+
+import java.io.IOException;
 
 public class GetFunctionAttribute extends BaseCommand {
 
@@ -56,8 +56,6 @@ public class GetFunctionAttribute extends BaseCommand {
       sendError(msg, message, servConn);
       return;
     }
-
-    this.securityService.authorizeClusterRead();
 
     byte[] functionAttributes = new byte[3];
     functionAttributes[0] = (byte) (function.hasResult() ? 1 : 0);
