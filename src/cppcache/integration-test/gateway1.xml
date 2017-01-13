@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<!DOCTYPE cache PUBLIC
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.6//EN"
+  "http://www.gemstone.com/dtd/cache7_0.dtd">
+<cache copy-on-read="false" >
+
+ 
+  <gateway-sender id="sender1" remote-distributed-system-id="2" batch-size="20"
+                    batch-time-interval="1000"
+                    enable-persistence="true" maximum-queue-memory="10" parallel="false"
+                    >
+    </gateway-sender>
+
+    <!-- gateway-receiver bind-address="poland.gemstone.com" >
+        
+    </gateway-receiver -->
+    
+  <cache-server port="HOST_PORT1"  >   
+	</cache-server> 
+
+    <!-- pdx read-serialized="true"  persistent="true" disk-store-name="myDiskStore" / --> 
+    <region name="exampleRegion"  >
+      <region-attributes data-policy="partition" gateway-sender-ids="sender1"  >
+        <partition-attributes redundant-copies="0"  total-num-buckets="113" > 
+         </partition-attributes>
+	  </region-attributes> 
+     
+        
+    </region>      
+</cache> 
+

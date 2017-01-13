@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<cache xmlns="http://geode.apache.org/schema/cache"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+       version="1.0">
+  <cache-server port="$PORT_NUM"/>
+  <region name="dummy">
+    <region-attributes  data-policy="normal">
+    </region-attributes>
+    <entry>
+      <key><string>1</string></key>
+      <value>
+        <declarable>
+          <class-name>javaobject.PSTObject</class-name>
+          <parameter name="field1">
+            <string>1</string>
+          </parameter>
+        </declarable>
+      </value>
+    </entry>
+    <entry>
+      <key><string>2</string></key>
+      <value>
+        <declarable>
+          <class-name>javaobject.EqStruct</class-name>
+          <parameter name="state">
+            <string>1</string>
+          </parameter>
+        </declarable>
+      </value>
+    </entry>
+    <entry>
+      <key><string>3</string></key>
+      <value>
+        <declarable>
+          <class-name>javaobject.EqStruct</class-name>
+          <parameter name="cxlQty">
+            <string>1</string>
+          </parameter>
+        </declarable>
+      </value>
+    </entry>
+    <entry>
+      <key><string>1</string></key>
+      <value>
+        <declarable>
+          <class-name>javaobject.FastAssetAccount</class-name>
+          <parameter name="acctId">
+            <string>1</string>
+          </parameter>
+          <parameter name="customerName">
+            <string>Milton Moneybags</string>
+          </parameter>
+          <parameter name="netWorth">
+            <string>1.0</string>
+          </parameter>
+        </declarable>
+      </value>
+    </entry>
+    <entry>
+      <key><string>4</string></key>
+      <value>
+        <declarable>
+          <class-name>javaobject.FastAsset</class-name>
+          <parameter name="assetId">
+            <string>1</string>
+          </parameter>
+          <parameter name="value">
+            <string>1.0</string>
+          </parameter>
+        </declarable>
+      </value>
+    </entry>
+  </region>
+  <region name="TestTCR1">
+    <region-attributes  scope="distributed-ack"  data-policy="replicate">
+    </region-attributes>
+  </region>
+  <function-service>
+    <function>
+      <class-name>javaobject.GetKeyFunction</class-name>
+    </function>
+    <function>
+      <class-name>javaobject.PutKeyFunction</class-name>
+    </function>
+   
+  </function-service>
+</cache>

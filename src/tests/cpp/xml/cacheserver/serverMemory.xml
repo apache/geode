@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="BBName">CacheServer</data>
+  <data name="systemName">CSTest</data>
+  <data name="cacheType">PEER</data>
+  <data name="scope">NACK</data>
+  <data name="regionName">CSEvents</data>
+  <data name="enableCache">true</data>
+  <data name="burstMillis">500</data>
+  
+  <data name="timedInterval">50</data>
+  <data name="distinctKeys">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+  <data name="valueSizes">
+    <list>
+      <item>1024</item>
+      <!-- item>8192</item>
+      <item>32768</item>
+      <item>2097152</item -->
+    </list>
+  </data>
+  <data name="numThreads">
+    <list>
+      <item>1</item>
+    </list>
+  </data>
+	
+  <client-set>
+    <client name="Feeder"/>
+  </client-set>
+  <client-set count="4" name="Server"/>
+  <client-set count="40" name="Client"/>
+
+  <test name="Setup Feed and 4 Servers" description="Feed throughput testing">
+  
+    <task name="Init Feeder" action="doCreateRegion" container="cacheserver" waitTime="10m">
+      <data name="cacheType">PEER</data>
+      <client-set>
+        <client name="Feeder"/>
+      </client-set>
+    </task>
+    
+    <task name="InitServers" action="doInitProcess" container="cacheserver" waitTime="10m">
+      <data name="cacheType">SERVER</data>
+      <client-set count="4" name="Server"/> 
+    </task>
+    
+    <task name="CreateServerRegion" action="doCreateRegion" container="cacheserver" waitTime="10m">
+      <client-set count="1" name="Server"/> 
+    </task>
+    
+  </test>
+  
+  <test name="10 clients per server" description="Feed throughput testing">
+  
+    <task name="Populate server regions" action="doPopServers" container="perftests" waitTime="20m">
+      <client-set>
+        <client name="Feeder"/> 
+      </client-set>
+      <data name="valueSizes">10</data>
+    </task>
+
+    <task name="CreateClients" action="doCreateRegion" container="cacheserver" waitTime="10m">
+      <data name="cacheType">CLIENT</data>
+      <data name="clientCount">10</data>
+      <client-set count="40" name="Client"/>
+    </task> 
+    
+    <!-- task name="Populate Client Regions" action="doPopClient" container="perftests" waitTime="10m">
+      <client-set count="40" name="Client"/>
+    </task --> 
+    
+    <!-- Throughput measurement with 4 servers, 10 clients per server -->
+    <task name="Measure Feed Throughput" action="doPutBursts" container="perftests" waitTime="1h">
+      <client-set>
+        <client name="Feeder"/> 
+      </client-set>
+      <data name="clientCount">10</data>
+    </task>
+    
+    <task name="Clients depart" action="doDepartSystem" container="cacheserver" waitTime="10m">
+      <client-set count="40" name="Client"/>
+    </task>
+    
+  </test>
+    
+  <test name="Cleanup" description="Feed throughput testing">
+  
+    <task name="Clients depart" action="doDepartSystem" container="cacheserver" waitTime="10m">
+      <client-set>
+        <client name="Feeder"/> 
+      </client-set>
+    </task>
+
+    <task name="Servers depart" action="doDepartSystem" container="cacheserver" waitTime="10m">
+      <client-set count="4" name="Server"/>
+    </task>
+    
+  </test>
+</test-driver>

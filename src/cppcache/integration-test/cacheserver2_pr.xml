@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+
+
+<cache xmlns="http://geode.apache.org/schema/cache"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+       version="1.0">
+	<cache-server port="HOST_PORT2"/>
+
+  <region name="DistRegionAck">
+    <region-attributes data-policy="partition">
+      <partition-attributes total-num-buckets="30">
+        <partition-resolver>
+          <class-name>javaobject.CustomPartitionResolver</class-name>
+        </partition-resolver>
+      </partition-attributes>
+      <cache-writer>
+        <class-name>javaobject.CacheWriterForSingleHop</class-name>
+      </cache-writer>
+
+    </region-attributes>
+  </region>
+</cache>

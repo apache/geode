@@ -1,0 +1,14 @@
+diff -ru a/lib/cpp/antlr/CharScanner.hpp b/lib/cpp/antlr/CharScanner.hpp
+--- a/lib/cpp/antlr/CharScanner.hpp	2006-11-01 13:37:17.000000000 -0800
++++ b/lib/cpp/antlr/CharScanner.hpp	2015-12-22 16:09:21.979422041 -0800
+@@ -22,6 +22,9 @@
+ // VC6 seems to need this
+ // note that this is not a standard C++ include file.
+ # include <stdio.h>
++#else
++#include <cstring>
++#include <cstdio>
+ #endif
+ 
+ #include <antlr/TokenStream.hpp>
+

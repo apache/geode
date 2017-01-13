@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+
+<cache xmlns="http://geode.apache.org/schema/cache"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+       version="1.0">
+  <cache-server port="40404"/>
+  <region name="exampleRegion">
+    <region-attributes scope="distributed-ack" data-policy="replicate"/>
+  </region>
+
+  <region name="BankAccounts">
+    <region-attributes scope="distributed-ack" data-policy="replicate"/>
+    <entry>
+      <key>
+        <string>new-bankaccount</string>
+      </key>
+      <value>
+        <declarable>
+          <class-name>javaobject.BankAccount</class-name>
+          <parameter name="customerId">
+            <string>100</string>
+          </parameter>
+          <parameter name="accountId">
+            <string>1000</string>
+          </parameter>
+        </declarable>
+      </value>
+    </entry>
+  </region>
+  
+  <region name="root">
+    <region-attributes scope="distributed-ack" data-policy="replicate"/>
+    	<region name="listenerWriterLoader">
+      <region-attributes scope="distributed-ack">
+        <!--cache-loader>
+          <class-name>cacheRunner.StringLoader</class-name>
+        </cache-loader-->
+      </region-attributes>
+      <entry>
+        <key><string>entry1</string></key>
+        <value><string>1.0</string></value>
+      </entry>
+      <region name="sub1">  
+        <region-attributes  scope="local">
+        </region-attributes>
+      </region>
+    </region>
+  </region>
+  
+  <region name="exampleRegion0">
+    <region-attributes scope="distributed-ack" data-policy="replicate"/>
+  </region>
+  
+  <region name="exampleRegion1">
+    <region-attributes scope="distributed-ack" data-policy="replicate"/>
+  </region>
+  <region name="exampleputgetregion">
+    <region-attributes scope="distributed-ack" data-policy="replicate"/>
+  </region>
+  <region name="tradeOrder">
+    <region-attributes scope="distributed-ack" data-policy="replicate"/>
+    <entry>
+      <key>
+        <string>new-trade</string>
+      </key>
+      <value>
+        <declarable>
+          <class-name>javaobject.TradeOrder</class-name>
+          <parameter name="price">
+            <string>200</string>
+          </parameter>
+          <parameter name="pkid">
+            <string>A0</string>
+          </parameter>          
+        </declarable>
+      </value>
+    </entry>
+    </region>  
+  <region name="partition_region">
+    <region-attributes scope="distributed-ack" data-policy="replicate"/>
+  </region>
+  <function-service>
+  	<function>
+  		<class-name>javaobject.MultiGetFunctionI</class-name>
+  	</function>
+  </function-service>  
+</cache> 

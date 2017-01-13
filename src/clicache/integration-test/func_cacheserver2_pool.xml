@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+
+
+<cache xmlns="http://geode.apache.org/schema/cache"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+       version="1.0">
+	<cache-server port="HOST_PORT2">
+	<group>ServerGroup1</group>
+	</cache-server>
+  <pdx read-serialized="true" />
+	<region name='partition_region'>
+		<region-attributes  data-policy="partition"  >
+		<partition-attributes redundant-copies="1" startup-recovery-delay="1"/>
+		</region-attributes>
+	</region>
+  <function-service>
+  	<function>
+  		<class-name>javaobject.MultiGetFunctionI</class-name>
+  	</function>
+  	<function>
+  		<class-name>javaobject.MultiPutFunctionI</class-name>
+  	</function>
+  	<function>
+  		<class-name>javaobject.MultiGetFunction</class-name>
+  	</function>
+		<function>
+  		<class-name>javaobject.MultiGetFunction2</class-name>
+  	</function>
+  	<function>
+  		<class-name>javaobject.MultiPutFunction</class-name>
+  	</function>
+	<function>
+  		<class-name>javaobject.RegionOperationsHAFunction</class-name>
+  	</function>	
+  	<function>
+  		<class-name>javaobject.RegionOperationsFunction</class-name>
+  	</function>  	
+  	<function>
+  		<class-name>javaobject.ExceptionHandlingFunction</class-name>
+  	</function>
+	<function>
+  		<class-name>javaobject.OnServerHAExceptionFunction</class-name>
+  	</function>
+	<function>
+  		<class-name>javaobject.OnServerHAShutdownFunction</class-name>
+  	</function>
+    
+    <function>
+      <class-name>javaobject.SingleStrGetFunction</class-name>
+    </function>
+	<function>
+      <class-name>javaobject.executeFunction_SendException</class-name>
+    </function>
+	<function>
+  	  <class-name>javaobject.RegionOperationsHAFunctionPrSHOP</class-name>
+  	</function>
+    <function>
+      <class-name>javaobject.PdxFunctionTest</class-name>
+    </function>
+	<function>
+  	  <class-name>javaobject.FEOnRegionPrSHOP</class-name>
+	</function>
+	<function>
+	  <class-name>javaobject.FEOnRegionPrSHOP_OptimizeForWrite</class-name>
+	</function>
+	<function>
+  	  <class-name>javaobject.FunctionExecutionTimeOut</class-name>
+    </function>
+  </function-service>
+  <serialization-registration>
+      <instantiator id="5200" >
+        <class-name>javaobject.InstantiatorTest</class-name>
+      </instantiator>
+    </serialization-registration>  
+</cache>

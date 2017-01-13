@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<cache xmlns="http://geode.apache.org/schema/cache"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+       version="1.0">
+  <cache-server port="$PORT_NUM" max-threads="5"/>
+  <region name="TestTCR1">
+    <region-attributes data-policy="partition">
+      <partition-attributes redundant-copies="1" total-num-buckets="10"/>
+    </region-attributes>
+  </region>
+</cache> 

@@ -1,0 +1,377 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN"><HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+<META NAME="GENERATOR" CONTENT="Adobe FrameMaker 7.0/HTML Export Filter">
+
+<TITLE>ProductBrowser: GemFire Native&#174; Client Example</TITLE>
+<style type="text/css">
+<!--
+.style1 {font-style: italic}
+-->
+</style>
+</HEAD>
+<BODY>
+ <IMG SRC="../../../docs/PIVOTAL_GemFire_190x81.png" BORDER="0">
+ <DIV>
+   <h1 align="center"><a name="Top" id="Top"></a>ProductBrowser</h1>
+   <h2 align="center">Pivotal GemFire&#174; Native Client</h2>
+   <h2 align="center">Programming Example</h2>
+</DIV>
+<DIV>
+<P>The <code>ProductBrowser</code> example demonstrates heterogeneous client access by using both a .NET client and a Java client to interact with a Java cache server and exchange data between the clients. Both clients have <code>Product</code> for their <code>DataSerializable</code> class, and the .NET client implements a cache listener to display events as they occur.
+<P>Use <code>ProductBrowser</code> to put product data into the cache server from one client, retrieve the data in another client, make modifications, then update the clients with the new data. The example is located in <code>examples/cli_ProductBrowser.<br>
+  </code><br>
+  <br>
+</DIV>
+ <DIV>
+<H2>
+Running ProductBrowser</H2>
+<P>
+The <code>ProductBrowser</code> example runs both a .NET client and a Java client with a GemFire Java cache server. The example uses <code><a href="./product.xml" target="_blank">product.xml</a></code> to configure the Java cache server. When the Java cache server starts, <code>product.xml</code> creates a <code>root</code> region named <code>product</code>.</P>
+<P>
+In the procedures, the lines you type are shown in a
+ <code> <strong>boldface fixed</strong></code> font. System output is in a <code>regular fixed</code> font.<br>
+ <br>
+ <br>
+</P> 
+</DIV>
+
+<DIV>
+<H2>
+<a name="configuring_environment" id="configuring_environment"></a>Configuring the Environment </H2>
+<P>
+Examples that interact with a Java cache server require specific environment configurations so the Java cache server will run properly. Follow the configuration steps listed below that apply to your operating system: </P>
+</DIV>
+ <DIV>
+<ol>
+  <li>From the GemFire product installation directory, configure your environment settings by following the steps in <code>examples/EnvSetup.html</code>. Refer to the developer's 
+      guide if you need help with this step.<br>
+      <br>
+  <li>Set the <code>JAVA_HOME</code> and <code>GF_JAVA_HOME</code>  environment variables to your installed Java JRE or JDK. See the Installation chapter of the   <em>GemFire User's Guide</em> for the versions of Java that are compatible with GemFire. The <code>JAVA_HOME</code> setting is for your applications, and  <code>GF_JAVA_HOME</code> is for the GemFire scripts.  You must have a compatible Java JRE or JDK installed and you must set <code>JAVA_HOME</code> and <code>GF_JAVA_HOME</code> to point to it.<br>
+      <br>
+  <li>Add <code>$JAVA_HOME/bin</code> to the start of your <code>PATH</code>. <br>
+</ol>
+<p>The following is a list of the environment configuration commands for the <code>ProductBrowser</code> example. Choose the set of commands that are appropriate for your operating system. The text that you type is shown in bold.
+  These configurations only need to be performed for the sessions that invoke the Java cache server.</p>
+<p><strong>Bourne and Korn shells (sh, ksh, bash)</strong></p>
+<blockquote>
+  <p>    <code>% <strong>cd GemFireInstallDirectory</strong><br>
+    % <strong>JAVA_HOME=&lt;installed JRE PATH&gt;; export JAVA_HOME</strong><br>
+    % <strong>GF_JAVA_HOME=$JAVA_HOME; export GF_JAVA_HOME</strong><br>
+    % <strong>PATH=$JAVA_HOME/bin:$PATH; export PATH</strong></code></p>
+</blockquote>
+<p><strong>Windows</strong></p>
+<blockquote>
+  <p><code>&gt; <strong>cd GemFireInstallDirectory</strong><br>
+&gt; <strong>set JAVA_HOME=&lt;installed JRE PATH&gt;</strong><br>
+&gt; <strong>set GF_JAVA_HOME=%JAVA_HOME%</strong><br>
+&gt; <strong>set PATH=%JAVA_HOME%\bin;%PATH%</strong> </code></p>
+</blockquote>
+</DIV>
+
+<DIV>
+<H2>
+<a name="starting_application_processes" id="starting_application_processes"></a>Starting the Cache Server </H2>
+<P>
+To start the cache server for the <code>ProductBrowser</code> example, create a session and complete the following steps. </P>
+</DIV>
+ <DIV>
+<OL>
+<LI CLASS="Numbered-1st">
+<p>Configure the session environment according to the steps listed in <a href="#configuring_environment">Configuring the Environment</a><a href="..\EnvSetup.html" target="_blank"></a>.</p>
+</LI>
+<LI CLASS="Numbered">
+Go to the <code>cli_ProductBrowser</code> directory:
+ <blockquote>
+   <p><strong>
+     <code>cd examples\cli_ProductBrowser</code></strong></p>
+   </blockquote>
+ </LI>
+<LI CLASS="Numbered">
+Start the cache server, specifying <code>product.xml</code> in the <code>defaultConfig</code> directory as its configuration file. Enter the entire <code>cacheserver start</code> command below on a single line, replacing the <code>xxxx</code> in <code>NativeClient_xxxx</code> with the actual four-digit product version:
+   <blockquote>
+     <p><strong><code>cacheserver start -dir=</code></strong><strong><code>defaultConfig cache-xml-file=product.xml</code></strong></p>
+   </blockquote>
+ <P>The cache server is initialized using the settings in the <code>product.xml</code> file. A message similar to the following appears, indicating that the cache server is running:</P>
+</LI>
+ <blockquote>
+   <p>
+     <code>Cacheserver pid: 2120 status: running</code></p>
+   </blockquote>
+</OL>
+</DIV>
+
+<DIV>
+<H2>
+<a name="starting_application_processes" id="starting_application_processes"></a>Starting the ProductBrowser Java client </H2>
+<P>
+The Java client uses <code>productClient.jar</code> in the <code>lib</code> directory. To start the </code>Java client:</P>
+</DIV>
+
+ <DIV>
+<OL>
+<LI CLASS="Numbered-1st">
+<p>Create another session and configure its environment
+  by entering the following command:
+</LI>
+  <blockquote>
+   <p><strong>
+     <code>bin\setenv.bat</code></strong></p>
+   </blockquote>
+ <LI CLASS="Numbered-1st">
+   <p>Add the classes for <code>productClient.jar</code> to your <code>CLASSPATH</code> by entering the following in a single line: </p>
+ </LI>
+  <blockquote>
+   <p><strong>
+     <code>set CLASSPATH=&lt;full path to NativeClient_xxxx&gt;\examples\cli_ProductBrowser\<br>
+     lib\productClient.jar;%CLASSPATH%</code></strong></p>
+   </blockquote>
+ <LI CLASS="Numbered">
+Start the <code> ProductBrowser</code>
+ Java client:
+     <blockquote>
+       <p><strong><code>java com.examples.gemfire.net.ProductBrowser</code></strong> </p>
+   </blockquote>
+ <P>The <code>ProductBrowser</code> Java client is initialized and connects with the cache server. In a moment, the following prompt appears:</P>
+</LI>
+ <blockquote>
+   <p>
+     <code>Enter the operation to execute.  'Get' to find an object, 'Put' to insert/update  an object, or 'Exit' to end:</code></p>
+   </blockquote>
+</OL>
+<br>
+</DIV>
+
+<DIV>
+<H2>Starting the ProductBrowser .NET Client</H2>
+<P>
+To complete the client setup, start the .NET client by following these steps:</P>
+</DIV>
+<DIV>
+  <OL>
+  <li>Create another session, then go to the <code>cli_ProductBrowser</code> directory.
+    <blockquote>
+   <p><strong><code>cd examples\cli_ProductBrowser</code></strong></p>
+   </blockquote>
+ </li>
+
+  <LI CLASS="Numbered">
+    Start the .NET client:
+      <blockquote>
+        <p><strong>
+          <code>ProductBrowser.exe</code></strong></p>
+      </blockquote>
+      <P>
+      The Product Browser form appears. The form consists of a set of fields where you enter product data. The Event Message area is a cache listener interface that displays events as they occur in the clients. </P>
+  </LI>
+  </OL>
+</DIV>
+<DIV>
+<H2>
+Entering Data in the Product Browser Form </H2>
+<P>
+Enter data in the Product Browser form and put the data into the cache.</P>
+</DIV>
+<DIV>
+<P CLASS="Head-D"><strong>
+In the Product Browser form: </strong></P>
+
+<OL>
+<LI CLASS="Numbered">
+Type the following data into each of the fields:</LI>
+<blockquote>
+  <table width="302" cellpadding="2" cellspacing="2">
+    <tr>
+      <td width="142"><code>Product Id </code></td>
+      <td width="150" bordercolor="#000000"><strong><code>101</code></strong></td>
+    </tr>
+    <tr>
+      <td><code>Product Name </code></td>
+      <td bordercolor="#000000"><strong><code>widget</code></strong></td>
+    </tr>
+    <tr>
+      <td><code>Product Number </code></td>
+      <td bordercolor="#000000"><strong><code>123</code></strong></td>
+    </tr>
+    <tr>
+      <td><code>Stock Amt </code></td>
+      <td bordercolor="#000000"><strong><code>15</code></strong></td>
+    </tr>
+    <tr>
+      <td><code>Reorder Amt </code></td>
+      <td bordercolor="#000000"><strong><code>10</code></strong></td>
+    </tr>
+    <tr>
+      <td><code>Cost</code></td>
+      <td bordercolor="#000000"><strong><code>1.5</code></strong></td>
+    </tr>
+    <tr>
+      <td><code>List Price </code></td>
+      <td bordercolor="#000000"><strong><code>5.0</code></strong></td>
+    </tr>
+    <tr>
+      <td><code>Days to Mfg </code></td>
+      <td bordercolor="#000000"><strong><code>5</code></strong></td>
+    </tr>
+    <tr>
+      <td><code>Sell Date </code></td>
+      <td bordercolor="#000000"><strong><code>3/15</code></strong></td>
+    </tr>
+    <tr>
+      <td><code>Discontinue Date </code></td>
+      <td bordercolor="#000000"><strong><code>9/12</code></strong></td>
+    </tr>
+  </table>
+  </blockquote>
+<li>
+  Click the <code>Put</code> button to enter the data into the cache server.</li>
+</OL>
+<br>
+</DIV>
+<DIV>
+<H2>
+<a name="managing_data"></a>Retrieving the Data in the Java Client</H2>
+<P>
+Next, specify the Product ID to update the Java client with the data you entered in the Product Browser form<code></code>.</P>
+</DIV>
+<DIV>
+<P CLASS="Head-D"><strong>
+In the Java client: </strong></P>
+  <OL>
+    <LI CLASS="Numbered">
+Get the product data previously entered into the Product Browser form:
+     <blockquote>
+       <p><strong><code>Get</code></strong></p>
+   </blockquote>
+    <li>When the following prompt appears, enter <code>101</code> for the Product ID that was defined in the Product Browser:
+      <blockquote>
+        <p><code>Enter the Product ID to search for:<strong> 101</strong></code></p>
+   </blockquote>
+        <p> The data associated with Product ID 101 is retrieved from the cacheserver:</p>
+        <blockquote>
+        <p><code>Product ID =            101<br>
+          Product Name =          widget<br>
+          Product Number =        123<br>
+          Color =                 Black<br>
+          Stock Level =           15<br>
+          Reorder Point =         10<br>
+          Product Cost =          1.5<br>
+          List Price =            5.0<br>
+          Available as of =       3/15<br>
+          Discontinue as of =     9/12</code></p>
+      </blockquote>
+  </li>
+  </OL>
+</DIV>
+<DIV>
+<H2>
+<a name="managing_data"></a>Modifying the Data With the Java Client</H2>
+<P>
+Enter some new product values into the Java client and see both the original and the new values displayed in the .NET client (Product Browser).</P>
+</DIV>
+<DIV>
+<P CLASS="Head-D"><strong>
+In the Java client: </strong></P>
+  <OL>
+<LI CLASS="Numbered-1st">Put new data into the cache. You're prompted with the same input fields as the Product Browser form:
+  <blockquote>
+    <p><strong><code>Put</code></strong></p>
+  </blockquote>
+  </LI>
+    <LI CLASS="Numbered">For each of the following prompts, enter the values shown:<br>
+      <br>
+    </LI>
+    <blockquote>
+      <table width="379" cellpadding="2" cellspacing="2">
+        <tr>
+          <td width="225"><code>ProductId: </code></td>
+          <td width="138" bordercolor="#000000"><strong><code>101</code></strong></td>
+        </tr>
+        <tr>
+          <td><code>Product Name: </code></td>
+          <td bordercolor="#000000"><strong><code>widget</code></strong></td>
+        </tr>
+        <tr>
+          <td><code>Product Number: </code></td>
+          <td bordercolor="#000000"><strong><code>123</code></strong></td>
+        </tr>
+        <tr>
+          <td><code>Color:</code></td>
+          <td bordercolor="#000000"><strong><code>Blue</code></strong></td>
+        </tr>
+        <tr>
+          <td><code>Stock Level (int): </code></td>
+          <td bordercolor="#000000"><strong><code>30</code></strong></td>
+        </tr>
+        <tr>
+          <td><code>Reorder Point (int): </code></td>
+          <td bordercolor="#000000"><strong><code>15</code></strong></td>
+        </tr>
+        <tr>
+          <td><code>Product Cost (double): </code></td>
+          <td bordercolor="#000000"><strong><code>2.0</code></strong></td>
+        </tr>
+        <tr>
+          <td><code>List Price (double): </code></td>
+          <td bordercolor="#000000"><strong><code>6.0</code></strong></td>
+        </tr>
+        <tr>
+          <td><code>Available as of (string):  </code></td>
+          <td bordercolor="#000000"><strong><code>6/15</code></strong></td>
+        </tr>
+        <tr>
+          <td><code>Discontinue as of (string): </code></td>
+          <td bordercolor="#000000"><strong><code>11/12</code></strong></td>
+        </tr>
+      </table>
+    </blockquote>
+  <LI CLASS="Numbered"><p>Look at the Product Browser. Its Event Message area displays the original values for Product ID 101, along with the updated values that you just entered in the Java client.</p></LI>
+
+    <LI CLASS="Numbered">In the cache server session, enter the following command to stop the cache server:
+      <blockquote>
+        <p><strong> <code>cacheserver stop -dir=defaultConfig </code></strong></p>
+      </blockquote>
+    </LI>
+<li>
+  <p>Now close the cache server session: </p>
+  <blockquote>
+    <p><strong> <code>exit</code></strong></p>
+  </blockquote>
+</li>
+<li>
+  <p>End the Java client, then close its session: </p>
+  <blockquote>
+    <p><strong> <code>exit</code></strong></p>
+    <p><strong><code>exit</code></strong></p>
+  </blockquote>
+</li>
+<li>
+  <p>Close the .NET client session: </p>
+  <blockquote>
+    <p><strong><code>exit</code></strong></p>
+  </blockquote>
+</li>
+  <LI CLASS="Numbered">
+    Close the Product Browser form by clicking the '<code>X</code>' button in the right part of its titlebar, or by clicking the icon in the left part of its titlebar and then clicking <code>Close</code>.</LI>
+</OL>
+  <br>
+</DIV>
+
+<DIV>
+<H2>
+Changing System Parameters</H2>
+<P>
+This product ships configured to run with default system properties. If you need to run in a non-default configuration, GemFire also takes a system-level configuration file. Copy the <code>gfcpp.properties</code> file into your <code>cli_ProductBrowser</code> directory from the <code>defaultSystem</code> directory. Edit the <code>gfcpp.properties</code> file in your <code>cli_ProductBrowser</code> directory as needed. For example, to change the name of the <code>cache.xml</code> file, uncomment this line and change the file name:</P>
+<P> <code>#cache-xml-file=cache.xml</code><br>
+  <br>
+  <br>
+</P>
+</DIV>
+<a href="#Top">Top</a>
+<P>&nbsp;</P>
+<P>
+<p>Copyright &#169; 2005-2014 Pivotal Software, Inc. All rights reserved.  This product is protected by U.S. and international copyright and intellectual property laws. Pivotal products are covered by one or more patents listed at http://www.pivotal.io/patents.</p>
+</BODY>
+</HTML>
+

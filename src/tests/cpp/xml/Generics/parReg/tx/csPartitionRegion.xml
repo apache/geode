@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <pdx read-serialized="false" ignore-unread-fields="false" persistent="false"/>
+  <region name="TestTCR1">
+    <region-attributes multicast-enabled="false" enable-async-conflation="false" enable-subscription-conflation="false" enable-gateway="false" data-policy="partition" initial-capacity="16" load-factor="0.75" concurrency-level="16" concurrency-checks-enabled="true" statistics-enabled="false" ignore-jta="false" is-lock-grantor="false" disk-synchronous="true" cloning-enabled="false">
+      <region-time-to-live>
+        <expiration-attributes timeout="0" action="invalidate"/>
+      </region-time-to-live>
+      <region-idle-time>
+        <expiration-attributes timeout="0" action="invalidate"/>
+      </region-idle-time>
+      <entry-time-to-live>
+        <expiration-attributes timeout="0" action="invalidate"/>
+      </entry-time-to-live>
+      <entry-idle-time>
+        <expiration-attributes timeout="0" action="invalidate"/>
+      </entry-idle-time>
+      <partition-attributes redundant-copies="0" local-max-memory="216" total-max-memory="2147483647" total-num-buckets="113" recovery-delay="-1" startup-recovery-delay="0"/>
+      <subscription-attributes interest-policy="cache-content"/>
+      <cache-listener>
+        <class-name>javaobject.BridgeEventListener</class-name>
+      </cache-listener>
+    </region-attributes>
+  </region>
+  <function-service/>
+</cache>

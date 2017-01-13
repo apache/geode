@@ -1,0 +1,43 @@
+@echo off
+setlocal
+
+set PATH=%PATH%;$<SHELL_PATH:$<TARGET_LINKER_FILE_DIR:gfcppcache>>
+set PATH=%PATH%;$<SHELL_PATH:$<TARGET_LINKER_FILE_DIR:framework>>
+set PATH=%PATH%;$<SHELL_PATH:$<TARGET_LINKER_FILE_DIR:testobject>>
+set PATH=%PATH%;$<SHELL_PATH:$<TARGET_LINKER_FILE_DIR:SqLiteImpl>>
+set PATH=%PATH%;$<SHELL_PATH:$<TARGET_LINKER_FILE_DIR:cryptoImpl>>
+set PATH=%PATH%;$<SHELL_PATH:$<TARGET_LINKER_FILE_DIR:DHImpl>>
+set PATH=%PATH%;$<SHELL_PATH:$<TARGET_LINKER_FILE_DIR:securityImpl>>
+set PATH=%PATH%;$<SHELL_PATH:$<TARGET_LINKER_FILE_DIR:unit_test_callbacks>>
+set PATH=%PATH%;$<JOIN:$<SHELL_PATH:${PATH}>,;>
+
+set TESTSRC=${CMAKE_CURRENT_SOURCE_DIR}
+set GF_JAVA=$<SHELL_PATH:${Java_JAVA_EXECUTABLE}>
+set GFJAVA=$<SHELL_PATH:${GEMFIRE_HOME}>
+set GFE_LOGLEVEL=config
+set GFE_SECLOGLEVEL=config
+set MCAST_ADDR=224.10.13.63
+set MCAST_PORT=${PORT}
+set TIMEBOMB=3600
+set GF_CLASSPATH=%GF_CLASSPATH%;${CMAKE_BINARY_DIR}/tests/javaobject/javaobject.jar
+set PROFILERCMD=
+set BUG481=
+set TESTNAME=${TEST}
+set LOG=${TEST}.log
+
+set
+
+rmdir /q /s "$<SHELL_PATH:${TEST_DIR}>" 2>nul
+mkdir "$<SHELL_PATH:${TEST_DIR}>"
+if %errorlevel% neq 0 exit /b %errorlevel%
+pushd "$<SHELL_PATH:${TEST_DIR}>"
+if %errorlevel% neq 0 exit /b %errorlevel%
+
+rem In Windows, pipes to tee return tee's exit code instead of executable's
+rem exit code. As a workaround we write exit codes to files.
+("$<SHELL_PATH:$<TARGET_FILE:${TEST}>>" && echo 0 >${TEST}.errorlevel || echo 1 >${TEST}.errorlevel) | tee %LOG%
+set /p errorlevel= <${TEST}.errorlevel
+if %errorlevel% neq 0 exit /b %errorlevel%
+
+popd
+exit /b

@@ -1,0 +1,80 @@
+{
+  "variables":{
+    "region":"us-west-2",
+    "source_ami":"",
+    "source_image_name":"X.vmx",
+    "image_name":"windows-2012-r2-base"
+  },
+  "builders":[
+    {
+      "type":"amazon-ebs",
+      "instance_type":"t2.large",
+      "ami_name":"native-{{user `version`}}-{{user `image_name`}} {{timestamp}}",
+      "access_key":"{{user `aws_access_key`}}",
+      "secret_key":"{{user `aws_secret_key`}}",
+      "region":"{{user `region`}}",
+      "source_ami":"{{user `source_ami`}}",
+      "subnet_id":"{{user `subnet_id`}}",
+      "vpc_id":"{{user `vpc_id`}}",
+      "tags":{
+        "team":"native",
+        "version":"{{user `version`}}",
+        "source_ami":"{{user `source_ami`}}"
+      },
+      "communicator":"winrm",
+      "winrm_username":"Administrator",
+      "user_data_file":"windows/winrm.cloud-init"
+    }
+  ],
+  "provisioners":[
+    {
+      "pause_before":"30s",
+      "type":"file",
+      "source":"windows/Packer.psm1",
+      "destination":"Documents/WindowsPowerShell/Modules/Packer/Packer.psm1"
+    },
+    {
+      "type":"powershell",
+      "scripts":[
+        "windows/install-windows-8.1-2012-r2-wmf-5.ps1"
+      ]
+    },
+    {
+      "type":"powershell",
+      "scripts":[
+        "windows/install-chocolatey.ps1"
+      ]
+    },
+    {
+      "type":"file",
+      "source":"windows/init-ssh.ps1",
+      "destination":"$Env:ProgramFiles/Amazon/Ec2ConfigService/Scripts/init-ssh.ps1"
+    },
+    {
+      "type":"file",
+      "source":"windows/sshd-recovery.bat",
+      "destination":"$Env:ProgramFiles/OpenSSH-Win64/sshd-recovery.bat"
+    },
+    {
+      "type":"powershell",
+      "scripts":[
+        "windows/install-ssh.ps1"
+      ]
+    },
+    {
+      "type":"powershell",
+      "scripts":[
+        "windows/cleanup.ps1"
+      ]
+    },
+    {
+      "type":"powershell",
+      "scripts":[
+        "windows/setup-ec2config.ps1"
+      ],
+      "only":[
+        "amazon-ebs"
+      ]
+    }
+  ]
+}

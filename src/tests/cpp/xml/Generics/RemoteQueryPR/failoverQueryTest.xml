@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="cacheType">CLIENT</data>
+  <data name="redundancyLevel">1</data>
+  <data name="minServers">4</data>
+ 	
+  <data name="distinctKeys">
+    <list>
+      <item>10000</item>
+    </list>
+  </data>
+	
+  <data name="valueSizes">
+    <list>
+      <item>10000</item>
+    </list>
+  </data>
+
+  <data name="categoryType">
+    <list>
+      <item>1</item>
+      <item>3</item>
+      <item>4</item>
+      <item>5</item>
+      <item>6</item>
+      <item>7</item>
+      <item>8</item>
+      <item>11</item>
+      <item>13</item>
+      <item>14</item>
+    </list>
+  </data>
+	
+  <data name="sleepTime">
+    <oneof>
+      <item>40</item>
+      <item>50</item>
+      <item>60</item>
+      <item>90</item>
+      <item>120</item>
+    </oneof>
+  </data>
+  
+  <data name="operation">
+    <oneof>
+      <item>stop</item>
+      <item>term</item>
+      <item>kill</item>
+    </oneof>
+  </data>
+  <data name="regionPaths">
+    <list>
+      <item>/IndexRegion</item>
+      <item>/Portfolios</item>
+    </list>
+  </data>
+
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="Portfolios">
+        <region-attributes caching-enabled="false" client-notification="true">
+          <cache-listener library="perftests" function="createPerfTestCacheListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  <data name="regionSpec">ThinClientRegion</data>
+  <data name="index">true</data>
+  <data name="largeSetQuery">false</data>
+
+  <client-set name="Feeder"/>
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set name="JCS2" hostGroup="CS"/>
+  <client-set name="JCS3" hostGroup="CS"/>
+  <client-set name="JCS4" hostGroup="CS"/>
+  <client-set name="JCS5" hostGroup="CS"/>
+  <client-set name="JCS6" hostGroup="CS"/>
+  <client-set count="10" name="ThinClient"/>
+
+  <test name="QueryFailoverTest" description="Thin Client perf test">
+    <task name="SetupCacheServer" action="doRunProcess" container="utils" waitTime="10m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-e CLASSPATH=\$BUILDDIR/framework/lib/javaobject.jar:\$CLASSPATH Generics/RemoteQueryPR/csWithIndexRC2.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="SetupCacheServer" action="doRunProcess" container="utils" waitTime="10m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 7 -e CLASSPATH=\$BUILDDIR/framework/lib/javaobject.jar:\$CLASSPATH Generics/RemoteQueryPR/csWithOutIndexRC2.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServer 1" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServer 2" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StartCacheServer 3" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="StartCacheServer 4" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">4</data>
+      <client-set name="JCS4"/>
+    </task>
+    <task name="StartCacheServer 5" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">5</data>
+      <client-set name="JCS5"/>
+    </task>
+    <task name="StartCacheServer 6" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">6</data>
+      <client-set name="JCS6"/>
+    </task>
+    <task name="StartCacheServer 7" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">7</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="CreateRegion" action="doAddRootAndSubRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="3m" argTypes="String,Portfolio">
+      <client-set count="10" name="ThinClient"/>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="StopCacheServer 1" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="PopulateRegion" action="doPopulateUserObject" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="5m" argTypes="String,Portfolio">
+      <data name="regionName">Portfolios</data>
+      <data name="objectType">Portfolio</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set count="10" name="ThinClient"/>
+      <data name="sleepTime">3</data>
+    </task>
+    <task name="Running Query for Result set" action="doRunQuery" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" timesToRun="20" waitTime="1h" continueOnError="true" parallel="true" argTypes="String,Portfolio">
+      <client-set begin="1" count="5" name="ThinClient"/>
+      <data name="queryResultType">resultSet</data>
+    </task>
+    <task name="Running Query for struct set" action="doRunQuery" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" timesToRun="20" waitTime="1h" continueOnError="true" parallel="true" argTypes="String,Portfolio">
+      <client-set begin="6" count="5" name="ThinClient"/>
+      <data name="queryResultType">structSet</data>
+    </task>
+     <task name="Running Param Query for Result set" action="doRunQuery" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" timesToRun="10" waitTime="60m" parallel="true" argTypes="String,Portfolio">
+      <client-set count="10" name="ThinClient"/>
+      <data name="queryResultType">resultSet</data>
+      <data name="paramquery">true</data>
+    </task>
+    <task name="Running Param Query for struct set" action="doRunQuery" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" timesToRun="10" waitTime="60m" parallel="true" argTypes="String,Portfolio">
+      <client-set count="10" name="ThinClient"/>
+      <data name="queryResultType">structSet</data>
+      <data name="paramquery">true</data>
+    </task>
+    <task name="stopStartCacheServer 2" action="doStopStartServer" container="utils" timesToRun="2" waitTime="3h30m" continueOnError="true" parallel="true">
+      <data name="ServerId">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="stopStartCacheServer 3" action="doStopStartServer" container="utils" timesToRun="2" waitTime="3h30m" continueOnError="true" parallel="true">
+      <data name="ServerId">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="stopStartCacheServer 4" action="doStopStartServer" container="utils" timesToRun="2" waitTime="3h30m" continueOnError="true" parallel="true">
+      <data name="ServerId">4</data>
+      <client-set name="JCS4"/>
+    </task>
+    <task name="stopStartCacheServer 5" action="doStopStartServer" container="utils" timesToRun="2" waitTime="3h30m" continueOnError="true" parallel="true">
+      <data name="ServerId">5</data>
+      <client-set name="JCS5"/>
+    </task>
+    <task name="stopStartCacheServer 6" action="doStopStartServer" container="utils" timesToRun="2" waitTime="3h30m" continueOnError="true" parallel="true">
+      <data name="ServerId">6</data>
+      <client-set name="JCS6"/>
+    </task>
+    <task name="stopStartCacheServer 7" action="doStopStartServer" container="utils" timesToRun="2" waitTime="3h30m" continueOnError="true" parallel="true">
+      <data name="ServerId">7</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="Close Cache" action="doCloseCache" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.querytests" waitTime="5m" argTypes="String,Portfolio">
+      <client-set count="10" name="ThinClient"/>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="StopCacheServer 2" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StopCacheServer 3" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="StopCacheServer 4" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">4</data>
+      <client-set name="JCS4"/>
+    </task>
+    <task name="StopCacheServer 5" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">5</data>
+      <client-set name="JCS5"/>
+    </task>
+    <task name="StopCacheServer 6" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">6</data>
+      <client-set name="JCS6"/>
+    </task>
+    <task name="StopCacheServer 7" action="doRunProcess" container="utils" waitTime="10m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">7</data>
+      <client-set name="JCS1"/>
+    </task>
+  </test>
+
+</test-driver>

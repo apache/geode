@@ -1,0 +1,6 @@
+/build-*/
+
+/build/
+/.settings/
+/.cproject
+/.project

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="BBName">CacheServer</data>
+  <data name="systemName">CSTest</data>
+  <data name="cacheType">PEER</data>
+  <data name="scope">NACK</data>
+  <data name="regionName">CSEvents</data>
+  <data name="valueSizes">
+		<list>
+			<item>100</item>
+		</list>
+	</data>	
+  <client-set>
+    <client name="Feeder"/>
+  </client-set>
+  <client-set count="7" name="Server"/>
+  <client-set count="147" name="Client"/>
+
+  <test name="Client Entry Events" description="Clients perform entry events" waitTime="21h">
+    <task name="Init Feeder" action="doCreateRegion" container="cacheserver" waitTime="5m">
+      <data name="cacheType">PEER</data>
+      <client-set>
+          <client name="Feeder"/>
+      </client-set>
+    </task>
+    <task name="InitServers" action="doInitProcess" container="cacheserver" waitTime="5m">
+      <data name="cacheType">SERVER</data>
+      <client-set count="7" name="Server"/> 
+    </task>
+    <task name="CreateServerRegion" action="doCreateRegion" container="cacheserver" waitTime="5m">
+      <client-set count="1" name="Server"/> 
+    </task>
+    <task name="CreateClients" action="doCreateRegion" container="cacheserver" waitTime="600">
+      <data name="cacheType">CLIENT</data>
+      <data name="listener">createCountingCacheListener</data>
+      <client-set count="147" name="Client"/>
+    </task>    
+    <task name="FeedSystem" action="doFeed" container="cacheserver" waitTime="30m">
+      <data name="entryCount">5000</data>
+      <data name="opsSecond">1200</data>
+      <client-set>
+        <client name="Feeder"/> 
+      </client-set>
+    </task>
+    <task name="Client Events" action="doEntryOperations" container="cacheserver" timesToRun="240" waitTime="10h10m">
+      <data name="entryOps">
+        <oneof>
+          <item>add</item>
+          <item>update</item>
+          <item>update</item>
+          <item>update</item>
+          <item>read</item>
+          <item>read</item>
+          <item>read</item>
+          <item>invalidate</item>
+          <item>destroy</item>
+        </oneof>
+      </data>
+      <data name="workTime">10h</data>
+      <data name="opsSecond">12</data>
+      <data name="entryCount">5000</data>
+      <data name="valueSizes">100</data>
+      <client-set>
+        <client name="Feeder"/>
+      </client-set>
+      <client-set count="147" name="Client"/>
+    </task>
+  </test>
+</test-driver>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Well-formed and valid xml file -->
+<client-cache
+    xmlns="http://schema.pivotal.io/gemfire/gfcpp-cache"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://schema.pivotal.io/gemfire/gfcpp-cache
+                        http://schema.pivotal.io/gemfire/gfcpp-cache/gfcpp-cache-9.0.xsd"
+    version="9.0">
+<!-- xml with region-attribute having only child elements no attributes. refer to Ticket #775  -->
+  <root-region name= "Root1">
+    <region-attributes > 
+	  <cache-loader library-name="unit_test_callbacks" library-function-name="createCacheLoader" />
+      <cache-listener library-name="unit_test_callbacks" library-function-name="createCacheListener" />
+      <cache-writer library-name="unit_test_callbacks" library-function-name="createCacheWriter" />
+	</region-attributes > 
+  </root-region>
+</client-cache>

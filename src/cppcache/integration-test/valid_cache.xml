@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Well-formed and valid xml file -->
+<client-cache xmlns="http://geode.apache.org/schema/cache"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+              version="1.0">
+
+ <root-region name = "Root1" >
+    <region-attributes scope="local" caching-enabled="true" initial-capacity="25" load-factor="0.32" concurrency-level="10" lru-entries-limit = "35">
+       <region-idle-time>
+         <expiration-attributes timeout="20" action="destroy"/> 
+       </region-idle-time>
+       <entry-idle-time>
+         <expiration-attributes timeout="10" action="invalidate"/>
+       </entry-idle-time>
+       <region-time-to-live>
+         <expiration-attributes timeout="0" action="local-destroy"/>
+       </region-time-to-live>
+       <entry-time-to-live>
+         <expiration-attributes timeout="0" action="local-invalidate"/>
+       </entry-time-to-live>
+    </region-attributes>
+
+
+    <region name="SubRegion1">
+         <region-attributes scope="local" caching-enabled="true" initial-capacity="23" load-factor="0.89" concurrency-level="52">
+         </region-attributes>
+    </region>
+
+ </root-region>
+
+
+ <root-region name= "Root2">
+    <region-attributes scope="local" caching-enabled="true" initial-capacity="16" load-factor="0.75" concurrency-level="16" >                                                         
+      <region-time-to-live>
+        <expiration-attributes timeout="0" action="destroy"/>
+      </region-time-to-live>
+       <region-idle-time>
+        <expiration-attributes timeout="0" action="invalidate"/>
+      </region-idle-time>
+      <entry-time-to-live>
+        <expiration-attributes timeout="0" action="destroy"/>
+      </entry-time-to-live>
+      <entry-idle-time>
+        <expiration-attributes timeout="0" action="invalidate"/>
+      </entry-idle-time>
+    </region-attributes>
+
+    <region name="SubRegion21">
+         <region-attributes scope="local" caching-enabled="true" initial-capacity="16" load-factor="0.75" concurrency-level="16">
+            <region-idle-time>
+               <expiration-attributes timeout="20" action="destroy"/>
+            </region-idle-time>
+            <entry-idle-time>
+               <expiration-attributes timeout="10" action="invalidate"/>
+            </entry-idle-time>
+         </region-attributes>
+    </region>
+
+    <region name="SubRegion22">
+        <region name="SubSubRegion221">
+        </region>
+    </region>
+
+ </root-region>
+
+</client-cache>

@@ -1,0 +1,16 @@
+#cmakedefine HAVE_SYS_MOUNT_H
+
+#cmakedefine HAVE_SIGSTKFLT
+#cmakedefine HAVE_ACE_Select_Reactor
+
+// TODO replace with better CMake checks
+//TODO already defined #cmakedefine _LINUX
+#cmakedefine _MACOSX
+//TODO already defined #cmakedefine _WIN32
+//TODO already defined #cmakedefine _SOLARIS
+
+#define GEMFIRE_PRODUCTNAME "@GEMFIRE_PRODUCTNAME@"
+#define GEMFIRE_BITS "@GEMFIRE_BITS@"
+
+// TODO relace with CMake checks
+#define WITH_ACE_Select_Reactor 1

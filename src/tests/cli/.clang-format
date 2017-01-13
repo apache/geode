@@ -1,0 +1,5 @@
+# C++/CLI sources not supported in clang-format
+---
+Language:        Cpp
+DisableFormat:   true
+SortIncludes:    false

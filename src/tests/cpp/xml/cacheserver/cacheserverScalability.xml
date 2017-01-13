@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="maxTestTime">10200</data>
+  <data name="BBName">CacheServer</data>
+  <data name="systemName">CSTest</data>
+  <data name="cacheType">PEER</data>
+  <data name="scope">NACK</data>
+  <data name="regionName">CSRegion</data>
+  <client-set>
+    <client name="Feeder"/>
+  </client-set>
+  <client-set count="2" name="Server"/>
+  <client-set count="100" name="Client"/>
+
+  <test name="FeederUpdatesClientsGet" description="Feeder updates entries while clients do gets" waitTime="780">
+    <task name="CreateFeeder" action="createProcess" container="cacheserver" waitTime="600">
+      <data name="cacheType">PEER</data>
+      <client-set>
+          <client name="Feeder"/>
+      </client-set>
+    </task>
+    <task name="CreateServers" action="createProcess" container="cacheserver" waitTime="600">
+      <data name="cacheType">SERVER</data>
+      <client-set> 
+        <client name="Server_1"/>
+      </client-set>
+    </task>
+    <task name="CreateClients" action="createProcess" container="cacheserver" waitTime="600">
+      <data name="cacheType">CLIENT</data>
+      <client-set count="100" name="Client"/> 
+    </task>
+    <task name="FeedSystem" action="doFeed" container="cacheserver" waitTime="1200">
+      <data name="batchSize">200</data>
+      <data name="workTime">120</data>
+      <client-set>
+        <client name="Feeder"/> 
+      </client-set>
+    </task>
+    <task name="FeederUpdatesClientsGet" action="doEntryOperations" container="cacheserver" waitTime="600">
+      <data name="workTime">240</data>
+      <data name="sleepTime">1</data>
+      <data name="entryOps">read+localdestroy</data>
+      <client-set count="50" name="Client"/>
+      <client-set>
+        <client name="Feeder"/>
+      </client-set>
+    </task>
+    <task name="CreateMirroredServers" action="createProcess" container="cacheserver" waitTime="600" parallel = "true">
+      <data name="cacheType">SERVER</data>
+      <data name="sleepTime">40</data>
+      <client-set> 
+        <client name="Server_2"/>
+      </client-set>
+    </task>
+    <task name="FeederUpdatesClientsGetWhileGII" action="doEntryOperations" container="cacheserver" waitTime="600" parallel = "true">
+      <data name="workTime">240</data>
+      <data name="sleepTime">1</data>
+      <data name="entryOps">read+localdestroy</data>
+      <client-set count="50" name="Client"/>
+      <client-set>
+        <client name="Feeder"/>
+      </client-set>
+    </task>
+    <task name="FeederUpdatesClientsGetMoreServers" action="doEntryOperations" container="cacheserver" waitTime="600">
+      <data name="workTime">240</data>
+      <data name="sleepTime">1</data>
+      <data name="entryOps">read+localdestroy</data>
+      <client-set count="100" name="Client"/>
+      <client-set>
+        <client name="Feeder"/>
+      </client-set>
+    </task>
+  </test>
+</test-driver>

@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="redundancyLevel">1</data>
+  <data name="minServers">2</data>
+ 
+  <data name="timedInterval">15m</data>
+  <data name="cacheType">CLIENT</data>
+
+  <data name="numThreads">
+    <list>
+      <item>1</item>
+    </list>
+  </data>
+
+  <data name="sleepTime">
+    <oneof>
+      <item>20</item>
+      <item>30</item>
+      <item>40</item>
+      <item>50</item>
+      <item>60</item>
+      <item>90</item>
+      <item>120</item>
+    </oneof>
+  </data>
+
+  <data name="operation">
+    <oneof>
+      <item>stop</item>
+      <item>term</item>
+      <item>kill</item>
+    </oneof>
+  </data>
+
+  <data name="ThinClientRegion1">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true" client-notification="true" />
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="ThinClientRegion2">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true" client-notification="true">
+          <cache-listener library="perftests" function="createDupChecker"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>  
+  <!--data name="regionSpec">ThinClientRegion</data-->
+
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set name="JCS2" hostGroup="CS"/>
+  <client-set name="JCS3" hostGroup="CS"/>
+  <client-set count="10" name="IdleThinClient"/>
+  <client-set count="4" name="Feeder"/>
+
+  <test name="ThinClientFailoverHAEventIDMap" description="Thin Client HA Failover EventIDMap test with redundancy satisfied">
+    <task name="setupCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 3 NativeHA/csAckMirror.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServer 1" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServer 2" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StartCacheServer 3" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+
+    <task name="CreateRegion1" action="doCreateRegion" container="perftests" waitTime="3m">
+      <data name="regionSpec">ThinClientRegion1</data>
+      <client-set count="4" name="Feeder"/>
+    </task>
+    <task name="CreateRegion2" action="doCreateRegion" container="perftests" waitTime="3m">
+      <data name="regionSpec">ThinClientRegion2</data>
+      <client-set count="10" name="IdleThinClient"/>
+    </task>
+    
+    <task name="Register Interest All Keys" action="doRegisterAllKeys" container="perftests" waitTime="15m">
+      <client-set count="10" name="IdleThinClient"/>
+      <data name="regionSpec">ThinClientRegion2</data>
+    </task>
+    
+    <task name="Puts1" action="doSerialPuts" container="perftests" waitTime="30m" parallel="true">
+      <client-set begin="1" count="1" name="Feeder"/>
+      <data name="keyStart">1</data>
+      <data name="keyEnd">250</data>
+      <data name="regionSpec">ThinClientRegion1</data>
+    </task>
+    <task name="Puts2" action="doSerialPuts" container="perftests" waitTime="30m" parallel="true">
+      <client-set begin="2" count="1" name="Feeder"/>
+      <data name="keyStart">251</data>
+      <data name="keyEnd">500</data>
+      <data name="regionSpec">ThinClientRegion1</data>
+    </task>
+    <task name="Puts3" action="doSerialPuts" container="perftests" waitTime="30m" parallel="true">
+      <client-set begin="3" count="1" name="Feeder"/>
+      <data name="keyStart">501</data>
+      <data name="keyEnd">750</data>
+      <data name="regionSpec">ThinClientRegion1</data>
+    </task>
+    <task name="Puts4" action="doSerialPuts" container="perftests" waitTime="30m" parallel="true">
+      <client-set begin="4" count="1" name="Feeder"/>
+      <data name="keyStart">751</data>
+      <data name="keyEnd">1000</data>
+      <data name="regionSpec">ThinClientRegion1</data>
+    </task>
+    
+    <task name="stopStartCacheServer 1" action="doStopStartServer" container="utils" timesToRun="3" waitTime="1h30m" continueOnError="true" parallel="true">
+      <data name="ServerId">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="stopStartCacheServer 2" action="doStopStartServer" container="utils" timesToRun="3" waitTime="1h30m" continueOnError="true" parallel="true">
+      <data name="ServerId">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="stopStartCacheServer 3" action="doStopStartServer" container="utils" timesToRun="3" waitTime="1h30m" continueOnError="true" parallel="true">
+      <data name="ServerId">3</data>
+      <client-set name="JCS3"/>
+    </task>
+
+    <task name="Close Cache" action="doCloseCache" container="perftests" waitTime="15m"/>
+    
+    <task name="StopCacheServer 1" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StopCacheServer 2" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StopCacheServer 3" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+  </test>
+
+</test-driver>

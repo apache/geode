@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE acl PUBLIC "-//GemStone Systems, Inc.//GemFire XML Authorization 1.0//EN"
+              "authz5_5.dtd" >
+<acl>
+
+  <role name="reader">
+    <user>reader0</user>
+    <user>reader1</user>
+    <user>reader2</user>
+    <user>root</user>
+    <user>admin</user>
+    <user>administrator</user>
+  </role>
+
+  <role name="writer">
+    <user>writer0</user>
+    <user>writer1</user>
+    <user>writer2</user>
+    <user>root</user>
+    <user>admin</user>
+    <user>administrator</user>
+  </role>
+
+  <role name="cacheOps">
+    <user>root</user>
+    <user>admin</user>
+    <user>administrator</user>
+  </role>
+
+  <role name="queryRegions">
+    <user>reader3</user>
+    <user>reader4</user>
+  </role>
+
+  <permission role="cacheOps">
+    <operation>QUERY</operation>
+    <operation>EXECUTE_CQ</operation>
+    <operation>STOP_CQ</operation>
+    <operation>CLOSE_CQ</operation>
+    <operation>REGION_CREATE</operation>
+    <operation>REGION_DESTROY</operation>
+    <operation>EXECUTE_FUNCTION</operation>
+  </permission>
+
+  <permission role="reader">
+    <operation>GET</operation>
+    <operation>REGISTER_INTEREST</operation>
+    <operation>UNREGISTER_INTEREST</operation>
+    <operation>KEY_SET</operation>
+    <operation>CONTAINS_KEY</operation>
+    <operation>EXECUTE_CQ</operation>
+    <operation>STOP_CQ</operation>
+    <operation>CLOSE_CQ</operation>
+  </permission>
+
+  <permission role="writer">
+    <operation>PUT</operation>
+    <operation>PUTALL</operation>
+    <operation>DESTROY</operation>
+    <operation>REGION_CLEAR</operation>
+    <operation>EXECUTE_FUNCTION</operation>
+  </permission>
+
+  <permission role="queryRegions" regions="Portfolios,/Positions">
+    <operation>QUERY</operation>
+    <operation>EXECUTE_CQ</operation>
+    <operation>STOP_CQ</operation>
+    <operation>CLOSE_CQ</operation>
+  </permission>
+
+</acl>

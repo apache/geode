@@ -1,0 +1,40 @@
+#!/usr/bin/env cmake -P
+cmake_minimum_required(VERSION 3.4)
+
+execute_process(COMMAND @GIT_EXECUTABLE@ rev-parse HEAD
+                WORKING_DIRECTORY @CMAKE_SOURCE_DIR@
+                OUTPUT_VARIABLE REV_SHA
+                OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+execute_process(COMMAND @GIT_EXECUTABLE@ show -s --format=%cD
+                WORKING_DIRECTORY @CMAKE_SOURCE_DIR@
+                OUTPUT_VARIABLE REV_DATE
+                OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+if ("@GIT_VERSION_STRING@" VERSION_LESS 1.8)
+  set(GIT_BRANCH_COMMAND @GIT_EXECUTABLE@ rev-parse --abbrev-ref HEAD)
+else()
+  set(GIT_BRANCH_COMMAND @GIT_EXECUTABLE@ symbolic-ref --short HEAD)
+endif()
+execute_process(COMMAND ${GIT_BRANCH_COMMAND}
+                WORKING_DIRECTORY @CMAKE_SOURCE_DIR@
+                OUTPUT_VARIABLE REV_BRANCH
+                OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+#message(STATUS "REV_COUNT: ${REV_COUNT}")
+#message(STATUS "REV_SHA: ${REV_SHA}")
+#message(STATUS "REV_DATE: ${REV_DATE}")
+#message(STATUS "REV_BRANCH: ${REV_BRANCH}")
+
+set(GEMFIRE_VERSION @GEMFIRE_VERSION@)
+set(PRODUCT_VERSION_RC @PRODUCT_VERSION_RC@)
+set(GEMFIRE_BUILDDATE ${REV_DATE})
+set(GEMFIRE_SOURCE_REVISION ${REV_SHA})
+set(GEMFIRE_SOURCE_REPOSITORY ${REV_BRANCH})
+
+configure_file(@CMAKE_CURRENT_SOURCE_DIR@/version.h.in @CMAKE_CURRENT_BINARY_DIR@/version.h)
+
+# Always touch since configure_file will not update file if values haven't change
+# but the index must have changed for this command to be called. If we don't touch
+# then we keep getting called because the index is newer than version.h
+execute_process(COMMAND ${CMAKE_COMMAND} -E touch_nocreate @CMAKE_CURRENT_BINARY_DIR@/version.h)

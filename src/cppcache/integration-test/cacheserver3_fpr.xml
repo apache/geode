@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+
+
+<cache xmlns="http://geode.apache.org/schema/cache"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+       version="1.0">
+	<cache-server port="HOST_PORT3"/>
+
+  <region name="R1">
+    <region-attributes data-policy="partition">
+      <partition-attributes>
+        <partition-resolver>
+          <class-name>javaobject.CustomFixedPartitionResolver1</class-name>
+        </partition-resolver>
+		<fixed-partition-attributes partition-name="P3" is-primary="true" num-buckets="15"/>		
+		<fixed-partition-attributes partition-name="P5" is-primary="true" num-buckets="15"/>
+      </partition-attributes>
+      <cache-writer>
+        <class-name>javaobject.CacheWriterForSingleHop</class-name>
+      </cache-writer>
+    </region-attributes>
+  </region>
+  
+      <region name="R2">
+    <region-attributes data-policy="partition">
+      <partition-attributes>
+        <partition-resolver>
+          <class-name>javaobject.CustomFixedPartitionResolver2</class-name>
+        </partition-resolver>
+		<fixed-partition-attributes partition-name="P3" is-primary="true" num-buckets="5"/>
+		<fixed-partition-attributes partition-name="P6" is-primary="true" num-buckets="5"/>		
+      </partition-attributes>
+      <cache-writer>
+        <class-name>javaobject.CacheWriterForSingleHop</class-name>
+      </cache-writer>
+    </region-attributes>
+  </region>
+  
+    <region name="R3">
+    <region-attributes data-policy="partition">
+      <partition-attributes total-num-buckets="100">
+        <partition-resolver>
+          <class-name>javaobject.CustomFixedPartitionResolver3</class-name>
+        </partition-resolver>
+		<fixed-partition-attributes partition-name="P3" is-primary="true" num-buckets="25"/>		
+      </partition-attributes>
+      <cache-writer>
+        <class-name>javaobject.CacheWriterForSingleHop</class-name>
+      </cache-writer>
+    </region-attributes>
+  </region>
+
+</cache>

@@ -1,0 +1,26 @@
+<powershell>
+$ErrorActionPreference = "Stop";
+
+Set-ExecutionPolicy Unrestricted
+
+write-host "Setting up WinRM"
+
+cmd /c winrm quickconfig -q
+cmd /c winrm set winrm/config/winrs '@{MaxMemoryPerShellMB="8000"}'
+cmd /c winrm set winrm/config/winrs '@{MaxShellsPerUser="5"}'
+cmd /c winrm set winrm/config '@{MaxTimeoutms="1800000"}'
+cmd /c winrm set winrm/config/service '@{AllowUnencrypted="true"}'
+cmd /c winrm set winrm/config/service/auth '@{Basic="true"}'
+
+cmd /c net stop winrm
+# Will restart on reboot
+
+cmd /c netsh advfirewall firewall add rule name="WinRM 5985" protocol=TCP dir=in localport=5985 action=allow
+cmd /c netsh advfirewall firewall add rule name="WinRM 5986" protocol=TCP dir=in localport=5986 action=allow
+
+cmd /c sc config winrm start= auto
+
+write-host "WinRM ready"
+cmd /c net start winrm
+
+</powershell>

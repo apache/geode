@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <localFile name="aTestFile" description="This is to allow annotation.">
+  And this is line one of the content
+  
+      followed by line2.
+      
+    And line three is
+  next to last, while this       is last!!!
+  </localFile>
+  <localFile name="aTestScript" append="false" description="Test starting clients using a script">
+    echo "My arguments were: $@" 
+    pwd
+    ls -l
+    echo
+    echo
+    echo find . -exec ls -l {} \;
+    find . -exec ls -l {} \;
+    echo
+    echo done
+  </localFile>
+  <data name="vanilla">basic data content example</data>
+  <data name="alist">
+  <list>
+  <item>a</item>
+  <item>b</item>
+  <item>c</item>
+  <item>d</item>
+  </list>
+  </data>
+  <data name="aoneof">
+  <oneof>
+  <item>a2</item>
+  <item>b3</item>
+  <item>c4</item>
+  <item>d5</item>
+  </oneof>
+  </data>
+  <data name="Local">
+    <snippet>
+      <region name="Local">
+        <region-attributes 
+        scope="local" 
+        mirroring="false" 
+        caching-enabled="true" 
+        initial-capacity="25" 
+        load-factor="0.32" 
+        concurrency-level="10" 
+        interest-list-enabled="false" 
+        max-value-dist-limit="20" 
+        lru-entries-limit="35" 
+        disk-policy="overflows">
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="region_def-1">
+    <snippet>
+      <region name="Root1">
+        <region-attributes scope="distributed-ack" mirroring="false" caching-enabled="true" initial-capacity="25" load-factor="0.32" concurrency-level="10" interest-list-enabled="false" max-value-dist-limit="20" lru-entries-limit="35" disk-policy="overflows">
+          <persistence-manager library="BDB" function="getBDBManager">
+            <properties>
+              <property name="directory" value="/tmp"/>
+              <property name="max-file-size" value="200"/>
+            </properties>
+          </persistence-manager>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  <client-set count="2" name="server"/>
+  <client-set count="1" name="feed"/>
+  <client-set count="2" name="client"/>
+  
+  <client-set>
+    <client name="RunsTasksClient"/>
+  </client-set>
+  <test name="sleeper" description="nada" waitTime="30">
+    <task name="Run arbitrary program" action="doRunProcess" container="utils" waitTime="100">
+      <data name="program">. aTestScript</data>
+      <data name="arguments">these will not be used</data>
+    </task>
+  </test>
+</test-driver>

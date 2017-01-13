@@ -1,0 +1,161 @@
+This file contains the setup and usage instructions for running the C#
+XML framework.
+
+ 1. Ensure that .NET 2.0 runtime is installed on the client machines (available here:
+      http://www.microsoft.com/downloads/details.aspx?FamilyID=0856EACB-4362-4B0D-8EDD-AAB15C5E04F5&displaylang=en)
+
+ 2. By default it uses plink to start clients on remote machines. So download plink.exe
+    and put it in your path. (http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html).
+    Alternatively it can use passwordless ssh with public-key authentication by
+    specifying the "--auto-ssh" option. For this to work on Windows, the sshd daemon
+    must run as a domain admin user who has the permissions to access network shares
+    and other resources. For more information on configuring this mode see this:
+    http://ist.uwaterloo.ca/~kscully/CygwinSSHD_W2K3.html
+
+ 3. Run the script setCLITrust.bat on all the windows machines where
+    clients will be created. This script is inside tests/scripts directory
+    of ThinClient branch.
+
+ 4. Ensure that the user has permission to be able to create shares on the
+    machine where driver shall be invoked.
+
+ 5. When using local console login (or RDP) run OS_BUILD_DIR/framework/csharp/bin/FwkDriver.exe
+    Usage: FwkDriver [OPTION] [<host1> ...]
+      <host1> ... are (optional) hostnames of the machines on which to
+       distribute the clients. Each host can optionally have the hostGroup
+       name prefixed to it with ':' e.g. CS:host1; the hostGroup should not
+       be '*' which implicitly stands for all hosts
+    Options are:
+      --xml=FILE     An XML file having the test to be executed.
+                     This option can be specified multiple times
+      --list=FILE    A file containing a list XML files having the tests to be executed
+      --pool=POOLOPTION  where POOLOPTIONs are poolwithendpoints/poolwithlocator to run the existing tests with pool option.
+      --at=TIME      The time at which to execute the regression test
+      --auto-ssh     Use ssh configured for passwordless login instead of plink as remote shell
+                     Note that this shall only work if sshd is running as a domain user having
+                     permissions to access network shares and other resources on given hosts.
+      --bbServer=HOST:PORT  The <host>:<port> to use for connecting to
+                            external TCP BlackBoard server. This is to be used
+                            when an external BBserver is being used instead
+                            of the internal one.
+      --bbPasswd     Use the external BBserver to get the passwords.
+      --driverPort   The port to use for running the Driver service.
+
+    At least one XML file should be specified using one of --xml or --list options
+    Both options can be provided in which case all the specified tests in
+    both will be run.
+
+    The --bbServer, --bbPasswd, --driverPort options should never be specified
+    directly since they are only useful when launching it through external
+    scripts like runCSDriver.sh
+
+ 6. When using a ssh session run OS_BUILD_DIR/framework/csharp/bin/runCSDriver.sh.
+    Usage: runCSDriver.sh [OPTION] [<host1> ...]
+      <host1> ... are (optional) hostnames of the machines on which to
+       distribute the clients. Each host can optionally have the hostGroup
+       name prefixed to it with ':' e.g. CS:host1; the hostGroup should not
+       be '*' which implicitly stands for all hosts
+    Options are:
+      --xml=FILE     An XML file having the test to be executed.
+                     This option can be specified multiple times
+      --list=FILE    A file containing a list XML files having the tests to be executed
+      --pool=POOLOPTION  where POOLOPTIONs are poolwithendpoints/poolwithlocator to run the existing tests with pool option.
+      --database     This to be used for upload the data in database for regression history. Need to be mentioned at every regression run.
+      --at=TIME      The time at which to execute the regression test
+      --auto-ssh     Use ssh configured for passwordless login instead of plink as remote shell
+                     Note that this shall only work if sshd is running as a domain user having
+                     permissions to access network shares and other resources on given hosts.
+
+    At least one XML file should be specified using one of --xml or --list options
+    Both options can be provided in which case all the specified tests in
+    both will be run.
+
+
+Example usage:
+
+  OS_BUILD_DIR/framework/csharp/bin/FwkDriver --list=nativeNightly.list CS:pc33 CS:pc34 pc34 pc35 pc36 pc37 pc38
+or
+  OS_BUILD_DIR/framework/csharp/bin/runCSDriver.sh --list=nativeNightly.list CS:pc33 CS:pc34 pc34 pc35 pc36 pc37 pc38
+
+With Pool Option:
+   OS_BUILD_DIR/framework/csharp/bin/FwkDriver --pool=poolwithendpoints --list=nativeNightly.list CS:pc33 CS:pc34 pc34 pc35 pc36 pc37 pc38
+or 
+   OS_BUILD_DIR/framework/csharp/bin/FwkDriver --pool=poolwithlocator --list=nativeNightly.list CS:pc33 CS:pc34 pc34 pc35 pc36 pc37 pc38
+
+Note that the XML file path (given in --xml option or inside the list) should
+be relative to base xml directory like in C++.
+The list file itself should be the path relative to the current directory.
+
+The current directory can contain a gfcsharp.properties or gfcpp.properties
+file to set the default properties for the clients (preference is in the
+given order). The following variables can be set in file "gfcsharp.env" in the
+current directory (line starting with # indicates a comment and is ignored):
+ 
+  FWK_WINLOGDIR="...":
+      root of the path where the logs have to be created in Windows notation
+  FWK_UNIXLOGDIR="...":
+      root of the path where unix cacheserver logs have to be created in
+      Unix notation; this is required when starting the cacheserver on a
+      UNIX machine (more on this below) and should point to the same
+      directory as FWK_WINLOGDIR for it to work correctly
+  GFE_DIR="...":
+      the path of the UNIX java cacheserver product; required when one of
+      server client machine lists a UNIX machine
+  GFE_CLASSPATH="...":
+      any additional CLASSPATH for the UNIX java cacheservers
+  GF_JAVA="..."
+      Provied the java path ( e.g. /gcm/where/jdk/1.6.0_7/x86_64.linux/bin/java ).
+  GF_JAVA.WIN="..."
+      Provide the java path for windows to execute LatestProp class file( e.g. //inf1/shared/jdk/1.6.0_7/x86_64.linux/bin/java ).
+  GFE_DIR.WIN="..."
+      Provide java cacheserver product path for windows to execute LatestProp class file ( e.g. //bass/bass1/users/rkumar/project/trunk/product ).
+      
+
+Note that the gfcsharp.env is not a shell script and no "export" or other
+commands should be given. Any other environment variables like CLASSPATH
+can also be provided here (note that the local path for the jars can be
+provided in CLASSPATH since that shall be converted to the share format
+by the framework automatically) or other environment variables specified
+in OS_BUILD_DIR/framework/csharp/bin/run.env can be overridden here.
+The double quotes around the values are optional even if there are spaces.
+
+If no FWK_WINLOGDIR is provided then by default the logs will be created
+in OS_BUILD_DIR/tests/results/csharpfwk. A subdirectory named
+FwkCS_<timestamp directory> shall be created that contains the logs for a
+particular run and a link to the latest timestamp directory will also be
+created. There will be separate sub directories created for separate XMLs
+inside this directory, and each sub-directory for an XML will contain a
+separate sub-directory for each test listed in the XML. The directory name
+will be the name of the test. The top-level directory shall contain a
+Driver.log file which records all the actions taken by the driver in that
+particular run, and at the end of the run an error.report shall be generated
+inside the top-level directory as well as inside each of the XML sub-directories.
+
+Using C# framework it is possible to launch java servers on linux/solaris machines as follows:
+
+    * Specify FWK_LOGDIR.WIN and FWK_LOGDIR.LIN/FWK_LOGDIR.SUN to point to the same
+      network directory (e.g. //ns320/users/swale/csresults and /home/swale/csresults
+      respectively) in gfcsharp.env
+    * Specify the GFE_DIR.LIN/GFE_DIR.SUN to point to the location of unix cacheserver
+      (e.g. /gcm/where/cplusplus/thirdparty/linux/gfe/product) in gfcsharp.env
+      For each of the above variables use <var>.<host type> where host type can
+      be one of WIN, LIN or SUN
+    * Now you can use any unix hostname for the CS hostgroup. However, note that
+      there should be at least one windows machine in that hostgroup that will
+      actually run the C# code that will perform setup/start/stop of
+      cacheservers remotely. For example:
+       FwkDriver --xml=Native/failoverTest.xml CS:bass CS:trout CS:pc34 pc31 pc32
+    * To ensure that all servers are started on linux servers use the first
+      host as windows one and all others as linux ones. The framework has been
+      modified so as to start choosing the servers to use from the second one
+      in the list. Also it means that the number of linux hosts in the CS hostgroup
+      should be equal to the number of clients being started in that group,
+      otherwise cycling of clients among hosts will cause servers to be
+      started on windows hosts. For example:
+        FwkDriver --xml=RemoteQuery/failoverQueryTest.xml CS:pc33 CS:bass CS:trout pc33 pc34 pc36
+      This will start JCS1 on pc33 but the actual servers shall be launched
+      from the second server in the host-group list i.e. bass, so that the two 
+      servers will be started on bass and trout respectively from pc33, while
+      other clients will be launched on pc33/pc34/pc36
+This is useful for regressions where windows servers can go OutOfMemory
+due to limited amount of available memory.

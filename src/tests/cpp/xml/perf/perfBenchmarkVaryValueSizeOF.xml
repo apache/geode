@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">100</data> 
+  
+  <data name="distinctKeys">
+    <list>
+      <item>10000</item>
+    </list>
+  </data>
+  
+	<data name="valueSizes">
+		<list>
+			<item>10</item>
+			<item>1000</item>
+			<item>2000</item>
+			<item>4000</item>
+			<item>8000</item>
+			<item>10000</item>
+		</list>
+	</data>
+	
+	<data name="numThreads">
+		<list>
+			<item>4</item>
+		</list>
+	</data>
+	
+  <data name="Local">
+    <snippet>
+      <region name="Local">
+        <region-attributes scope="local" lru-entries-limit="100" disk-policy="overflows">
+          <persistence-manager library="BDBImpl" function="createBDBInstance">
+            <properties>
+              <property name="PersistenceDirectory" value="./BDBLocal"/>
+              <property name="EnvironmentDirectory" value="./BDBLocalEnv"/>
+              <property name="CacheSizeGb" value="0"/>
+              <property name="CacheSizeMb" value="512"/>
+              <property name="PageSize" value="65536"/>
+              <property name="MaxFileSize" value="512000000"/>
+            </properties>
+          </persistence-manager>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckNmirrorNil">
+    <snippet>
+      <region name="AckNmirrorNil">
+        <region-attributes scope="distributed-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="false" 
+          lru-entries-limit="100" disk-policy="overflows">
+          <persistence-manager library="BDBImpl" function="createBDBInstance">
+            <properties>
+              <property name="PersistenceDirectory" value="./BDBAckNmirrorNil"/>
+              <property name="EnvironmentDirectory" value="./BDBAckNmirrorNilEnv"/>
+              <property name="CacheSizeGb" value="0"/>
+              <property name="CacheSizeMb" value="512"/>
+              <property name="PageSize" value="65536"/>
+              <property name="MaxFileSize" value="512000000"/>
+            </properties>
+          </persistence-manager>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackNmirrorNil">
+    <snippet>
+      <region name="NackNmirrorNil">
+        <region-attributes scope="distributed-no-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="false" 
+          lru-entries-limit="100" disk-policy="overflows">
+          <persistence-manager library="BDBImpl" function="createBDBInstance">
+            <properties>
+              <property name="PersistenceDirectory" value="./BDBNackNmirrorNil"/>
+              <property name="EnvironmentDirectory" value="./BDBNackNmirrorNilEnv"/>
+              <property name="CacheSizeGb" value="0"/>
+              <property name="CacheSizeMb" value="512"/>
+              <property name="PageSize" value="65536"/>
+              <property name="MaxFileSize" value="512000000"/>
+            </properties>
+          </persistence-manager>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckNmirrorIl">
+    <snippet>
+      <region name="AckNmirrorIl">
+        <region-attributes scope="distributed-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="true" 
+          lru-entries-limit="100" disk-policy="overflows">
+          <persistence-manager library="BDBImpl" function="createBDBInstance">
+            <properties>
+              <property name="PersistenceDirectory" value="./BDBAckNmirrorIl"/>
+              <property name="EnvironmentDirectory" value="./BDBAckNmirrorIlEnv"/>
+              <property name="CacheSizeGb" value="0"/>
+              <property name="CacheSizeMb" value="512"/>
+              <property name="PageSize" value="65536"/>
+              <property name="MaxFileSize" value="512000000"/>
+            </properties>
+          </persistence-manager>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackNmirrorIl">
+    <snippet>
+      <region name="NackNmirrorIl">
+        <region-attributes scope="distributed-no-ack" mirroring="false" 
+          caching-enabled="true" interest-list-enabled="true" 
+          lru-entries-limit="100" disk-policy="overflows">
+          <persistence-manager library="BDBImpl" function="createBDBInstance">
+            <properties>
+              <property name="PersistenceDirectory" value="./BDBNackNmirrorIl"/>
+              <property name="EnvironmentDirectory" value="./BDBNackNmirrorIlEnv"/>
+              <property name="CacheSizeGb" value="0"/>
+              <property name="CacheSizeMb" value="512"/>
+              <property name="PageSize" value="65536"/>
+              <property name="MaxFileSize" value="512000000"/>
+            </properties>
+          </persistence-manager>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  
+	<client-set name="Driver">
+		<client name="Producer"/>
+		<client name="Preloader"/>
+	</client-set>
+	
+	<test name="Local" description="Local Entry Event test">
+		<task name="CreateLocal" action="doCreateRegion" container="perftests" waitTime="2m">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+			<data name="regionSpec">Local</data>
+		</task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="12m">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+    <task name="Gets" action="doGets" container="perftests" waitTime="12m">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+	</test>
+	
+	<test name="AckNmirrorNil" description="AckNmirrorNil Entry Event test">
+		<task name="CreateRegion-AckNmirrorNil" action="doCreateRegion" container="perftests" waitTime="2m">
+			<data name="regionSpec">AckNmirrorNil</data>
+		</task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="12m">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+	</test>
+	
+	<test name="NackNmirrorNil" description="NackNmirrorNil Entry Event test">
+		<task name="CreateRegion-NackNmirrorNil" action="doCreateRegion" container="perftests" waitTime="2m">
+			<data name="regionSpec">NackNmirrorNil</data>
+		</task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="12m">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+	</test>
+	
+	<test name="AckNmirrorIl" description="AckNmirrorIl Entry Event test">
+		<task name="CreateRegion-AckNmirrorIl" action="doCreateRegion" container="perftests" waitTime="2m">
+			<data name="regionSpec">AckNmirrorIl</data>
+		</task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="12m">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+	</test>
+	
+	<test name="NackNmirrorIl" description="NackNmirrorIl Entry Event test">
+		<task name="CreateRegion-NackNmirrorIl" action="doCreateRegion" container="perftests" waitTime="2m">
+			<data name="regionSpec">NackNmirrorIl</data>
+		</task>
+    <task name="Puts" action="doPuts" container="perftests" waitTime="12m">
+      <client-set name="Driver">
+        <client name="Producer"/>
+      </client-set>
+    </task>
+	</test>
+	
+</test-driver>

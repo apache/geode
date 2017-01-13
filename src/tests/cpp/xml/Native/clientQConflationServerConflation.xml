@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="cacheType">CLIENT</data>
+  <data name="conflate">true</data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+
+  <data name="valueSizes">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+
+  <data name="keyType">int</data>
+
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true" client-notification="true">
+          <cache-listener library="perftests" function="createConflationTestCacheListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  <data name="ThinClientRegionDurable">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true" client-notification="true">
+          <cache-listener library="durableclienttests" function="createConflationTestCacheListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+
+  <client-set count="30" name="ThinClient"/>
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set name="JCS2" hostGroup="CS"/>
+  <client-set name="JCS3" hostGroup="CS"/>
+  <client-set name="Feeder"/>
+
+  <test name="ThinClientQConflationTest" description="Thin Client Q conflation test with server conflation setting enabled">
+    <task name="SetupCacheServer" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-e CLASSPATH=\$BUILDDIR/framework/lib/javaobject.jar:\$CLASSPATH -p \"-J-DslowStartTimeForTesting=170000\" -c 3 Native/csAckMirrorConflate.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+    <task name="CreateRegion with conflation setting yes" action="doCreateRegion" container="perftests" waitTime="5m">
+      <client-set begin="1" count="5" name="ThinClient"/>
+      <client-set name="Feeder"/>
+      <data name="regionSpec">ThinClientRegion</data>
+      <data name="conflateEvents">true</data>
+    </task>
+    <task name="CreateRegion with conflation setting no" action="doCreateRegion" container="perftests" waitTime="5m">
+      <client-set begin="6" count="5" name="ThinClient"/>
+      <data name="regionSpec">ThinClientRegion</data>
+      <data name="conflateEvents">false</data>
+    </task>
+    <task name="CreateRegion with conflation setting server" action="doCreateRegion" container="perftests" waitTime="5m">
+      <client-set begin="11" count="5" name="ThinClient"/>
+      <data name="regionSpec">ThinClientRegion</data>
+      <data name="conflateEvents">server</data>
+    </task>
+    <task name="CreateRegion for durable client with conflation on" action="doCreateRegion" container="durableclienttests" waitTime="5m">
+      <client-set begin="16" count="5" name="ThinClient"/>
+      <data name="regionSpec">ThinClientRegionDurable</data>
+      <data name="isDurable">true</data>
+      <data name="durableTimeout">120</data>
+      <data name="conflateEvents">true</data>
+    </task>
+    <task name="CreateRegion for durable client with conflation setting no" action="doCreateRegion" container="durableclienttests" waitTime="5m">
+      <client-set begin="21" count="5" name="ThinClient"/>
+      <data name="regionSpec">ThinClientRegionDurable</data>
+      <data name="isDurable">true</data>
+      <data name="durableTimeout">120</data>
+      <data name="conflateEvents">false</data>
+    </task>
+    <task name="CreateRegion for durable client with conflation setting server" action="doCreateRegion" container="durableclienttests" waitTime="5m">
+      <client-set begin="26" count="5" name="ThinClient"/>
+      <data name="regionSpec">ThinClientRegionDurable</data>
+      <data name="isDurable">true</data>
+      <data name="durableTimeout">120</data>
+      <data name="conflateEvents">server</data>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="perftests" waitTime="5m">
+      <client-set begin="1" count="15" name="ThinClient"/>
+    </task>
+    <task name="Register All Keys for durable client" action="doRegisterAllKeys" container="durableclienttests" waitTime="5m">
+      <client-set begin="16" count="15" name="ThinClient"/>
+    </task>
+    <task name="PopulateRegion" action="doPopulateRegion" container="perftests" waitTime="30m">
+      <client-set name="Feeder"/>
+    </task>
+    <task name="update" action="doPopulateRegion" container="perftests" timesToRun="350" waitTime="60m">
+      <client-set name="Feeder"/>
+      <data name="valueSizes">20</data>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="550">
+      <client-set count="30" name="ThinClient"/>
+      <data name="sleepTime">300</data>
+    </task>
+    <task name="validate conflation with conflation on" action="doValidateQConflation" container="perftests" waitTime="5m">
+      <client-set begin="1" count="5" name="ThinClient"/>
+      <data name="expectedAfterCreateCount">10</data>
+      <data name="expectedAfterUpdateCount">10</data>
+    </task>
+    <task name="validate conflation with conflation on" action="doValidateQConflation" container="perftests" waitTime="5m">
+      <client-set begin="6" count="5" name="ThinClient"/>
+      <data name="expectedAfterCreateCount">10</data>
+      <data name="expectedAfterUpdateCount">3500</data>
+    </task>
+    <task name="validate conflation with conflation on" action="doValidateQConflation" container="perftests" waitTime="5m">
+      <client-set begin="11" count="5" name="ThinClient"/>
+      <data name="expectedAfterCreateCount">10</data>
+      <data name="expectedAfterUpdateCount">10</data>
+      <data name="isServerConflateTrue">true</data>
+    </task>
+    <task name="validate conflation with conflation on" action="doValidateQConflation" container="perftests" waitTime="5m">
+      <client-set begin="16" count="5" name="ThinClient"/>
+      <data name="expectedAfterCreateCount">10</data>
+      <data name="expectedAfterUpdateCount">10</data>
+    </task>
+    <task name="validate conflation with conflation on" action="doValidateQConflation" container="perftests" waitTime="5m">
+      <client-set begin="21" count="5" name="ThinClient"/>
+      <data name="expectedAfterCreateCount">10</data>
+      <data name="expectedAfterUpdateCount">3500</data>
+    </task>
+    <task name="validate conflation with conflation on" action="doValidateQConflation" container="perftests" waitTime="5m">
+      <client-set begin="26" count="5" name="ThinClient"/>
+      <data name="expectedAfterCreateCount">10</data>
+      <data name="expectedAfterUpdateCount">10</data>
+      <data name="isServerConflateTrue">true</data>
+    </task>
+    <task name="Close Cache" action="doCloseCache" container="perftests" waitTime="5m"/>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+  </test>
+
+</test-driver>

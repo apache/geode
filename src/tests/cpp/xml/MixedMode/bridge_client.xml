@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Initializes a bridge client for a bridge server that runs on port 40404.
+     Loads values and sends updates to the server. -->
+
+<cache xmlns="http://geode.apache.org/schema/cache"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+       version="1.0" is-server="false">
+  <region name="TestTCR1">
+    <region-attributes scope="local">
+      <cache-loader>
+        <class-name>org.apache.geode.cache.util.BridgeLoader</class-name>
+        <parameter name="endpoints">
+          <string>server=$ENDPOINT</string>
+        </parameter>
+        <parameter name="readTimeout">
+          <string>60000</string>
+        </parameter>
+      </cache-loader>
+      <cache-writer>
+        <class-name>org.apache.geode.cache.util.BridgeWriter</class-name>
+        <parameter name="endpoints">
+          <string>server=$ENDPOINT</string>
+        </parameter>
+        <parameter name="establishCallbackConnection">
+          <string>true</string>
+        </parameter>
+        <parameter name="readTimeout">
+          <string>60000</string>
+        </parameter>
+      </cache-writer>
+      <eviction-attributes>
+        <lru-memory-size maximum="$LRU_MEM" action="overflow-to-disk"/>
+      </eviction-attributes>
+    </region-attributes>
+  </region>
+</cache>

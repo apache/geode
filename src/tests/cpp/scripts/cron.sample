@@ -1,0 +1,2 @@
+# Do a fresh build and take the standard options from cronbeaverton.txt
+0 20 * * * /export/tiny1/users/tkeith/regression/tests/scripts/runBatch.sh -o /export/tiny1/users/tkeith/regression/tests/scripts/cronbeaverton.txt hoth tiny sam gloin

@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<cache xmlns="http://geode.apache.org/schema/cache"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+       version="1.0">
+  <cache-server port="$PORT_NUM" />
+  <region name="TestTCR1">
+    <region-attributes scope="distributed-ack" data-policy="replicate" concurrency-checks-enabled="true"/>
+  </region>
+</cache> 

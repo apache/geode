@@ -1,0 +1,115 @@
+cmake_minimum_required(VERSION 2.6)
+set(PROJECT_NAME antlr)
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+include(CheckCXXCompilerFlag)
+include(CheckCCompilerFlag)
+
+set(CMAKE_REQUIRED_LIBRARIES -m64)
+check_c_compiler_flag(-m64 CFLAGS_M64_ALLOWED)
+check_cxx_compiler_flag(-m64 CXXFLAGS_M64_ALLOWED)
+set(CMAKE_REQUIRED_LIBRARIES)
+
+if (CFLAGS_M64_ALLOWED AND CXXFLAGS_M64_ALLOWED)
+  set(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS} -m64)
+  add_compile_options(-m64)
+endif()
+
+set(CMAKE_DEBUG_POSTFIX d)
+
+set(ANTLR_SRC
+		lib/cpp/src/ANTLRUtil.cpp
+		lib/cpp/src/ASTFactory.cpp
+		lib/cpp/src/ASTNULLType.cpp
+		lib/cpp/src/ASTRefCount.cpp
+		lib/cpp/src/BaseAST.cpp
+		lib/cpp/src/BitSet.cpp
+		lib/cpp/src/CharBuffer.cpp
+		lib/cpp/src/CharScanner.cpp
+		lib/cpp/src/CommonAST.cpp
+		lib/cpp/src/CommonASTWithHiddenTokens.cpp
+		lib/cpp/src/CommonHiddenStreamToken.cpp
+		lib/cpp/src/CommonToken.cpp
+		lib/cpp/src/InputBuffer.cpp
+		lib/cpp/src/LLkParser.cpp
+		lib/cpp/src/MismatchedCharException.cpp
+		lib/cpp/src/MismatchedTokenException.cpp
+		lib/cpp/src/NoViableAltException.cpp
+		lib/cpp/src/NoViableAltForCharException.cpp
+		lib/cpp/src/Parser.cpp
+		lib/cpp/src/RecognitionException.cpp
+		lib/cpp/src/String.cpp
+		lib/cpp/src/Token.cpp
+		lib/cpp/src/TokenBuffer.cpp
+		lib/cpp/src/TokenRefCount.cpp
+		lib/cpp/src/TokenStreamBasicFilter.cpp
+		lib/cpp/src/TokenStreamHiddenTokenFilter.cpp
+		lib/cpp/src/TokenStreamRewriteEngine.cpp
+		lib/cpp/src/TokenStreamSelector.cpp
+		lib/cpp/src/TreeParser.cpp
+		)
+
+set(ANTLR_HDR
+		lib/cpp/antlr/ANTLRException.hpp
+		lib/cpp/antlr/ANTLRUtil.hpp
+		lib/cpp/antlr/AST.hpp
+		lib/cpp/antlr/ASTArray.hpp
+		lib/cpp/antlr/ASTFactory.hpp
+		lib/cpp/antlr/ASTNULLType.hpp
+		lib/cpp/antlr/ASTPair.hpp
+		lib/cpp/antlr/ASTRefCount.hpp
+		lib/cpp/antlr/BaseAST.hpp
+		lib/cpp/antlr/BitSet.hpp
+		lib/cpp/antlr/CharBuffer.hpp
+		lib/cpp/antlr/CharInputBuffer.hpp
+		lib/cpp/antlr/CharScanner.hpp
+		lib/cpp/antlr/CharStreamException.hpp
+		lib/cpp/antlr/CharStreamIOException.hpp
+		lib/cpp/antlr/CircularQueue.hpp
+		lib/cpp/antlr/CommonAST.hpp
+		lib/cpp/antlr/CommonASTWithHiddenTokens.hpp
+		lib/cpp/antlr/CommonHiddenStreamToken.hpp
+		lib/cpp/antlr/CommonToken.hpp
+		lib/cpp/antlr/IOException.hpp
+		lib/cpp/antlr/InputBuffer.hpp
+		lib/cpp/antlr/LLkParser.hpp
+		lib/cpp/antlr/LexerSharedInputState.hpp
+		lib/cpp/antlr/MismatchedCharException.hpp
+		lib/cpp/antlr/MismatchedTokenException.hpp
+		lib/cpp/antlr/NoViableAltException.hpp
+		lib/cpp/antlr/NoViableAltForCharException.hpp
+		lib/cpp/antlr/Parser.hpp
+		lib/cpp/antlr/ParserSharedInputState.hpp
+		lib/cpp/antlr/RecognitionException.hpp
+		lib/cpp/antlr/RefCount.hpp
+		lib/cpp/antlr/SemanticException.hpp
+		lib/cpp/antlr/String.hpp
+		lib/cpp/antlr/Token.hpp
+		lib/cpp/antlr/TokenBuffer.hpp
+		lib/cpp/antlr/TokenRefCount.hpp
+		lib/cpp/antlr/TokenStream.hpp
+		lib/cpp/antlr/TokenStreamBasicFilter.hpp
+		lib/cpp/antlr/TokenStreamException.hpp
+		lib/cpp/antlr/TokenStreamHiddenTokenFilter.hpp
+		lib/cpp/antlr/TokenStreamIOException.hpp
+		lib/cpp/antlr/TokenStreamRecognitionException.hpp
+		lib/cpp/antlr/TokenStreamRetryException.hpp
+		lib/cpp/antlr/TokenStreamRewriteEngine.hpp
+		lib/cpp/antlr/TokenStreamSelector.hpp
+		lib/cpp/antlr/TokenWithIndex.hpp
+		lib/cpp/antlr/TreeParser.hpp
+		lib/cpp/antlr/TreeParserSharedInputState.hpp
+		lib/cpp/antlr/config.hpp
+		)
+
+include_directories(lib/cpp)
+
+add_library(antlr ${ANTLR_SRC} ${ANTLR_HDR})
+
+install(TARGETS antlr
+        RUNTIME DESTINATION bin
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib )
+install(FILES ${ANTLR_HDR} DESTINATION include/antlr)

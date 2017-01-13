@@ -1,0 +1,69 @@
+{
+  "variables":{
+    "region":"us-west-2",
+    "source_ami":"",
+    "source_image_name":"X.vmx",
+    "image_name":"dev-windows-2012"
+  },
+  "builders":[
+    {
+      "type":"amazon-ebs",
+      "instance_type":"t2.large",
+      "ami_name":"native-{{user `version`}}-{{user `image_name`}} {{timestamp}}",
+      "access_key":"{{user `aws_access_key`}}",
+      "secret_key":"{{user `aws_secret_key`}}",
+      "region":"{{user `region`}}",
+      "source_ami":"{{user `source_ami`}}",
+      "subnet_id":"{{user `subnet_id`}}",
+      "vpc_id":"{{user `vpc_id`}}",
+      "tags":{
+        "team":"native",
+        "version":"{{user `version`}}",
+        "source_ami":"{{user `source_ami`}}"
+      },
+      "communicator":"winrm",
+      "winrm_username":"Administrator",
+      "launch_block_device_mappings":[
+        {
+          "device_name":"/dev/sda1",
+          "delete_on_termination":true,
+          "volume_size":60
+        }
+      ]
+    }
+  ],
+  "provisioners":[
+    {
+      "pause_before":"30s",
+      "type":"powershell",
+      "inline":[
+        "choco install notepadplusplus -confirm",
+        "choco install googlechrome -confirm",
+        "choco install sysinternals -confirm",
+        "choco install windbg -confirm",
+        "choco install emacs -confirm"
+      ]
+    },
+    {
+      "type":"powershell",
+      "inline":[
+        "Remove-Item C:\\Users\\build\\.ssh -Recurse -Force -ErrorAction SilentlyContinue"
+      ]
+    },
+    {
+      "type":"powershell",
+      "scripts":[
+        "windows/cleanup.ps1"
+      ]
+    },
+    {
+      "type":"powershell",
+      "scripts":[
+        "windows/setup-ec2config.ps1"
+      ],
+      "only":[
+        "amazon-ebs"
+      ]
+    }
+  ]
+}

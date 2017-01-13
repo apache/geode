@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="BBName">CacheServer</data>
+  <data name="systemName">CSTest</data>
+  <data name="cacheType">PEER</data>
+  <data name="scope">NACK</data>
+  <data name="regionName">CSIntelTestRegion</data>
+  <data name="valueSizes">
+		<oneof>
+			<item>100</item>
+			<item>1000</item>
+		</oneof>
+	</data>
+  <data name="entryCount">10000</data>
+  <client-set count="50" name="Server"/>
+  <client-set count="5000" name="Client"/>
+
+  <test name="IntelTest1" 
+        description="Populate data into 50 server caches, 5000 clients do gets without caching entries by 
+        locally destroying entries immediately. Demonstrate that clients can get fast access to 
+        data (at close to N msgs/sec where N is in the thousands) through net search  (Pull mode from clients)" >
+    <task name="InitServers" action="doInitProcess" container="cacheserver" waitTime="600">
+      <data name="cacheType">SERVER</data>
+      <client-set count="50" name="Server"/> 
+    </task>
+    <task name="CreateServerRegion" action="doCreateRegion" container="cacheserver" waitTime="600">
+      <client-set count="1" name="Server"/> 
+    </task>
+    <task name="CreateClients" action="doCreateRegion" container="cacheserver" waitTime="3600">
+      <data name="cacheType">CLIENT</data>
+      <client-set count="5000" name="Client"/>
+    </task>    
+    <task name="PopulateServers" action="doFeed" container="cacheserver" waitTime="600">
+      <data name="opsSecond">1200</data>
+      <client-set count="1" name="Server"/> 
+    </task>    
+    <task name="Client Events" action="doEntryOperations" container="cacheserver" waitTime="36600">
+      <data name="entryOps">read+localdestroy</data>
+      <data name="workTime">3600</data>
+      <data name="opsSecond">1200</data>
+      <client-set count="5000" name="Client"/> 
+    </task>
+  </test>
+</test-driver>

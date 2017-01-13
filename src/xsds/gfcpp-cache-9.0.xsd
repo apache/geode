@@ -1,0 +1,221 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xsd:schema xmlns="http://schema.pivotal.io/gemfire/gfcpp-cache" xmlns:nc="http://schema.pivotal.io/gemfire/gfcpp-cache"
+  elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="http://schema.pivotal.io/gemfire/gfcpp-cache"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema" version="9.0">
+  <xsd:annotation>
+    <xsd:documentation><![CDATA[
+      This is the XML Schema for the GemFire distributed cache declarative
+      caching XML file.  All declarative cache files must include a schema
+      of the following form:
+
+  <client-cache
+      xmlns="http://schema.pivotal.io/gemfire/gfcpp-cache"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://schema.pivotal.io/gemfire/gfcpp-cache
+                          http://schema.pivotal.io/gemfire/gfcpp-cache/gfcpp-cache-9.0.xsd"
+      version="9.0">
+
+The contents of a declarative XML file correspond to APIs found in the
+com.gemstone.gemfire.cache and com.gemstone.gemfire.cache.client
+packages.  A declarative caching XML file is used to populate a Cache
+or a ClientCache when it is created.
+
+The top-level element in this syntax is "client-cache". All elements are
+listed here in alphabetical order.
+
+The following conventions apply to all GemFire distributed cache
+declarative caching XML file elements unless indicated otherwise.
+
+- In elements that contain PCDATA, leading and trailing whitespace in
+  the data may be ignored.
+
+- In elements whose value is an "enumerated type", the value is case
+  sensitive.
+    
+  ]]></xsd:documentation>
+  </xsd:annotation>
+  <xsd:element name="client-cache">
+    <xsd:complexType>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element minOccurs="0" maxOccurs="unbounded" name="pool">
+          <xsd:complexType>
+            <xsd:choice>
+              <xsd:element minOccurs="1" maxOccurs="unbounded" name="locator" type="nc:host-port-type" />
+              <xsd:element minOccurs="1" maxOccurs="unbounded" name="server" type="nc:host-port-type" />
+            </xsd:choice>
+            <xsd:attribute name="free-connection-timeout" type="xsd:string" />
+            <xsd:attribute name="load-conditioning-interval" type="xsd:string" />
+            <xsd:attribute name="min-connections" type="xsd:string" />
+            <xsd:attribute name="max-connections" type="xsd:string" />
+            <xsd:attribute name="retry-attempts" type="xsd:string" />
+            <xsd:attribute name="idle-timeout" type="xsd:string" />
+            <xsd:attribute name="ping-interval" type="xsd:string" />
+            <xsd:attribute name="name" type="xsd:string" use="required" />
+            <xsd:attribute name="read-timeout" type="xsd:string" />
+            <xsd:attribute name="server-group" type="xsd:string" />
+            <xsd:attribute name="socket-buffer-size" type="xsd:string" />
+            <xsd:attribute name="subscription-enabled" type="xsd:boolean" />
+            <xsd:attribute name="subscription-message-tracking-timeout" type="xsd:string" />
+            <xsd:attribute name="subscription-ack-interval" type="xsd:string" />
+            <xsd:attribute name="subscription-redundancy" type="xsd:string" />
+            <xsd:attribute name="statistic-interval" type="xsd:string" />
+            <xsd:attribute name="pr-single-hop-enabled" type="xsd:string" />
+            <xsd:attribute name="thread-local-connections" type="xsd:boolean" />
+            <xsd:attribute name="multiuser-authentication" type="xsd:boolean" />
+            <xsd:attribute name="update-locator-list-interval">
+              <xsd:simpleType>
+                <xsd:restriction base="xsd:long">
+                  <xsd:minInclusive value="0" />
+                </xsd:restriction>
+              </xsd:simpleType>
+            </xsd:attribute>
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:element minOccurs="0" maxOccurs="unbounded" name="root-region">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element minOccurs="0" maxOccurs="1" name="region-attributes" type="nc:region-attributes-type" />
+              <xsd:element minOccurs="0" maxOccurs="unbounded" name="region" type="nc:region-type" />
+            </xsd:sequence>
+            <xsd:attribute name="name" type="xsd:string" use="required" />
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:element minOccurs="0" maxOccurs="unbounded" name="region" type="nc:region-type" />
+        <xsd:element minOccurs="0" maxOccurs="1" name="pdx">
+          <xsd:complexType>
+            <xsd:attribute name="ignore-unread-fields" type="xsd:boolean" />
+            <xsd:attribute name="read-serialized" type="xsd:boolean" />
+          </xsd:complexType>
+        </xsd:element>
+      </xsd:choice>
+      <xsd:attribute name="endpoints" type="xsd:string" />
+      <xsd:attribute name="redundancy-level" type="xsd:string" />
+      <xsd:attribute name="version" type="version-type" use="required" fixed="9.0" />
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:complexType name="region-type">
+    <xsd:sequence>
+      <xsd:element minOccurs="0" maxOccurs="1" name="region-attributes" type="nc:region-attributes-type" />
+      <xsd:element minOccurs="0" maxOccurs="unbounded" name="region" type="nc:region-type" />
+    </xsd:sequence>
+    <xsd:attribute name="name" type="xsd:string" use="required" />
+    <xsd:attribute name="refid" type="xsd:string" />
+  </xsd:complexType>
+
+  <xsd:complexType name="region-attributes-type">
+    <xsd:sequence>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element name="region-time-to-live" type="nc:expiration-type" />
+        <xsd:element name="region-idle-time" type="nc:expiration-type" />
+        <xsd:element name="entry-time-to-live" type="nc:expiration-type" />
+        <xsd:element name="entry-idle-time" type="nc:expiration-type" />
+        <xsd:element name="partition-resolver" type="nc:library-type" />
+        <xsd:element name="cache-loader" type="nc:library-type" />
+        <xsd:element name="cache-listener" type="nc:library-type" />
+        <xsd:element name="cache-writer" type="nc:library-type" />
+        <xsd:element name="persistence-manager">
+          <xsd:complexType>
+            <xsd:complexContent>
+              <xsd:extension base="nc:library-type">
+                <xsd:sequence>
+                  <xsd:element name="properties">
+                    <xsd:complexType>
+                      <xsd:sequence>
+                        <xsd:element minOccurs="0" maxOccurs="unbounded" name="property">
+                          <xsd:complexType>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                            <xsd:attribute name="value" type="xsd:string" use="required" />
+                          </xsd:complexType>
+                        </xsd:element>
+                      </xsd:sequence>
+                    </xsd:complexType>
+                  </xsd:element>
+                </xsd:sequence>
+              </xsd:extension>
+            </xsd:complexContent>
+          </xsd:complexType>
+        </xsd:element>
+      </xsd:choice>
+    </xsd:sequence>
+    <xsd:attribute name="caching-enabled" type="xsd:boolean" />
+    <xsd:attribute name="cloning-enabled" type="xsd:boolean" />
+    <xsd:attribute name="scope">
+      <xsd:simpleType>
+        <xsd:restriction base="xsd:NMTOKEN">
+          <xsd:enumeration value="local" />
+          <xsd:enumeration value="distributed-no-ack" />
+          <xsd:enumeration value="distributed-ack" />
+        </xsd:restriction>
+      </xsd:simpleType>
+    </xsd:attribute>
+    <xsd:attribute name="initial-capacity" type="xsd:string" />
+    <xsd:attribute name="load-factor" type="xsd:string" />
+    <xsd:attribute name="concurrency-level" type="xsd:string" />
+    <xsd:attribute name="lru-entries-limit" type="xsd:string" />
+    <xsd:attribute name="disk-policy">
+      <xsd:simpleType>
+        <xsd:restriction base="xsd:NMTOKEN">
+          <xsd:enumeration value="none" />
+          <xsd:enumeration value="overflows" />
+          <xsd:enumeration value="persist" />
+        </xsd:restriction>
+      </xsd:simpleType>
+    </xsd:attribute>
+    <xsd:attribute name="endpoints" type="xsd:string" />
+    <xsd:attribute name="client-notification" type="xsd:boolean" />
+    <xsd:attribute name="pool-name" type="xsd:string" />
+    <xsd:attribute name="concurrency-checks-enabled" type="xsd:boolean" />
+    <xsd:attribute name="id" type="xsd:string" />
+    <xsd:attribute name="refid" type="xsd:string" />
+  </xsd:complexType>
+
+  <xsd:complexType name="expiration-type">
+    <xsd:sequence>
+      <xsd:element name="expiration-attributes">
+        <xsd:complexType>
+          <xsd:attribute name="timeout" type="xsd:string" use="required" />
+          <xsd:attribute name="action">
+            <xsd:simpleType>
+              <xsd:restriction base="xsd:NMTOKEN">
+                <xsd:enumeration value="invalidate" />
+                <xsd:enumeration value="destroy" />
+                <xsd:enumeration value="local-invalidate" />
+                <xsd:enumeration value="local-destroy" />
+              </xsd:restriction>
+            </xsd:simpleType>
+          </xsd:attribute>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="host-port-type">
+    <xsd:attribute name="host" type="xsd:string" use="required" />
+    <xsd:attribute name="port" type="nc:port-type" use="required" />
+  </xsd:complexType>
+
+  <xsd:simpleType name="port-type">
+    <xsd:restriction base="xsd:int">
+      <xsd:minInclusive value="0" />
+      <xsd:maxInclusive value="65535" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:simpleType name="version-type">
+    <xsd:annotation>
+      <xsd:documentation>
+        Decimal version type.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:restriction base="xsd:token">
+      <xsd:pattern value="\.?[0-9]+(\.[0-9]+)*" />
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:complexType name="library-type">
+    <xsd:attribute name="library-name" type="xsd:string" />
+    <xsd:attribute name="library-function-name" type="xsd:string" use="required" />
+  </xsd:complexType>
+
+</xsd:schema>

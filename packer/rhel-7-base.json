@@ -1,0 +1,49 @@
+{
+  "variables":{
+    "region":"us-west-2",
+    "source_ami":"ami-775e4f16",
+    "source_image_name":"X.vmx",
+    "image_name":"rhel-7-base"
+  },
+  "builders":[
+    {
+      "type":"amazon-ebs",
+      "instance_type":"t2.micro",
+      "ami_name":"native-{{user `version`}}-{{user `image_name`}} {{timestamp}}",
+      "access_key":"{{user `aws_access_key`}}",
+      "secret_key":"{{user `aws_secret_key`}}",
+      "region":"{{user `region`}}",
+      "source_ami":"{{user `source_ami`}}",
+      "subnet_id":"{{user `subnet_id`}}",
+      "vpc_id":"{{user `vpc_id`}}",
+      "tags":{
+        "team":"native",
+        "version":"{{user `version`}}",
+        "source_ami":"{{user `source_ami`}}"
+      },
+      "ssh_username":"ec2-user",
+      "ssh_pty":true
+    }
+  ],
+  "provisioners":[
+    {
+      "type":"shell",
+      "script":"rhel/wait-for-cloud-init.sh"
+    },
+    {
+      "type":"shell",
+      "execute_command":"{{.Vars}} sudo -E -S bash '{{.Path}}'",
+      "scripts":[
+        "rhel/update.sh"
+      ]
+    },
+    {
+      "type":"shell",
+      "execute_command":"{{.Vars}} sudo -E -S bash '{{.Path}}'",
+      "scripts":[
+        "rhel/cleanup.sh",
+        "rhel/zerodisk.sh"
+      ]
+    }
+  ]
+}

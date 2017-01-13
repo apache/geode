@@ -1,0 +1,98 @@
+{
+  "variables":{
+    "region":"us-west-2",
+    "source_ami":"",
+    "source_image_name":"X.vmx",
+    "image_name":"test-rhel-7"
+  },
+  "builders":[
+    {
+      "type":"amazon-ebs",
+      "instance_type":"t2.micro",
+      "ami_name":"native-{{user `version`}}-{{user `image_name`}} {{timestamp}}",
+      "access_key":"{{user `aws_access_key`}}",
+      "secret_key":"{{user `aws_secret_key`}}",
+      "region":"{{user `region`}}",
+      "source_ami":"{{user `source_ami`}}",
+      "subnet_id":"{{user `subnet_id`}}",
+      "vpc_id":"{{user `vpc_id`}}",
+      "tags":{
+        "team":"native",
+        "version":"{{user `version`}}",
+        "source_ami":"{{user `source_ami`}}"
+      },
+      "ssh_username":"ec2-user",
+      "ssh_pty":true
+    }
+  ],
+  "provisioners":[
+    {
+      "type":"shell",
+      "script":"rhel/wait-for-cloud-init.sh"
+    },
+    {
+      "type":"shell",
+      "execute_command":"{{.Vars}} sudo -E -S bash '{{.Path}}'",
+      "scripts":[
+        "rhel/update.sh"
+      ]
+    },
+    {
+      "type":"file",
+      "source":"rhel/files",
+      "destination":"/tmp"
+    },
+    {
+      "type":"shell",
+      "execute_command":"{{.Vars}} sudo -E -S bash '{{.Path}}'",
+      "inline":[
+        "cp -rv /tmp/files/* /",
+        "rm -rf /tmp/files",
+        "chmod +x /etc/init-user.sh"
+      ]
+    },
+    {
+      "type":"file",
+      "source":"rhel/init-hosts.rc.local",
+      "destination":"/tmp/init-hosts.rc.local"
+    },
+    {
+      "type":"shell",
+      "execute_command":"{{.Vars}} sudo -E -S bash '{{.Path}}'",
+      "inline":[
+        "cat /tmp/init-hosts.rc.local >> /etc/rc.local"
+      ]
+    },
+    {
+      "type":"shell",
+      "execute_command":"{{.Vars}} sudo -E -S bash '{{.Path}}'",
+      "scripts":[
+        "rhel/disable-selinux.sh",
+        "rhel/add-user-build.sh",
+        "rhel/install-repos.sh",
+        "rhel/install-jdk-1.8.sh",
+        "rhel/install-cmake.sh"
+      ]
+    },
+    {
+      "type":"file",
+      "source":"{{user `gemfire_archive`}}",
+      "destination":"gemfire.tar.gz"
+    },
+    {
+      "type":"shell",
+      "execute_command":"{{.Vars}} sudo -E -S bash '{{.Path}}'",
+      "scripts":[
+        "rhel/install-gemfire.sh"
+      ]
+    },
+    {
+      "type":"shell",
+      "execute_command":"{{.Vars}} sudo -E -S bash '{{.Path}}'",
+      "scripts":[
+        "rhel/cleanup.sh",
+        "rhel/zerodisk.sh"
+      ]
+    }
+  ]
+}

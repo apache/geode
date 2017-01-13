@@ -1,0 +1,653 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+        <IMG SRC="../../../docs/PIVOTAL_GemFire_220x100.png" BORDER="0">
+	<HEAD>
+		<TITLE>CacheRunner: GemFire Native Client C# Example</TITLE>
+		<META http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+		<META http-equiv="Content-Style-Type" content="text/css">
+		<META content="Adobe FrameMaker 7.0/HTML Export Filter" name="GENERATOR">
+		<LINK href="DocIndex.css" type="text/css" charset="ISO-8859-1" rel="STYLESHEET">
+	</HEAD>
+	<BODY>
+        <IMG SRC="../../../docs/PIVOTAL_GemFire_190x81.png" BORDER="0">
+	<DIV>
+              <h1 align="center"><a name="Top" id="Top"></a>CacheRunner</h1>
+			  <h2 align="center"> Pivotal GemFire&#174; Native Client </h2>
+			  <h2 align="center">C# Programming Example</h2>
+    </DIV>
+            <DIV>
+              <P>The <code>CacheRunner</code> C# example is an interactive program for modifying and viewing GemFire cache contents as a C# client interacts with a Java cache server. The <code>CacheRunner</code> program joins the distributed system, creates a cache, and then accepts command-line input for inspecting, modifying, and remotely querying the cache while working with a cache server. XML files are provided to configure <code>CacheRunner</code> for different functional operations or behavior.</P>
+              <blockquote>
+                <p><em>You can review the C# source code for this example by opening the files in the <code>cli_CacheRunner</code> directory that have a <code>.cs</code> file extension. </em></p>
+              </blockquote>
+              <P>This example is divided into three parts, with each part requiring a different XML configuration file for the Java cache server. <code>CacheRunner</code> is also configured using a local <code>gfcpp.properties</code> file.</P>
+              <ul>
+                        <li><em><a href="#part1">Part 1: Inspecting and Modifying the Cache</a></em> demonstrates cache operations using two C# native clients with a GemFire Java cache server. It shows how to <code>put</code> and <code>get</code> data between clients, and how to derive a complex number as a user-defined class for use as a key or value. You start two C# client instances and see how a <code>put</code> value in one can be gotten in another as the cache server is updated with the new values. This part uses server configuration file <code><a href="./cacherunner.xml" target="_blank">cacherunner.xml</a></code>. The procedures describing non-cacheable and cacheable values use client configuration files <code><a href="./tcr_cacheless.xml" target="_blank">tcr_cacheless.xml</a></code> and <code><a href="./tcr_cache.xml" target="_blank">tcr_cache.xml</a></code>. </li>
+                        <br>                      
+ 				    <li><em><a href="#part2">Part 2: Remote Querying</a></em> demonstrates how to initiate a query from a C# client that is executed on data stored on a Java cache server. The query results are returned to the C# client. This part uses server configuration file <code><a href="./csQueryPortfolios.xml" target="_blank">csQueryPortfolios.xml</a></code>. If no XML file is specified when <code>CacheRunner</code> is started, it's configured using <a href="./tcr_cache.xml" target="_blank"><code>tcr_cache.xml</code></a> by default. </li>
+ 					<br>
+ 				    <li><em><a href="#part3">Part 3: High Availability</a> </em> shows how you can set up redundant cache servers in case the primary server fails.</li>
+  </ul>
+ 				  <P>In the procedures, the lines you type are shown in a <code> <strong>boldface fixed</strong></code> font. System output is shown in a <code>regular fixed</code> font.
+                      </P><br>
+</DIV>
+
+<DIV>
+<H2>
+<a name="configuring_environment" id="configuring_environment"></a>Configuring the Environment</H2>
+<P>
+Examples that interact with a Java cache server require specific environment configurations so the cache server will run properly. Follow the configuration steps listed below that apply to your operating system: </P>
+</DIV>
+ <DIV>
+<ol>
+  <li>From the GemFire product installation directory, configure your environment settings by following the steps in <code>examples/EnvSetup.html</code>. Refer to the system configuration information in the <em>GemFire User's Guide</em> if you need help with   this step.<br>
+      <br>
+  <li>Set the <code>JAVA_HOME</code> and <code>GF_JAVA_HOME</code>  environment variables to your installed Java JRE or JDK. See the installation information in the <em>GemFire User's Guide</em> for the   versions of Java that are compatible with GemFire. The <code>JAVA_HOME</code> setting is for your applications, and  <code>GF_JAVA_HOME</code> is for the GemFire scripts.  You must have a compatible Java JRE or JDK installed  and you must set <code>JAVA_HOME</code> and <code>GF_JAVA_HOME</code> to point to it.<br>
+      <br>
+  <li>Add <code>$JAVA_HOME/bin</code> to the start of your <code>PATH</code>. <br>
+</ol>
+<p>The following is a list of the environment configuration commands for the <code>CacheRunner</code> example. Choose the set of commands that are appropriate for your operating system. The text that you type is shown in bold.
+  These configurations only need to be performed for the sessions that invoke the Java cache server.</p>
+<p><strong>Bourne and Korn shells (sh, ksh, bash)</strong></p>
+<blockquote>
+  <p>    <code>% <strong>cd GemFireInstallDirectory</strong><br>
+    % <strong>JAVA_HOME=&lt;installed JRE PATH&gt;; export JAVA_HOME</strong><br>
+    % <strong>GF_JAVA_HOME=$JAVA_HOME; export GF_JAVA_HOME</strong><br>
+    % <strong>PATH=$JAVA_HOME/bin:$PATH; export PATH</strong></code></p>
+</blockquote>
+<p><strong>Windows</strong></p>
+<blockquote>
+  <p><code>&gt; <strong>cd GemFireInstallDirectory</strong><br>
+&gt; <strong>set JAVA_HOME=&lt;installed JRE PATH&gt;</strong><br>
+&gt; <strong>set GF_JAVA_HOME=%JAVA_HOME%</strong><br>
+&gt; <strong>set PATH=%JAVA_HOME%\bin;%PATH%</strong> </code></p>
+</blockquote>
+<a name="part1"></a><br>
+<br>
+</DIV>
+
+<DIV>
+<hr size="3" noshade>
+<h1>Part 1: Inspecting and Modifying the Cache</h1>
+<hr size="3" noshade>
+</DIV>
+
+ <DIV>
+   <h2>CacheRunner Configuration Files </h2>
+   <P>
+The <code>CacheRunner</code> C# example uses a GemFire cache server configuration file called <code><a href="./cacherunner.xml" target="_blank">cacherunner.xml</a></code>. When the Java cache server starts, <code>cacherunner.xml</code> creates two regions <code>root</code> and <code>listenerWriterLoader</code>. This is a description of each cache server region and how they are configured:</P>
+   <UL>
+  <LI CLASS="Bulleted">root &#151; The root region for the cache server. The region's scope is <code>distributed-no-ack</code>, and <code>notify-by-subscription</code> is set to <code>true</code>.</LI>
+  <LI CLASS="Bulleted"><code> listenerWriterLoader</code> &#151; A region with <code>distributed-ack</code> scope and  <code>mirror-type</code> set to <code>keys-values</code>.</LI>
+  </UL>
+<p>The <code>CacheRunner</code> application comes with XML configuration files that configure the cache server and the local client cache to demonstrate various operations with the cache server. This example does not use <code>tcr_hacacheless.xml</code>.</p>
+<UL><LI CLASS="Bulleted"><code><a href="./tcr_cache.xml" target="_blank">tcr_cache.xml</a></code> &#151; The <code>listenerWriterLoader</code> region establishes an endpoint connection with the server and performs distributed caching operations by receiving updates from the cache server. If <code>CacheRunner.exe</code> is run without specifying an XML file, it is automatically configured using <code>tcr_cache.xml</code>.</LI>
+  <LI CLASS="Bulleted"><code><a href="./tcr_hacache.xml" target="_blank">tcr_hacache.xml</a></code> &#151; Configures the client for high availability by specifying multiple servers for storing data and setting a server redundancy level.</LI>
+  <LI CLASS="Bulleted"><code><a href="./tcr_cacheless.xml" target="_blank">tcr_cacheless.xml</a></code> &#151; The <code>listenerWriterLoader</code> region establishes an endpoint connection with the server and receives data from the cache server. Entries retrieved from the cache server are not retained in the client's local cache because the <code>caching-enabled</code> region attribute is set to <code>false</code>. The <code>Portfolios</code> region is used for remote querying. </LI>
+</UL>
+<P>
+These procedures introduce a few of the <code> CacheRunner</code>
+ commands. For information on the others, enter <strong>
+ <code>help</code></strong>
+ or <strong>
+ <code>?</code></strong>
+ at the session prompt.</P>
+<P>In the procedures, the lines you type are shown in a <code> <strong>boldface fixed</strong></code> font. System output is shown in a <code>regular fixed</code> font.</P>
+<br>
+ </DIV>
+ <DIV>
+                      <H2> <a name="starting_application_processes" id="starting_application_processes"></a>Starting the Cache Server </H2>
+ 				  <P> To start the cache server, create a session from the GemFire product installation directory and complete the following steps. </P>
+    </DIV>
+ 				<DIV>
+                      <OL>
+                        <LI CLASS="Numbered-1st">
+                          <p>Configure the session environment according to the steps listed in <a href="#configuring_environment">Configuring the Environment</a><a href="..\EnvSetup.html" target="_blank"></a>.</p>
+                        </LI>
+                        <LI CLASS="Numbered">Go to the <code>cli_CacheRunner</code> directory, then start the cache server with the local <code>cacherunner.xml</code> file:
+                          <blockquote>
+                              <p><strong> <code>cd examples\cli_CacheRunner</code></strong></p>
+                              <p><strong><code>cacheserver start cache-xml-file=cacherunner.xml</code></strong></p>
+                          </blockquote>
+                          <P>The cache server is initialized using the configurations in <code>cacherunner.xml</code>. A message similar to the following appears, indicating that the cache server is running:</P>
+                        </LI>
+                        <blockquote>
+                          <p> <code>Cacheserver pid: 2120 status: running</code><br>
+                      </p>
+                        </blockquote>
+                      </OL>
+    </DIV>
+ 				<DIV>
+                      <H2> <a name="starting_application_processes" id="starting_application_processes"></a>Starting Two CacheRunner Clients Using tcr_cache.xml </H2>
+ 				  <P> Start two <code>CacheRunner</code> clients and configure their caches using <code>tcr_cache.xml</code> by following these steps:</P>
+ 	  </DIV>
+ 				<DIV>
+                      <OL>
+                        <LI CLASS="Numbered-1st">
+                          <p>Create two sessions for two <code>CacheRunner</code> clients.</p>
+                        </LI>
+                        <LI CLASS="Numbered-1st">
+                        <p><span class="Numbered">In each session, go to the <code>cli_CacheRunner</code> directory</span>:                                                </LI>
+                        <blockquote>
+                          <p><strong> <code>cd examples\cli_CacheRunner</code></strong></p>
+                        </blockquote>
+                        <LI CLASS="Numbered"> In each session, start the <code>CacheRunner</code> client with <code>tcr_cache.xml</code>:
+                          <blockquote>
+                              <p><strong><code>CacheRunner.exe tcr_cache.xml </code></strong> </p>
+                          </blockquote>
+                          <P><code>CacheRunner</code> is configured using the settings in <code><a href="./tcr_cache.xml" target="_blank">tcr_cache.xml</a></code>. The following command prompt appears for both C# clients:</P>
+                        </LI>
+                          <blockquote>
+                              <p><code>/root: chrgn, lsrgn, get, put, exec, query, existsvalue, selectvalue, quit:</code></p>
+                          </blockquote>
+                          <p>This is a brief description of the prompts and commands you can uses with <code>CacheRunner</code>. See the GemFire product documentation for more information about these commands:</p>
+                          <ul>
+                            <li><code>/root:</code> &#151; A prompt that indicates the current region.</li>
+                            <li><code> chrgn</code> &#151; Navigate to a different region.</li>
+                            <li><code>lsrgn</code> &#151; List all regions in cache.</li>
+                            <li><code>get</code> &#151; Get a value from the cache server and add it to the local cache.</li>
+                            <li><code>put</code> &#151; Put a value into the local cache and propagate the value to the cache server.</li>
+                            <li><code>exec</code> &#151; Execute a query.</li>
+                            <li><code>query</code> &#151; Run a query shortcut method.</li>
+                            <li><code>existsvalue</code> &#151;Run a query shortcut method.</li>
+                            <li><code>selectvalue</code> &#151;Run a query shortcut method.</li>
+                            <li><code>quit</code> &#151; Quit the <code>CacheRunner</code> application.</li>
+ 						<br>
+                          </ul>
+ 					 
+                      </OL>
+                      
+    </DIV>
+
+                    <DIV>
+                      <H2> Entering and Receiving Data in the Clients </H2>
+ 				  <P> In this exercise, you <code>put</code> data in one client and the client updates the cache server region with the new data. Next, the second client does a <code>get</code> to retrieve the updated values from the cache server and update its local cache. The cache listeners for the clients report the cache events that occur for each <code>put</code> and <code>get</code>. </P>
+ 	  </DIV>
+ <DIV>
+                      <P><strong> In both CacheRunner clients </strong></P>
+ 				  <p>In both clients, go to the <code> listenerWriterLoader</code> region:</p>
+ 				  <OL>
+ 				    <blockquote>
+ 				      <p><code><strong>
+ 		            chrgn listenerWriterLoader</strong></code><br>
+      </blockquote>
+   </OL>
+ 				  <p><strong> In the first CacheRunner client:</strong></p>
+ 				    <OL>
+ 				      <LI CLASS="Numbered">Add an entry:
+ 				        <blockquote>
+ 				          <p><strong> <code>put key1 first</code></strong></p>
+ 				        </blockquote>
+ 			            <P> The cache listener reports the events related to the <code>put</code> command. The entry is identified as a string, and the cache server is updated with the new entry.</P>
+ 			            <blockquote>
+ 			              <p> <code>--- Received afterCreate event of: key1<br>
+ 		                  Put string -- key: key1 value: first </code></p>
+ 				        </blockquote>
+ 			            <P> The second <code>CacheRunner</code> client also receives an <code>afterCreate</code> event message from the server for the <code>put</code>:</P>
+ 			            <blockquote>
+ 			              <p> <code>--- Received afterCreate event of: key1</code></p>
+ 				        </blockquote>
+ 				      </LI>
+ 				      <LI CLASS="Numbered"> Add another entry in the first client:
+ 				        <blockquote>
+ 				          <p><strong><code>put key2 7.2+3i</code></strong></p>
+ 			            </blockquote>
+ 				        <P> The cache listener reports the events related to the <code>put</code> command. The entry is identified as a complex number, and the cache server is updated with the new entry.</P>
+ 				        <blockquote>
+ 				          <p> <code>--- Received afterCreate event of: key2<br>
+ 			              Put complex -- key: key2 value: 7.2+3i</code></p>
+ 			            </blockquote>
+ 			          <P> The second <code>CacheRunner</code> client also receives an <code>afterCreate</code> event message from the server for the <code>put</code>:</P>
+ 			          <blockquote>
+ 			            <p> <code>--- Received afterCreate event of: key2</code></p>
+ 				      </blockquote>
+ 			          </LI>
+      </OL>
+ 				    <br>
+ 				      <P><strong>In the second CacheRunner client </strong></P>
+ 				      <OL>
+ 				        <LI CLASS="Numbered">Get the <code>key1</code> entry from the cache server that was added by the first client:
+                              <blockquote>
+                                <p><strong> <code>get key1</code></strong></p>
+                            </blockquote>
+                            <P> The key name and value are retrieved from the cache server and displayed:                              </P>
+                            <blockquote>
+                              </code></strong><code>Get [CacheableString] -- key: key1 value: first </code>
+                              </p>
+                            </blockquote>
+                            </LI>
+ 				        <LI CLASS="Numbered"> Enter a new value for <code>key1</code>:
+ 				          <blockquote>
+                                  <p><strong><code>put key1 second </code></strong></p>
+ 			              </blockquote>
+ 						  <P> The cache listener reports the events related to the <code>put</code> command, identifying the entry as a string. The cache server is updated with the new value for <code>key1</code>.</P>
+ 			              <blockquote>
+                                <p> <code>--- Received afterUpdate event of: key1<br>
+                                Put string -- key: key1 value: second </code></p>
+ 		                  </blockquote>
+ 				        </LI>
+ 			          </OL>
+ 				      
+ 				    <br>
+ 				      <P><strong>In the first CacheRunner client</strong></P>
+       Get the new <code>key1</code> entry<span class="Numbered"> from the cache server that was added by </span>the second client:
+            <blockquote>
+                <p><strong> <code>get key1</code></strong></p>
+            </blockquote>
+            <P> The key name and new value are retrieved from the cache server: </P>
+            <blockquote> </code></strong><code>Get [CacheableString] -- key: key1 value: second</code></blockquote><br><br>
+            
+    </DIV>
+
+
+    <DIV>
+ 				<H2> Stopping the Cache Server and Clients </H2>
+ 		        <P>To complete the procedures in Part 1 and prepare for Part 2, the Java cache server and the two C# clients must be stopped. However, their sessions need to remain open so the cache server and clients can be started again from those sessions using a different XML configuration file. </P>
+                    <ol>
+                      <li>Stop the cache server, but leave its session open:      
+                          <blockquote>
+                            <strong><code>cacheserver stop</code></strong>
+                          </blockquote>
+ 				  </li>
+                      <li>Stop both C# clients:
+
+                                                <blockquote>
+                                                  <p><strong><code>quit</code></strong></p>
+                                                </blockquote>
+ 				  </li>
+ 				  <li>Close one of the C# client sessions. Only one client is needed for <em>Part 2: Remote Querying</em> and <em>Part 3: High Availability</em>.
+                                                <blockquote>
+                                                  <p><strong><code>exit</code></strong></p>
+                                                </blockquote>
+ 				  </li>
+                    </ol>
+                    <p><a name="part2" id="part2"></a><br> 				  
+                    </p>
+    </DIV>
+
+<DIV>
+<hr size="3" noshade>
+<h1>Part 2: Remote Querying</h1>
+<hr size="3" noshade>
+</DIV>
+
+          <DIV>
+            <P>These procedures introduce some of the querying commands available for the native client. The <code>CacheRunner</code> C# client accepts query strings in input, runs them against the cached data stored on the cache server, then returns the query results to the C# client.</P>
+            <P><br>
+</P>
+   </DIV>
+
+ <DIV>
+                      <H2> <a name="starting_application_processes" id="starting_application_processes"></a>Starting the Cache Server and Client </H2>
+ 				  <P> To start the cache server, complete the following steps using the open cache server and client sessions: </P>
+    </DIV>
+
+ 				<DIV>
+ 				  <OL><LI CLASS="Numbered-1st">
+                        <p>In the cache server session, add the classes for <code>javaobject.jar</code> to your <code>CLASSPATH</code> by entering the following in a single line: </p>
+                        </LI>
+                        <blockquote>
+                          <p><strong> <code>set CLASSPATH=examples\cli_CacheRunner\javaobject.jar;%CLASSPATH%</code></strong></p>
+                        </blockquote>
+                        <p> The file <code>javaobject.jar</code> is required for registering the <code>Portfolio</code> and <code>Position</code> objects on the cache server for remote querying.</p>
+                        <LI CLASS="Numbered">Make sure the <code>cli_CacheRunner</code> directory is still the current working directory. If it isn't, then set it.
+                          <blockquote>
+                              <p><strong> <code>cd examples\cli_CacheRunner</code></strong></p>
+                          </blockquote>
+                        <LI CLASS="Numbered">Start the cache server with  <code>csQueryPortfolios.xml</code>: 					  
+ 					  <blockquote>
+                              <p><strong><code>cacheserver start cache-xml-file=csQueryPortfolios.xml</code></strong></p>
+                          </blockquote>
+                          <P>The cache server is initialized using the configurations in <code><a href="./csQueryPortfolios.xml" target="_blank">csQueryPortfolios.xml</a></code>. The XML file sets up a <code>root</code> region  on the server named <code>DistRegionAck</code> with scope set to <code>distributed-ack</code>. It also creates a <code>Portfolio</code> data object on the server for querying, along with five stock portfolio objects whose keys are the portfolio ID. A message similar to the following appears, indicating that the cache server is running:</P>
+                        </LI>
+                        <blockquote>
+                          <p> <code>Cacheserver pid: 2120 status: running</code></p>
+                        </blockquote>
+                        <LI CLASS="Numbered">In the client session,  start the <code>CacheRunner</code> client with <code><a href="./tcr_cacheless.xml" target="_blank">tcr_cacheless.xml</a></code> to create a <code>Portfolios</code> client region for the querying exercises.
+                          <blockquote>
+                              <p><strong><code>cacherunner.exe tcr_cacheless.xml</code></strong></p>
+                          </blockquote>
+                      </OL>
+    </DIV>
+
+<DIV>
+  <h2>Executing Queries</h2>
+  <P>
+You invoke the <code>execute</code> method on the client to submit several queries that are run on the cache server, then the results are returned to the local client cache. You only need to use one of the <code>CacheRunner</code> clients for querying; the other client can be set aside for now. </P>
+</DIV>
+
+<DIV>
+<P CLASS="Head-D"><strong>
+In the CacheRunner client</strong>:</P>
+
+<ol>
+  <li>Go to the client's <code>Portfolios</code> region:</li>
+  <blockquote>
+    <p><code><strong>chrgn Portfolios</strong></code>  </p>
+  </blockquote>
+  <li>This query returns the status of the cache entries for the <code>/Portfolios</code> region on the cache server. Enter the following command:  </li>
+  <blockquote>
+    <p><code><strong>exec select distinct ID, status from  /Portfolios</strong></code></p>
+  </blockquote>
+      <P>
+      Query output:</P>
+         <blockquote>
+      <p> <code>Columns:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;status<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Result (0): 4 || inactive || <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Result (0): 5 || active || <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Result (0): 2 || inactive || <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Result (0): 3 || active || <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Result (0): 1 || active || 
+      </code></p>
+    </blockquote>
+      <li>Run a second query. 
+        This query returns the row IDs on the cache server:
+        <blockquote>
+      <p><strong> <code><strong>exec select distinct ID from /Portfolios</strong></code></strong></p>
+   </blockquote>
+      <P>
+      Query output:</P>
+   <blockquote>
+      <p><code>        Result 1: 1 <br>
+        Result 2: 2 <br>
+        Result 3: 3 <br>
+        Result 4: 4 <br>
+        Result 5: 5
+      </code></p>
+        </blockquote>
+    </li>
+      <li>Run a third query. This query returns the object types for the <code>root/Portfolios</code> region on the cache server:
+        <blockquote>
+          <p><strong>
+          <code><strong>exec select distinct ID, pkid, getType from /Portfolios where 1=1</strong></code></strong></p>
+     </blockquote>
+      <P>
+      Query output:</P>
+         <blockquote>
+      <p> <code>Columns:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ID&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;pkid&nbsp;&nbsp;&nbsp;&nbsp;getType<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Result (0): 2 || 2 || type2 || <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Result (0): 1 || 1 || type1 || <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Result (0): 3 || 3 || type3 || <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Result (0): 5 || 5 || type2 || <br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Result (0): 4 || 4 || type1 ||</code></p>
+    </blockquote>
+    </li>
+  </ol>
+</DIV>
+<br>
+<DIV>
+  <h2>Executing Region Query Shortcuts </h2>
+  <P>
+In these exercises you use region query shortcut  methods to submit queries to the cache server, then the results are returned to the local client cache. Query shortcuts take the query &quot;predicate&quot; as a parameter (the part after the <code>WHERE</code> clause), or they can take a normal full query. The three query shortcut methods are described below: </P>
+  <UL>
+    <LI CLASS="Bulleted"><code>query</code> &#151; Executes a query and returns the results. <code></code></LI>
+    <LI CLASS="Bulleted"><code> existsValue</code> &#151;Executes a query and returns <code>TRUE</code> or <code>FALSE</code> based on whether any results (rows) are obtained. </LI>
+    <LI CLASS="Bulleted"><code>selectValue</code> &#151;Executes a query and returns only a single result (row). If no results are obtained then it returns <code>NULL</code>. If more than one result (row) is obtained then a <code>QueryException</code> occurs.</LI>
+
+  </UL>
+
+</DIV>
+
+<DIV>
+<P CLASS="Head-D"><strong>
+In the CacheRunner client</strong>:</P>
+
+<ol>
+  <li>
+    Run this <code>query</code> shortcut, which returns the <code>Portfolios</code> objects with an <code>ID</code> of <code>1</code>:  </li>
+  <blockquote>
+    <p><code><strong>
+    query ID=1</strong></code></p>
+  </blockquote>
+      <P>
+      Query result:</P>
+         <blockquote>
+      <p> <code>Result 1: Portfolio [ID=1 status=active type=type1 pkid=1]<br>
+   P1:<br>
+   P2:</code></p>
+    </blockquote>
+      <P>
+      The <code>query</code> shortcut takes the predicate string <code>ID=1</code>, constructs the full query statement, then executes the query.  </P>
+      <li>Run this <code>existsValue</code> shortcut. 
+        The query returns either <code>True</code> or <code>False</code>, depending on whether the result is obtained.
+        <blockquote>
+      <p><strong> <code><strong>existsvalue ID=1</strong></code></strong></p>
+   </blockquote>
+      <P>
+      Query result:        </P>
+         <blockquote>
+           <p><code>      Result is True 
+      </code></p>
+    </blockquote>
+    </li>
+      <li>Run this <code>selectValue</code> shortcut. The query returns the object types  on the cache server for the specified ID:
+        <blockquote>
+          <p><strong>
+          <code><strong>selectValue ID=2</strong></code></strong></p>
+        </blockquote>
+      <P>
+      Query result:</P>
+         <blockquote>
+      <p> <code>Result : Portfolio [ID=2 status=inactive type=type2 pkid=2]<br>
+      P1:<br>
+   P2:
+      </code></p>
+    </blockquote><br>
+    </li>
+  </ol>
+
+</DIV>
+
+    <DIV>
+ 				<H2> Stopping the Cache Server and Client </H2>
+ 		        <P>To complete the procedures in Part 2 and prepare for <em>Part 3: High Availability </em>, the Java cache server and the C# client must be stopped. However, their sessions need to remain open so the cache server and client can be started again using a different XML configuration file. </P>
+                    <ol>
+                      <li>Stop the cache server, but leave its session open:      
+                        <blockquote>
+                          <blockquote>
+                            <p><strong> <code>cacheserver stop</code></strong></p>
+                          </blockquote>
+                      <li>Stop the <code>CacheRunner</code> client and leave its session open:
+
+                                                <blockquote>
+                                                  <p><strong><code>quit</code></strong></p>
+                                                </blockquote>
+ 			    </ol>
+                    <a name="part3" id="part3"></a></DIV>
+
+<DIV>
+<hr size="3" noshade>
+<h1>Part 3: High Availability</h1>
+<hr size="3" noshade>
+</DIV>
+
+ <DIV>
+   <h2>Running CacheRunner for Failover and High Availability </h2>
+   <P>The CacheRunner C# example demonstrates server failover to highly available client queue backups by failing over to a secondary cache server when the primary server becomes unavailable. </P>
+   <P>In the procedures, the lines you type are shown in a <code> <strong>boldface fixed</strong></code> font. System output is shown in a <code>regular fixed</code> font.</P>
+<br>
+ </DIV>
+
+ <DIV>
+   <h2>
+     Starting the Primary and Secondary Cache Servers</h2>
+   <P>
+To start the primary and secondary cache server, complete the following steps in the open cache server session:</P>
+</DIV>
+
+<DIV>
+  <OL><LI CLASS="Numbered">Make sure the <code>cli_CacheRunner</code> directory is still the current working directory. If it isn't, then set it.
+  <blockquote>
+   <p><strong>
+     <code>cd examples\cli_CacheRunner</code></strong></p>
+     </blockquote>
+ </LI>
+<LI CLASS="Numbered">Start the first cache server by running this command:
+   <blockquote>
+     <p><strong>
+       <code>cacheserver start cache-xml-file=cacherunner.xml -dir=gfecs1</code></strong></p>
+      </blockquote>
+   <P>The <code>gfecs1</code> directory contains a copy of <code><a href="./cacherunner.xml" target="_blank">cacherunner.xml</a></code>, which specifies 50505 for the BridgeServer port for the primary cache server.</P>
+ </LI>
+ <LI CLASS="Numbered">Start the second cache server by running this command:
+   <blockquote>
+     <p><strong>
+       <code>cacheserver start cache-xml-file=cacherunner2.xml -dir=gfecs2</code></strong></p>
+      </blockquote>
+   <P>The <code>gfecs2</code> directory contains a copy of <code><a href="./cacherunner2.xml" target="_blank">cacherunner2.xml</a></code>, which specifies 50506 for the BridgeServer port for the secondary cache server.</P>
+ </LI>
+ </OL>
+</DIV>
+
+ <DIV>
+   <h2>
+     Starting the  CacheRunner Client</h2>
+   <P>
+To start the <code>CacheRunner</code> client, complete the following steps in the open client session:</P>
+</DIV>
+
+ <DIV>
+   <OL><LI CLASS="Numbered-1st">
+   <p><span class="Numbered">Make sure the <code>cli_CacheRunner</code> directory is still the current working directory. If it isn't, then set it.</span></p>
+ </LI>
+ <blockquote>
+   <p><strong>
+     <code>cd examples\cli_CacheRunner</code></strong></p>
+   </blockquote>
+
+<LI CLASS="Numbered">
+Start the <code> CacheRunner</code>
+ client, specifying <code>tcr_hacache.xml</code>:
+ <blockquote>
+       <p><strong><code>cacherunner.exe tcr_hacache.xml</code></strong></p>
+   </blockquote>
+ <P>The <code>CacheRunner</code> client is initialized using the settings in <code><a href="./tcr_hacache.xml" target="_blank">tcr_hacache.xml</a></code> in the <code>cli_CacheRunner</code> directory. The XML specifies two cache-level server endpoints that the client connects to (50505 for the primary, and 50506 for the secondary). The <code>redundancy-level=1</code> attribute specifies the number of redundant servers to use in addition to the primary server.<br>
+</P>
+  </LI>
+</OL>
+</DIV>
+
+<DIV>
+  <h2>Performing Cache Operations to Update the Server </h2>
+  <P>
+In these steps you produce data in the <code>CacheRunner</code> local client cache. The cache servers receive the updated values.</P>
+</DIV>
+<DIV>
+  <OL>
+  <LI CLASS="Numbered">In the <code>CacheRunner</code> client, change it to the <code>listenerWriterLoader</code> region:
+    <blockquote>
+        <p><strong><code> chrgn listenerWriterLoader</code></strong>    </p>
+    </blockquote>
+  <LI CLASS="Numbered">Add an entry to the region:
+    <blockquote>
+      <p><strong>
+        <code>put entry1 ball str</code></strong></p>
+      </blockquote>
+    <P>
+      This creates an entry whose key is <code> entry1</code>
+      and whose value is the string <code>ball</code>. The cache servers are updated with the new entry. <br>
+</P>
+  </LI>
+  </OL>
+
+</DIV>
+
+<DIV>
+  <h2>Stopping the Primary Cache Server to Initiate Failover </h2>
+  <P>
+In this procedure you stop the primary cache server to initiate a server failover condition.</P>
+</DIV>
+<DIV>
+  <OL><LI CLASS="Numbered">Stop the primary cache server by running this command in the server session:
+    <blockquote>
+      <p><strong>
+        <code>cacheserver stop -dir=gfecs1</code></strong></p>
+      </blockquote>
+    <P>
+      Failover sets the secondary server as the new primary server:</P>
+  </LI>
+  <LI CLASS="Numbered">
+    In the client session, add an entry to the region:
+      <blockquote>
+        <p><strong>
+        <code>put entry2 bat str </code></strong></p>
+      </blockquote>
+     <P>
+      This creates an entry whose key is <code> entry2</code> and whose value is the string <code>bat</code>. The cache server is updated with the new entry.</P>
+  </LI>
+    <br>
+</OL>
+
+</DIV>
+
+<DIV>
+  <h2>Restarting the Stopped Cache Server and Initiating Another Failover </h2>
+  <P>
+Now restart the cache server that was previously stopped so both servers are running, then stop the other server to produce another failover condition.</P>
+</DIV>
+<DIV>
+  <OL>
+    <LI CLASS="Numbered">Restart the stopped cache server by running this command in the server session:
+      <blockquote>
+      <p><strong><code>cacheserver start cache-xml-file=cacherunner.xml -dir=gfecs1</code></strong></p>
+      </blockquote>
+    <P>
+      Now both cache servers are running.</P>
+  </LI>
+  <LI CLASS="Numbered">Stop the other cache server by running this command in the server session:
+    <blockquote>
+        <p><strong><code>cacheserver stop -dir=gfecs2</code></strong></p>
+      </blockquote>
+     <P>
+      Failover occurs, and the restarted server is now the only server running.</P>
+  </LI>
+  <LI CLASS="Numbered">In the client session, get the new entry from the server:
+    <blockquote>
+        <p><strong><code>get entry2</code></strong></p>
+      </blockquote>
+                            <P> The key name and value are retrieved from the cache server and displayed:                              </P>
+                            <blockquote>
+                              </code></strong><code>Get [CacheableString] -- key: entry2 value: bat </code>
+                              </p>
+                            </blockquote>
+  </LI>
+    <br>
+</OL>
+
+</DIV>
+
+ 	  <DIV>
+ 				<H2> Closing the Client and the Cache Server </H2>
+ 				  <OL>
+ 				    <LI CLASS="Numbered">In the client session, quit the  <code>CacheRunner</code> application and then exit the session:
+                          <blockquote>
+          <p><strong> <code>quit</code></strong><br>
+ 	  <strong> <code>exit</code></strong></p>
+      </blockquote>
+      </LI>
+
+                            <LI CLASS="Numbered">In the server session, stop the remaining cache server and then exit the session:
+                              <blockquote>
+                                <p><strong><code>cacheserver stop -dir=gfecs1</code></strong><br>
+                                <strong><code>exit</code></strong></p>
+                              </blockquote>
+                        </LI>
+            </OL>
+    </DIV>
+
+<br>
+       <DIV>
+            <H2> Changing System Parameters</H2>
+         <P>This product ships configured to run with default system properties. If you need to run in a non-default configuration, GemFire also takes a system-level configuration file. Copy the <code>gfcpp.properties</code> file into your <code>cli_CacheRunner</code> directory from the native client <code>defaultSystem</code> directory and edit it as needed. For example, to change the name of the <code>cache.xml</code> file, uncomment this line and change the file name:</P>
+         <P> <code>#cache-xml-file=cache.xml</code></P>
+         <P>When you are finished with the example, delete the copied <code>gfcpp.properties</code> file from the <code>cli_CacheRunner</code> directory so it can run with the default configuration.<br>
+           <br>
+            </P>
+       </DIV>
+       <a href="#Top">Top</a>
+          <P>&nbsp;</P>
+<p><span class=GramE>Copyright &#169; 2006-2014 Pivotal Software, Inc. All rights reserved.
+This product is protected by U.S. and international copyright and intellectual
+property laws. Pivotal products are covered by one or more patents listed at http://www.pivotal.io/patents. </p>
+	</BODY>
+</HTML>

@@ -1,0 +1,72 @@
+Steps
+-----
+ 1. Remove any "<!DOCTYPE...>" elements.
+ 2. Replace "<cache>" open elements that do not specify an XSD or specify
+    an older XSD with:
+<cache xmlns="http://geode.apache.org/schema/cache"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+       version="1.0">
+ 3. Replace "<client-cache>" open elements that do not specify an XSD or
+    specify an older XSD with:
+<client-cache xmlns="http://geode.apache.org/schema/cache"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+              version="1.0">
+ 4. Replace "bridge-server" elements with "cache-server" elements.
+    Remove any "notify-by-subscription" attributes.
+ 5. Replace "vm-root-region" and "root-region" elements with "region" elements.
+ 6. Add "disk-store" elements as children of "<cache>" if a "disk-store"
+    element does not already exist.
+    Move "max-oplog-size" attribute from "disk-write-attributes" to
+    "disk-store".
+    Remove "disk-write-attributes" and any nested contents including
+    children.
+ 7. Remove "asynchronous-writes" and "synchronous-writes" elements.
+ 8. Replace "overflow-directory" attributes of "client-subscription"
+    and "gateway-queue" elements with "disk-store-name" attributes with
+    a value of the name of a "disk-store" element that contains a
+    "disk-dir" element for the same directory as the value of
+    "overflow-directory".
+    Add a "disk-store" element as a child of "<cache>" if a
+    "disk-store" element does not already exist.
+    Ensure that the "disk-store" element has a "name" attribute.
+    Ensure that the "disk-store" element has a "disk-dirs" child.
+    Ensure that the "disk-dirs" element has a "disk-dir" child whose
+    data is the name of the directory.
+ 9. Remove "roll-oplogs" attributes of "disk-write-attributes" and
+    "gateway-queue" elements.
+10. Replace "disk-dirs" children elements fo "region-attributes" with
+    "disk-store-name" attribute.
+    Add a "disk-store" element as a child of "<cache>" if a
+    "disk-store" element does not already exist.
+    Ensure that the "disk-store" element has a "name" attribute.
+    Move "disk-dirs" children from "region-attributes" elements to the
+    "disk-store" element.
+11. Move the value of the "field" attribute of "primary-key" elements
+    to the value of the "expression" attribute of the parent "index"
+    element.
+    Add a "key-index="true"" attribute to the "index" element if one
+    does not already exist.
+    Remove "primary-key" elements and any nested contents including
+    children.
+12. Move the "expression", "from-clause", and "imports" attributes of
+    "functional" elements to the parent "index" element.
+    Add a "type="range"" attribute to the "index" element if one does
+    not already exist.
+    Remove "functional" elements and any nested contents including
+    children.
+13. Replace "mirror-type="keys-values"" on "region-attributes" elements
+    with "data-policy="replicate"" if "data-policy" is not other specified.
+    Replace "mirror-type="none"" on "region-attributes" elements with
+    "data-policy="empty"" if "data-policy" is not other specified.
+14. Replace "enable-bridge-conflation" attributes with
+    "enable-subscription-conflation" attributes.
+15. Remove "update-locator-list-interval" attributes from "pool"
+    elements.
+16. Remove "keep-alive-timeout" from "region-attributes" elements.
+17. Remove "cache-proxy-enabled" from "cache" elements.
+18. Remove "capacity-controller" and any nested contents including
+    children.
+19. Validate against the schema:
+xmllint --noout --schema http://geode.apache.org/schema/cache/cache-1.0.xsd <xml-file>

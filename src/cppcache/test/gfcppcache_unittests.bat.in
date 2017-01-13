@@ -1,0 +1,12 @@
+@echo off
+setlocal
+set PATH=%PATH%;$<TARGET_LINKER_FILE_DIR:gfcppcache>
+set LOG=${UNITTEST}.log
+
+rem In Windows, pipes to tee return tee's exit code instead of executable's
+rem exit code. As a workaround we write exit codes to files.
+($<TARGET_FILE:${UNITTEST}> && echo 0 >${UNITTEST}.errorlevel || echo 1 >${UNITTEST}.errorlevel) | tee %LOG%
+set /p errorlevel= <${UNITTEST}.errorlevel
+if %errorlevel% neq 0 exit /b %errorlevel%
+
+exit /b

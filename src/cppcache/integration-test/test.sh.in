@@ -1,0 +1,49 @@
+#!/bin/bash
+set -e
+set -o pipefail
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$<TARGET_LINKER_FILE_DIR:gfcppcache>
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$<TARGET_LINKER_FILE_DIR:fwk>
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$<TARGET_LINKER_FILE_DIR:pdxobject>
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$<TARGET_LINKER_FILE_DIR:testobject>
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$<TARGET_LINKER_FILE_DIR:SqLiteImpl>
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$<TARGET_LINKER_FILE_DIR:cryptoImpl>
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$<TARGET_LINKER_FILE_DIR:DHImpl>
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$<TARGET_LINKER_FILE_DIR:securityImpl>
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$<TARGET_LINKER_FILE_DIR:unit_test_callbacks>
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$<JOIN:${LD_LIBRARY_PATH},:>
+
+export TESTSRC=${CMAKE_CURRENT_SOURCE_DIR}
+export GF_JAVA=${Java_JAVA_EXECUTABLE}
+export GFJAVA=${GEMFIRE_HOME}
+export GFE_LOGLEVEL=config
+export GFE_SECLOGLEVEL=config 
+export MCAST_ADDR=224.10.13.63
+export MCAST_PORT=${PORT}
+export TIMEBOMB=3600
+export GF_CLASSPATH=$GF_CLASSPATH:${CMAKE_BINARY_DIR}/tests/javaobject/javaobject.jar
+export PROFILERCMD=
+export BUG481=
+export TESTNAME=${TEST}
+export LOG=${TEST}.log
+
+rm -rf "${TEST_DIR}"
+mkdir -p "${TEST_DIR}"
+pushd "${TEST_DIR}"
+
+if [ `uname` = "Darwin" ]; then
+  # export DYLD_LIBRARY_PATH to work around OS X SIP
+  export DYLD_LIBRARY_PATH=$LD_LIBRARY_PATH
+fi
+
+$DEBUG $<TARGET_FILE:${TEST}> | tee $LOG
+
+# hack: This is _not_ ideal. We're potentially also masking real product bugs.
+#       For now, we just want something that produces results. TODO: REMOVE ASAP
+if [ `uname` = "SunOS" ]; then
+  (ps auxww | awk '/java .*${TEST}/ {print $2}' | xargs kill -9) 2>/dev/null || true
+else
+  pkill -9 -f 'java .*${TEST}' || true
+fi
+
+popd

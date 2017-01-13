@@ -1,0 +1,10 @@
+Generics/RemoteQuery/distributedDataValidationQueryTest.xml
+Generics/RemoteQuery/entryOperationQueryTest.xml
+Generics/RemoteQuery/dataValidationQueryTest.xml
+Generics/RemoteQuery/serverEvictionQueryTest.xml
+Generics/RemoteQuery/serverOverflowToDiskQueryTest.xml
+Generics/RemoteQuery/clientEventsQueryTest.xml
+Generics/RemoteQuery/clientEventsFailoverQueryTest.xml
+Generics/RemoteQuery/failoverQueryTest.xml
+Generics/RemoteQuery/regexAndQueryTest.xml
+Generics/RemoteQuery/concQuery.xml

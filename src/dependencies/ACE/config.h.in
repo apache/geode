@@ -1,0 +1,8 @@
+#define ACE_LACKS_IOSTREAM_TOTALLY 1
+#define ACE_HAS_VERSIONED_NAMESPACE 1
+
+#if defined __SUNPRO_CC && __cplusplus >= 201103L
+#define _RWSTD_ALLOCATOR 1
+#endif
+
+#include "ace/config-@ACE_CONFIG@.h"

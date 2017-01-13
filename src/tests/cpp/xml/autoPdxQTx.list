@@ -1,0 +1,13 @@
+pdx/RemoteQueryPR/clientEventsQueryAutoPdxTest.xml
+pdx/RemoteQueryPR/failoverQueryAutoPdxTest.xml
+pdx/RemoteQueryPR/dataValidationQueryAutoPdxTest.xml
+pdx/CqQuery/multRegCQOpsAutoPdx.xml
+pdx/CqQuery/multRegServerFailoverAndCQOpsAutoPdx.xml
+pdx/CqQuery/resultSetValidationCQAutoPdxTest.xml
+pdx/CqQuery/durableCqFailoverR2AutoPdx.xml
+pdx/CqQuery/serialMultRegOpsCQListenerAutoPdxWithFeeder.xml
+pdx/CqQuery/durableWithCqAutoPdxKATrue.xml
+pdx/tx/singleRegCQOpsAutoPdx.xml
+pdx/tx/serialEntryEventPRAutoPdx.xml
+pdx/tx/serverFailoverAndCQOpsAutoPdx.xml
+

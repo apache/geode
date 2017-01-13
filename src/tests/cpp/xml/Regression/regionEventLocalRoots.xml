@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+	<data name="regionOps">
+		<oneof>
+			<item>addRegion</item>
+			<item>addRegion</item>
+			<item>addRegion</item>
+			<item>addRegion</item>
+			<item>invalidateRegion</item>
+			<item>destroyRegion</item>
+			<item>localInvalidateRegion</item>
+			<item>localDestroyRegion</item>
+		</oneof>
+	</data>
+	<data name="regionPaths">
+		<oneof>
+			<item>/RR1</item>
+			<item>/RR2</item>
+			<item>/RR3</item>
+			<item>/RR4</item>
+			<item>/RR5</item>
+		</oneof>
+	</data>
+	<data name="randomOP">5</data>
+	<data name="logSize">0</data>
+	<data name="workTime">300</data>
+	<data name="initRegionNumObjects">10</data>
+
+  <data name="Local">
+    <snippet>
+      <region name="Local">
+        <region-attributes scope="local"/>
+      </region>
+    </snippet>
+  </data>
+  
+  <client-set count="4" name="default"/>
+	
+	<test name="Local" description="Local Entry Event test" waitTime="2200">
+		<task name="doRegionOps" action="doRegionOperations" container="eventtest" waitTime="2000" timesToRun="24" continueOnError="true">
+			<data name="regionSpec">Local</data>
+		</task>
+	</test>
+	
+	
+</test-driver>

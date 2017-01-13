@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This xml is an example of how to use the new scripts to manage Java Servers. -->
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <!-- Please note that the endpoints in the region definition below will only be used if
+       the BB does not have a value for "GFE_BB", "EndPoints". 
+       This value is set by the setupJavaServers script.-->
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes scope="distributed-ack" caching-enabled="false" mirroring="false"
+            client-notification="true"/>
+      </region>
+    </snippet>
+  </data>
+
+  <client-set name="client"/>
+  
+  <test name="Sample Java CS" description="nada" waitTime="600">
+    <task name="Setup Java CS" action="doRunProcess" container="utils" waitTime="600">
+      <!-- This script takes one argument, the xml file to use as a base in creating the cache.xml the cacheserver will use.
+            The only modification done to the file is to replace "999999999" with the correct port number to use. 
+            This script does expect to find a number of environment variables defined, see comments in the script for details.-->
+      <data name="program">$GFBASE/framework/scripts/setupJavaServers</data>
+      <data name="arguments">csAckMirror.xml</data>
+    </task>
+    <task name="Setup Java CS" action="doRunProcess" container="utils" waitTime="600">
+      <!-- If this script is not given an argument, it starts all the cacheservers that were setup.
+           If it is given an argument, it attempts to use it's first argument as the number of the cacheserver to start. -->
+      <data name="program">$GFBASE/framework/scripts/startJavaServers</data>
+      <data name="arguments"></data>
+    </task>
+    <task name="Create Region" action="doCreateRegion" container="perftests" waitTime="10m">
+      <data name="regionSpec">ThinClientRegion</data>
+    </task>
+    <task name="Destroy Region" action="doLocalDestroyRegion" container="perftests" waitTime="10m"/>
+    <task name="Stop Java CS" action="doRunProcess" container="utils" waitTime="600">
+      <!-- This script will stop the Java Servers. If no argument is given, all servers are stopped.
+           If one argument is given, it is used as the number of the server to stop. -->
+      <data name="program">$GFBASE/framework/scripts/stopJavaServers</data>
+      <data name="arguments"></data>
+    </task>
+  </test>
+</test-driver>

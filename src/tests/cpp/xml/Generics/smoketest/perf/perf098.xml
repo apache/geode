@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">240</data>
+  <data name="cacheType">CLIENT</data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>10000</item>
+    </list>
+  </data>
+
+  <data name="valueSizes">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+  <data name="numThreads">
+    <list>
+      <item>1</item>
+    </list>
+  </data>
+
+  <data name="opsSecond">100</data>
+  <data name="keyType">str</data>
+  <data name="ObjectType">SizedString</data>
+  <data name="clientCount">1</data>
+  <data name="durableTimeout">600</data>
+  <data name="isDurableReg">true</data>
+  <data name="ThinClientPool1">
+    <snippet>
+      <pool name="_Test_Pool1" subscription-enabled="true" thread-local-connections="true" subscription-redundancy="0" locators="true" />
+    </snippet>
+  </data>
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="false" pool-name="_Test_Pool1"/>
+      </region>
+    </snippet>
+  </data>
+  <data name="ThinClientRegionWithListener">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="false" pool-name="_Test_Pool1">
+          <cache-listener library="smokeperf"  function="createDurableCacheListenerSP"/>
+        </region-attributes>  
+      </region>
+    </snippet>
+  </data>
+                                 
+  <data name="poolSpec">ThinClientPool1</data>
+  <client-set name="Feeder" hostGroup="CS1"/>
+  <client-set count="1" name="Client" hostGroup="CS1"/>
+  <client-set name="JCS1" hostGroup="CS1"/>
+
+  <test name="perf098" description="Cycles between a client putting data to the server and a durable client receiving those updates.  
+  Measures the time it takes the durable client to receive updates.">
+    <task name="SetupCacheServer CS1" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">smoketest/perf/csAckMirror.xml</data>
+      <data name="statEnable">false</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="Open Statistic" action="doOpenStatistic" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.smokeperf" argTypes="String,Byte[]"  waitTime="5m">
+      <data name="statEnable">true</data>
+      <data name="isDurable">true</data>
+      <client-set count="1" name="Client"/>
+    </task>
+    <task name="Open Statistic" action="doOpenStatistic" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.smokeperf" argTypes="String,Byte[]"  waitTime="5m">
+      <data name="statEnable">true</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="CreatePool" action="doCreatePool" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.smokeperf" argTypes="String,Byte[]"  waitTime="3m">
+      <client-set name="Feeder"/>
+    </task>
+    <task name="CreateRegion" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.smokeperf" argTypes="String,Byte[]"  waitTime="5m">
+      <data name="regionSpec">ThinClientRegion</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="Populating Entries in Region" action="doPopulateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.smokeperf" argTypes="String,Byte[]"  waitTime="10m">
+      <data name="regionName">TestTCR1</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="putData" action="doPuts" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.smokeperf" argTypes="String,Byte[]"  waitTime="20m" parallel="true">
+      <data name="regionName">TestTCR1</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="cycleDurableClientTask" action="doCycleDurableClientTask" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.smokeperf" argTypes="String,Byte[]"  waitTime="10m" parallel="true">
+      <data name="regionSpec">ThinClientRegionWithListener</data>
+      <data name="regionName">TestTCR1</data>
+      <data name="isMainWorkLoad">true</data>
+      <data name="isDurable">true</data>
+      <client-set count="1" name="Client"/>
+    </task>
+    <task name="Close Statistics" action="doCloseStatistic" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.smokeperf" argTypes="String,Byte[]"  waitTime="5m">
+      <client-set count="1" name="Client"/>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="Close Cache" action="doCloseCache" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.smokeperf" argTypes="String,Byte[]"  waitTime="5m"/>
+    <task name="Generate statistic spec" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">cp</data>
+      <data name="arguments">../build_*/framework/xml/smoketest/perf/perf098.spec statistics.spec</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="Generate Trim Spec" action="doGenerateTrimSpec" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.smokeperf" argTypes="String,Byte[]"  waitTime="5m">
+      <client-set name="JCS1"/>
+    </task>
+  </test>
+
+</test-driver>

@@ -1,0 +1,8 @@
+Generics/DurableClient/durableFailoverR2.xml
+Generics/DurableClient/durableNonDurableKAFalse.xml
+Generics/DurableClient/durableNonDurableKATrue.xml
+Generics/DurableClient/durableNonDurableTimeout.xml
+Generics/DurableClient/durablePR/durableFailoverR2.xml
+Generics/DurableClient/durablePR/durableNonDurableKAFalse.xml
+Generics/DurableClient/durablePR/durableNonDurableKATrue.xml
+Generics/DurableClient/durablePR/durableNonDurableTimeout.xml

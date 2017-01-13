@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+
+
+<cache xmlns="http://geode.apache.org/schema/cache"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+       version="1.0">
+	<!--cache-server host="cod" port="24682" /-->
+    <cache-server port="HOST_PORT3">
+	<group>ServerGroup1</group>
+	</cache-server>
+	<region name="PoolRegion1">
+		<region-attributes scope="distributed-ack" data-policy="replicate"/>
+	</region>
+	<region name="PoolRegion2">
+			<region-attributes scope="distributed-ack" data-policy="replicate"/>
+	</region>
+	<region name="PoolRegion3">
+			<region-attributes scope="distributed-ack" data-policy="replicate"/>
+	</region>
+</cache> 

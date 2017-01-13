@@ -1,0 +1,36 @@
+/*=========================================================================
+ * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
+ * This product is protected by U.S. and international copyright
+ * and intellectual property laws. Pivotal products are covered by
+ * more patents listed at http://www.pivotal.io/patents.
+ *=========================================================================
+ */
+
+using namespace System;
+using namespace System::Reflection;
+using namespace System::Runtime::CompilerServices;
+using namespace System::Runtime::InteropServices;
+using namespace System::Security::Permissions;
+
+//
+// General Information about an assembly is controlled through the following
+// set of attributes. Change these attribute values to modify the information
+// associated with an assembly.
+//
+[assembly:AssemblyTitleAttribute("GemFire.NETCache")];
+[assembly:AssemblyDescriptionAttribute("GemFire Native Client .NET Cache")];
+[assembly:AssemblyConfigurationAttribute("")];
+[assembly:AssemblyCompanyAttribute("Pivotal Software, Inc.")];
+[assembly:AssemblyProductAttribute("GemFire.NETCache")];
+[assembly:AssemblyCopyrightAttribute("Copyright (c) 2007-2016 Pivotal Software, Inc.")];
+[assembly:AssemblyTrademarkAttribute("All Rights Reserved")];
+[assembly:AssemblyCultureAttribute("")];
+[assembly:AssemblyVersionAttribute("@PRODUCT_VERSION_DOTTED@")];
+
+[assembly:ComVisible(false)];
+
+[assembly:CLSCompliantAttribute(true)];
+
+[assembly:SecurityPermission(SecurityAction::RequestMinimum, UnmanagedCode = true)];
+
+[assembly:InternalsVisibleToAttribute("UnitTests@STRONG_NAME_PUBLIC_KEY_ATTRIBUTE@")];

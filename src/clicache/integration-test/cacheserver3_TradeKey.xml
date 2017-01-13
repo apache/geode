@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+
+<!-- cacheserver2_TradeKey.xml
+     Configures a server to for clients at port HOST_PORT3.
+-->
+
+<cache xmlns="http://geode.apache.org/schema/cache"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+       version="1.0">
+  <cache-server port="HOST_PORT3"/>
+  <region name="TradeKeyRegion">
+    <region-attributes data-policy="partition">
+	<partition-attributes total-num-buckets="10">
+        <partition-resolver>
+          <class-name>javaobject.TradeKeyResolver</class-name>
+        </partition-resolver>
+      </partition-attributes>
+	  </region-attributes>
+	<entry>
+      <key>
+	      <declarable>
+          <class-name>javaobject.TradeKey</class-name>
+          <parameter name="m_id">
+            <string>0</string>
+          </parameter>
+          <parameter name="m_accountid">
+            <string>0</string>
+          </parameter>          
+        </declarable>        
+      </key>
+      <value>
+		<string>new-trade</string>
+      </value>
+    </entry>	
+  </region>
+  <function-service>	
+	<function>
+  	  <class-name>javaobject.FEOnRegionPrSHOP</class-name>
+  </function>
+	<function>
+  	  <class-name>javaobject.FEOnRegionPrSHOP_OptimizeForWrite</class-name>
+  </function>
+  <function>
+    <class-name>javaobject.MultiGetFunction</class-name>
+  </function>
+  </function-service>
+</cache>

@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+	<data name="keySize">
+		<range low="4" high="12"/>
+	</data>
+	<data name="distinctKeys">
+		30000
+	</data>
+	<data name="valueSizes">
+		<range low="0" high="85607"/>
+	</data>
+	<data name="entryOps">
+		<oneof>
+			<item>add</item>
+			<item>add</item>
+			<item>add</item>
+			<item>add</item>
+			<item>add</item>
+			<item>add</item>
+			<item>update</item>
+			<item>update</item>
+			<item>update</item>
+			<item>invalidate</item>
+			<item>read</item>
+			<item>read</item>
+			<item>read</item>
+			<item>destroy</item>
+			<item>localInvalidate</item>
+			<item>localDestroy</item>
+			<!-- <item>abort</item>  seg v -->
+			<!-- <item>exit</item>	  exit(0) -->
+			<!-- <item>done</item>	leave doOperation, exit while loop -->
+		</oneof>
+	</data>
+	<data name="regionOps">
+		<oneof>
+			<item>addRegion</item>
+			<item>addRegion</item>
+			<item>addRegion</item>
+			<item>addRegion</item>
+			<item>invalidateRegion</item>
+			<item>destroyRegion</item>
+			<item>localInvalidateRegion</item>
+			<item>localDestroyRegion</item>
+			<!-- <item>abort</item>  seg v -->
+			<!-- <item>exit</item>	  exit(0) -->
+			<!-- <item>done</item>	leave doOperation, exit while loop -->
+		</oneof>
+	</data>
+	<data name="regionPaths">
+		<oneof>
+			<item>/RR1/R1/R2</item>
+			<item>/RR2/R1/R2</item>
+			<item>/RR3/R1/R2</item>
+			<item>/RR4/R1/R2</item>
+			<item>/RR5/R1/R2</item>
+		</oneof>
+	</data>	
+	<data name="randomOP">
+		<range low="1" high="1000"/>
+	</data>
+	<data name="opCount">
+		<range low="1" high="10"/>
+	</data>
+	<data name="workTime">60</data>
+	<data name="preemptCounter">10</data>
+	<!-- abort, exit, done ops downcounter before execution -->
+	<data name="initRegionNumObjects">10</data>	
+	<data name="maxRegions">100</data>
+
+  <data name="Local">
+    <snippet>
+      <region name="Local">
+        <region-attributes scope="local" lru-entries-limit="100" disk-policy="overflows">
+          <persistence-manager library="BDBImpl" function="createBDBInstance">
+            <properties>
+              <property name="PersistenceDirectory" value="./BDBLocal"/>
+              <property name="EnvironmentDirectory" value="./BDBLocalEnv"/>
+              <property name="CacheSizeGb" value="0"/>
+              <property name="CacheSizeMb" value="512"/>
+              <property name="PageSize" value="65536"/>
+              <property name="MaxFileSize" value="512000000"/>
+            </properties>
+          </persistence-manager>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+
+  <data name="AckNmirrorNil">
+    <snippet>
+      <region name="AckNmirrorNil">
+        <region-attributes scope="distributed-ack" mirroring="false"
+            caching-enabled="true" interest-list-enabled="false"
+            lru-entries-limit="100" disk-policy="overflows">
+          <persistence-manager library="BDBImpl" function="createBDBInstance">
+            <properties>
+              <property name="PersistenceDirectory" value="./BDBAckNmirrorNil"/>
+              <property name="EnvironmentDirectory" value="./BDBAckNmirrorNilEnv"/>
+              <property name="CacheSizeGb" value="0"/>
+              <property name="CacheSizeMb" value="512"/>
+              <property name="PageSize" value="65536"/>
+              <property name="MaxFileSize" value="512000000"/>
+            </properties>
+          </persistence-manager>
+          <cache-listener library="eventtest" function="createETCacheListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+
+  <data name="NackNmirrorNil">
+    <snippet>
+      <region name="NackNmirrorNil">
+        <region-attributes scope="distributed-no-ack" mirroring="false"
+            caching-enabled="true" interest-list-enabled="false"
+            lru-entries-limit="100" disk-policy="overflows">
+          <persistence-manager library="BDBImpl" function="createBDBInstance">
+            <properties>
+              <property name="PersistenceDirectory" value="./BDBNackNmirrorNil"/>
+              <property name="EnvironmentDirectory" value="./BDBNackNmirrorNilEnv"/>
+              <property name="CacheSizeGb" value="0"/>
+              <property name="CacheSizeMb" value="512"/>
+              <property name="PageSize" value="65536"/>
+              <property name="MaxFileSize" value="512000000"/>
+            </properties>
+          </persistence-manager>
+          <cache-listener library="eventtest" function="createETCacheListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+
+  <data name="AckNmirrorIl">
+    <snippet>
+      <region name="AckNmirrorIl">
+        <region-attributes scope="distributed-ack" mirroring="false"
+            caching-enabled="true" interest-list-enabled="true"
+            lru-entries-limit="100" disk-policy="overflows">
+          <persistence-manager library="BDBImpl" function="createBDBInstance">
+            <properties>
+              <property name="PersistenceDirectory" value="./BDBAckNmirrorIl"/>
+              <property name="EnvironmentDirectory" value="./BDBAckNmirrorIlEnv"/>
+              <property name="CacheSizeGb" value="0"/>
+              <property name="CacheSizeMb" value="512"/>
+              <property name="PageSize" value="65536"/>
+              <property name="MaxFileSize" value="512000000"/>
+            </properties>
+          </persistence-manager>
+          <cache-listener library="eventtest" function="createETCacheListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+
+  <data name="NackNmirrorIl">
+    <snippet>
+      <region name="NackNmirrorIl">
+        <region-attributes scope="distributed-no-ack" mirroring="false"
+            caching-enabled="true" interest-list-enabled="true"
+            lru-entries-limit="100" disk-policy="overflows">
+          <persistence-manager library="BDBImpl" function="createBDBInstance">
+            <properties>
+              <property name="PersistenceDirectory" value="./BDBNackNmirrorIl"/>
+              <property name="EnvironmentDirectory" value="./BDBNackNmirrorIlEnv"/>
+              <property name="CacheSizeGb" value="0"/>
+              <property name="CacheSizeMb" value="512"/>
+              <property name="PageSize" value="65536"/>
+              <property name="MaxFileSize" value="512000000"/>
+            </properties>
+          </persistence-manager>
+          <cache-listener library="eventtest" function="createETCacheListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+	
+	<test name="Local" description="Local Entry Event test">
+		<task name="doEntryOps" action="doRegionOperations" container="eventtest" waitTime="7m" timesToRun="5" continueOnError="true">
+			<data name="regionSpec">Local</data>
+		</task>
+	</test>
+	
+	<test name="AckNmirrorNil" description="AckNmirrorNil Entry Event test">
+		<task name="doEntryOps" action="doRegionOperations" container="eventtest" waitTime="7m" timesToRun="5" continueOnError="true">
+			<data name="regionSpec">AckNmirrorNil</data>
+		</task>
+	</test>
+	
+	<test name="NackNmirrorNil" description="NackNmirrorNil Entry Event test">
+		<task name="doEntryOps" action="doRegionOperations" container="eventtest" waitTime="7m" timesToRun="5" continueOnError="true">
+			<data name="regionSpec">NackNmirrorNil</data>
+		</task>
+	</test>
+	
+	<test name="AckNmirrorIl" description="AckNmirrorIl Entry Event test">
+		<task name="doEntryOps" action="doRegionOperations" container="eventtest" waitTime="7m" timesToRun="5" continueOnError="true">
+			<data name="regionSpec">AckNmirrorIl</data>
+		</task>
+	</test>
+	
+	<test name="NackNmirrorIl" description="NackNmirrorIl Entry Event test">
+		<task name="doEntryOps" action="doRegionOperations" container="eventtest" waitTime="7m" timesToRun="5" continueOnError="true">
+			<data name="regionSpec">NackNmirrorIl</data>
+		</task>
+	</test>
+	
+</test-driver>

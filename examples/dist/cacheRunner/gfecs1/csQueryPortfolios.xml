@@ -1,0 +1,354 @@
+<?xml version="1.0"?>
+<cache xmlns="http://geode.apache.org/schema/cache"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+       version="1.0">
+  <cache-server port="50505" />
+  <region name="root">
+    <region-attributes scope="distributed-no-ack"/>
+  </region>
+  <region name="listenerWriterLoader">
+    <region-attributes scope="distributed-ack" data-policy="replicate"/>
+  </region>
+  <region name="Portfolios">
+    <region-attributes scope="distributed-ack" data-policy="replicate">
+      <value-constraint>javaobject.Portfolio</value-constraint>
+    </region-attributes>
+    <entry>
+    <key><string>1</string></key>
+    <value>
+      <declarable>
+        <class-name>javaobject.Portfolio</class-name>
+        <parameter name="ID">
+          <string>1</string>
+        </parameter>
+        <parameter name="pkid">
+          <string>1</string>
+        </parameter>
+        <parameter name="type">
+          <string>type1</string>
+        </parameter>
+        <parameter name="status">
+          <string>active</string>
+        </parameter>
+        <parameter name="newVal">
+          <string>CCCCC</string>
+        </parameter>
+        <parameter name="position1">
+          <declarable>
+            <class-name>javaobject.Position</class-name>
+             <parameter name="secId">
+                <string>SUN</string>
+             </parameter>
+             <parameter name="qty">
+                <string>3900</string>
+             </parameter>
+             <parameter name="mktValue">
+               <string>3400.893475</string>
+             </parameter>
+             <parameter name="sharesOutstanding">
+               <string>3400</string>
+             </parameter>
+             <parameter name="secType">
+               <string>r</string>
+             </parameter>
+             <parameter name="pid">
+                <string>345</string>
+             </parameter>
+           </declarable>
+          </parameter>
+          <parameter name="position2">
+            <declarable>
+                <class-name>javaobject.Position</class-name>
+                <parameter name="secId">
+                    <string>IBM</string>
+                </parameter>
+                <parameter name="qty">
+                    <string>4600</string>
+                </parameter>
+                <parameter name="mktValue">
+                    <string>9900.884732</string>
+                </parameter>
+                <parameter name="sharesOutstanding">
+                    <string>8765</string>
+                </parameter>
+                <parameter name="secType">
+                   <string>p</string>
+                </parameter>
+                <parameter name="pid">
+                   <string>123</string>
+                </parameter>
+            </declarable>
+          </parameter>
+        </declarable>
+      </value>
+     </entry>
+     <entry>
+      <key><string>2</string></key>
+      <value>
+        <declarable>
+          <class-name>javaobject.Portfolio</class-name>
+          <parameter name="ID">
+            <string>2</string>
+          </parameter>
+          <parameter name="pkid">
+            <string>2</string>
+          </parameter>
+          <parameter name="type">
+            <string>type2</string>
+          </parameter>
+          <parameter name="status">
+            <string>inactive</string>
+          </parameter>
+          <parameter name="position1">
+            <declarable>
+                <class-name>javaobject.Position</class-name>
+                <parameter name="secId">
+                    <string>YHOO</string>
+                </parameter>
+                <parameter name="qty">
+                    <string>3900</string>
+                </parameter>
+                <parameter name="mktValue">
+                    <string>3400.893475</string>
+                </parameter>
+                <parameter name="sharesOutstanding">
+                    <string>9834</string>
+                </parameter>
+                <parameter name="secType">
+                   <string>y</string>
+                </parameter>
+                <parameter name="pid">
+                    <string>129</string>
+                </parameter>
+            </declarable>
+          </parameter>
+          <parameter name="position2">
+            <declarable>
+                <class-name>javaobject.Position</class-name>
+                <parameter name="secId">
+                    <string>GOOG</string>
+                </parameter>
+                <parameter name="qty">
+                    <string>3900</string>
+                </parameter>
+                <parameter name="mktValue">
+                    <string>3400.893475</string>
+                </parameter>
+                <parameter name="sharesOutstanding">
+                    <string>834</string>
+                </parameter>
+                <parameter name="secType">
+                   <string>t</string>
+                </parameter>
+                <parameter name="pid">
+                    <string>569</string>
+                </parameter>
+            </declarable>
+          </parameter>
+        </declarable>
+      </value>
+    </entry>
+
+     <entry>
+      <key><string>3</string></key>
+      <value>
+        <declarable>
+          <class-name>javaobject.Portfolio</class-name>
+          <parameter name="ID">
+            <string>3</string>
+          </parameter>
+          <parameter name="pkid">
+            <string>3</string>
+          </parameter>
+          <parameter name="type">
+            <string>type3</string>
+          </parameter>
+          <parameter name="status">
+            <string>active</string>
+          </parameter>
+          <parameter name="position1">
+            <declarable>
+                <class-name>javaobject.Position</class-name>
+                <parameter name="secId">
+                    <string>MSFT</string>
+                </parameter>
+                <parameter name="qty">
+                    <string>3900</string>
+                </parameter>
+                <parameter name="mktValue">
+                    <string>3400.893475</string>
+                </parameter>
+                <parameter name="sharesOutstanding">
+                    <string>1834</string>
+                </parameter>
+                <parameter name="secType">
+                   <string>o</string>
+                </parameter>
+                <parameter name="pid">
+                    <string>545</string>
+                </parameter>
+            </declarable>
+          </parameter>
+          <parameter name="position2">
+            <declarable>
+                <class-name>javaobject.Position</class-name>
+                <parameter name="secId">
+                    <string>AOL</string>
+                </parameter>
+                <parameter name="qty">
+                    <string>3900</string>
+                </parameter>
+                <parameter name="mktValue">
+                    <string>3400.893475</string>
+                </parameter>
+                <parameter name="sharesOutstanding">
+                    <string>8354</string>
+                </parameter>
+                <parameter name="secType">
+                   <string>t</string>
+                </parameter>
+                <parameter name="pid">
+                    <string>987</string>
+                </parameter>
+            </declarable>
+          </parameter>
+        </declarable>
+      </value>
+    </entry>
+
+     <entry>
+      <key><string>4</string></key>
+      <value>
+        <declarable>
+          <class-name>javaobject.Portfolio</class-name>
+          <parameter name="ID">
+            <string>4</string>
+          </parameter>
+          <parameter name="pkid">
+            <string>4</string>
+          </parameter>
+          <parameter name="type">
+            <string>type1</string>
+          </parameter>
+          <parameter name="status">
+            <string>inactive</string>
+          </parameter>
+          <parameter name="position1">
+            <declarable>
+                <class-name>javaobject.Position</class-name>
+                <parameter name="secId">
+                    <string>APPL</string>
+                </parameter>
+                <parameter name="qty">
+                    <string>3900</string>
+                </parameter>
+                <parameter name="mktValue">
+                    <string>3400.893475</string>
+                </parameter>
+                <parameter name="sharesOutstanding">
+                    <string>3654</string>
+                </parameter>
+                <parameter name="secType">
+                   <string>d</string>
+                </parameter>
+                <parameter name="pid">
+                    <string>287</string>
+                </parameter>
+            </declarable>
+          </parameter>
+          <parameter name="position2">
+            <declarable>
+                <class-name>javaobject.Position</class-name>
+                <parameter name="secId">
+                    <string>ORCL</string>
+                </parameter>
+                <parameter name="qty">
+                    <string>3900</string>
+                </parameter>
+                <parameter name="mktValue">
+                    <string>3400.893475</string>
+                </parameter>
+                <parameter name="sharesOutstanding">
+                    <string>5344</string>
+                </parameter>
+                <parameter name="secType">
+                   <string>k</string>
+                </parameter>
+                <parameter name="pid">
+                    <string>567</string>
+                </parameter>
+            </declarable>
+          </parameter>
+        </declarable>
+      </value>
+    </entry>
+
+     <entry>
+      <key><string>5</string></key>
+      <value>
+        <declarable>
+          <class-name>javaobject.Portfolio</class-name>
+          <parameter name="ID">
+            <string>5</string>
+          </parameter>
+          <parameter name="pkid">
+            <string>5</string>
+          </parameter>
+          <parameter name="type">
+            <string>type2</string>
+          </parameter>
+          <parameter name="status">
+            <string>active</string>
+          </parameter>
+          <parameter name="position1">
+            <declarable>
+                <class-name>javaobject.Position</class-name>
+                <parameter name="secId">
+                    <string>SAP</string>
+                </parameter>
+                <parameter name="qty">
+                    <string>3900</string>
+                </parameter>
+                <parameter name="mktValue">
+                    <string>3400.893475</string>
+                </parameter>
+                <parameter name="sharesOutstanding">
+                    <string>3344</string>
+                </parameter>
+                <parameter name="secType">
+                   <string>k</string>
+                </parameter>
+                <parameter name="pid">
+                    <string>432</string>
+                </parameter>
+            </declarable>
+          </parameter>
+          <parameter name="position2">
+            <declarable>
+                <class-name>javaobject.Position</class-name>
+                <parameter name="secId">
+                    <string>DELL</string>
+                </parameter>
+                <parameter name="qty">
+                    <string>3900</string>
+                </parameter>
+                <parameter name="mktValue">
+                    <string>3400.893475</string>
+                </parameter>
+                <parameter name="sharesOutstanding">
+                    <string>5354</string>
+                </parameter>
+                <parameter name="secType">
+                   <string>u</string>
+                </parameter>
+                <parameter name="pid">
+                    <string>467</string>
+                </parameter>
+            </declarable>
+          </parameter>
+        </declarable>
+      </value>
+    </entry>    
+  </region>
+</cache> 

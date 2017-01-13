@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+
+<!-- serverPoolWithEndpoints.xml
+     Configures a server to for clients at port 40404.
+-->
+
+<cache xmlns="http://geode.apache.org/schema/cache"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+       version="1.0">
+  <cache-server port="40404"/>
+    <region name="exampleRegion">
+      <region-attributes scope="distributed-no-ack" data-policy="replicate"/>
+    </region>
+</cache>

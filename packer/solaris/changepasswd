@@ -1,0 +1,23 @@
+#!/usr/bin/env expect -f
+
+set force_conservative 0  ;# set to 1 to force conservative mode even if
+                          ;# script wasn't run conservatively originally
+if {$force_conservative} {
+        set send_slow {1 .1}
+        proc send {ignore arg} {
+                sleep .1
+                exp_send -s -- $arg
+        }
+}
+
+set username [lindex $argv 0]
+set password [lindex $argv 1]
+
+set timeout -1
+spawn passwd $username
+match_max 100000
+expect "New Password: "
+send -- "$password\r"
+expect "Re-enter new Password: "
+send -- "$password\r"
+expect eof

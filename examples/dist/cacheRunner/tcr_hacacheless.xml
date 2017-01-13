@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Well-formed and valid xml file -->
+<cache xmlns="http://geode.apache.org/schema/cache"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+       version="1.0">
+  <region name = "root" >
+    <region-attributes caching-enabled="true" >
+      <region-idle-time>
+        <expiration-attributes timeout="0" action="destroy"/> 
+      </region-idle-time>
+      <entry-idle-time>
+        <expiration-attributes timeout="0" action="invalidate"/>
+      </entry-idle-time>
+      <region-time-to-live>
+        <expiration-attributes timeout="0" action="local-destroy"/>
+      </region-time-to-live>
+      <entry-time-to-live>
+        <expiration-attributes timeout="0" action="local-invalidate"/>
+      </entry-time-to-live>
+    </region-attributes>
+  </region>
+   <pool name="examplePool"  subscription-enabled="true" subscription-redundancy="1">
+    <server host="localhost" port="50505" />    
+    <server host="localhost" port="50506" />    
+  </pool> 
+  <region name = "listenerWriterLoader" >
+     <region-attributes refid="PROXY"  pool-name="examplePool"/>
+  </region>	
+  <region name = "Portfolios" >
+     <region-attributes refid="PROXY"  pool-name="examplePool"/>
+  </region>
+															
+</cache>

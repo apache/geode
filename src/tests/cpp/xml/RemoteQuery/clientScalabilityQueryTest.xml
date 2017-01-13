@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="cacheType">CLIENT</data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>10000</item>
+    </list>
+  </data>
+
+  <data name="valueSizes">
+    <list>
+      <item>1000</item>
+    </list>
+  </data>
+
+  <data name="categoryType">
+    <list>
+      <item>1</item>
+      <item>3</item>
+      <item>4</item>
+      <item>5</item>
+      <item>6</item>
+      <item>7</item>
+      <item>8</item>
+      <item>9</item>
+      <item>11</item>
+      <item>13</item>
+      <item>14</item>
+    </list>
+  </data>
+
+  <data name="numThreads">
+    <list>
+      <item>1</item>
+    </list>
+  </data>
+  <data name="regionPaths">
+    <list>
+      <item>/IndexRegion</item>
+      <item>/Portfolios</item>
+    </list>
+  </data>
+
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="Portfolios">
+        <region-attributes caching-enabled="false" client-notification="true">
+          <cache-listener library="perftests" function="createPerfTestCacheListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  <data name="regionSpec">ThinClientRegion</data>
+  <data name="index">true</data>
+  <data name="largeSetQuery">false</data>
+
+  <client-set name="JavaCacheServer" hostGroup="CS"/>
+  <client-set count="99" name="ThinClient"/>
+  <client-set name="Feeder"/>
+
+
+  <test name="ClientScalabilityTest" description="ThinClientRegion client scalability tests">
+    <task name="SetupCacheServer" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-e CLASSPATH=\$BUILDDIR/framework/lib/javaobject.jar:\$CLASSPATH RemoteQuery/csWithIndex.xml</data>
+      <client-set name="JavaCacheServer"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments"></data>
+      <client-set name="JavaCacheServer"/>
+    </task>
+
+    <task name="CreateRegion" action="doAddRootAndSubRegion" container="querytests" waitTime="5m">
+      <client-set begin="1" count="2" name="ThinClient"/>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="PopulateRegion" action="doPopulateUserObject" container="querytests" waitTime="5m">
+      <data name="regionName">Portfolios</data>
+      <data name="objectType">Portfolio</data>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set begin="1" count="2" name="ThinClient"/>
+      <data name="sleepTime">2</data>
+    </task>
+    <task name="Running Query for Result set with 2 clients" action="doRunQuery" container="querytests" waitTime="15m">
+      <client-set begin="1" count="2" name="ThinClient"/>
+      <data name="queryResultType">resultSet</data>
+    </task>
+    <task name="Running Query for struct set with 2 clients" action="doRunQuery" container="querytests" waitTime="15m">
+      <client-set begin="1" count="2" name="ThinClient"/>
+      <data name="queryResultType">structSet</data>
+    </task>
+
+    <task name="CreateRegion" action="doAddRootAndSubRegion" container="querytests" waitTime="5m">
+      <client-set begin="3" count="2" name="ThinClient"/>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set begin="1" count="4" name="ThinClient"/>
+      <data name="sleepTime">2</data>
+    </task>
+    <task name="Running Query for Result set with 4 clients" action="doRunQuery" container="querytests" waitTime="15m">
+      <client-set begin="1" count="4" name="ThinClient"/>
+      <data name="queryResultType">resultSet</data>
+    </task>
+    <task name="Running Query for struct set with 4 clients" action="doRunQuery" container="querytests" waitTime="15m">
+      <client-set begin="1" count="4" name="ThinClient"/>
+      <data name="queryResultType">structSet</data>
+    </task>
+    <task name="CreateRegion" action="doAddRootAndSubRegion" container="querytests" waitTime="5m">
+      <client-set begin="5" count="12" name="ThinClient"/>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set begin="1" count="16" name="ThinClient"/>
+      <data name="sleepTime">2</data>
+    </task>
+    <task name="Running Query for Result set with 16 clients" action="doRunQuery" container="querytests" waitTime="15m">
+      <client-set begin="1" count="16" name="ThinClient"/>
+      <data name="queryResultType">resultSet</data>
+    </task>
+    <task name="Running Query for struct set with 16 clients" action="doRunQuery" container="querytests" waitTime="15m">
+      <client-set begin="1" count="16" name="ThinClient"/>
+      <data name="queryResultType">structSet</data>
+    </task>
+    <task name="CreateRegion" action="doAddRootAndSubRegion" container="querytests" waitTime="5m">
+      <client-set begin="17" count="16" name="ThinClient"/>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set begin="1" count="32" name="ThinClient"/>
+      <data name="sleepTime">2</data>
+    </task>
+    <task name="Running Query for Result set with 32 clients" action="doRunQuery" container="querytests" waitTime="15m">
+      <client-set begin="1" count="32" name="ThinClient"/>
+      <data name="queryResultType">resultSet</data>
+    </task>
+    <task name="Running Query for struct set with 32 clients" action="doRunQuery" container="querytests" waitTime="15m">
+      <client-set begin="1" count="32" name="ThinClient"/>
+      <data name="queryResultType">structSet</data>
+    </task>
+    <task name="CreateRegion" action="doAddRootAndSubRegion" container="querytests" waitTime="5m">
+      <client-set begin="33" count="32" name="ThinClient"/>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set begin="1" count="64" name="ThinClient"/>
+      <data name="sleepTime">2</data>
+    </task>
+    <task name="Running Query for Result set with 64 clients" action="doRunQuery" container="querytests" waitTime="15m">
+      <client-set begin="1" count="64" name="ThinClient"/>
+      <data name="queryResultType">resultSet</data>
+    </task>
+    <task name="Running Query for struct set with 64 clients" action="doRunQuery" container="querytests" waitTime="15m">
+      <client-set begin="1" count="64" name="ThinClient"/>
+      <data name="queryResultType">structSet</data>
+    </task>
+    <task name="CreateRegion" action="doAddRootAndSubRegion" container="querytests" waitTime="5m">
+      <client-set begin="65" count="34" name="ThinClient"/>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set begin="1" count="99" name="ThinClient"/>
+      <data name="sleepTime">2</data>
+    </task>
+    <task name="Running Query for Result set with 99 clients" action="doRunQuery" container="querytests" waitTime="15m">
+      <client-set begin="1" count="99" name="ThinClient"/>
+      <data name="queryResultType">resultSet</data>
+    </task>
+    <task name="Running Query for struct set with 99 clients" action="doRunQuery" container="querytests" waitTime="15m">
+      <client-set begin="1" count="99" name="ThinClient"/>
+      <data name="queryResultType">structSet</data>
+    </task>
+    <task name="close cache for CPP clients" action="doCloseCache" container="querytests" waitTime="5m"/>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments"></data>
+      <client-set name="JavaCacheServer"/>
+    </task>
+  </test>
+</test-driver>

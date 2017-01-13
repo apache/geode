@@ -1,0 +1,6 @@
+AppDomainTest/getAllAppDomainTest.xml
+AppDomainTest/putGetAllAppDomainTest.xml
+AppDomainTest/perfClientsUpdateAppDomainTest.xml
+AppDomainTest/clientEventsAppDomainTest.xml
+AppDomainTest/clientEventsFailoverAppDomain.xml
+AppDomainTest/clientEventsHAFailoverAppDomain.xml

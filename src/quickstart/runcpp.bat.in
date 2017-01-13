@@ -1,0 +1,278 @@
+@echo off
+setlocal
+
+rem GFCPP must be set
+rem GEMFIRE must be set
+rem OPENSSL must be set for Security example
+
+if not "%GFCPP%"=="" goto checkGEMFIRE
+
+echo GFCPP is not set.
+goto finished
+
+:checkGEMFIRE
+
+if not "%GEMFIRE%"=="" goto checkOPENSSL
+
+echo GEMFIRE is not set.
+goto finished
+
+:checkOPENSSL
+
+if not "%OPENSSL%"=="" goto startexamples
+
+echo OPENSSL is not set.
+echo If OpenSSL libraries are not found in PATH then Security example will fail.
+
+
+:startexamples
+
+set LANG=C++
+set LANGDIR=.
+
+if not exist %LANGDIR%\%1.exe goto presentmenu
+
+set exname=%1
+
+:runexample
+
+if not exist %LANGDIR%\%exname%.exe goto presentmenu
+
+echo.
+echo Running GemFire %LANG% QuickStart example %exname% ...
+
+set CLASSPATH=%CLASSPATH%;${NATIVECLIENT_DIR}\SampleCode\quickstart\lib\javaobject.jar;%GEMFIRE%\lib\gfSecurityImpl.jar
+set PATH=%GEMFIRE%\bin;%PATH%;%GEMFIRE%\bin;%GFCPP%\bin;%OPENSSL%\bin;..\bin;
+
+if not exist gfecs mkdir gfecs
+
+if '%exname%' neq 'ExecuteFunctions' goto notwithlocator
+
+echo locator start
+
+call gfsh start locator --port=34756 --dir=gfecs --name=the-locator --include-system-classpath
+
+:notwithlocator
+
+if '%exname%' neq 'PoolRemoteQuery' goto skiplocatorstart
+
+echo locator start
+
+call gfsh start locator --port=34756 --dir=gfecs --name=the-locator --include-system-classpath
+
+:skiplocatorstart
+
+if '%exname%' neq 'HACache' goto skiphadir
+
+if not exist gfecs2 mkdir gfecs2
+
+:skiphadir
+
+if '%exname%' neq 'ExecuteFunctions' goto skipfuncdir
+
+if not exist gfecs2 mkdir gfecs2
+
+call gfsh start server --cache-xml-file=${CMAKE_BINARY_DIR}/XMLs/server%exname%.xml --locators=localhost[34756] --mcast-port=0 --dir=gfecs --name=the-server --include-system-classpath
+call gfsh start server --cache-xml-file=${CMAKE_BINARY_DIR}/XMLs/server%exname%2.xml --locators=localhost[34756] --mcast-port=0 --dir=gfecs2 --name=the-other-server --include-system-classpath
+call %LANGDIR%\%exname%.exe
+
+goto closeup
+
+:skipfuncdir
+
+
+if '%exname%' equ 'PoolRemoteQuery' goto startserverwithlocator
+
+if '%exname%' equ 'Delta' goto startserverwithlocator
+
+
+if '%exname%' equ 'Security' goto startserverforsecurity
+if '%exname%' equ 'MultiuserSecurity' goto startserverformultiusersecurity
+
+call gfsh start server --cache-xml-file=${CMAKE_BINARY_DIR}/XMLs/server%exname%.xml --mcast-port=0 --dir=gfecs --name=the-server --include-system-classpath
+
+echo cacheServer started
+
+if '%exname%' neq 'HACache' goto skiphastart
+
+call gfsh start server --cache-xml-file=${CMAKE_BINARY_DIR}/XMLs/server%exname%2.xml --mcast-port=0 --dir=gfecs2 --name=the-other-server --include-system-classpath
+
+echo cacheServer2 started
+
+:skiphastart
+
+if '%exname%' neq 'ExecuteFunctions' goto skipfuncstart
+
+call gfsh start server --cache-xml-file=${CMAKE_BINARY_DIR}/XMLs/server%exname%2.xml --mcast-port=0 --dir=gfecs2 --name=the-other-server --include-system-classpath
+
+echo cacheServer2 started
+
+:skipfuncstart
+
+if '%exname%' neq 'Security' goto :skipsecuritystart 
+if '%exname%' neq 'MultiuserSecurity' goto :skipsecuritystart 
+
+:startserverwithlocator
+call gfsh start server --cache-xml-file=${CMAKE_BINARY_DIR}/XMLs/server%exname%.xml --mcast-port=0 --dir=gfecs --locators=localhost:34756 --name=the-server --include-system-classpath
+
+if '%exname%' neq 'Security' goto :skipsecuritystart 
+if '%exname%' neq 'MultiuserSecurity' goto :skipsecuritystart 
+
+:startserverforsecurity
+
+call gfsh start server --cache-xml-file=${CMAKE_BINARY_DIR}/XMLs/server%exname%.xml --mcast-port=0 --dir=gfecs --J=-Dsecurity-client-authenticator=templates.security.PKCSAuthenticator.create --J=-Dsecurity-publickey-filepath=${CMAKE_BINARY_DIR}keystore/publickeyfile --J=-Dsecurity-publickey-pass=gemfire --J=-Dsecurity-authz-xml-uri=${CMAKE_BINARY_DIR}/XMLs/authz-pkcs.xml --J=-Dsecurity-client-accessor=templates.security.XmlAuthorization.create --name=the-server --include-system-classpath
+
+if '%exname%' neq 'MultiuserSecurity' goto :skipsecuritystart 
+
+:startserverformultiusersecurity
+call gfsh start server --cache-xml-file=${CMAKE_BINARY_DIR}/XMLs/server%exname%.xml --mcast-port=0 --dir=gfecs --J=-Dsecurity-client-authenticator=templates.security.DummyAuthenticator.create --J=-Dsecurity-authz-xml-uri=${CMAKE_BINARY_DIR}/XMLs/authz-dummy.xml --J=-Dsecurity-client-accessor=templates.security.XmlAuthorization.create --name=the-server --include-system-classpath
+
+:skipsecuritystart
+
+if '%exname%' neq 'PoolRemoteQuery' goto notstartedserverwithlocator
+
+if '%exname%' neq 'Delta' goto notstartedserverwithlocator
+
+call gfsh start server --cache-xml-file=${CMAKE_BINARY_DIR}/XMLs/server%exname%.xml mcast-port=0 --dir=gfecs --locators=localhost:34756  --name=the-server --include-system-classpath
+
+:notstartedserverwithlocator
+
+if '%exname%' neq 'DistributedSystem' goto skipDSstart
+
+if not exist gfecs2 mkdir gfecs2
+
+call gfsh start server --cache-xml-file=${CMAKE_BINARY_DIR}/XMLs/server%exname%2.xml --mcast-port=0 --dir=gfecs2 --name=the-other-server --include-system-classpath --server-port=40405
+
+:skipDSstart
+
+
+call %LANGDIR%\%exname%.exe
+if not "%errorlevel%"=="0" (
+call gfsh stop server --dir=gfecs
+call gfsh stop server --dir=gfecs2
+exit %errorlevel%
+)
+
+call gfsh stop server --dir=gfecs
+
+if '%exname%' neq 'HACache' goto skiphastop
+
+call gfsh stop server --dir=gfecs2
+
+:skiphastop
+
+if '%exname%' neq 'ExecuteFunctions' goto skipfuncstop
+
+call gfsh stop server --dir=gfecs2
+
+:skipfuncstop
+
+if '%exname%' neq 'PoolRemoteQuery' goto skiplocatorstop1
+
+call gfsh stop locator --dir=gfecs
+
+:skiplocatorstop1
+
+if '%exname%' neq 'Delta' goto skiplocatorstop2
+
+call gfsh stop locator --dir=gfecs
+
+:skiplocatorstop2
+
+if '%exname%' neq 'DistributedSystem' goto skipDSstop
+
+call gfsh stop server --dir=gfecs2
+
+:skipDSstop
+
+
+if '%exname%' equ 'invalidoption' goto invalidoption
+
+rem echo Please review the example's log output above then
+
+rem pause
+
+goto closeup
+
+:presentmenu
+
+echo.
+echo Please select a GemFire %LANG% QuickStart example to run.
+echo.
+echo 1. BasicOperations
+echo 2. DataExpiration
+echo 3. LoaderListenerWriter
+echo 4. RegisterInterest
+echo 5. RemoteQuery
+echo 6. HA Cache
+echo 7. Exceptions
+echo 8. DurableClient
+echo 9. Security
+echo 10.PutAllGetAllOperations
+echo 11.Continuous Query
+echo 12.DistributedSystem
+echo 13.PoolWithEndpoints
+echo 14.PoolRemoteQuery
+echo 15.ExecuteFunctions
+echo 16.Pool Continuous Query
+echo 17.Delta
+echo 18.Multiuser Security
+echo 19.RefIDExample
+echo 20.Transactions
+echo 21.TransactionsXA
+echo 22.PdxRemoteQuery
+echo 23.PdxSerializer
+echo 24.PdxInstance
+echo 25.PdxAutoSerializer
+echo 26.Quit
+echo.
+
+:getoption
+
+rem choice /c:123 /n
+
+set /p option=Enter option: 
+
+set exname=invalidoption
+
+if '%option%' equ '1' set exname=BasicOperations
+if '%option%' equ '2' set exname=DataExpiration
+if '%option%' equ '3' set exname=LoaderListenerWriter
+if '%option%' equ '4' set exname=RegisterInterest
+if '%option%' equ '5' set exname=RemoteQuery
+if '%option%' equ '6' set exname=HACache
+if '%option%' equ '7' set exname=Exceptions
+if '%option%' equ '8' set exname=DurableClient
+if '%option%' equ '9' set exname=Security
+if '%option%' equ '10' set exname=PutAllGetAllOperations
+if '%option%' equ '11' set exname=CqQuery
+if '%option%' equ '12' set exname=DistributedSystem
+if '%option%' equ '13' set exname=PoolWithEndpoints
+if '%option%' equ '14' set exname=PoolRemoteQuery
+if '%option%' equ '15' set exname=ExecuteFunctions
+if '%option%' equ '16' set exname=PoolCqQuery
+if '%option%' equ '17' set exname=Delta
+if '%option%' equ '18' set exname=MultiuserSecurity
+if '%option%' equ '19' set exname=RefIDExample
+if '%option%' equ '20' set exname=Transactions
+if '%option%' equ '21' set exname=TransactionsXA
+if '%option%' equ '22' set exname=PdxRemoteQuery
+if '%option%' equ '23' set exname=PdxSerializer
+if '%option%' equ '24' set exname=PdxInstance
+if '%option%' equ '25' set exname=PdxAutoSerializer
+if '%option%' equ '26' goto finished
+
+if '%exname%' equ 'invalidoption' goto invalidoption
+
+goto runexample
+
+:invalidoption
+
+echo Invalid option.
+goto getoption
+
+:closeup
+
+echo Finished example %exname%.
+
+:finished

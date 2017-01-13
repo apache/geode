@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+	<data name="maxTestTime">6000</data>
+	<data name="workTime">300</data>
+	<data name="totalTaskTimeSec">1200</data>
+	<data name="maxResultWaitSec">600</data>
+	<data name="preemptCounter">10</data>
+	<!-- abort, exit, done ops downcounter before execution -->
+	<data name="maxRegions">100</data>
+
+  <data name="AckMirrorNil">
+    <snippet>
+      <region name="AckMirrorNil">
+        <region-attributes scope="distributed-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="false">
+          <cache-listener library="eventtest" function="createETCacheListener"/>
+        </region-attributes> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackMirrorNil">
+    <snippet>
+      <region name="NackMirrorNil">
+        <region-attributes 
+        scope="distributed-no-ack" 
+        mirroring="true" 
+        caching-enabled="true" 
+        interest-list-enabled="false">
+          <cache-listener library="eventtest" function="createETCacheListener"/>
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="AckNmirrorNil">
+    <snippet>
+      <region name="AckNmirrorNil">
+        <region-attributes 
+        scope="distributed-ack" 
+        mirroring="false" 
+        caching-enabled="true" 
+        interest-list-enabled="false">
+          <cache-listener library="eventtest" function="createETCacheListener"/>
+        </region-attributes> 
+      </region>
+    </snippet>
+  </data>
+  
+  <data name="NackNmirrorNil">
+    <snippet>
+      <region name="NackNmirrorNil">
+        <region-attributes 
+        scope="distributed-no-ack" 
+        mirroring="false" 
+        caching-enabled="true" 
+        interest-list-enabled="false">
+          <cache-listener library="eventtest" function="createETCacheListener"/>
+        </region-attributes> 
+      </region>
+    </snippet>
+  </data>
+  
+	<test name="SocketTest" description="Sockets in use test" waitTime="3000">
+		<task name="count" action="doSocketCount" container="eventtest" waitTime="300"/>
+		<task name="count" action="doIterate" container="eventtest" waitTime="300"/>
+		<task name="count" action="doSocketCount" container="eventtest" waitTime="300"/>
+		<task name="CreateRegion" action="doAddRootRegion" container="eventtest" waitTime="60" continueOnError="false">
+			<data name="regionSpec">AckMirrorNil</data>
+		</task>
+		<task name="count" action="doSocketCount" container="eventtest" waitTime="300"/>
+		<task name="CreateRegion" action="doAddRootRegion" container="eventtest" waitTime="60" continueOnError="false">
+			<data name="regionSpec">NackMirrorNil</data>
+		</task>
+		<task name="count" action="doSocketCount" container="eventtest" waitTime="300"/>
+		<task name="CreateRegion" action="doAddRootRegion" container="eventtest" waitTime="60" continueOnError="false">
+			<data name="regionSpec">AckNmirrorNil</data>
+		</task>
+		<task name="count" action="doSocketCount" container="eventtest" waitTime="300"/>
+		<task name="CreateRegion" action="doAddRootRegion" container="eventtest" waitTime="60" continueOnError="false">
+			<data name="regionSpec">NackNmirrorNil</data>
+		</task>
+		<task name="count" action="doSocketCount" container="eventtest" waitTime="300"/>
+	</test>
+	
+	
+</test-driver>

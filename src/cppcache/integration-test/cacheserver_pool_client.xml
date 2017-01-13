@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+
+<cache xmlns="http://geode.apache.org/schema/cache"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+       version="1.0">
+
+	<pool
+    name="clientPool"
+    subscription-enabled="true"
+    free-connection-timeout="10000"
+    load-conditioning-interval="1"
+    min-connections="2"
+    max-connections="5"
+    retry-attempts="5"
+    idle-timeout="5"
+    ping-interval="1"
+    read-timeout="10"
+    server-group ="ServerGroup1"
+    socket-buffer-size ="1024"
+    subscription-message-tracking-timeout="5"
+    subscription-ack-interval="1"
+    subscription-redundancy="1"
+    statistic-interval="1"
+    update-locator-list-interval="25000"      
+    pr-single-hop-enabled="false"
+  >
+    <locator host="localhost" port="LOC_PORT1" />    
+  </pool>
+  
+  <pool
+    name="clientPoolMultiUser"
+    multiuser-authentication="true"
+  >
+    <locator host="localhost" port="LOC_PORT1" />    
+  </pool>
+	<region name='PoolRegion1'>
+	   <region-attributes pool-name="clientPool" />
+	</region>
+	   
+</cache> 
+
+

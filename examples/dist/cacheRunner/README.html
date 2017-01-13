@@ -1,0 +1,1739 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN"><HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+<meta name="generator" content="Bluefish 1.0.7">
+
+<TITLE>cacheRunner: Pivotal GemFire&#174; Native Client C++ Example</TITLE>
+</HEAD>
+<BODY>
+ <IMG SRC="../../../docs/PIVOTAL_GemFire_190x81.png" BORDER="0">
+ <DIV>
+   <h1 align="center"><a name="Top" id="Top"></a>cacheRunner</h1>
+   <h2 align="center">Pivotal GemFire<b><sup><font size=-0>&#174;</font></sup></b> Native Client</h2>
+   <h2 align="center">C++ Programming Example</h2>
+</DIV>
+
+<DIV>
+<P>The <code>cacheRunner</code> C++ example is an interactive program for modifying and viewing GemFire cache contents as a C++ native client interacts with a GemFire cache server. The <code>cacheRunner</code> program joins the distributed system, creates a cache, and then accepts command-line input for inspecting, modifying, and remotely querying the cache while working with a cache server. XML files are provided to configure <code>cacheRunner</code> for different functional operations or behavior.
+<blockquote>
+  <p><em>You can review the C++ source code for this example by opening the files in the <code>cacheRunner</code> directory that have <code>.cpp</code> and <code>.hpp</code> file extensions.  </em></p>
+</blockquote>
+<P>This example is divided into four parts, with each part requiring different sets of configuration files for both <code>cacheRunner</code> and the cache server.
+  The <code>cacheRunner</code> example can also be configured using a local <code>gfcpp.properties</code> file.
+<ul>
+  <li><em><a href="#part1">Part 1: Modifying the Cache</a></em> uses <code>cacheRunner</code> to work with GemFire regions, entries, directories, and files to get a feel for how the product works.<br><br></li>
+  
+  <li><em><a href="#part2">Part 2: Modifying the Cache with Security Configured</a> </em>  demonstrates server side  authentication of client credentials, as well as authorization for client operations.<br><br></li>
+  
+  <li><em><a href="#part3">Part 3: Remote Querying</a></em> demonstrates remote querying of cache entries stored on a cache server.<br>
+    <br></li>
+  
+  <li><em><a href="#part4">Part 4: High Availability</a> </em> configures redundant cache servers to ensure highly available data in case the primary cache server fails.</li>
+</ul>
+<P>The <code>cacheRunner</code> C++ example is located in the platform specific SampleCode zipfile. Throughout this example, if you're prompted to enter the NativeClient_InstallDir/SampleCode directory, replace the NativeClient_InstallDir/SampleCode with the actual path to unzipped location of the SampleCode.
+<P>The instructions in this example apply to the Windows operating system, so alter them as needed for your  system.
+<P><a name="part1" id="part1"></a>
+</DIV>
+
+<DIV>
+<hr size="3" noshade>
+<h1>Part 1: Modifying the Cache</h1>
+<hr size="3" noshade>
+</DIV>
+
+ <DIV>
+   <h2>Running cacheRunner</h2>
+   <P>
+The <code>cacheRunner</code> example uses a GemFire cache server configuration file, <code><a href="./cacherunner.xml" target="_blank">cacherunner.xml</a></code>. When the cache server starts, <code>cacherunner.xml</code> creates two regions <code>root</code> and <code>listenerWriterLoader</code>. This is a description of each cache server region and how each region is configured:</P>
+   <UL>
+  <LI CLASS="Bulleted">root &#151; The root region for the cache server, <code>distributed-no-ack</code> in scope and populated with an entry named <code>entry3</code> that has a value of <code>3.0</code></LI>
+  <LI CLASS="Bulleted"><code> listenerWriterLoader</code> &#151; A region with <code>distributed-ack</code> scope, populated with an entry named <code>entry1</code> that has a value of <code>1.0</code></LI>
+  </UL>
+<p>The <code>cacheRunner</code> application comes with a set of XML configuration files that configure its local cache and demonstrate various operations with the cache server. The following XML files are used with this example. The application is run separately for each of these XML files:</p>
+<UL>
+  <LI CLASS="Bulleted"><code> <a href="./tcr_cache.xml" target="_blank">tcr_cache.xml</a></code>
+ &#151; Establishes local and distributed cache operations. The listenerWriterLoader region establishes an endpoint connection with the server and performs distributed caching operations by receiving updates from the cache server.</LI>
+  <LI CLASS="Bulleted"><code><a href="./tcr_cacheless.xml" target="_blank">tcr_cacheless.xml</a></code> &#151; Retrieves data from the cache server, but the data is not retained in the local cache.</LI>
+  <LI CLASS="Bulleted"><code><a href="./csQueryPortfolios.xml" target="_blank">csQueryPortfolios.xml</a></code> &#151; Creates a bregion named <code>Portfolios</code> for querying, which is a region of stock portfolios whose keys are the portfolio ID.</LI>
+  <LI CLASS="Bulleted"><a href="./tcr_hacache.xml" target="_blank"><code>tcr_hacache.xml</code></a> &#151; Establishes cache server redundancy to demonstrate high availability if server failover occurs. </LI>
+</UL>
+<P>
+The procedures in this example introduce a few of the <code> cacheRunner</code>
+ commands. For information on the others, enter <strong>
+ <code>help</code></strong>
+ or <strong>
+ <code>?</code></strong>
+ at the session prompt. In the procedures, the lines you type are shown in a <code> <strong>boldface fixed</strong></code> font. System output is shown in a <code>regular fixed</code> font.</P>
+<br>
+ </DIV>
+
+<DIV>
+  <h2>
+    
+    <a name="configuring_environment" id="configuring_environment"></a>Configuring the Environment</h2>
+  <P>
+Examples that interact with a cache server require specific environment configurations so the cache server runs properly. Follow the configuration steps listed below that apply to your operating system. Throughout this example, if you're prompted to enter the NativeClient_InstallDir/SampleCode directory, replace the NativeClient_InstallDir/SampleCode with the actual path to unzipped location of the SampleCode.</P>
+</DIV>
+ <DIV>
+<ol>
+  <li>Start a terminal session from the Pivotal GemFire product installation directory, then configure your environment settings by following the steps in   <code>examples/EnvSetup.html</code>. Refer to the system configuration information in the <em>GemFire User's Guide</em> if you need help with this step.<br>
+      <br>
+  <li>Set the <code>JAVA_HOME</code> and <code>GF_JAVA_HOME</code>  environment variables to point to your installed Java JRE or JDK. See the installation information in the   <em>GemFire User's Guide</em> for the versions of Java that are compatible with GemFire. The <code>JAVA_HOME</code> setting is for your applications, and  <code>GF_JAVA_HOME</code> is for the GemFire scripts.  You must have a compatible Java JRE or JDK installed, and you must set <code>JAVA_HOME</code> and <code>GF_JAVA_HOME</code> to point to it.<br>
+      <br>
+  <li>Add <code>$JAVA_HOME/bin</code> to the start of your <code>PATH</code>.<br><br>
+    <li><em>For Solaris and Linux only</em>: Set the <code>LD_LIBRARY_PATH</code> environment variable to point to the <code>NativeClient_InstallDir/lib</code> directory.<br>
+    <br>
+</ol>
+<p>The following is a list of the environment configuration commands for the <code>cacheRunner</code> example. Choose the set of commands that are appropriate for your operating system.</p>
+<p><strong>Bourne and Korn shells (sh, ksh, bash)</strong></p>
+<blockquote>
+  <p>    <code>% cd GemFireInstallDirectory<br>
+    %
+         GEMFIRE=GemFireInstallDirectory; export GEMFIRE <br>
+	% CLASSPATH=$GEMFIRE/lib/gemfire.jar:$GEMFIRE/lib/antlr.jar:$CLASSPATH; export CLASSPATH <br>
+    % JAVA_HOME=&lt;installed JRE PATH&gt;; export JAVA_HOME<br>
+    % GF_JAVA_HOME=$JAVA_HOME; export GF_JAVA_HOME<br>
+    % PATH=$JAVA_HOME/bin:$GEMFIRE/bin:$PATH; export PATH<br>
+    % LD_LIBRARY_PATH=&lt;full path to NativeClient_InstallDir/lib&gt;:$LD_LIBRARY_PATH; export LD_LIBRARY_PATH</code></p>
+</blockquote>
+<p><strong>Windows</strong></p>
+<blockquote>
+  <p><code>&gt; cd GemFireInstallDirectory<br>
+&gt; set GEMFIRE=GemFireInstallDirectory<br>
+&gt;  set CLASSPATH=%GEMFIRE%\lib\gemfire.jar;%GEMFIRE%\lib\antlr.jar;%CLASSPATH% <br>
+&gt; set JAVA_HOME=&lt;installed JRE PATH&gt;<br>
+&gt; set GF_JAVA_HOME=%JAVA_HOME%<br>
+&gt; set PATH=%JAVA_HOME%\bin;%GEMFIRE%\bin;%PATH%</code>
+</blockquote>
+<br>
+</DIV>
+ <DIV>
+   <h2>
+     <a name="starting_application_processes" id="starting_application_processes"></a>Starting the Cache Server</h2>
+   <P>
+Start the cache server by completing the following steps:</P>
+</DIV>
+<DIV>
+<OL>
+<LI CLASS="Numbered-1st">
+<p>Configure the session environment according to the steps listed in <a href="#configuring_environment">Configuring the Environment</a>.</p>
+</LI>
+<LI CLASS="Numbered">
+Go to the native client's <code>cacheRunner</code>
+ directory (replace the <code>xxxx</code> in <code>NativeClient_InstallDir</code> with the actual four-digit product version):
+ <blockquote>
+   <p><strong>
+     <code>cd NativeClient_InstallDir/SampleCode/examples/cacheRunner</code></strong></p>
+     </blockquote>
+ </LI>
+<LI CLASS="Numbered">
+Start the cache server:
+  <blockquote>
+    <p><strong><code>cacheserver start cache-xml-file=cacherunner.xml</code></strong></p>
+   </blockquote>
+ <P>The cache server is initialized using the region settings in the <code><a href="./cacherunner.xml" target="_blank">cacherunner.xml</a></code> file. A message similar to the following appears, indicating that the cache server is running:</P>
+</LI>
+ <blockquote>
+   <p>
+     <code>Cacheserver pid: 2120 status: running</code></p>
+   </blockquote>
+<br>
+  </OL>
+
+</DIV>
+
+ <DIV>
+  <h2>
+    <a name="starting_application_processes" id="starting_application_processes"></a>Starting the CacheRunner Example</h2>
+  <P>
+Follow these steps to start the <code>cacheRunner</code> example using the <code>tcr_cache.xml</code> initialization file:</P>
+</DIV>
+
+ <DIV>
+<OL>
+<LI CLASS="Numbered-1st">
+<p>Create two sessions from the GemFire installation directory.</p>
+</LI>
+ <LI CLASS="Numbered">
+ <p><em>For Solaris and Linux only</em>:<br>
+   Configure both session environments according to the steps listed in <a href="#configuring_environment">Configuring the Environment</a>.</p>
+ <LI CLASS="Numbered">
+   <p>Go to the <code> cacheRunner</code> directory in both sessions</p>
+ </LI>
+ <blockquote>
+   <p><strong>
+     <code>cd NativeClient_InstallDir/SampleCode/examples/cacheRunner</code></strong></p>
+   </blockquote>
+<LI CLASS="Numbered">
+Start the <code>cacheRunner</code>
+ application in both sessions, specifying <code>tcr_cache.xml</code>:
+ <blockquote>
+       <p><strong><code>cacheRunner tcr_cache.xml</code></strong></p>
+   </blockquote>
+ <P>The <code>cacheRunner</code> client is initialized using the region settings in the <code><a href="./tcr_cache.xml" target="_blank">tcr_cache.xml</a></code> file. The application creates <code>root</code> and <code>listenerWriterLoader</code> regions, then the<code> /root</code> region prompt appears. As you move from region to region, the  prompt includes a path to tell you where you are, such as  
+ <code>/listenerWriterLoader<EM CLASS="Code9">&gt;</EM></code>.</P>
+</LI>
+<LI CLASS="Numbered">
+  <p>Set one of the two <code>cacheRunner</code> sessions aside. You only need one client session for the next two Producing Data exercises.</p>
+<LI CLASS="Numbered">In the <code>cacheRunner</code> client, check the contents of the <code> root</code>
+  region:
+    <blockquote>
+    <p><strong><code>
+      ls<br>
+      </code></strong><code>Region Entries:<br>
+        </code>     <br>
+      /root&gt;</code></p>
+     </blockquote>
+<LI CLASS="Numbered">To check regions in client <code> cache</code>.
+  <blockquote>
+    <p><strong><code>
+      lsrgn<br>
+      </code></strong><code>Number of regions in Cache: 2</code></p>
+      </code></strong><code>Region Name 1: listenerWriterLoader</code></p><br>
+      </code></strong><code>Region Name 2: root</code></p>
+      </code>     <br>
+      root&gt;</code></p>
+     </blockquote>
+</OL>
+
+
+</DIV>
+
+ <DIV>
+  <h2>Producing Data in the root Region</h2>
+  <P>
+In this exercise you add an entry in the <code>root</code> region of the  <code>cacheRunner</code>  local client cache, then attempt to retrieve the entry from the cache server.</P>
+</DIV>
+<DIV>
+<P><strong>
+In the cacherunner client</strong>:</P>
+<OL><LI CLASS="Numbered">
+    Add an entry to the <code>root</code> region:
+    <blockquote>
+        <p><strong>
+          <code>put entry1 ball str</code></strong></p>
+      </blockquote>
+      <P>
+      This line creates an entry whose key is <code> entry1</code>
+      and whose value is the string <code>ball</code>.</P>
+  </LI>
+  <LI CLASS="Numbered">
+    Check the contents to see the new entry:
+      <blockquote>
+        <p><strong>
+          <code>ls<br>
+          </code></strong><code>Region Entries:<br>
+          </code><code>entry1 -&gt; String: ball</code></p>
+      </blockquote>
+  </LI>
+  <LI CLASS="Numbered">
+    Invalidate the new entry in the local cache, then check the contents:
+      <blockquote>
+        <p><strong><code>inv -l entry1</code><br>
+		  <code>ls<br>
+          </code></strong><code>Region Entries:<br>
+          </code><code>entry1 -&gt; No value in cache.</code></p>
+      </blockquote>
+      <p>The value for the entry has been removed from the local cache.</p>
+  </LI>
+    <LI CLASS="Numbered">
+    Now try to get the entry from the cache server:
+      <blockquote>
+        <p><strong><code>get entry1</code></strong><code><br>
+entry1 -&gt; No value in cache.</code></p>
+      </blockquote>
+      <p>The entry cannot be retrieved from the cache server because the client <code>root</code> cache does not have an endpoint established with the cache server, so it did not propagate the entry to the server.</p>
+    </LI>
+<br>
+</OL>
+
+</DIV>
+<DIV>
+  <h2>Producing Data in a Distributed Region</h2>
+  <P>
+In this exercise you produce data that is distributed to the cache server.</P>
+</DIV>
+<DIV>
+<P><strong>
+In the cacherunner client</strong>:</P>
+
+<OL>
+<LI CLASS="Numbered">
+Go to the <code> listenerWriterLoader</code> region, then check the  contents:</LI>
+<blockquote>
+  <p><code><strong>
+    chrgn listenerWriterLoader</strong></code><br>
+	<strong><code>ls<br>
+    </code></strong><code>Region Entries:<br>
+    </blockquote>
+  <p>There are no entries in the client cache for the <code>listenerWriterLoader</code> region. However,  the <code>listenerWriterLoader</code> region on the cache server was initialized with an <span class="Bulleted">entry named <code>entry1</code> that has a value of <code>1.0</code></span>.
+    </blockquote>
+</p>
+<li>
+  Retrieve <code>entry1</code> from the cache server:
+  <blockquote>
+      <p><strong>
+        <code>get entry1<br>
+        </code></strong><code>entry1 -&gt; String: 1.0</code></p>
+      </blockquote>
+</li>
+<li>Create a new entry in the client cache, then check the cache contents:
+  <blockquote>
+    <p><strong> <code>put entry2 bat str</code></strong><br>
+	<strong><code>ls<br>
+        </code></strong><code>Region Entries:<br>
+		</code><code>entry2 -&gt; String: bat<br>
+		</code><code>entry1 -&gt; String: 1.0</code></p>
+  </blockquote>
+  </li>
+<li>
+  Invalidate <code>entry2</code>, then check the contents:
+  <blockquote>
+      <p><strong><code>inv -l entry2</code><br>
+		<code>ls<br>
+        </code></strong><code>Region Entries:</code><code><br>
+		</code><code>entry2 -&gt; No value in cache.<br>
+		</code><code>entry1 -&gt; String: 1.0</code></p>
+      </blockquote>
+</li>
+<li>
+  Now get <code>entry2</code> from the cache server and check the contents:
+  <blockquote>
+      <p><strong><code>get entry2</code><br>
+		<code>ls<br>
+        </code></strong><code>Region Entries:</code><code><br>
+		</code><code>entry2 -&gt; String: bat<br>
+		</code><code>entry1 -&gt; String: 1.0</code></p>
+      </blockquote>
+<p>The entry in the client cache is updated with the value stored in the cache server.</p>
+</li>
+  <li>
+  Keep the <code>cacheRunner</code> application and the cache server running for the next exercise.</li>
+  </OL>
+
+</DIV>
+<br>
+<br>
+<DIV>
+  <h2>
+    Registering Interest Using Regular Expressions</h2>
+  <P>
+In this exercise you learn how client regions can register interest for cache server entry keys through the use of regular expressions. By registering interest, a client receives event notifications from the cache server for changes affecting the keys whose strings match the expression.</P>
+  <blockquote>
+    <p><em>Note that regular expressions only work with string keys.</em></p>
+  </blockquote>
+</DIV>
+<DIV>
+<P><strong>
+In the first cacherunner client</strong>:</P>
+
+<ol>
+  <li>
+    Make sure that the <code>cacheRunner</code> client session you used in the previous exercises is still set to the <code> listenerWriterLoader</code> region. If it isn't, then set it to that region:  </li>
+  <blockquote>
+    <p><code><strong>
+    chrgn listenerWriterLoader</strong></code></p>
+  </blockquote>
+    <li>Put some entries in the client region:
+      <blockquote>
+      <p><strong> <code><strong>put key-1 val1<br>
+      put key-2 val2<br>
+        put key-3 val3<br>
+        put key-4 val4
+</strong></code></strong></p>
+    </blockquote>
+    </li>
+</ol>
+
+<p><strong>
+  In the second cacherunner client</strong>:</p>
+<OL>
+  <li>
+    Display the second <code>cacheRunner</code> client session that you created at the start of this example, then go to its <code>listenerWriterLoader</code> region:
+    <blockquote>
+      <p><strong>
+        <code><strong>chrgn listenerWriterLoader</strong></code></strong></p>
+    </blockquote>
+  </li>
+  
+  <li>Get the four entries that were <code>put</code> in the first client:
+    <blockquote>
+      <p><strong>
+        <code>get key-1</code></strong><br>
+		<code>key-1 -> Bytes: val1</code><br>
+        <strong><code>get key-2</code></strong><br>
+		<code>key-2 -> Bytes: val2</code><br>
+        <strong><code>get key-3</code></strong><br>
+		<code>key-3 -> Bytes: val3</code><br>
+        <strong><code>get key-4</code></strong><br>
+		<code>key-4 -> Bytes: val4</code></p>
+    </blockquote>
+  </li>
+  <li>
+    Register interest using a regular expression:
+      <blockquote>
+      <p><strong>
+        <code>regex key-[2-3]</code></strong></p>
+    </blockquote>
+	<p> This registers interest in <code>key-2</code> and <code>key-3</code>.</p>
+  </li>
+  </OL>
+  <p><strong>
+  In the first client</strong>:</p>
+  <blockquote>
+    <p>
+      Change the values for <code>key-2</code> and <code>key-3</code>:
+    </p>
+  </blockquote>
+  <OL>
+    <blockquote>
+      <p><strong><code>put key-2 newVal2</code><br>
+      <code>put key-3 newVal3</code></strong></p>
+    </blockquote>
+  </OL>
+  <p><strong>
+  In the second client</strong>:  </p>
+  <ol>
+      <li>
+        Check the contents of the region:    </li>
+    <blockquote><p><strong><code>ls<br>
+      </code></strong><code>Region Entries:</code><code><br>
+        </code><code>key-3 -&gt; Bytes: newVal3<br>
+        </code><code>key-1 -&gt; Bytes: val1<br>
+        </code><code>key-4 -&gt; Bytes: val4<br>
+        </code><code>key-2 -&gt; Bytes: newVal2</code></p>
+    </blockquote>
+
+      <p>The updated values for <code>key-2</code> and <code>key-3</code> are listed.</p>
+
+      <li>Unregister interest for <code>key-2</code> and <code>key-3</code>:
+        <blockquote>
+          <p><strong> <code><strong>unregex key-[2-3] </strong></code></strong></p>
+        </blockquote>
+    </li>
+  </OL>
+    <p><strong>
+  In the first client</strong>:</p>
+    <blockquote>
+      <p>Change the values for <code>key-2</code> and <code>key-3</code>:    </p>
+    </blockquote>
+  <ol>
+    <blockquote>
+      <p><strong>
+      <code>put key-2 123<br>
+      put key-3 456 </code></strong></p>
+    </blockquote>
+  </OL>
+    <p><strong>
+  In the second client</strong>:  </p>
+    <blockquote>
+      <p>
+        Check the contents of the region:</p>
+      <blockquote>
+        <p><strong><code>ls<br>
+        </code></strong><code>Region Entries:</code><code><br>
+        </code><code>key-3 -&gt; Bytes: newVal3<br>
+        </code><code>key-1 -&gt; Bytes: val1<br>
+        </code><code>key-4 -&gt; Bytes: val4<br>
+        </code><code>key-2 -&gt; Bytes: newVal2</code></p>
+      </blockquote>
+      <p>The old values for <code>key-2</code> and <code>key-3</code> are listed because no interest is registered for them, so no update event notifications were received from the cache server.</p>
+    </blockquote>
+
+    <p>Keep both <code>cacheRunner</code> applications and the cache server running for the next exercise.</p>
+<br>
+</DIV>
+
+<DIV>
+  <h2>
+    <a name="cache_listener" id="cache_listener"></a>Adding a Cache Listener to an Existing Region</h2>
+  <P>
+In this exercise you add a cache listener to an existing region, then observe how the cache listener reports events that occur in the cache. A cache listener reports entry and region events both before and after they occur. Entry events are <code>create</code>, <code>update</code>, <code>invalidate</code>, and <code>destroy</code>. Region events are <code>clear</code>, <code>create</code>, <code>invalidate</code>, and <code>destroy</code>. A cache listener only receives callbacks for events occurring in the local cache. The local cache listener is not invoked when an entry is destroyed in a remote cache. However, if that destroy is distributed then the subsequent destroy in the local cache causes the cache listener's <code>afterDestroy</code> method to be called.</P>
+  <P>Some region attributes are immutable after they are established. Others, such as a cache listener, can be modified after the region is created. To see how a cache listener works, complete these steps:</P>
+
+</DIV>
+
+<DIV>
+<P><strong>
+In both cacherunner clients</strong>:</P>
+
+<blockquote>
+  <p>
+    Make sure that the two <code>cacheRunner</code> client sessions you used in the previous exercise are still set to the <code> listenerWriterLoader</code> region. If they aren't, then set both of them to that region:  </p>
+</blockquote>
+<ol>
+  <blockquote>
+    <p><code><strong>
+      chrgn listenerWriterLoader</strong></code></p>
+    </blockquote>
+</ol>
+<p><strong>In the first cacherunner client</strong></p>
+<blockquote>
+  <p>Put some entries in the cache:  </p>
+</blockquote>
+<ol>
+  <blockquote>
+      <p><strong> <code><strong>put key-1 val1<br>
+        put key-2 val2<br>
+        put key-3 val3<br>
+        put key-4 val4
+      </strong></code></strong></p>
+    </blockquote>
+</ol>
+<p><strong>
+  In the second cacherunner client</strong>:</p>
+<OL>
+  <li>Retrieve the four entries that were <code>put</code> in the first client:
+    <blockquote>
+      <p><strong>
+        <code>get key-1</code></strong><br>
+		<code>key-1 -> Bytes: val1</code><br>
+        <strong><code>get key-2</code></strong><br>
+		<code>key-2 -> Bytes: newVal2</code><br>
+        <strong><code>get key-3</code></strong><br>
+		<code>key-3 -> Bytes: newVal3</code><br>
+        <strong><code>get key-4</code></strong><br>
+		<code>key-4 -> Bytes: val4</code></p>
+    </blockquote>
+    </li>
+  
+  <li>Register interest for two of the keys:
+    <blockquote>
+      <p><strong> <code><strong>reg key-1 key-2</strong></code></strong></p>
+    </blockquote>
+    </li>
+  <li>Add a cache listener to the existing client region:
+    <blockquote>
+      <p><strong>
+        <code>set listener        </code></strong></p>
+    </blockquote>
+  </li>
+  <li>
+    Create a new entry in the local cache:
+      <blockquote>
+      <p><strong><code>put key-5 val-5 </code></strong></p>
+    </blockquote>
+	<p> The cache listener reports the events that occur:</p>
+  </li>
+  <blockquote>
+    <code>TestCacheListener.afterCreate :<br>
+    Print Event:<br>
+    Cache Event Origin Local<br>
+    Region is : /listenerWriterLoader<br>
+    Key is : key-5<br>
+    Old value is : NULL<br>
+    New value is : val-5</code></blockquote>
+</OL>
+  <p><strong>
+  In the first client</strong>:</p>
+  <blockquote>
+    <p>
+      Change the values for <code>key-1</code> and <code>key-2</code>:    </p>
+  </blockquote>
+  <OL>
+    <blockquote>
+      <p><strong><code>put key-1 newVal1</code><br>
+      <code>put key-2 newVal2</code></strong></p>
+    </blockquote>
+  </OL>
+  <blockquote>
+    <p>Look at the second client. The cache listener reports the events that occur:</p>
+    <blockquote><code>TestCacheListener.afterUpdate :<br>
+      Print Event:<br>
+      Cache Event Origin Local<br>
+      Region is : /listenerWriterLoader<br>
+      Key is : key-1<br>
+      Old value is : NULL<br>
+      New value is : newVal1<br>
+      TestCacheListener.afterUpdate :<br>
+      Print Event:<br>
+      Cache Event Origin Local<br>
+      Region is : /listenerWriterLoader<br>
+      Key is : key-2<br>
+      Old value is : NULL<br>
+    New value is : newVal2</code></blockquote>
+  </blockquote>
+  <p><strong>
+  In the second client</strong>:  </p>
+  <ol>
+      <li>
+        Remove the cache listener from the client region by setting the listener value to <code>null</code>:    </li>
+      <blockquote>
+        <p><strong><code>set listener null</code></strong></p>
+    </blockquote>
+
+    <li>Create a new entry in the client cache:
+      <blockquote>
+        <p><strong><code>put key-6 val-6</code></strong></p>
+      </blockquote>
+      <p>No event reporting occurs because the cache listener was removed from the region. </p>
+    </li>
+  </OL>
+    <p><strong>
+  In the first client</strong>:</p>
+    <blockquote>
+      <p>Change the values for  <code>key-2</code> and <code>key-3</code>:    </p>
+    </blockquote>
+  <ol>
+    <blockquote>
+      <p><strong>
+      <code>put key-2 123<br>
+      put key-3 456</code></strong></p>
+    </blockquote>
+  </OL>
+    <blockquote>
+      <p>No event reporting occurs because the cache listener was removed.</p>
+    </blockquote>
+    <p><strong>
+  Ending the client sessions</strong>:  </p>
+    <blockquote>
+      <p>
+        You need to keep one of the <code>cacheRunner</code> sessions open for the next exercise, but the second session can be closed. Follow these steps: </p>
+  </blockquote>
+    <ol>
+      <li>End the first <code>cacheRunner</code> application, but leave the session open:</li>
+
+    <blockquote>
+      <p><strong> <code>exit</code></strong></p>
+    </blockquote>
+
+      <li>End the second <code>cacheRunner</code> application:      </li>
+
+    <blockquote>
+      <p><strong><code>exit</code></strong></p>
+    </blockquote>
+
+      <li>Close the second <code>cacheRunner</code> session:</li>
+
+    <blockquote>
+      <p><strong><code>exit</code></strong></p>
+    </blockquote>
+
+      <li>Keep the cache server running for the next exercise.</li>
+    </ol>
+
+</DIV>
+<br>
+<DIV>
+  <h2>
+    <a name="cacheless_region" id="cacheless_region"></a>Using a Cacheless Region</h2>
+  <P>
+In this exercise you learn about applications that do not perform local caching. An application can receive all events on a region without storing the data that comes with the events. Consequently, the application can pass data through to other receivers without the overhead of caching. This configuration lets you separate event processing from data management.</P>
+<P>
+To see how a cacheless region works, complete these steps:</P>
+</DIV>
+<DIV>
+  <OL>
+    <LI CLASS="Numbered">
+In the open <code>cacheRunner</code>  session, start <code>cacheRunner</code>
+ with <code><a href="./tcr_cacheless.xml" target="_blank">tcr_cacheless.xml</a></code> as its initialization file:
+ <blockquote>
+       <p><strong><code>cacheRunner tcr_cacheless.xml</code></strong></p>
+   </blockquote>
+<LI CLASS="Numbered">Go to the <code> listenerWriterLoader</code> region, then check its contents:</LI>
+<blockquote>
+  <p><code><strong> chrgn listenerWriterLoader</strong></code><br>
+  <strong><code>ls<br>
+      </code></strong><code>Region Entries:</code><code><br>
+</blockquote>
+<li>
+  <p> There are no entries in the client cache for the <code>listenerWriterLoader</code> region. However, remember that the <code>listenerWriterLoader</code> region on the cache server contains an <span class="Bulleted">entry named <code>entry1</code> that has a value of <code>1.0</code></span>.</p>
+</li>
+
+  <LI CLASS="Numbered">Retrieve <code>entry1</code> from the cache server:
+    <blockquote>
+      <p><strong> <code>get entry1<br>
+      </code></strong><code>entry1 -&gt; String: 1.0</code></p>
+    </blockquote>
+	<p>The local cache acknowledges that the entry was received.</p>
+  </LI>
+  <LI CLASS="Numbered">
+    Check the contents again:
+      <blockquote>
+      <p><strong>
+        <code>ls<br>
+          </code></strong><code>Region Entries:</code><code><br>
+      </blockquote>
+	    <p> The entry is not retained in the client cache<span class="Bulleted"><code>.</code></span></p>
+  </LI>
+    <li>
+      <p>Close the <code>cacheRunner</code> application:</p>
+      <blockquote>
+        <p><strong> <code>exit</code></strong></p>
+      </blockquote>
+    </li>
+    <li>
+      <p>Close the <code>cacheRunner</code> session:</p>
+      <blockquote>
+        <p><strong> <code>exit</code></strong></p>
+      </blockquote>
+    </li>
+    <li>
+      <p>Stop the cache server:</p>
+      <blockquote>
+        <p><code><strong>cacheserver stop</strong></code></p>
+      </blockquote>
+    </li>
+    <LI CLASS="Numbered"> Close the cache server session:
+      <blockquote>
+          <p> <code><strong>exit</strong></code></p>
+      </blockquote>
+    </LI>
+  </OL>
+  <P><a name="part2" id="part2"></a>
+</DIV>
+<br>
+
+<DIV>
+<hr size="3" noshade>
+<h1>Part 2: Modifying the Cache with Security Configured </h1>
+<hr size="3" noshade>
+</DIV>
+
+ <DIV>
+   <h2>Running cacheRunner to Authenticate Credentials and Authorize Operations </h2>
+   <P>In this example, <code>cacheRunner</code> and the cache server are configured so the <code>cacheRunner</code> client must submit credentials to the server for authentication before the client can connect. The <code>cacheRunner</code> example is also configured so that cache operations are either accepted or denied based on defined roles. The authentication and authorization configurations are made using <code>gemfire.properties</code> for the server and <code>gfcpp.properties</code> for the client.</P>
+   <P>
+For more information about GemFire security, see <a href="#security-templates">Sample Security Implementations in GemFire</a>.</P>
+   <P>The lines you type are shown in a <code> <strong>boldface fixed</strong></code> font. System output is shown in a <code>regular fixed</code> font.</P>
+   <br>
+ </DIV>
+
+<DIV>
+  <h2>
+    
+    <a name="configuring_security" id="configuring_security"></a>Configuring the Environment</h2>
+  <P>
+To demonstrate security, this example requires the configuration of specific security plugin modules. To enable the PKCS third-party security plugin implementation, OpenSSL also needs to be configured. See related sections in this document for details.</P>
+</DIV>
+
+ <DIV>
+<ol>
+  <li><em>For Linux and Solaris:</em> Start a terminal session from the GemFire product installation directory, then configure your environment settings by following the steps in   <code>examples/EnvSetup.html</code>.<br> 
+    <br>
+      <em>For Windows:</em> Run the Visual Studio 2005 Command Prompt to create a terminal session with the necessary preset compiler environment configurations. 
+    Change to the GemFire product installation directory,  then configure your environment settings by following the steps in   <code>examples/EnvSetup.html</code>.<br>
+    <br>
+    <em>See the environment configuration list below for system-specific instructions for the following steps.</em><br>
+  <br>
+  <li>Install OpenSSL (optional):<br>
+      <p> To enable authentication in GemFire, the security plugin needs to be compiled (named <code>securityImpl.dll</code> for Windows and <code>libsecurityImpl.so</code> for Solaris or Linux). The security plugin <em>optionally</em> depends on OpenSSL for its PKCS sample template, so OpenSSL needs to be compiled or installed first.<br>
+          <br>
+        For Linux and Solaris, you can download the latest <a href="http://www.openssl.org/source/" target="_blank">tarball archive</a> for OpenSSL. For Windows users, you can get the OpenSSL installer at <a href="http://www.openssl.org/related/binaries.html" target="_blank">www.openssl.org/related/binaries.html</a>.
+      <blockquote><code> </code>
+          <p><em>To compile OpenSSL (Linux and Solaris):</em></p>
+        <blockquote>
+            <p>Copy the downloaded OpenSSL tarball to your appropriate <code>Linux</code> or <code>SunOS</code> folder at <code>NativeClient_InstallDir/templates/security/openssl</code>, then execute <code>buildit.sh</code> from the shell.</p>
+        </blockquote>
+        <p><em>To install OpenSSL (Windows):</em></p>
+        <blockquote>
+            <p>Run the downloaded OpenSSL installer and accept the default installation path (<code>C:\OpenSSL</code>). </p>
+        </blockquote>
+      </blockquote>
+  <li>Set the <code>JAVA_HOME</code> and <code>GF_JAVA_HOME</code> environment variables to your installed JRE or JDK. See the installation information in the <em>GemFire User's Guide</em> for the versions of Java that are compatible with GemFire. The <code>JAVA_HOME</code> setting is for your applications, and <code>GF_JAVA_HOME</code> is for the GemFire scripts.  You must have a compatible JRE or JDK installed  and you must set <code>JAVA_HOME</code> and <code>GF_JAVA_HOME</code> to point to it. See the Sun Java web site at <a href="http://java.sun.com" target="_blank">http://java.sun.com</a> for the latest Java version for your operating system. <br>
+      <br>
+  <li>Add <code>$JAVA_HOME/bin</code> to the start of your <code>PATH</code>.<br>
+    <br>
+  <li>Set the <code>GFCPP</code> environment variable to the full path to <code>NativeClient_InstallDir</code>.<br>
+    <br>
+  <li>Set the <code>OPENSSL</code> environment variable. For Linux and Solaris, point it to the parent folder for the OpenSSL binaries created from the tarball. For Windows, if you accept the default installation path in step 2, the command is <code>set OPENSSL=C:\OpenSSL</code>. <br>
+  <br>
+  <li><em>For Solaris and Linux only</em>: <br>
+    Set the <code>LD_LIBRARY_PATH</code> environment variable to point to the <code>NativeClient_InstallDir/lib</code> directory and <code>$OPENSSL/lib</code> directory.<br>
+  <br>
+  <em>For Windows only</em>: <br>
+    Set the <code>PATH</code> environment variable to point to the <code>NativeClient_InstallDir\bin</code> directory and <code>%OPENSSL%\bin</code> directory.<br>
+    <br>
+  <li>Compile the security plugin by executing the <code>buildit</code> script in the <code>NativeClient_InstallDir/templates/security</code> directory. This produces <code>securityImpl.dll</code> on Windows and <code>libsecurityImpl.so</code> on Solaris and Linux. <br>
+   <br> 
+    <li>Set the <code>CLASSPATH</code> environment variable to include the path to <code>gfSecurityImpl.jar</code> in the GemFire <code>lib</code> directory.
+</ol>
+<p><i>The following environment configuration list is a summary of the commands described in steps 1 through 9. Optionally, you need to configure the <code>OpenSSL</code> dependency first if PKCS is enabled for the GemFire security plugin. Refer to the <a href="#security-templates-pkcs">Sample Security Implementations in GemFire - PKCS Authentication</a> topic for additional details and a command list.</i></p>
+<p><strong>Bourne and Korn shells (sh, ksh, bash)</strong></p>
+<blockquote>
+  <p>    <code>% <strong>cd GemFireInstallDirectory </strong><strong><br>
+</strong>% <strong>GEMFIRE=&lt;full path to the GemFire directory&gt;</strong><strong><br>
+</strong>% <strong>JAVA_HOME=&lt;installed JRE PATH&gt;; export JAVA_HOME</strong><br>
+% <strong>GF_JAVA_HOME=$JAVA_HOME; export GF_JAVA_HOME</strong><br>
+% <strong>PATH=$JAVA_HOME/bin:$PATH; export PATH</strong><br>
+    % <strong>GFCPP=&lt;full path to NativeClient_InstallDir&gt;; export GFCPP</strong><br>
+    % <strong>OPENSSL=&lt;parent folder for OpenSSL binaries&gt;; export OPENSSL</strong><br>
+    % <strong>LD_LIBRARY_PATH=$GFCPP/lib</strong><br>
+    %<strong> LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPENSSL/lib<br>
+    </strong>%<strong> </strong><strong>export LD_LIBRARY_PATH</strong><br>
+    % <strong>CLASSPATH=$GEMFIRE/lib/gfSecurityImpl.jar:$CLASSPATH</strong></code></p>
+</blockquote>
+<p><strong>Windows Command shell (Using the Visual Studio 2005 Command Prompt) </strong></p>
+<blockquote>
+  <p><code>&gt; <strong>cd GemFireInstallDirectory</strong><br>
+&gt; <strong>set GEMFIRE=&lt;full path to the GemFire directory&gt;</strong><br>
+&gt; <strong>set JAVA_HOME=&lt;installed JRE PATH&gt;</strong><br>
+&gt; <strong>set GF_JAVA_HOME=%JAVA_HOME%</strong><br>
+&gt; <strong>set GFCPP=&lt;full path to NativeClient_InstallDir</strong>&gt;<br>
+&gt; <strong>set OPENSSL=C:\OpenSSL</strong><br>
+&gt; <strong>set PATH=%JAVA_HOME%\bin;%GFCPP%\bin;%OPENSSL%\bin;%PATH%</strong><br>
+&gt; <strong>set CLASSPATH=%GEMFIRE%\lib\gfSecurityImpl.jar;%CLASSPATH%</strong></code></p>
+</blockquote>
+<br>
+</DIV>
+
+ <DIV>
+   <h2>
+     <a name="starting_application_processes_secured" id="starting_application_processes_secured"></a>Starting the Cache Server</h2>
+   <P>
+To start the cache server with authentication enabled, complete the following steps:</P>
+</DIV>
+
+<DIV>
+<OL>
+<LI CLASS="Numbered-1st">
+<p>Configure the session environment according to the steps listed in <a href="#configuring_security">Configuring the Environment</a>.</p>
+</LI>
+<LI CLASS="Numbered-1st">
+<p>Place a copy of server configuration file <code>gemfire.properties</code> in the <code>NativeClient_InstallDir/SampleCode\examples\cacheRunner</code> directory. You can copy <code>gemfire.properties</code> from the <code>%GEMFIRE%\defaultConfigs</code> directory. </p>
+</LI>
+<LI CLASS="Numbered">
+Go to the <code>cacheRunner</code>
+ directory:<br>
+    <br>
+	<blockquote>
+    <strong><code>cd NativeClient_InstallDir/SampleCode\examples\cacheRunner</code></strong></blockquote>
+    <LI CLASS="Numbered">Modify <code>gemfire.properties</code> with the following security property entries. You can use any text editor that saves the file as plain text.
+      <blockquote><code>security-<strong>authz-xml-uri</strong>=<strong>authz-dummy.xml</strong></code> (modify <code>security-=</code> to produce this property name and setting) <br>
+    <code>security-client-authenticator=<strong>templates.security.DummyAuthenticator.create</strong></code><br>
+    <code>security-client-accessor=<strong>templates.security.XmlAuthorization.create</strong></code>	</blockquote>
+	<LI CLASS="Numbered">
+Start the cache server, using the <code>cacherunner.xml</code> file to configure its cache:
+<blockquote>
+      <p><strong><code>cacheserver start cache-xml-file=cacherunner.xml</code></strong></p>
+      </blockquote>
+ <p>The cache server is initialized using the region settings in the <code><a href="./cacherunner.xml" target="_blank">cacherunner.xml</a></code> file and the security settings in the <code>gemfire.properties</code> file. A message similar to the following appears, indicating that the cache server is running:</p>
+	</LI>
+ <blockquote>
+   <p>
+     <code>Cacheserver pid: 2120 status: running</code></p>
+   </blockquote>
+ </OL>
+
+<p>See the <a href="#security-templates">Sample Security Implementations in GemFire</a> section for additional server configuration options for <code>cacheRunner</code>.<br>
+    <br>
+    <br>
+</p>
+</DIV>
+
+<DIV>
+  <h2>
+    <a name="starting_application_processes_secured" id="starting_application_processes_secured"></a>Starting CacheRunner</h2>
+  <P><strong>
+With No Credentials</strong>:</P>
+  <P>
+Follow these steps to start <code>cacheRunner</code> so no client credentials are submitted to the cache server. The credentials are in the form of a username and password, and are specified in a local <code>gfcpp.properties</code> file that configures <code>cacheRunner</code>. </P>
+</DIV>
+
+ <DIV>
+<OL>
+<LI CLASS="Numbered-1st">
+<p>Create a <code>cacheRunner</code> session from the GemFire installation directory.</p>
+</LI>
+ <LI CLASS="Numbered">
+ <p><em>For Solaris and Linux only</em>:<br>
+   Configure the session environment according to the steps listed in <a href="#configuring_security">Configuring the Environment for Enabling Security</a>.</p>
+ <LI CLASS="Numbered">
+   <p>Go to the <code> cacheRunner</code> directory:</p>
+ </LI>
+ <blockquote>
+   <p><strong>
+     <code>cd NativeClient_InstallDir/SampleCode\examples\cacheRunner</code></strong></p>
+   </blockquote>
+ <LI CLASS="Numbered">
+   <p>Copy the <code> gfcpp.properties </code> file from the native client <code>defaultSystem</code> directory to the <code>\cacheRunner</code> directory. Open the file in a text editor and note that all property entries, including security-related ones, are commented out. Close the file without making any changes.</p>
+ </LI>
+ <LI CLASS="Numbered">
+Start the <code>cacheRunner</code>
+ application in the session, specifying <code>tcr_cache.xml</code>.
+ <blockquote>
+       <p><strong><code>cacheRunner tcr_cache.xml</code></strong></p>
+   </blockquote>
+   <p>The following authentication error occurs and the client is prevented from connecting to the cache server. Commented-out entries in <code>gfcpp.properties</code> are ignored, so no credentials are supplied by the client.    
+ </LI>
+ <blockquote>
+   <p><code>[warning 2008/03/27 23:30:55.324204 IST trout:25825 3076407424] Authentication required in handshake with endpoint[localhost:50505]: No security-* properties are provided
+     Exception in CacheRunner::connectDistributedSystem [ThinClientDistributionManager::init:no authentication provided]</code><br>
+  </p>
+ </blockquote>
+ </OL>
+<P><strong>
+With Invalid Credentials</strong>:</P>
+ <DIV>
+  <P>
+Start <code>cacheRunner</code> again, but this time specify invalid credentials.</P>
+  <OL>
+<LI CLASS="Numbered">
+ <p>Uncomment the <code>security-username=root</code> property in <code>gfcpp.properties</code> and change its value so <code>cacheRunner</code> submits an invalid user name:
+ <blockquote>
+   <p><code><strong>security-username=invalidUsr
+   </strong></code></p>
+   </blockquote>
+<LI CLASS="Numbered">
+ <p>Start <code>cacheRunner</code>. The invalid user name generates an authentication error and the client is prevented from connecting to the cache server.
+ <blockquote>
+       <p><strong><code>cacheRunner tcr_cache.xml</code></strong><br><br>
+       <code> [warning 2008/03/27 23:29:20.425783 IST trout:25245 3076407424] Authentication failed in handshake with endpoint[localhost:50505]: DummyAuthenticator: Invalid user name [invalidUsr], password supplied.
+Exception in CacheRunner::connectDistributedSystem [ThinClientDistributionManager::init:authentication failed]</code></p>
+ </blockquote>
+</OL>
+ </DIV>
+
+<P><strong>
+With Valid Credentials</strong>:</P>
+ <DIV>
+  <P>
+In this exercise you edit <code>gfcpp.properties</code> again to include valid client credentials:</P>
+  <OL><LI CLASS="Numbered">
+    <p>Open the  <code> gfcpp.properties</code> file  and uncomment all <code> security-* </code> properties. Change the following commands as shown below, noting any platform-specific differences. </p>
+    </LI>
+    <blockquote>
+      <p> &lt;<em>Windows only</em>&gt;<strong><code>security-client-auth-library=securityImpl<br>
+        </code></strong>&lt;<em>Solaris and Linux only</em>&gt;<strong><code>security-client-auth-library=libsecurityImpl<br>
+          security-client-auth-factory=createUserPasswordAuthInitInstance<br>
+          security-username=writer1<br>
+          security-password=writer1<br>
+        </code></strong></p>
+    </blockquote>
+    <P>Values of the library and factory methods are built into the security plugin, and are set according to the cache server properties set in <code>gemfire.properties</code>.<br>
+      Refer to the <a href="#security-templates">Sample Security Implementations in GemFire</a> section for other possible property values. </P>
+    <LI CLASS="Numbered"> Start <code>cacheRunner</code>, specifying <code>tcr_cache.xml</code>:
+      <blockquote>
+          <p><strong><code>cacheRunner tcr_cache.xml</code></strong></p>
+      </blockquote>
+      <P>The client credentials are valid, so <code>cacheRunner</code>  successfully connects to the cache server. The application creates root and listenerWriterLoader regions, then the <code> /root</code> region prompt appears.    </P>
+    </LI>
+    <LI CLASS="Numbered">Leave the client running for the next Authorizing Operations exercise. 
+  </OL>
+
+ </DIV>
+
+</DIV>
+
+
+<DIV>
+  <h2>Authorizing Operations</h2>
+  <P>
+In this exercise you do several cache operations, then observe which operations are denied or allowed based on the submitted credentials.</P>
+</DIV>
+<DIV>
+<P><strong>
+In the running cacherunner client</strong>:  </P>
+
+<OL>
+  <LI CLASS="Numbered">Go to the <code> listenerWriterLoader</code> region, then check the  contents:</LI>
+<blockquote>
+  <p><code><strong>
+    chrgn listenerWriterLoader</strong></code><br>
+	<strong><code>ls<br>
+    </code></strong><code>Region Entries:<br>
+    </blockquote>
+  <p>There are no entries in the local client cache for the <code>listenerWriterLoader</code> region. However,  the <code>listenerWriterLoader</code> region on the cache server was initialized with an <span class="Bulleted">entry named <code>entry1</code> that has a value of <code>1.0</code></span>.
+    </blockquote>
+</p>
+<li>
+  Get <code>entry1</code> from the cache server. An authorization error occurs.
+  <blockquote>
+      <p><strong>
+        <code>get entry1<br>
+        <br>
+        </code></strong><code>[error 2008/03/27 23:27:03.639666 IST trout:24282 3076411520] ThinClientRegion::getNoThrow_internal: An exception ( org.apache.geode.security.NotAuthorizedException: Not authorized to perform GET operation on region [/listenerWriterLoader] ) happened at remote site
+Entry not found</code></p>
+      </blockquote>
+<p>The entry from the cache server could not be obtained because the <code>get</code> operation is not authorized (the <code>writer1</code> user name supplied by the client has limited operation capabilities). See <a href="./authz-dummy.xml" target="_blank">authz-dummy.xml</a> for a description of the operation permissions granted to the <code>writer1</code> role. Refer to <a href="#security-templates">Sample Security Implementations in GemFire </a> for further details.</p>
+</li>
+<li>Create a new entry in the client cache that gets updated to the cache server. Check the cache contents:
+  <blockquote>
+    <p><strong> <code>put entry2 bat str</code></strong><br>
+	<strong><code>ls<br>
+        </code></strong><code>Region Entries:<br>
+		</code><code>entry2 -&gt; String: bat</code></p>
+  </blockquote>
+  </li>
+<li>
+  Destroy <code>entry2</code> in the client cache and check the contents:
+  <blockquote>
+      <p><strong><code>des -l entry2</code><br>
+		<code>ls<br>
+        </code></strong><code>Region Entries:</code></p>
+      </blockquote>
+</li>
+<li>
+  Get <code>entry2</code> from the cache server, then check the contents:
+  <blockquote>
+      <p><strong><code>get entry2<br>
+      </code></strong><br>
+		<code>[error 2008/03/27 23:27:03.639666 IST trout:24282 3076411520] ThinClientRegion::getNoThrow_internal: An exception ( org.apache.geode.security.NotAuthorizedException: Not authorized to perform GET operation on region [/listenerWriterLoader] ) happened at remote site
+Entry not found</code><br>
+<br><strong><code>ls<br>
+        </code></strong><code>Region Entries:</code></p>
+      </blockquote>
+<P>The entry from the cache server could not be obtained because the client <code>get</code> operation was not authorized. However, the <code>put</code> and <code>destroy</code> operations were allowed based on the supplied credentials. </P>
+</li>
+  <li>
+    <p>Close the <code>cacheRunner</code> application:</p>
+    <blockquote>
+      <p><strong> <code>exit</code></strong></p>
+    </blockquote>
+  </li>
+  <li>
+    <p>Close the <code>cacheRunner</code> session:</p>
+    <blockquote>
+      <p><strong> <code>exit</code></strong></p>
+    </blockquote>
+  </li>
+  <li>
+    <p>Stop the cache server:</p>
+    <blockquote>
+      <p><code><strong>cacheserver stop</strong></code></p>
+    </blockquote>
+  </li>
+  <LI CLASS="Numbered"> Close the cache server session:
+    <blockquote>
+        <p> <code><strong>exit</strong></code></p>
+    </blockquote>
+  </LI>
+    <LI CLASS="Numbered"> Delete the modified copies of <code>gemfire.properties</code> and <code>gfcpp.properties</code> from the <code>\cacheRunner</code> directory. This ensures that GemFire authentication and authorization is not enabled when you run the other parts of this example.</LI>
+  </OL>
+<a name="part3" id="part3"></a></DIV>
+<br>
+<DIV>
+<hr size="3" noshade>
+<h1>Part 3: Remote Querying</h1>
+<hr size="3" noshade>
+</DIV>
+
+ <DIV>
+   <h2>Running cacheRunner for Querying </h2>
+   <P>In this example, <code>cacheRunner</code> accepts query strings in input and runs them against the cached data stored on a cache server. The <code>cacheRunner</code> example uses a GemFire cache server configuration file, <code><a href="./csQueryPortfolios.xml" target="_blank">csQueryPortfolios.xml</a></code>. When the cache server starts, <code>csQueryPortfolios.xml</code> creates a <code>root</code> region on the server. It also creates a region named <code>Portfolios</code>, which is a <span class="Bulleted">region of stock portfolios whose keys are the portfolio ID</span>.</P>
+   <P>
+These procedures introduce a few of the querying commands. For information on others, enter <strong>
+ <code>help</code></strong>
+ or <strong>
+ <code>?</code></strong>
+ at the <code>cacheRunner</code> client session prompt.</P>
+   <P>In the procedures, the lines you type are shown in a <code> <strong>boldface fixed</strong></code> font. System output is shown in a <code>regular fixed</code> font.</P>
+<br>
+ </DIV>
+
+ <DIV>
+   <h2>
+     Starting the Cache Server</h2>
+   <P>
+To start the cache server, create a session from the GemFire installation directory and complete the following steps:</P>
+</DIV>
+
+<DIV>
+<OL>
+<LI CLASS="Numbered-1st">
+<p>Configure the session environment according to the steps listed in <a href="#configuring_environment">Configuring the Environment</a>.</p>
+</LI>
+<LI CLASS="Numbered-1st">
+  <p>Add the classes for <code>javaobject.jar</code> to your <code>CLASSPATH</code> by entering the following in a single line: </p>
+  	<p><strong> Windows:</strong></p>
+</LI>
+<blockquote>
+  <p><strong> <code>set CLASSPATH=&lt;full path to NativeClient_InstallDir/SampleCode&gt;\examples\cacheRunner\javaobject.jar;%CLASSPATH%</code></strong></p>
+</blockquote>
+
+  	<p><strong> Bourne and Korn shells (sh, ksh, bash):</strong></p>
+    <blockquote>
+  <p><strong> <code>CLASSPATH=&lt;path to NativeClient_InstallDir/SampleCode&gt;/examples/cacheRunner/javaobject.jar:$CLASSPATH; export CLASSPATH</code></strong></p>
+</blockquote>
+
+	  <p> The file <code>javaobject.jar</code> is required for registering the <code>portfolio</code> and <code>position</code> object on the cache server. </p>
+      <LI CLASS="Numbered">
+Go to the <code>cacheRunner</code>
+ directory, then start the cache server:
+ <blockquote>
+   <p><strong>
+     <code>cd NativeClient_InstallDir/SampleCode\examples\cacheRunner</code></strong></p>
+     <p><strong><code>cacheserver start cache-xml-file=csQueryPortfolios.xml</code></strong></p>
+   </blockquote>
+ <P>The <code>csQueryPortfolios.xml</code> file configures the server with a <code>root</code> and <code>Portfolios</code> regions with five portfolio objects. A message similar to the following appears, indicating that the cache server is running:</P>
+</LI>
+ <blockquote>
+   <p>
+     <code>Cacheserver pid: 2120 status: running</code></p>
+   </blockquote>
+  </OL>
+
+</DIV>
+<br>
+<DIV>
+  <h2>
+    <a name="starting_querying_processes" id="starting_querying_processes"></a>Starting the cacheRunner Client </h2>
+  <P>
+Follow these steps to start the <code>cacheRunner</code> client, using the <code>tcr_cacheless.xml</code> initialization file:</P>
+</DIV>
+
+ <DIV>
+<OL>
+<LI CLASS="Numbered-1st">
+<p>Create a session from the GemFire  installation directory.</p>
+</LI>
+ <LI CLASS="Numbered">
+ <p><em>For Solaris and Linux only</em>:<br>
+Configure the session environment according to the steps listed in <a href="#configuring_environment">Configuring the Environment</a>.</p>
+ <LI CLASS="Numbered">
+   <p>Go to the <code> cacheRunner</code> directory in the session</p>
+ </LI>
+ <blockquote>
+   <p><strong>
+     <code>cd NativeClient_InstallDir/SampleCode\examples\cacheRunner</code></strong></p>
+   </blockquote>
+
+<LI CLASS="Numbered">
+Start the <code> cacheRunner</code>
+ application, specifying <code>tcr_cacheless.xml</code>:
+ <blockquote>
+       <p><strong><code>cacheRunner tcr_cacheless.xml</code></strong></p>
+   </blockquote>
+ <P>The <code>cacheRunner</code> client is initialized using the region settings in the <code><a href="./tcr_cacheless.xml" target="_blank">tcr_cacheless.xml</a></code> file in the <code>cacheRunner</code> directory. The application creates <code>root</code>,<code>listenerWriterLoader</code> and <code>Portfolios</code> regions, then the <code> /root</code> region prompt appears. As you move from region to region, the  prompt includes a path to tell you where you are, such as  
+ <code>/Portfolios<EM CLASS="Code9">&gt;</EM></code>.</P>
+</LI>
+<LI CLASS="Numbered">In the <code>cacheRunner</code> client, go to the <code>Portfolios</code> 
+  region:
+    <blockquote>
+    <p><strong><code>
+      chrgn Portfolios</code></strong></p>
+     </blockquote>
+  </OL>
+
+</DIV>
+<br>
+<br>
+
+<DIV>
+  <h2>Executing Remote Queries</h2>
+  <P>
+In these exercises you invoke the <code>execute</code> method to submit several queries that are run on the cache server, then the results are returned to the local client cache.</P>
+</DIV>
+
+<DIV>
+<P><strong>
+In the cacherunner client</strong>:</P>
+
+<ol>
+  <li>
+    This query returns the status of the cache entries for the <code>/Portfolios</code> region on the cache server. Enter the following command:  </li>
+  <blockquote>
+    <p><code><strong>
+    exec select distinct ID, status from  /Portfolios</strong></code></p>
+  </blockquote>
+      <P>
+      This is the query output:</P>
+	        <blockquote>
+      <p> <code>Query results : Found 5 row<br>
+      Struct with 2 fields <br>
+        ID : 4 <br>
+        status : inactive<br>
+      Struct with 2 fields <br>
+        ID : 5 <br>
+        status : active<br>
+      Struct with 2 fields <br>
+        ID : 2 <br>
+        status : inactive<br>
+      Struct with 2 fields <br>
+        ID : 3<br>
+        status : active<br>
+      Struct with 2 fields <br>
+        ID : 1 <br>
+        status : active
+      </code></p>
+      </blockquote>
+      <li>Run a second query. 
+        This query returns the row IDs on the cache server:
+        <blockquote>
+      <p><strong> <code><strong>exec select distinct ID from /Portfolios</strong></code></strong></p>
+      <p><code>Query results : Found 5 row<br>
+      1
+      <br>
+      2
+      <br>
+      3
+      <br>
+      4
+      <br>
+		5
+      </code></p>
+        </blockquote>
+    </li>
+      <li>Run a third query. This query returns the object types for the <code>/Portfolios</code> region on the cache server:
+        <blockquote>
+          <p><strong>
+          <code><strong>exec select distinct ID, pkid, getType from /Portfolios where 1=1</strong></code></strong></p>
+          <p><code>Query results : Found 5 row<br>
+Struct with 3 fields <br>
+ID : 2</code><code><br>
+pkid : 2<br>
+getType : type2<br>
+Struct with 3 fields<br>
+ID : 1<br>
+pkid : 1<br>
+getType : type1<br>
+Struct with 3 fields<br>
+ID : 3<br>
+pkid : 3<br>
+getType : type3
+<br>
+Struct with 3 fields<br>
+ID : 5<br>
+pkid : 5<br>
+getType : type2
+<br>
+Struct with 3 fields<br>
+ID : 4<br>
+pkid : 4<br>
+getType : type1</code></p>
+        </blockquote>
+    </li>
+  </ol>
+</DIV>
+<br>
+<DIV>
+  <h2>Executing Region Query Shortcuts </h2>
+  <P>
+In these exercises you use region query shortcut  methods to submit queries to the cache server, then the results are returned to the local client cache. Query shortcuts take the query &quot;predicate&quot; as a parameter (the part after the <code>WHERE</code> clause), or they can take a normal full query. The three query shortcut methods are described below: </P>
+  <UL>
+    <LI CLASS="Bulleted"><code>query</code> &#151; Executes a query and returns the results. <code></code></LI>
+    <LI CLASS="Bulleted"><code> existsValue</code> &#151;Executes a query and returns <code>TRUE</code> or <code>FALSE</code> based on whether any results (rows) are obtained. </LI>
+    <LI CLASS="Bulleted"><code>selectValue</code> &#151;Executes a query and returns only a single result (row). If no results are obtained then it returns <code>NULL</code>. If more than one result (row) is obtained then a <code>QueryException</code> occurs. </LI>
+  </UL>
+</DIV>
+
+<DIV>
+<P><strong>
+In the cacherunner client</strong>:</P>
+
+<ol>
+  <li>
+    Run this <code>query</code> shortcut, which returns the <code>Portfolios</code> objects with an <code>ID</code> of <code>1</code>:  </li>
+  <blockquote>
+    <p><code><strong>
+    query ID=1</strong></code></p>
+  </blockquote>
+      <P>
+      Query result:</P>
+	        <blockquote>
+      <p> <code>query predicate is ID=1<br>
+      Query results : Found 1 row <br>
+        PortfolioObject: [ ID=1 status=active type=type1 pkid=1</code><br>
+        <code>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P1: NULL P2: NULL ]</code></p>
+    </blockquote>
+      <P>
+      The <code>query</code> shortcut takes the predicate string <code>ID=1</code>, constructs the full query statement, then executes the query.  </P>
+      <li>Run this <code>existsValue</code> shortcut. 
+        The query returns either <code>TRUE</code> or <code>FALSE</code>, depending on whether the result is obtained.
+        <blockquote>
+      <p><strong> <code><strong>existsvalue ID=1</strong></code></strong></p>
+	  </blockquote>
+      <P>
+      Query result:</P>
+	        <blockquote>
+      <p> <code>query predicate is ID=1<br>
+      Query result is TRUE 
+      </code></p>
+    </blockquote>
+    </li>
+      <li>Run this <code>selectValue</code> shortcut. The query returns the object types for the <code>/Portfolios</code> region on the cache server:
+        <blockquote>
+          <p><strong>
+          <code><strong>selectValue ID=2</strong></code></strong></p>
+        </blockquote>
+      <P>
+      Query result:</P>
+	        <blockquote>
+      <p> <code>query predicate is ID=2<br>
+      PortfolioObject: [ ID=2 status=inactive type=type2 pkid=2<br>  
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;P1: NULL P2: NULL ]</code></p>
+    </blockquote>
+    </li>
+      <li>Close the <code>cacheRunner</code> application:
+        <blockquote>
+          <p><strong> <code>exit</code></strong></p>
+        </blockquote>
+      </li>
+      <li>Close the <code>cacheRunner</code> session:
+        <blockquote>
+        <p><strong> <code>exit</code></strong></p>
+        </blockquote>
+      </li>
+      <li>Stop the cache server:
+        <blockquote>
+        <p><code><strong>cacheserver stop</strong></code></p>
+        </blockquote>
+    </li>
+      <li>Close the cache server session:
+        <blockquote>
+        <p> <code><strong>exit</strong></code></p>
+        </blockquote>
+      </li>
+</ol>
+<P><a name="part4" id="part4"></a></DIV>
+<br>
+
+<DIV>
+<hr size="3" noshade>
+<h1>Part 4: High Availability </h1>
+<hr size="3" noshade>
+</DIV>
+
+ <DIV>
+   <h2>Running cacheRunner for High Availability </h2>
+   <P>In this example, <code>cacheRunner</code> demonstrates server failover to highly available client queue backups by failing over to a secondary cache server when the primary server becomes unavailable. The secondary server continues to provide the latest entry updates to the client when the primary server fails. </P>
+   <P>In the procedures, the lines you type are shown in a <code> <strong>boldface fixed</strong></code> font. System output is shown in a <code>regular fixed</code> font.</P>
+<br>
+ </DIV>
+
+ <DIV>
+   <h2>
+     Starting the Primary and Secondary Cache Servers</h2>
+   <P>
+To start the primary and secondary cache servers, create a session and complete the following steps:</P>
+</DIV>
+
+<DIV>
+<OL>
+<LI CLASS="Numbered-1st">
+<p>Configure the session environment according to the steps listed in <a href="#configuring_environment">Configuring the Environment</a>.</p>
+</LI>
+<LI CLASS="Numbered">
+Go to the <code>cacheRunner</code>
+ directory:
+ <blockquote>
+   <p><strong>
+     <code>cd NativeClient_InstallDir/SampleCode\examples\cacheRunner</code></strong></p>
+     </blockquote>
+ </LI>
+<LI CLASS="Numbered">Start the first (primary) cache server by running this command:
+   <blockquote>
+     <p><strong>
+       <code>cacheserver start cache-xml-file=cacherunner.xml -dir=gfecs1</code></strong></p>
+      </blockquote>
+   <P>The <code>gfecs1</code> directory contains a copy of <code><a href="./cacherunner.xml" target="_blank">cacherunner.xml</a></code>, which specifies 50505 for the BridgeServer port for the primary cache server.</P>
+ </LI>
+<LI CLASS="Numbered">Start the second (secondary) cache server by running this command:
+   <blockquote>
+     <p><strong>
+       <code>cacheserver start cache-xml-file=cacherunner2.xml -dir=gfecs2</code></strong></p>
+      </blockquote>
+   <P>The <code>gfecs2</code> directory contains a copy of <code><a href="./cacherunner2.xml" target="_blank">cacherunner2.xml</a></code>, which specifies 50506 for the BridgeServer port for the secondary cache server.</P>
+ </LI>
+ </OL>
+</DIV>
+
+ <DIV>
+   <h2>
+     Starting the  cacheRunner Client</h2>
+   <P>
+To start the <code>cacheRunner</code> client, complete the following steps:</P>
+</DIV>
+
+ <DIV>
+<OL>
+<LI CLASS="Numbered-1st">
+<p>Create a session from the GemFire  installation directory.</p>
+</LI>
+ <LI CLASS="Numbered">
+ <p><em>For Solaris and Linux only</em>:<br>
+Configure the session environment according to the steps listed in <a href="#configuring_environment">Configuring the Environment</a>.</p>
+ <LI CLASS="Numbered">
+   <p>Go to the <code> cacheRunner</code> directory in the session</p>
+ </LI>
+ <blockquote>
+   <p><strong>
+     <code>cd NativeClient_InstallDir\SampleCode\examples\cacheRunner</code></strong></p>
+   </blockquote>
+
+<LI CLASS="Numbered">
+Start the <code> cacheRunner</code>
+ client, specifying <code>tcr_hacache.xml</code>:
+ <blockquote>
+       <p><strong><code>cacheRunner tcr_hacache.xml</code></strong></p>
+   </blockquote>
+ <P>The <code>cacheRunner</code> client is initialized using the settings in <code><a href="./tcr_hacache.xml" target="_blank">tcr_hacache.xml</a></code> in the <code>cacheRunner</code> directory. The XML specifies two cache-level server endpoints that the client connects to (50505 for the primary, and 50506 for the secondary). The <code>redundancy-level=1</code> attribute specifies the number of redundant, or secondary, servers to maintain in addition to the primary server.<br>
+</P>
+  </LI>
+</OL>
+</DIV>
+
+<DIV>
+  <h2>Performing Cache Operations </h2>
+  <P>
+In these steps you produce data in the <code>cacheRunner</code> local client cache. The primary and secondary cache servers receive the updated values.</P>
+</DIV>
+<DIV>
+  <OL>
+  <LI CLASS="Numbered">In the <code>cacheRunner</code> client, go to the <code>listenerWriterLoader</code> region:
+    <blockquote>
+        <p><strong><code> chrgn listenerWriterLoader</code></strong>    </p>
+    </blockquote>
+  <LI CLASS="Numbered">Add an entry to the region:
+    <blockquote>
+      <p><strong>
+        <code>put entry1 ball str</code></strong></p>
+      </blockquote>
+    <P>
+      This line creates an entry whose key is <code> entry1</code>
+      and whose value is the string <code>ball</code>.</P>
+  </LI>
+  <LI CLASS="Numbered">
+    Check the contents to see the new entry:
+      <blockquote>
+        <p><strong>
+          <code>ls<br>
+          </code></strong><code>Region Entries:<br>
+          </code><code>entry1 -&gt; String: ball</code></p>
+      </blockquote>
+  </LI>
+  <LI CLASS="Numbered">
+    Invalidate the new entry in the local cache and then check the contents:
+      <blockquote>
+        <p><strong><code>inv -l entry1</code><br>
+		  <code>ls<br>
+          </code></strong><code>Region Entries:<br>
+          </code><code>entry1 -&gt; No value in cache.</code></p>
+      </blockquote>
+      <p>The value for the entry has been removed from the local cache.</p>
+  </LI>
+    <LI CLASS="Numbered">
+    Get the entry from the primary cache server:
+      <blockquote>
+        <p><strong><code>get entry1</code></strong><code><br>
+entry1 -&gt; String: ball</code></p>
+      </blockquote>
+    </LI>
+<br>
+</OL>
+
+</DIV>
+
+<DIV>
+  <h2>Initiating Server Failover </h2>
+  <P>
+In this procedure you stop and start the primary and secondary servers to initiate a server failover condition.</P>
+</DIV>
+<DIV>
+  <OL><LI CLASS="Numbered">Stop the primary cache server by running this command in the cache server session:
+    <blockquote>
+      <p><strong>
+        <code>cacheserver stop -dir=gfecs1</code></strong></p>
+      </blockquote>
+    <P>
+      The following  message displays in the server session:</P>
+  </LI>
+  <blockquote>
+   <p>
+     <code>CacheServer stopped.</code></p>
+   </blockquote>
+    <P>
+      A redundancy level warning continuously displays in the client session as a result of the stopped server:</P>
+  <blockquote>
+   <p>
+     <code>Requested redundancy level 1 is not satisfiable with 1 servers available</code></p>
+   </blockquote>
+     <LI CLASS="Numbered">
+    The secondary server is now the primary. In the client session, get an entry from the new primary server:
+      <blockquote>
+        <p><strong>
+          <code>get entry1</code></strong><code><br>
+        </code><code>entry1 -&gt; String: ball</code></p>
+      </blockquote>
+     <P>
+      The updated entry is retrieved from the server. </P>
+  </LI>
+     <li>Put a new entry in the client session, then get the entry from the server:
+       <blockquote>
+         <p><strong> <code>put entry2 bat str</code></strong><br>
+           <strong> <code>get entry2</code></strong><code><br>
+              </code><code>entry2 -&gt; String: bat</code>         </p>
+       </blockquote>
+     </li>
+     <li>Start the first cache server again by running this command in the cache server session:
+       <blockquote>
+           <p><strong> <code>cacheserver start cache-xml-file=cacherunner.xml -dir=gfecs1</code></strong></p>
+       </blockquote>
+     </li>
+     <li>In the cache server session,  stop the second (primary) cache server:
+       <blockquote>
+           <p><code><strong>cacheserver stop</strong></code><strong><code> -dir=gfecs2</code></strong></p>
+       </blockquote>
+     </li>
+     <li>In the client session, get the new entry from the new primary server:
+       <blockquote>
+        <p><strong> <code>get entry2</code></strong><code><br>
+              </code><code>entry2 -&gt; String: bat</code>           </p>
+       </blockquote>
+	       <P>
+      Both the primary and secondary servers maintain client cache updates in case a server failover occurs.</P>
+    </li>
+    <br>
+</OL>
+
+</DIV>
+<DIV>
+  <h2>Closing the Cache Server and Client </h2>
+  <ol>
+  <li>Close the <code>cacheRunner</code> application:
+      <blockquote>
+        <p><strong> <code>exit</code></strong></p>
+      </blockquote>
+    <li>Close the <code>cacheRunner</code> session:
+       <blockquote>
+           <p><strong> <code>exit</code></strong></p>
+       </blockquote>
+    </li>
+     <li>Stop the remaining cache server:
+       <blockquote>
+           <p><code><strong>cacheserver stop</strong></code><strong><code> -dir=gfecs1</code></strong></p>
+       </blockquote>
+    </li>
+     <li>Close the cache server session:
+       <blockquote>
+           <p> <code><strong>exit</strong></code></p>
+       </blockquote>
+     </li>
+    <br>
+</ol>
+</DIV>
+ <DIV>
+<H2> <a name="changing_params" id="changing_params">Changing System Parameters</a></H2>
+<P>
+This product ships configured to run with default system properties. If you need to run in a non-default configuration, GemFire also takes a system-level configuration file. Copy the <code>gfcpp.properties</code> file into your <code>cacheRunner</code> directory from the native client <code>defaultSystem</code> directory and edit it as needed. For example, to change the name of the <code>cache.xml</code> file, uncomment this line and change the file name:</P>
+<P>
+  <code>#cache-xml-file=cache.xml</code></P>
+<P>When you are finished with the example, delete the copied <code>gfcpp.properties</code> file from the <code>cacheRunner</code> directory so it can run with the default configuration. <br>
+  <br>
+</P>
+ </DIV>
+
+ <DIV>
+<H2><a name="security-templates" id="security-templates"> Sample Security Implementations in GemFire </a></H2>
+<P> There are two aspects to GemFire security:
+<ol>
+<li> <strong>Authentication</strong>, which verifies the validity of the client(s).<br>
+<li> <strong>Authorization</strong>, which evaluates the permission for GemFire operation(s) by the client(s). <br>
+</ol>
+<p> Authentication can be either dummy or LDAP server-based or PKCS-based, whereas authorization is xml-based only. For different authentication schemes, the corresponding authorization xml configigurations should be provided to the sample authorization module.<br>
+<br>
+<I>Source code for the client side sample implementations is available in <code>NativeClient_InstallDir/templates/security</code>. Corresponding server side samples can be found in <code>GemfireInstallDirectory/templates/security</code>.</I>
+</P>
+  <H3> Dummy Authentication </H3>
+   <P>The authentication scheme is based on a simple username and password. The server side authenticator is in package <code>templates.security.DummyAuthenticator.create</code>. The client side initializer for it is in the compiled <code>securityImpl.dll</code> library with a factory method name <code>createUserPasswordAuthInitInstance</code>.<br>
+   </P>
+
+<font size=2>
+<table border="1" align="top" cellspacing=4 cellpadding=4 width=1000 height=50 >
+ <caption align=left,top>
+ Mapping between Authentication credentials and Authorization roles & privileges
+ </caption>
+ <tr align=middle>
+  <th>Authentication User Name</th>
+  <th>Authorization Roles</th>
+  <th>Permission to the Roles</th>
+ </tr>
+ <tr align=middle>
+  <td valign=middle>root, admin, administrator</td>
+  <td valign=middle>reader, writer, cacheOps</td>
+  <td>
+    <table border=0 cellspacing=0 cellpadding=0>
+      <tr><td> <strong>reader</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: get, register_interest, unregister_interest, key_set, contains_key </td></tr>
+      <tr><td> <strong>writer</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: put, destroy, region_clear</td></tr>
+      <tr><td> <strong>cacheOps</strong>: query, execute_cq, stop_cq, close_cq, region_create, region_destroy</td></tr>
+    </table>
+  </td>
+ </tr>
+
+ <tr align=middle>
+  <td valign=middle>reader0, reader1, reader2</td>
+  <td valign=middle>reader</td>
+  <td>
+    <table border=0 cellspacing=0 cellpadding=0>
+      <tr><td> <strong>reader</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: get, register_interest, unregister_interest, key_set, contains_key </td></tr>
+    </table>
+  </td>
+ </tr>
+
+ <tr align=middle>
+  <td valign=middle>writer0, writer1, writer2</td>
+  <td valign=middle>writer</td>
+  <td>
+    <table border=0 cellspacing=0 cellpadding=0>
+      <tr><td> <strong>writer</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: put, destroy, region_clear</td></tr>
+    </table>
+  </td>
+ </tr>
+
+ <tr align=middle>
+  <td valign=middle>reader3, reader4</td>
+  <td valign=middle>queryRegions</td>
+  <td>
+    <table border=0 cellspacing=0 cellpadding=0>
+      <tr><td> <strong>queryRegions</strong>: query, execute_cq, stop_cq, close_cq</td></tr>
+    </table>
+  </td>
+ </tr>
+</table>
+</font>
+
+  <H3> LDAP Authentication </H3>
+   <P>This scheme of authentication is based on the Usernames and Password configured in a LDAP server. Refer to the Security chapter in the <em>Gemfire Native Client User's Guide</em> for more details. The server side authenticator is in package <code>templates.security.LdapUserAuthenticator.create</code>. The client side initializer for it is  in the <code>securityImpl.dll</code> library (Windows) or the <code>libsecurityImpl.so</code> library (Solaris or Linux) with a factory method name <code>createUserPasswordAuthInitInstance</code>.<br>
+   </P>
+<font size=2>
+<table border="1" align="top" cellspacing=4 cellpadding=4 width=1000 height=50 >
+ <caption align=left,top>
+ Mapping between Authentication credentials and Authorization roles & privileges
+ </caption>
+ <tr align=middle>
+  <th>Authentication User Name</th>
+  <th>Authorization Roles</th>
+  <th>Permission to the Roles</th>
+ </tr>
+ <tr align=middle>
+  <td valign=middle>gemfire1, gemfire2</td>
+  <td valign=middle>reader, writer, cacheOps</td>
+  <td>
+    <table border=0 cellspacing=0 cellpadding=0>
+      <tr><td> <strong>reader</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: get, register_interest, unregister_interest, key_set, contains_key </td></tr>
+      <tr><td> <strong>writer</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: put, destroy, region_clear</td></tr>
+      <tr><td> <strong>cacheOps</strong>: query, execute_cq, stop_cq, close_cq, region_create, region_destroy</td></tr>
+    </table>
+  </td>
+ </tr>
+
+ <tr align=middle>
+  <td valign=middle>gemfire3, gemfire4, gemfire5</td>
+  <td valign=middle>reader</td>
+  <td>
+    <table border=0 cellspacing=0 cellpadding=0>
+      <tr><td> <strong>reader</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: get, register_interest, unregister_interest, key_set, contains_key </td></tr>
+    </table>
+  </td>
+ </tr>
+
+ <tr align=middle>
+  <td valign=middle>gemfire6, gemfire7, gemfire6</td>
+  <td valign=middle>writer</td>
+  <td>
+    <table border=0 cellspacing=0 cellpadding=0>
+      <tr><td> <strong>writer</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: put, destroy, region_clear</td></tr>
+    </table>
+  </td>
+ </tr>
+
+ <tr align=middle>
+  <td valign=middle>gemfire9, gemfire10</td>
+  <td valign=middle>queryRegions</td>
+  <td>
+    <table border=0 cellspacing=0 cellpadding=0>
+      <tr><td> <strong>queryRegions</strong>: query, execute_cq, stop_cq, close_cq</td></tr>
+    </table>
+  </td>
+ </tr>
+</table>
+</font>
+<a name="security-templates-pkcs" id="security-templates-pkcs">
+  <H3> PKCS Authentication </H3>
+   <P>This scheme of authentication is based on public/private key-based encryption/decryption. Refer to the Security chapter in the <em>Gemfire Native Client User's Guide</em> for keystore configurations. The server side authenticator is in package <code>templates.security.PKCSAuthenticator.create</code>. The client side initializer for it is  in the <code>securityImpl.dll</code> library (Windows) or the <code>libsecurityImpl.so</code> library (Solaris or Linux) with a factory method name <code>createPKCSAuthInitInstance</code>.</P>
+
+   <blockquote>
+     <p><strong>PKCS configuration details</strong>
+     </p>
+   </blockquote>
+   <ol>
+  <li>See <a href="#configuring_security">Configuring the Environment</a> in <em>Part 2: Modifying the Cache with Security Configured</em> for details on downloading, compiling and configuring OpenSSL to work with the PKCS implementation.<br>
+    <br>
+<li>Create the keystore with aliases from <em>gemfire1</em> to <em>gemfire10</em>, as described in the Security chapter for the <em>GemFire Native Client User's Guide</em>.<br>
+  <br>
+  <li>Provide the following properties in <code>gfcpp.properties</code> for client side configuration:<br>
+    <em><strong>Note:</strong> All of these properties are user-provided information to keytool-like utilities during public/private key generation and self-signing.     </em>
+    <blockquote> <p> <code> 
+% security-keystorepath=<i>&lt;absolute filepath to keystore where keys are generated&gt;</i><br>
+% security-alias=<i>&lt;alias name given while generating public & private key pair for the client&gt;</i><br>
+% security-keystorepass=<i>&lt;password entered while generating private key while self-signing&gt;</i></code></p> 
+    </blockquote>
+<li>Provide the following properties in <code>gemfire.properties</code> for server side configuration:<br>
+   <em><strong>Note:</strong> All of these properties are user-provided information to keytool-like utilities during truststore creation.</em>
+     <blockquote> <p> <code> 
+% security-publickey-filepath=<i>&lt;absolute filepath to keystore where public keys are generated&gt;</i><br>
+% security-publickey-pass=<i>&lt;password entered while generating key to truststore&gt;</i><br>
+</code> </p> </blockquote>
+</ol>
+   </P>
+
+<font size=2>
+<table border="1" align="top" cellspacing=4 cellpadding=4 width=1000 height=50 >
+ <caption align=left,top>Mapping between Authentication credentials and Authorization roles & privileges.</caption>
+ <tr align=middle>
+  <th>Authentication KeyStore Aliases</th>
+  <th>Authorization Roles</th>
+  <th>Permission to the Roles</th>
+ </tr>
+ <tr align=middle>
+  <td valign=middle>gemfire1, gemfire2</td>
+  <td valign=middle>reader, writer, cacheOps</td>
+  <td>
+    <table border=0 cellspacing=0 cellpadding=0>
+      <tr><td> <strong>reader</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: get, register_interest, unregister_interest, key_set, contains_key </td></tr>
+      <tr><td> <strong>writer</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: put, destroy, region_clear</td></tr>
+      <tr><td> <strong>cacheOps</strong>: query, execute_cq, stop_cq, close_cq, region_create, region_destroy</td></tr>
+    </table>
+  </td>
+ </tr>
+
+ <tr align=middle>
+  <td valign=middle>gemfire3, gemfire4, gemfire5</td>
+  <td valign=middle>reader</td>
+  <td>
+    <table border=0 cellspacing=0 cellpadding=0>
+      <tr><td> <strong>reader</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: get, register_interest, unregister_interest, key_set, contains_key </td></tr>
+    </table>
+  </td>
+ </tr>
+
+ <tr align=middle>
+  <td valign=middle>gemfire6, gemfire7, gemfire6</td>
+  <td valign=middle>writer</td>
+  <td>
+    <table border=0 cellspacing=0 cellpadding=0>
+      <tr><td> <strong>writer</strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: put, destroy, region_clear</td></tr>
+    </table>
+  </td>
+ </tr>
+
+ <tr align=middle>
+  <td valign=middle>gemfire9, gemfire10</td>
+  <td valign=middle>queryRegions</td>
+  <td>
+    <table border=0 cellspacing=0 cellpadding=0>
+      <tr><td> <strong>queryRegions</strong>: query, execute_cq, stop_cq, close_cq</td></tr>
+    </table>
+  </td>
+ </tr>
+</table>
+</font>
+
+  <H3> Xml-Based Authorization </H3>
+   <P>This authorization scheme is based on the prior mapping of authentication credentials to roles and privileges. Permissions configured in xml files are supplied corresponding to the authentication scheme. Refer to the Security chapter  in the <em>GemFire Native Client User's Guide</em> for further information. The server side <code>security-accessor</code> is in package <code>templates.security.XmlAuthorization.create</code>, and <code>security-authz-xml-uri</code> should point to either <a href="../../templates/security/authz-dummy.xml" target="_blank"><code>authz-dummy.xml</code></a>, <a href="../../templates/security/authz-ldap.xml" target="_blank"><code>authz-ldap.xml</code></a>, or <a href="../../templates/security/authz-pkcs.xml" target="_blank"><code>authz-pkcs.xml</code></a>, depending on the <code>security-authenticator</code> provided.<br>
+     <br>
+   </P>
+
+</DIV>
+
+<a href="#Top">Top</a>
+<P>&nbsp;</P>
+<P>
+Copyright &#169; 2005-2014 Pivotal Software, Inc. All rights reserved.
+This product is protected by U.S. and international copyright and intellectual
+property laws. Pivotal products are covered by one or more patents listed at
+http://www.pivotal.io/patents. </P>
+</BODY>
+</HTML>
+

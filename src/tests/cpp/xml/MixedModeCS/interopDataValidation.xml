@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">15m</data>
+  <data name="cacheType">CLIENT</data>
+  <data name="regionName">TestTCR1</data>
+
+  <data name="numThreads">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true" client-notification="true">
+        </region-attributes>
+      </region>
+    </snippet>
+  </data>
+  <data name="regionSpec">ThinClientRegion</data>
+
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set name="CSDriver" hostGroup="CSD"/>
+  <client-set name="native"/>
+
+  <test name="DataValidationTest" description="This test would authenticate that the data seen by C# and native clients are same">
+    <task name="setupCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 1 Native/csAckMirror.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+
+    <task name="StartCacheServer 1" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+
+    <task name="StartCSharpFwk" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startCSFwk</data>
+      <data name="arguments">--xml=MixedModeCS/interopDataValidation_CS.xml</data>
+      <data name="background">true</data>
+      <client-set name="CSDriver"/>
+    </task>
+
+    <task name="CreateRegion" action="doCreateUserDefineRegion" container="querytests" waitTime="3m">
+      <data name="regionSpec">ThinClientRegion</data>
+      <client-set name="native"/>
+    </task>
+
+    <task name="Register All Keys" action="doRegisterAllKeys" container="perftests" waitTime="2m">
+      <client-set name="native"/>
+    </task>
+
+    <task name="PopulateRegion" action="doPopulateRangePositions" container="querytests" waitTime="15m">
+      <data name="range-start">0</data>
+      <data name="range-end">100</data>
+      <client-set name="native"/>
+    </task>
+
+    <task name="DonePopulate" action="doRunProcess" container="utils" waitTime="2m">
+      <data name="program">FwkBB</data>
+      <data name="arguments">set INTEROP DonePopulate true</data>
+      <client-set name="native"/>
+    </task>
+
+    <task name="WaitForCSharpDonePopulate" action="doRunProcess" container="utils" waitTime="30m" continueOnError="true">
+      <data name="program">waitForBBKey</data>
+      <data name="arguments">INTEROP DonePopulateCS 1200</data>
+      <client-set name="native"/>
+    </task>
+
+    <task name="ValidateData" action="doGetAndComparePositionObjects" container="querytests" waitTime="30m">
+      <data name="range-start">101</data>
+      <data name="range-end">200</data>
+      <client-set name="native"/>
+    </task>
+
+    <task name="Close Cache" action="doCloseCache" container="perftests" waitTime="2m">
+      <client-set name="native"/>
+    </task>
+
+    <task name="WaitForCSharp" action="doRunProcess" container="utils" waitTime="20m">
+      <data name="program">waitForBBKey</data>
+      <data name="arguments">INTEROP DoneCSharp 1200</data>
+      <client-set name="native"/>
+    </task>
+
+    <task name="StopCacheServer 1" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+  </test>
+
+</test-driver>

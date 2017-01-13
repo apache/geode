@@ -1,0 +1,5 @@
+
+# add hostname to /etc/hosts if not set
+if (! getent hosts `hostname` >/dev/null); then
+  echo `/sbin/ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'` `hostname` >> /etc/hosts
+fi

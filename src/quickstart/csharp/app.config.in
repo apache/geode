@@ -1,0 +1,17 @@
+<configuration>
+  <startup>
+    <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.0"/>
+  </startup>  
+  <runtime>
+   <assemblyBinding
+      xmlns="urn:schemas-microsoft-com:asm.v1">
+     <dependentAssembly>
+       <assemblyIdentity name="GemStone.GemFire.Cache"
+          publicKeyToken="126e6338d9f55e0c"
+          culture="neutral" />
+       <codeBase version="9.0.0.0"
+          href="${NATIVECLIENT_BINARIES_DIR}/GemStone.GemFire.Cache.dll"/>
+     </dependentAssembly> 
+   </assemblyBinding>  
+ </runtime>
+</configuration>

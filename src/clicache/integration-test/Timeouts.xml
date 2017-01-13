@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Settings timeout="1800">
+  <ClientServerTests>
+    <BigValue timeout="2700" />
+  </ClientServerTests>
+  <PutGetTests>
+    <CheckPutGet timeout="4200" />
+  </PutGetTests>
+  <ThinClientRegionTests>
+    <CheckPutGet timeout="4200" />
+  </ThinClientRegionTests>
+  <ThinClientQueryTests>
+    <QueryTimeout timeout="4200" />
+  </ThinClientQueryTests>
+  <ThinClientDurableTests>
+    <DurableAndNonDurableBasic timeout="4200" />
+  </ThinClientDurableTests>
+  <ThinClientSecurityAuthzTests>
+    <AllOpsWithFailover timeout="4800" />
+  </ThinClientSecurityAuthzTests>
+  <ThinClientSecurityAuthzTestsMU>
+    <AllOpsWithFailover timeout="4800" />
+  </ThinClientSecurityAuthzTestsMU>
+</Settings>

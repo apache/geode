@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <client-set count="1" name="server"/>
+  <client-set remaining="true" name="client"/>
+  
+  <data name="port">3213</data>
+  <data name="timedInterval">60</data>
+  <data name="expectResponse">true</data>
+  <data name="totThreads">10</data>
+  <data name="inThreads">4</data>
+  <data name="procThreads">3</data>
+  <data name="outThreads">3</data>
+  <data name="label">BBQueues</data>
+  <test name="Udp Ipc Test" description="" waitTime="900">
+    <task name="Client expects no response" action="doService" container="fwk" waitTime="600" parallel="true">
+      <client-set name="server"/>
+    </task>
+    <task name="Client expects no response" action="doClient" container="fwk" waitTime="600" parallel="true"/>
+  </test>
+</test-driver>

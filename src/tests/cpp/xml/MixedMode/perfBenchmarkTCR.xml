@@ -1,0 +1,425 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">100</data>
+  <data name="cacheType">CLIENT</data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>100000</item>
+    </list>
+  </data>
+
+  <data name="valueSizes">
+    <list>
+      <item>5000</item>
+    </list>
+  </data>
+
+  <data name="numThreads">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+
+  <data name="keyType">int</data>
+  <data name="clientCount">2</data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="false" client-notification="false"/>
+      </region>
+    </snippet>
+  </data>
+  <data name="regionSpec">ThinClientRegion</data>
+
+  <client-set name="JCS" hostGroup="CS"/>
+  <client-set name="JCC1" hostGroup="CS"/>
+  <client-set name="JCC2" hostGroup="CS"/>
+  <client-set count="2" name="ThinClient"/>
+  <client-set name="Feeder"/>
+
+  <test name="ThinClientPerf" description="Thin Client perf test">
+    <task name="SetupCacheServer" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">Native/csAckMirror.xml</data>
+      <client-set name="JCS"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments"></data>
+      <client-set name="JCS"/>
+    </task>
+    <task name="SetupJavaClients" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">setupJavaClients</data>
+      <data name="arguments">-c 1 MixedMode/bridge_client_cacheless.xml</data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="SetupJavaClients" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">setupJavaClients</data>
+      <data name="arguments">-c 2 MixedMode/bridge_client_cacheless.xml</data>
+      <client-set name="JCC2"/>
+    </task>
+    <task name="StartCacheClients" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">startJavaClients</data>
+      <data name="arguments">-c 1</data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="StartCacheClients" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">startJavaClients</data>
+      <data name="arguments">-c 2</data>
+      <client-set name="JCC2"/>
+    </task>
+
+    <task name="CreateRegion" action="doCreateRegion" container="perftests" waitTime="5m">
+      <client-set count="2" name="ThinClient"/>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="Register All Keys" action="doRegisterAllKeys" container="perftests" waitTime="2m">
+      <client-set count="2" name="ThinClient"/>
+      <client-set name="Feeder"/>
+    </task>
+    <task name="PopulateRegion" action="doPopulateRegion" container="perftests" waitTime="10m">
+      <client-set name="Feeder"/>
+    </task>
+    <task name="Gets-identical-JC" action="doRunProcess" container="utils" waitTime="1m" continueOnError="true">
+      <data name="program">echo mget keytype=int keyrange=0-100000 seqid=1 waittime=12>> JC_1.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="Gets-identical-JC" action="doRunProcess" container="utils" waitTime="1m" continueOnError="true">
+      <data name="program">echo mget keytype=int keyrange=0-100000 seqid=1 waittime=12>> JC_2.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JCC2"/>
+    </task>
+    <task name="Gets-identical" action="doGets" container="perftests" waitTime="10m">
+      <client-set count="2" name="ThinClient"/>
+    </task>
+    <task name="waitForGetsToFinish for client1" action="doRunProcess" container="utils" waitTime="12m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -c 1 -p 1</data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="waitForGetsToFinish for client2" action="doRunProcess" container="utils" waitTime="12m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -c 2 -p 1</data>
+      <client-set name="JCC2"/>
+    </task>
+
+    <task name="Puts-identical-JC" action="doRunProcess" container="utils" waitTime="1m" continueOnError="true">
+      <data name="program">echo mput keytype=int keyrange=0-100000 valuesize=5000 seqid=2 waittime=12>> JC_1.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="Puts-identical-JC" action="doRunProcess" container="utils" waitTime="1m" continueOnError="true">
+      <data name="program">echo mput keytype=int keyrange=0-100000 valuesize=5000 seqid=2 waittime=12>> JC_2.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JCC2"/>
+    </task>
+    <task name="Puts-identical" action="doPuts" container="perftests" waitTime="10m">
+      <client-set count="2" name="ThinClient"/>
+    </task>
+    <task name="waitForPutsToFinish for client1" action="doRunProcess" container="utils" waitTime="12m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -c 1 -p 2</data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="waitForPutsToFinish for client2" action="doRunProcess" container="utils" waitTime="12m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -c 2 -p 2</data>
+      <client-set name="JCC2"/>
+    </task>
+
+    <task name="Destroys-identical-JC" action="doRunProcess" container="utils" waitTime="1m" continueOnError="true">
+      <data name="program">echo mdes keytype=int keyrange=0-100000 seqid=3 >> JC_1.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="Destroys-identical-JC" action="doRunProcess" container="utils" waitTime="1m" continueOnError="true">
+      <data name="program">echo mdes keytype=int keyrange=0-100000 seqid=3 >> JC_2.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JCC2"/>
+    </task>
+    <task name="Destroys-identical" action="doDestroys" container="perftests" waitTime="10m">
+      <client-set count="2" name="ThinClient"/>
+    </task>
+    <task name="waitForDestroysToFinish for client1" action="doRunProcess" container="utils" waitTime="10m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -c 1 -p 3</data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="waitForDestroysToFinish for client2" action="doRunProcess" container="utils" waitTime="10m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -c 2 -p 3</data>
+      <client-set name="JCC2"/>
+    </task>
+
+    <task name="PopulateRegion" action="doPopulateRegion" container="perftests" waitTime="10m">
+      <client-set name="Feeder"/>
+    </task>
+    <task name="Gets-overlap-JC" action="doRunProcess" container="utils" waitTime="1m" continueOnError="true">
+      <data name="program">echo mget keytype=int keyrange=0-75000 seqid=4 waittime=12>> JC_1.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="Gets-overlap-JC" action="doRunProcess" container="utils" waitTime="1m" continueOnError="true">
+      <data name="program">echo mget keytype=int keyrange=25000-100000 seqid=4 waittime=12>> JC_2.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JCC2"/>
+    </task>
+    <task name="Gets-overlap1" action="doGets" container="perftests" waitTime="10m" parallel="true">
+      <client-set name="ThinClient"/>
+      <data name="distinctKeys">
+        <list>
+          <item>75000</item>
+        </list>
+      </data>
+    </task>
+    <task name="Gets-overlap2" action="doGets" container="perftests" waitTime="10m" parallel="true">
+      <client-set begin="2" count="1" name="ThinClient"/>
+      <data name="distinctKeys">
+        <list>
+          <item>75000</item>
+        </list>
+      </data>
+      <data name="keyIndexBegin">25000</data>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set count="2" name="ThinClient"/>
+      <data name="sleepTime">5</data>
+    </task>
+    <task name="waitForGetsToFinish for client1" action="doRunProcess" container="utils" waitTime="12m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -c 1 -p 4</data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="waitForGetsToFinish for client2" action="doRunProcess" container="utils" waitTime="12m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -c 2 -p 4</data>
+      <client-set name="JCC2"/>
+    </task>
+
+    <task name="Puts-overlap-JC" action="doRunProcess" container="utils" waitTime="1m" continueOnError="true">
+      <data name="program">echo mput keytype=int keyrange=0-75000 valuesize=5000 seqid=5 waittime=12>> JC_1.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="Puts-overlap-JC" action="doRunProcess" container="utils" waitTime="1m" continueOnError="true">
+      <data name="program">echo mput keytype=int keyrange=25000-100000 valuesize=5000 seqid=5 waittime=12>> JC_2.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JCC2"/>
+    </task>
+    <task name="Puts-overlap1" action="doPuts" container="perftests" waitTime="10m" parallel="true">
+      <client-set name="ThinClient"/>
+      <data name="distinctKeys">
+        <list>
+          <item>75000</item>
+        </list>
+      </data>
+    </task>
+    <task name="Puts-overlap2" action="doPuts" container="perftests" waitTime="10m" parallel="true">
+      <client-set begin="2" count="1" name="ThinClient"/>
+      <data name="distinctKeys">
+        <list>
+          <item>75000</item>
+        </list>
+      </data>
+      <data name="keyIndexBegin">25000</data>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set count="2" name="ThinClient"/>
+      <data name="sleepTime">5</data>
+    </task>
+    <task name="waitForPutsToFinish for client1" action="doRunProcess" container="utils" waitTime="12m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -c 1 -p 5</data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="waitForPutsToFinish for client2" action="doRunProcess" container="utils" waitTime="12m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -c 2 -p 5</data>
+      <client-set name="JCC2"/>
+    </task>
+
+    <task name="Destroys-overlap-JC" action="doRunProcess" container="utils" waitTime="1m" continueOnError="true">
+      <data name="program">echo mdes keytype=int keyrange=0-75000 seqid=6 >> JC_1.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="Destroys-overlap-JC" action="doRunProcess" container="utils" waitTime="1m" continueOnError="true">
+      <data name="program">echo mdes keytype=int keyrange=25000-100000 seqid=6 >> JC_2.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JCC2"/>
+    </task>
+    <task name="Destroys-overlap1" action="doDestroys" container="perftests" waitTime="10m" parallel="true">
+      <client-set name="ThinClient"/>
+      <data name="distinctKeys">
+        <list>
+          <item>75000</item>
+        </list>
+      </data>
+    </task>
+    <task name="Destroys-overlap2" action="doDestroys" container="perftests" waitTime="10m" parallel="true">
+      <client-set begin="2" count="1" name="ThinClient"/>
+      <data name="distinctKeys">
+        <list>
+          <item>75000</item>
+        </list>
+      </data>
+      <data name="keyIndexBegin">25000</data>
+    </task>
+    <task name="waitForDestroysToFinish for client1" action="doRunProcess" container="utils" waitTime="10m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -c 1 -p 6</data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="waitForDestroysToFinish for client2" action="doRunProcess" container="utils" waitTime="10m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -c 2 -p 6</data>
+      <client-set name="JCC2"/>
+    </task>
+
+    <task name="PopulateRegion" action="doPopulateRegion" container="perftests" waitTime="10m">
+      <client-set name="Feeder"/>
+    </task>
+    <task name="Gets-non-overlap-JC" action="doRunProcess" container="utils" waitTime="1m" continueOnError="true">
+      <data name="program">echo mget keytype=int keyrange=0-50000 seqid=7 waittime=12>> JC_1.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="Gets-non-overlap-JC" action="doRunProcess" container="utils" waitTime="1m" continueOnError="true">
+      <data name="program">echo mget keytype=int keyrange=50000-100000 seqid=7 waittime=12>> JC_2.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JCC2"/>
+    </task>
+    <task name="Gets-non-overlap1" action="doGets" container="perftests" waitTime="10m" parallel="true">
+      <client-set name="ThinClient"/>
+      <data name="distinctKeys">
+        <list>
+          <item>50000</item>
+        </list>
+      </data>
+    </task>
+    <task name="Gets-non-overlap2" action="doGets" container="perftests" waitTime="10m" parallel="true">
+      <client-set begin="2" count="1" name="ThinClient"/>
+      <data name="distinctKeys">
+        <list>
+          <item>50000</item>
+        </list>
+      </data>
+      <data name="keyIndexBegin">50000</data>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set count="2" name="ThinClient"/>
+      <data name="sleepTime">5</data>
+    </task>
+    <task name="waitForGetsToFinish for client1" action="doRunProcess" container="utils" waitTime="12m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -c 1 -p 7</data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="waitForGetsToFinish for client2" action="doRunProcess" container="utils" waitTime="12m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -c 2 -p 7</data>
+      <client-set name="JCC2"/>
+    </task>
+
+    <task name="Puts-non-overlap-JC" action="doRunProcess" container="utils" waitTime="1m" continueOnError="true">
+      <data name="program">echo mput keytype=int keyrange=0-50000 valuesize=5000 seqid=8 waittime=12>> JC_1.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="Puts-non-overlap-JC" action="doRunProcess" container="utils" waitTime="1m" continueOnError="true">
+      <data name="program">echo mput keytype=int keyrange=50000-100000 valuesize=5000 seqid=8 waittime=12>> JC_2.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JCC2"/>
+    </task>
+    <task name="Puts-non-overlap1" action="doPuts" container="perftests" waitTime="10m" parallel="true">
+      <client-set name="ThinClient"/>
+      <data name="distinctKeys">
+        <list>
+          <item>50000</item>
+        </list>
+      </data>
+    </task>
+    <task name="Puts-non-overlap2" action="doPuts" container="perftests" waitTime="10m" parallel="true">
+      <client-set begin="2" count="1" name="ThinClient"/>
+      <data name="distinctKeys">
+        <list>
+          <item>50000</item>
+        </list>
+      </data>
+      <data name="keyIndexBegin">50000</data>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set count="2" name="ThinClient"/>
+      <data name="sleepTime">5</data>
+    </task>
+    <task name="waitForPutsToFinish for client1" action="doRunProcess" container="utils" waitTime="12m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -c 1 -p 8</data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="waitForPutsToFinish for client2" action="doRunProcess" container="utils" waitTime="12m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -c 2 -p 8</data>
+      <client-set name="JCC2"/>
+    </task>
+
+    <task name="Destroys-non-overlap-JC" action="doRunProcess" container="utils" waitTime="1m" continueOnError="true">
+      <data name="program">echo mdes keytype=int keyrange=0-50000 seqid=9 >> JC_1.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="Destroys-non-overlap-JC" action="doRunProcess" container="utils" waitTime="1m" continueOnError="true">
+      <data name="program">echo mdes keytype=int keyrange=50000-100000 seqid=9 >> JC_2.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JCC2"/>
+    </task>
+    <task name="Destroys-non-overlap1" action="doDestroys" container="perftests" waitTime="10m" parallel="true">
+      <client-set name="ThinClient"/>
+      <data name="distinctKeys">
+        <list>
+          <item>50000</item>
+        </list>
+      </data>
+    </task>
+    <task name="Destroys-non-overlap2" action="doDestroys" container="perftests" waitTime="10m" parallel="true">
+      <client-set begin="2" count="1" name="ThinClient"/>
+      <data name="distinctKeys">
+        <list>
+          <item>50000</item>
+        </list>
+      </data>
+      <data name="keyIndexBegin">50000</data>
+    </task>
+    <task name="waitForDestroysToFinish for client1" action="doRunProcess" container="utils" waitTime="10m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -c 1 -p 9</data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="waitForDestroysToFinish for client2" action="doRunProcess" container="utils" waitTime="10m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -c 2 -p 9</data>
+      <client-set name="JCC2"/>
+    </task>
+
+    <task name="StopCacheClients" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">echo quit >> JC_1.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="StopCacheClients" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">echo quit >> JC_2.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JCC2"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments"></data>
+      <client-set name="JCS"/>
+    </task>
+  </test>
+
+</test-driver>

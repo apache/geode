@@ -1,0 +1,1058 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="com\vmware\CacheFactoryMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\PoolFactoryMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\PoolMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\ManagedVisitor.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\MemoryPressureHandler.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\NativeWrapper.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\SafeConvert.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\ManagedResultCollector.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\ManagedString.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\ManagedCqListener.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\ManagedFixedPartitionResolver.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\ManagedPartitionResolver.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\ManagedCacheableDeltaBytes.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\ManagedCacheableKey.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\ManagedCacheableKeyBytes.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\ManagedCacheableDelta.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\ManagedCacheWriter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\ManagedAuthInitialize.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\ManagedCacheListener.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\ManagedCacheLoader.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\DelegateWrapper.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\GFDataInputStream.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\GFDataOutputStream.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\GFNullStream.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="impl\AuthenticatedCacheM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gf_includes.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gf_defs.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\ResultCollectorProxyMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\SafeConvertN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\TransactionListenerMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\TransactionWriterMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\WeakhashMap.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\PdxWriterWithTypeCollector.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\PersistenceManagerProxyMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\RegionImplN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\PdxType.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\PdxTypeRegistry.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\PdxWrapper.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\PdxRemotePreservedData.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\PdxRemoteReader.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\PdxRemoteWriter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\PdxManagedCacheableKey.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\PdxManagedCacheableKeyBytes.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\PdxReaderWithTypeCollector.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\PdxLocalReader.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\PdxLocalWriter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\PdxInstanceFactoryImpl.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\PdxInstanceImpl.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\PartitionResolverMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\PdxFieldType.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\PdxHelper.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\ManagedTransactionWriterN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\ManagedVisitorN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\MemoryPressureHandlerN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\NativeWrapperN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\ManagedResultCollectorN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\ManagedStringN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\ManagedTransactionListenerN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\ManagedPartitionResolverN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\ManagedPersistenceManagerN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\ManagedFixedPartitionResolverN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\ManagedCqStatusListenerN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\ManagedCqListenerN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\ManagedCacheableKeyN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\ManagedCacheableDeltaN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\ManagedCacheableKeyBytesN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\ManagedCacheableDeltaBytesN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\ManagedCacheWriterN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\ManagedAuthInitializeN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\ManagedCacheListenerN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\ManagedCacheLoaderN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\FixedPartitionResolverMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\GFDataInputStreamN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\GFDataOutputStreamN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\GFNullStreamN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\CqStatusListenerProxyMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\DelegateWrapperN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\DotNetTypes.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\EnumInfo.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\AuthenticatedCacheMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\CacheListenerMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\CacheLoaderMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\CacheWriterMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\CliCallbackDelgateN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\CqListenerProxyMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\impl\AuthInitializeMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\UtilsN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\TransactionEventMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\TransactionIdMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\TransactionListenerAdapterN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\TransactionWriterAdapterN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\UserFunctionExecutionExceptionMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\StructSetMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\SystemPropertiesMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\StatisticsMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\StatisticsTypeMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\StructMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\SerializableMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\StatisticDescriptorMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\StatisticsFactoryMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\ResultSetMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\ScopeTypeMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\SelectResultsIteratorMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\RegionFactoryMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\RegionMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\RegionShortcutMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\ResultCollectorMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\RegionAttributesMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\RegionEntryMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\RegionEventMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\QueryServiceMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\ReflectionBasedAutoSerializer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\QueryMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\PoolManagerMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\PropertiesMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\PdxIdentityFieldAttribute.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\IWritablePdxInstance.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\LocalRegionMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\LogMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\IRegionServiceN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\IResultCollectorN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\ISelectResultsN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\ISubscriptionServiceN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\ITransactionListenerN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\ITransactionWriterN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\IPdxTypeMapper.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\IPdxUnreadFields.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\IPdxWriterN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\IPersistenceManagerN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\IRegionN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\IPdxInstance.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\IPdxInstanceFactory.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\IPdxReaderN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\IPdxSerializableN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\IPdxSerializer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\IFixedPartitionResolverN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\IGemFireCacheN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\IGFDeltaN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\IGFSerializableN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\IPartitionResolverN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\ICqAttributesN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\ICqEventN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\ICqListenerN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\ICqResultsN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\ICqStatusListenerN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\GemFireClassIdsMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\IAuthInitializeN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\ICacheableKeyN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\ICacheListenerN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\ICacheLoaderN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\ICacheWriterN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\ExecutionMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\ExpirationActionMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\FunctionServiceMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\EntryEventMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\ExceptionTypesMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\DataOutputMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\DiskPolicyTypeMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\DistributedSystemMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CqStatisticsMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\DataInputMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CqServiceStatisticsMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CqStateMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CqOperationMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CqQueryMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CqAttributesMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CqAttributesMutatorMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CqEventMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CqListenerMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CacheableUndefinedMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CacheableVectorMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CqAttributesFactoryMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CacheableStringArrayMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CacheableStringMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CacheableObjectN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CacheableObjectXmlN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CacheableStackMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CacheableKeyMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CacheableLinkedListMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CacheableObjectArrayMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CacheableIdentityHashMapMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CacheableHashTableMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CacheableHashSetMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CacheableHashMapMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CacheableFileNameMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CacheableArrayListMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CacheableBuiltinsMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CacheableDateMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CacheTransactionManagerMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CacheWriterAdapterN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CacheListenerAdapterN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CacheMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CacheStatisticsMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CacheAttributesFactoryMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\CacheAttributesMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\AttributesFactoryMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="com\vmware\AttributesMutatorMN.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TransactionWriterAdapter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UserFunctionExecutionExceptionM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SystemPropertiesM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TransactionEventM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TransactionListenerAdapter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StatisticsM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StatisticsTypeM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StatisticDescriptorM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StatisticsFactoryM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ScopeTypeM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SerializableM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RegionShortcutM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RegionEventM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PropertiesM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ITransactionListener.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ITransactionWriter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LogM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IGemFireCache.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IGFSerializable.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IPartitionResolver.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IRegionService.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+     <ClInclude Include="IFixedPartitionResolver.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IGFDelta.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GemFireClassIdsM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IAuthInitialize.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ICacheableKey.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ICacheListener.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ICacheLoader.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ICacheWriter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ExpirationActionM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FunctionServiceM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DistributedSystemM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EntryEventM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ExceptionTypesM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DataInputM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DataOutputM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DiskPolicyTypeM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CacheableVectorM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CacheableStringArrayM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CacheableStringM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CacheableStackM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CacheableFileNameM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CacheableHashSetM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CacheableHashTableM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CacheableArrayListM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CacheableBuiltinsM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CacheStatisticsM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CacheFactoryM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CacheM.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="com\vmware\impl\AssemblyInfoN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\PoolFactoryMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\PoolMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\CacheFactoryMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\PdxWriterWithTypeCollector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\RegionImplN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\PdxType.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\PdxTypeRegistry.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\PdxRemoteReader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\PdxRemoteWriter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\PdxManagedCacheableKeyBytes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\PdxReaderWithTypeCollector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\PdxLocalReader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\PdxLocalWriter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\PdxManagedCacheableKey.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\PdxInstanceFactoryImpl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\PdxInstanceImpl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\PdxFieldType.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\PdxHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\ManagedVisitorN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\MemoryPressureHandlerN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\ManagedTransactionListenerN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\ManagedTransactionWriterN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\ManagedPartitionResolverN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\ManagedPersistenceManagerN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\ManagedResultCollectorN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\ManagedFixedPartitionResolverN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\ManagedCqStatusListenerN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\ManagedCqListenerN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\ManagedCacheableDeltaN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\ManagedCacheableKeyBytesN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\ManagedCacheableKeyN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\ManagedCacheableDeltaBytesN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\ManagedCacheWriterN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\ManagedCacheListenerN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\ManagedCacheLoaderN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\ManagedAuthInitializeN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\EnumInfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\impl\AuthenticatedCacheMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\UtilsN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\UserFunctionExecutionExceptionMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\StructSetMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\SystemPropertiesMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\TransactionEventMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\StatisticsMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\StatisticsTypeMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\StructMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\SerializableMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\StatisticDescriptorMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\StatisticsFactoryMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\ResultSetMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\SelectResultsIteratorMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\RegionMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\ResultCollectorMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\RegionEntryMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\RegionEventMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\RegionFactoryMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\ReflectionBasedAutoSerializer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\RegionAttributesMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RegionAttributesM.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\QueryMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\QueryServiceMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\PoolManagerMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\PropertiesMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\LocalRegionMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\LogMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\FunctionServiceMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\ExecutionMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\ExceptionTypesMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\DistributedSystemMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\EntryEventMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\DataInputMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\DataOutputMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\CqServiceStatisticsMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\CqStateMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\CqStatisticsMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\CqQueryMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\CqAttributesMutatorMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\CqEventMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\CacheableVectorMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\CqAttributesFactoryMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\CqAttributesMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\CacheableStringArrayMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\CacheableStringMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\CacheableUndefinedMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\CacheableObjectN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\CacheableObjectXmlN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\CacheableStackMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\CacheableKeyMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\CacheableObjectArrayMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\CacheableHashMapMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\CacheableFileNameMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\CacheableDateMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\CacheMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\CacheStatisticsMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\CacheTransactionManagerMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\CacheAttributesMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\AttributesFactoryMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\AttributesMutatorMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="com\vmware\CacheAttributesFactoryMN.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">100</data>
+  <data name="cacheType">CLIENT</data>
+  <data name="securityScheme">
+   <list>
+     <item>LDAP</item>
+     <item>DUMMY</item>
+     <item>PKCS</item>
+     <item>NONE</item>
+   </list>
+  </data>
+  <data name="keySize">
+    <list>
+      <item>16</item>
+    </list>
+  </data>
+
+
+  <data name="distinctKeys">
+    <list>
+      <item>10000</item>
+    </list>
+  </data>
+
+  <data name="valueSizes">
+    <list>
+      <!-- item>100</item>
+      <item>1000</item -->
+      <item>10000</item>
+    </list>
+  </data>
+
+  <data name="numThreads">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+
+  <data name="keyType">str</data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="false" client-notification="false"/>
+      </region>
+    </snippet>
+  </data>
+  <data name="regionSpec">ThinClientRegion</data>
+
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set name="JCS2" hostGroup="CS"/>
+  <client-set name="Putter1"/>
+  <client-set name="Getter1"/>
+  <client-set name="Destroyer1"/>
+  <client-set name="Putter2"/>
+  <client-set name="Getter2"/>
+  <client-set name="Destroyer2"/>
+
+  <test name="ThinClientPerf" description="Thin Client perf test" timesToRun="4">
+    <task name="SetupCacheServer CS1" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 2 Native/csServerEviction.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers CS1" action="doRunProcess" container="utils" waitTime="5m" >
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <data name="securityParams">:authenticator:authorizer</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServers CS2" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <data name="securityParams">:authenticator:authorizer</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="CreateRegion_putter1" action="doCreateRegion" container="perftests" waitTime="3m">
+      <client-set name="Putter1"/>
+      <data name="securityParams">
+        <list>
+          <item>create</item>
+        </list>
+      </data>
+    </task>
+    <task name="CreateRegion_getter1" action="doCreateRegion" container="perftests" waitTime="3m">
+      <client-set name="Getter1"/>
+      <data name="securityParams">
+        <list>
+          <item>get</item>
+        </list>
+      </data>
+    </task>
+    <task name="CreateRegion_destroyer1" action="doCreateRegion" container="perftests" waitTime="3m">
+      <client-set name="Destroyer1"/>
+      <data name="securityParams">
+        <list>
+          <item>destroy</item>
+        </list>
+      </data>
+    </task>
+    <task name="Measure Put Throughput" action="doPuts" container="perftests" waitTime="7m">
+      <client-set name="Putter1"/>
+    </task>
+    <task name="Measure Get Throughput" action="doGets" container="perftests" waitTime="7m">
+      <client-set name="Getter1"/>
+    </task>
+    <task name="Measure Destroy Throughput" action="doDestroys" container="perftests" waitTime="7m">
+      <client-set name="Destroyer1"/>
+    </task>
+
+    <task name="CreateRegion_putter2" action="doCreateRegion" container="perftests" waitTime="3m">
+      <client-set name="Putter2"/>
+      <data name="securityParams">
+        <list>
+          <item>create</item>
+        </list>
+      </data>
+    </task>
+    <task name="CreateRegion_getter2" action="doCreateRegion" container="perftests" waitTime="3m">
+      <client-set name="Getter2"/>
+      <data name="securityParams">
+        <list>
+          <item>get</item>
+        </list>
+      </data>
+    </task>
+    <task name="CreateRegion_destroyer2" action="doCreateRegion" container="perftests" waitTime="3m">
+      <client-set name="Destroyer2"/>
+      <data name="securityParams">
+        <list>
+          <item>destroy</item>
+        </list>
+      </data>
+    </task>
+    <task name="Measure Put Throughput" action="doPuts" container="perftests" waitTime="7m">
+      <client-set name="Putter2"/>
+    </task>
+    <task name="Measure Get Throughput" action="doGets" container="perftests" waitTime="7m">
+      <client-set name="Getter2"/>
+    </task>
+    <task name="Measure Destroy Throughput" action="doDestroys" container="perftests" waitTime="7m">
+      <client-set name="Destroyer2"/>
+    </task>
+    <task name="Close Cache" action="doCloseCache" container="perftests" waitTime="2m"/>
+    <task name="StopCacheServers CS1" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StopCacheServers CS2" action="doRunProcess" container="utils" waitTime="5m" parallel="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+  </test>
+
+</test-driver>

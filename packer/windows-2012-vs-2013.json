@@ -1,0 +1,64 @@
+{
+  "variables":{
+    "region":"us-west-2",
+    "source_ami":"ami-ac5395cc",
+    "source_image_name":"X.vmx",
+    "image_name":"windows-2012-vs-2013"
+  },
+  "builders":[
+    {
+      "type":"amazon-ebs",
+      "instance_type":"t2.large",
+      "ami_name":"native-{{user `version`}}-{{user `image_name`}} {{timestamp}}",
+      "access_key":"{{user `aws_access_key`}}",
+      "secret_key":"{{user `aws_secret_key`}}",
+      "region":"{{user `region`}}",
+      "source_ami":"{{user `source_ami`}}",
+      "subnet_id":"{{user `subnet_id`}}",
+      "vpc_id":"{{user `vpc_id`}}",
+      "tags":{
+        "team":"native",
+        "version":"{{user `version`}}",
+        "source_ami":"{{user `source_ami`}}"
+      },
+      "communicator":"winrm",
+      "winrm_username":"Administrator",
+      "launch_block_device_mappings":[
+        {
+          "device_name":"/dev/sda1",
+          "delete_on_termination":true,
+          "volume_size":60
+        }
+      ]
+    }
+  ],
+  "provisioners":[
+    {
+      "pause_before":"30s",
+      "type":"file",
+      "source":"windows/Packer.psm1",
+      "destination":"Documents/WindowsPowerShell/Modules/Packer/Packer.psm1"
+    },
+    {
+      "type":"powershell",
+      "scripts":[
+        "windows/install-vs-2013-community.ps1"
+      ]
+    },
+    {
+      "type":"powershell",
+      "scripts":[
+        "windows/cleanup.ps1"
+      ]
+    },
+    {
+      "type":"powershell",
+      "scripts":[
+        "windows/setup-ec2config.ps1"
+      ],
+      "only":[
+        "amazon-ebs"
+      ]
+    }
+  ]
+}

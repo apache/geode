@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+	<data name="keySize">
+		<range low="4" high="12"/>
+	</data>
+	<data name="distinctKeys">
+		10000
+	</data>
+	<data name="valueSizes">
+		<range low="20" high="60"/>
+	</data>
+	<data name="numThreads">
+		<list>
+			<item>1</item>
+			<item>2</item>
+			<item>3</item>
+			<item>4</item>
+			<item>7</item>
+			<item>10</item>
+		</list>
+	</data>
+	<data name="entryOps">
+		<oneof>
+			<item>add</item>
+			<item>add</item>
+			<item>add</item>
+			<item>add</item>
+			<item>update</item>
+			<item>invalidate</item>
+			<item>read</item>
+			<item>destroy</item>
+			<item>localInvalidate</item>
+			<item>localDestroy</item>
+			<!-- item>abort</item>  seg v -->
+			<!-- <item>exit</item>	 exit(0) -->
+			<!-- <item>done</item>	 leave doOperation, exit while loop -->
+		</oneof>
+	</data>
+	<data name="opCount">
+		<range low="1" high="10"/>
+	</data>
+	<data name="maxTestTime">6000</data>
+	<data name="minTaskGranularitySec">30</data>
+	<data name="totalTaskTimeSec">1200</data>
+	<data name="maxResultWaitSec">600</data>
+	<data name="preemptCounter">10</data>
+	<!-- abort, exit, done ops downcounter before execution -->
+	<data name="haltIfBadResult">true</data>
+	<data name="maxRegions">100</data>
+	<data name="installListener">true</data>
+	<data name="installWriter">false</data>
+	<data name="installLoader">false</data>
+	<data-set name="Local">
+		<data name="regionName">Local</data>
+		<data name="scope">local</data>
+	</data-set>
+	
+	<test name="Local" description="Local Entry Event test" waitTime="780">
+		<task name="CreateReg-LocalA" action="doCreateRootRegion" container="eventtest" waitTime="60">
+			<data name="regionSpec">Local</data>
+		</task>
+		<task name="doEntryOps" action="doEntryOperations" container="eventtest" waitTime="600"/>
+		<task name="doIterate" action="doIterate" container="eventtest" waitTime="60"/>
+	</test>
+	
+	
+</test-driver>

@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Well-formed and valid xml file -->
+<client-cache
+    xmlns="http://schema.pivotal.io/gemfire/gfcpp-cache"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://schema.pivotal.io/gemfire/gfcpp-cache
+                        http://schema.pivotal.io/gemfire/gfcpp-cache/gfcpp-cache-9.0.xsd"
+    version="9.0">
+
+<root-region name = "R1" >
+  <region-attributes scope="local" caching-enabled="true" initial-capacity="25" load-factor="0.32" concurrency-level="10" lru-entries-limit = "0">
+    <region-idle-time>
+      <expiration-attributes timeout="0" action="destroy"/> 
+    </region-idle-time>
+    <entry-idle-time>
+      <expiration-attributes timeout="0" action="invalidate"/>
+    </entry-idle-time>
+    <region-time-to-live>
+      <expiration-attributes timeout="0" action="local-destroy"/>
+    </region-time-to-live>
+    <entry-time-to-live>
+      <expiration-attributes timeout="0" action="local-invalidate"/>
+    </entry-time-to-live>
+    </region-attributes>
+ </root-region>
+<root-region name = "R2" >
+  <region-attributes scope="local" caching-enabled="true" initial-capacity="25" load-factor="0.32" concurrency-level="10" lru-entries-limit = "5">
+    <region-idle-time>
+      <expiration-attributes timeout="0" action="destroy"/> 
+    </region-idle-time>
+    <entry-idle-time>
+      <expiration-attributes timeout="2" action="destroy"/>
+    </entry-idle-time>
+    <region-time-to-live>
+      <expiration-attributes timeout="0" action="destroy"/>
+    </region-time-to-live>
+    <entry-time-to-live>
+      <expiration-attributes timeout="4" action="destroy"/>
+    </entry-time-to-live>
+    </region-attributes>
+ </root-region>
+<root-region name = "R20" >
+  <region-attributes scope="local" caching-enabled="true" initial-capacity="25" load-factor="0.32" concurrency-level="10" lru-entries-limit = "0">
+    <region-idle-time>
+      <expiration-attributes timeout="0" action="destroy"/> 
+    </region-idle-time>
+    <entry-idle-time>
+      <expiration-attributes timeout="2" action="local-invalidate"/>
+    </entry-idle-time>
+    <region-time-to-live>
+      <expiration-attributes timeout="0" action="destroy"/>
+    </region-time-to-live>
+    <entry-time-to-live>
+      <expiration-attributes timeout="4" action="local-invalidate"/>
+    </entry-time-to-live>
+    </region-attributes>
+ </root-region>
+<root-region name = "R21" >
+  <region-attributes scope="local" caching-enabled="true" initial-capacity="25" load-factor="0.32" concurrency-level="10" lru-entries-limit = "5">
+    <region-idle-time>
+      <expiration-attributes timeout="0" action="destroy"/> 
+    </region-idle-time>
+    <entry-idle-time>
+      <expiration-attributes timeout="0" action="destroy"/>
+    </entry-idle-time>
+    <region-time-to-live>
+      <expiration-attributes timeout="0" action="destroy"/>
+    </region-time-to-live>
+    <entry-time-to-live>
+      <expiration-attributes timeout="0" action="destroy"/>
+    </entry-time-to-live>
+    </region-attributes>
+ </root-region>
+<root-region name = "R4" >
+  <region-attributes scope="local" caching-enabled="true" initial-capacity="25" load-factor="0.32" concurrency-level="10" lru-entries-limit = "5">
+    <region-idle-time>
+      <expiration-attributes timeout="0" action="destroy"/> 
+    </region-idle-time>
+    <entry-idle-time>
+      <expiration-attributes timeout="0" action="destroy"/>
+    </entry-idle-time>
+    <region-time-to-live>
+      <expiration-attributes timeout="0" action="destroy"/>
+    </region-time-to-live>
+    <entry-time-to-live>
+      <expiration-attributes timeout="5" action="destroy"/>
+    </entry-time-to-live>
+    </region-attributes>
+ </root-region>
+<root-region name = "R40" >
+  <region-attributes scope="local" caching-enabled="true" initial-capacity="25" load-factor="0.32" concurrency-level="10" lru-entries-limit = "5">
+    <region-idle-time>
+      <expiration-attributes timeout="0" action="destroy"/> 
+    </region-idle-time>
+    <entry-idle-time>
+      <expiration-attributes timeout="0" action="destroy"/>
+    </entry-idle-time>
+    <region-time-to-live>
+      <expiration-attributes timeout="0" action="destroy"/>
+    </region-time-to-live>
+    <entry-time-to-live>
+      <expiration-attributes timeout="5" action="local-invalidate"/>
+    </entry-time-to-live>
+    </region-attributes>
+ </root-region>
+<root-region name = "R5" >
+  <region-attributes scope="local" caching-enabled="true" initial-capacity="25" load-factor="0.32" concurrency-level="10" lru-entries-limit = "5">
+    <region-idle-time>
+      <expiration-attributes timeout="0" action="destroy"/> 
+    </region-idle-time>
+    <entry-idle-time>
+      <expiration-attributes timeout="5" action="destroy"/>
+    </entry-idle-time>
+    <region-time-to-live>
+      <expiration-attributes timeout="0" action="destroy"/>
+    </region-time-to-live>
+    <entry-time-to-live>
+      <expiration-attributes timeout="0" action="destroy"/>
+    </entry-time-to-live>
+    </region-attributes>
+ </root-region>
+<root-region name = "R8" >
+  <region-attributes scope="local" caching-enabled="true" initial-capacity="25" load-factor="0.32" concurrency-level="10" lru-entries-limit = "5">
+    <region-idle-time>
+      <expiration-attributes timeout="0" action="destroy"/> 
+    </region-idle-time>
+    <entry-idle-time>
+      <expiration-attributes timeout="0" action="destroy"/>
+    </entry-idle-time>
+    <region-time-to-live>
+      <expiration-attributes timeout="0" action="destroy"/>
+    </region-time-to-live>
+    <entry-time-to-live>
+      <expiration-attributes timeout="10" action="destroy"/>
+    </entry-time-to-live>
+    </region-attributes>
+ </root-region>
+<root-region name = "R12" >
+  <region-attributes scope="local" caching-enabled="true" initial-capacity="25" load-factor="0.32" concurrency-level="10" lru-entries-limit = "5">
+    <region-idle-time>
+      <expiration-attributes timeout="0" action="destroy"/> 
+    </region-idle-time>
+    <entry-idle-time>
+      <expiration-attributes timeout="0" action="destroy"/>
+    </entry-idle-time>
+    <region-time-to-live>
+      <expiration-attributes timeout="0" action="destroy"/>
+    </region-time-to-live>
+    <entry-time-to-live>
+      <expiration-attributes timeout="5" action="destroy"/>
+    </entry-time-to-live>
+    </region-attributes>
+ </root-region>
+<root-region name = "R13" >
+  <region-attributes scope="local" caching-enabled="true" initial-capacity="25" load-factor="0.32" concurrency-level="10" lru-entries-limit = "5">
+    <region-idle-time>
+      <expiration-attributes timeout="0" action="destroy"/> 
+    </region-idle-time>
+    <entry-idle-time>
+      <expiration-attributes timeout="0" action="destroy"/>
+    </entry-idle-time>
+    <region-time-to-live>
+      <expiration-attributes timeout="0" action="destroy"/>
+    </region-time-to-live>
+    <entry-time-to-live>
+      <expiration-attributes timeout="5" action="destroy"/>
+    </entry-time-to-live>
+    </region-attributes>
+ </root-region>
+<root-region name = "R15" >
+  <region-attributes scope="local" caching-enabled="true" initial-capacity="25" load-factor="0.32" concurrency-level="10" lru-entries-limit = "5">
+    <region-idle-time>
+      <expiration-attributes timeout="0" action="destroy"/> 
+    </region-idle-time>
+    <entry-idle-time>
+      <expiration-attributes timeout="5" action="destroy"/>
+    </entry-idle-time>
+    <region-time-to-live>
+      <expiration-attributes timeout="0" action="destroy"/>
+    </region-time-to-live>
+    <entry-time-to-live>
+      <expiration-attributes timeout="0" action="destroy"/>
+    </entry-time-to-live>
+    </region-attributes>
+ </root-region>
+<root-region name = "R16" >
+  <region-attributes scope="local" caching-enabled="true" initial-capacity="25" load-factor="0.32" concurrency-level="10" lru-entries-limit = "5">
+    <region-idle-time>
+      <expiration-attributes timeout="0" action="destroy"/> 
+    </region-idle-time>
+    <entry-idle-time>
+      <expiration-attributes timeout="5" action="destroy"/>
+    </entry-idle-time>
+    <region-time-to-live>
+      <expiration-attributes timeout="0" action="destroy"/>
+    </region-time-to-live>
+    <entry-time-to-live>
+      <expiration-attributes timeout="0" action="destroy"/>
+    </entry-time-to-live>
+    </region-attributes>
+ </root-region>
+<root-region name = "R18" >
+  <region-attributes scope="local" caching-enabled="true" initial-capacity="25" load-factor="0.32" concurrency-level="10" lru-entries-limit = "4" disk-policy="overflows">
+    <region-idle-time>
+      <expiration-attributes timeout="0" action="destroy"/> 
+    </region-idle-time>
+    <entry-idle-time>
+      <expiration-attributes timeout="0" action="destroy"/>
+    </entry-idle-time>
+    <region-time-to-live>
+      <expiration-attributes timeout="0" action="destroy"/>
+    </region-time-to-live>
+    <entry-time-to-live>
+      <expiration-attributes timeout="4" action="local-invalidate"/>
+    </entry-time-to-live>
+    <persistence-manager library-name="SqLiteImpl" library-function-name="createSqLiteInstance">
+         <properties>
+           <property name="PersistenceDirectory" value="SqLite"/>
+           <property name="MaxFileSize" value="32500"/>
+         </properties>
+       </persistence-manager>
+    </region-attributes>
+ </root-region>
+<root-region name = "R19" >
+  <region-attributes scope="local" caching-enabled="true" initial-capacity="25" load-factor="0.32" concurrency-level="10" lru-entries-limit = "4" disk-policy="overflows">
+    <region-idle-time>
+      <expiration-attributes timeout="0" action="destroy"/> 
+    </region-idle-time>
+    <entry-idle-time>
+      <expiration-attributes timeout="0" action="destroy"/>
+    </entry-idle-time>
+    <region-time-to-live>
+      <expiration-attributes timeout="0" action="destroy"/>
+    </region-time-to-live>
+    <entry-time-to-live>
+      <expiration-attributes timeout="4" action="destroy"/>
+    </entry-time-to-live>
+    <persistence-manager library-name="SqLiteImpl" library-function-name="createSqLiteInstance">
+         <properties>
+           <property name="PersistenceDirectory" value="SqLite"/>
+           <property name="MaxFileSize" value="32500"/>
+         </properties>
+       </persistence-manager>
+    </region-attributes>
+ </root-region>
+																
+</client-cache>

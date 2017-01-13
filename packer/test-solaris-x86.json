@@ -1,0 +1,63 @@
+{
+  "variables":{
+    "image_name":"test-solaris-x86",
+    "openstack_source_image":"c0df7ff9-fc8f-4220-ac1f-fd24924dfe7a",
+    "vmware_source_image_name":"X.vmx"
+  },
+  "builders":[
+    {
+      "type":"openstack",
+      "identity_endpoint":"{{user `openstack_identity_endpoint`}}",
+      "tenant_name":"{{user `openstack_tenant_name`}}",
+      "username":"{{user `openstack_username`}}",
+      "password":"{{user `openstack_password`}}",
+      "region":"{{user `openstack_region`}}",
+      "ssh_username":"root",
+      "image_name":"native-{{user `version`}}-{{user `image_name`}} {{timestamp}}",
+      "source_image":"{{user `openstack_source_image`}}",
+      "flavor":"Oracle Solaris non-global zone - tiny",
+      "insecure":"true"
+    }
+  ],
+  "provisioners":[
+    {
+      "type":"file",
+      "source":"solaris/files/",
+      "destination":"/"
+    },
+    {
+      "type":"shell",
+      "scripts":[
+        "solaris/install-opencsw.sh",
+        "solaris/install-test-tools.sh"
+      ]
+    },
+    {
+      "type":"file",
+      "source":"{{user `gemfire_archive`}}",
+      "destination":"gemfire.tar.gz"
+    },
+    {
+      "type":"shell",
+      "scripts":[
+        "solaris/install-gemfire.sh"
+      ]
+    },
+    {
+       "type":"file",
+       "source":"solaris/changepasswd",
+       "destination":"changepasswd"
+    },
+    {
+      "type":"shell",
+      "scripts":"solaris/add-user-build.sh"
+    },
+    {
+      "type":"shell",
+      "scripts":[
+        "solaris/update.sh",
+        "solaris/cleanup.sh"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,132 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:complexType name="Cache">
+    <xs:sequence>
+      <xs:element name="region" type="Region" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="External-Action">
+    <xs:attribute name="library" type="xs:string" use="required" />
+    <xs:attribute name="function" type="xs:string" use="required" />
+  </xs:complexType>
+  <xs:complexType name="Entry-Idle-Time">
+    <xs:sequence>
+      <xs:element name="expiration-attributes" type="Expiration-Attributes" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Entry-Time-To-Live">
+    <xs:sequence>
+      <xs:element name="expiration-attributes" type="Expiration-Attributes" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Expiration-Attributes">
+    <xs:attribute name="timeout" type="xs:int" use="required" />
+    <xs:attribute name="action" type="Actions" use="required" />
+  </xs:complexType>
+  <xs:complexType name="Pool">
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="locators" type="xs:boolean" />
+    <xs:attribute name="servers" type="xs:boolean" />
+    <xs:attribute name="free-connection-timeout" type="xs:integer" />
+    <xs:attribute name="idle-timeout" type="xs:integer" />
+    <xs:attribute name="load-conditioning-interval" type="xs:integer" />
+    <xs:attribute name="max-connections" type="xs:integer" />
+    <xs:attribute name="min-connections" type="xs:integer" />
+    <xs:attribute name="ping-interval" type="xs:integer" />
+    <xs:attribute name="read-timeout" type="xs:integer" />
+    <xs:attribute name="retry-attempts" type="xs:integer" />
+    <xs:attribute name="server-group" type="xs:string" />
+    <xs:attribute name="socket-buffer-size" type="xs:integer" />
+    <xs:attribute name="subscription-ack-interval" type="xs:integer" />
+    <xs:attribute name="subscription-enabled" type="xs:boolean" />
+    <xs:attribute name="subscription-message-tracking-timeout" type="xs:integer" />
+    <xs:attribute name="subscription-redundancy" type="xs:integer" />
+    <xs:attribute name="thread-local-connections" type="xs:boolean" />
+    <xs:attribute name="multiuser-authentication" type="xs:boolean" />
+    <xs:attribute name="pr-single-hop-enabled" type="xs:boolean" />
+  </xs:complexType>
+  <xs:complexType name="Region">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="region-attributes" type="Region-Attributes" minOccurs="0" />
+      <xs:element name="region" type="Region" minOccurs="0" maxOccurs="unbounded" />
+    </xs:choice>
+    <xs:attribute name="name" type="xs:string" use="required" />
+  </xs:complexType>
+  <xs:complexType name="Region-Attributes">
+    <xs:choice maxOccurs="unbounded">
+      <xs:element name="region-time-to-live" type="Region-Time-To-Live" minOccurs="0" />
+      <xs:element name="region-idle-time" type="Region-Idle-Time" minOccurs="0" />
+      <xs:element name="entry-time-to-live" type="Entry-Time-To-Live" minOccurs="0" />
+      <xs:element name="entry-idle-time" type="Entry-Idle-Time" minOccurs="0" />
+      <xs:element name="cache-loader" type="External-Action" minOccurs="0" />
+      <xs:element name="cache-listener" type="External-Action" minOccurs="0" />
+      <xs:element name="cache-writer" type="External-Action" minOccurs="0" />
+      <xs:element name="persistence-manager" type="Persistence-Manager" minOccurs="0" />
+    </xs:choice>
+    <xs:attribute name="caching-enabled" type="xs:boolean" />
+    <xs:attribute name="cloning-enabled" type="xs:boolean" />
+    <xs:attribute name="scope" type="Scopes" />
+    <xs:attribute name="mirroring" type="xs:boolean" />
+    <xs:attribute name="load-factor" type="xs:double" />
+    <xs:attribute name="concurrency-level" type="xs:integer" />
+    <xs:attribute name="lru-entries-limit" type="xs:integer" />
+    <xs:attribute name="initial-capacity" type="xs:integer" />
+    <xs:attribute name="max-value-dist-limit" type="xs:integer" />
+    <xs:attribute name="interest-list-enabled" type="xs:boolean" />
+    <xs:attribute name="disk-policy" type="Policies" />
+    <xs:attribute name="endpoints" type="xs:string" />
+    <xs:attribute name="client-notification" type="xs:boolean" />
+    <xs:attribute name="concurrency-checks-enabled" type="xs:boolean" />
+    <xs:attribute name="tombstone-timeout" type="xs:integer" />
+    <xs:attribute name="pool-name" type="xs:string" />
+  </xs:complexType>
+  <xs:complexType name="Region-Idle-Time">
+    <xs:sequence>
+      <xs:element name="expiration-attributes" type="Expiration-Attributes" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Region-Time-To-Live">
+    <xs:sequence>
+      <xs:element name="expiration-attributes" type="Expiration-Attributes" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="Persistence-Manager">
+    <xs:sequence>
+      <xs:element name="properties" type="Properties" minOccurs="0" />
+    </xs:sequence>
+    <xs:attribute name="library" type="xs:string" use="required" />
+    <xs:attribute name="function" type="xs:string" use="required" />
+  </xs:complexType>
+  <xs:complexType name="Property">
+    <xs:attribute name="name" type="xs:string" use="required" />
+    <xs:attribute name="value" type="xs:string" use="required" />
+  </xs:complexType>
+  <xs:complexType name="Properties">
+    <xs:sequence>
+      <xs:element name="property" type="Property" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="Scopes">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="local" />
+      <xs:enumeration value="distributed-ack" />
+      <xs:enumeration value="distributed-no-ack" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Policies">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="overflows" />
+      <xs:enumeration value="persist" />
+      <xs:enumeration value="none" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="Actions">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="invalidate" />
+      <xs:enumeration value="destroy" />
+      <xs:enumeration value="local-invalidate" />
+      <xs:enumeration value="local-destroy" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="cache" type="Cache" />
+</xs:schema>
+

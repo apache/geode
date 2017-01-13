@@ -1,0 +1,14 @@
+#!/bin/bash
+set -e
+set -o pipefail
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$<TARGET_LINKER_FILE_DIR:gfcppcache>
+export LOG=${UNITTEST}.log
+
+if [ `uname` = "Darwin" ]
+then
+  # export DYLD_LIBRARY_PATH to work around OS X SIP
+  export DYLD_LIBRARY_PATH=$LD_LIBRARY_PATH
+fi
+
+$DEBUG $<TARGET_FILE:${UNITTEST}> | tee $LOG

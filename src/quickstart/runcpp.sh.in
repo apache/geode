@@ -1,0 +1,298 @@
+#!/bin/bash
+
+if [ -z $GEMFIRE ]; then
+  echo GEMFIRE is not set.
+  exit 1
+fi
+if [ -z $OPENSSL ]; then
+  echo Warning: OPENSSL is not set.
+  echo If OpenSSL libraries are not found in default library search path then Security example will fail.
+  echo
+  if [ -t 0 ]; then
+    echo Press Enter to continue
+    read resp
+  fi
+fi
+
+if [[ `uname` == "SunOS" || `uname` == "Linux" ]]; then
+    export DYNAMIC_LIBRARY_PATH LD_LIBRARY_PATH=$GFCPP/lib
+elif [ `uname` = "Darwin" ]; then
+    export DYNAMIC_LIBRARY_PATH DYLD_LIBRARY_PATH=$GFCPP/lib
+fi
+
+exname='invalidoption'
+
+if [ -f cpp/$1 ]
+then
+  exname=$1
+else
+  if [ -t 0 ]; then
+    echo Please select a GemFire C++ QuickStart example to run.
+    echo
+    echo 1. BasicOperations
+    echo 2. DataExpiration
+    echo 3. LoaderListenerWriter
+    echo 4. RegisterInterest
+    echo 5. RemoteQuery
+    echo 6. HA Cache
+    echo 7. Exceptions
+    echo 8. DurableClient
+    echo 9. Security
+    echo 10.PutAllGetAllOperations
+    echo 11.Continuous Query
+    echo 12.Execute Functions
+    echo 13.DistributedSystem
+    echo 14.PoolWithEndpoints
+    echo 15.PoolRemoteQuery
+    echo 16.Pool Continuous Query
+    echo 17.Delta
+    echo 18.Multiuser Security
+    echo 19.RefIDExample
+    echo 20.Transactions
+    echo 21.TransactionsXA
+    echo 22.PdxRemoteQuery
+    echo 23.PdxSerializer
+    echo 24.PdxInstance
+    echo 25.PdxAutoSerializer
+    echo 26.Quit
+    echo
+  fi
+
+  while [ "$exname" == "invalidoption" ]
+  do
+    read -p "Enter option: " option
+    case "$option" in
+      "1")
+        exname='BasicOperations'
+      ;;
+      "2")
+        exname='DataExpiration'
+      ;;
+      "3")
+        exname='LoaderListenerWriter'
+      ;;
+      "4")
+        exname='RegisterInterest'
+      ;;
+      "5")
+        exname='RemoteQuery'
+      ;;
+      "6")
+        exname='HACache'
+      ;;
+      "7")
+        exname='Exceptions'
+      ;;
+      "8")
+        exname='DurableClient'
+      ;;
+      "9")
+        exname='Security'
+      ;;
+      "10")
+        exname='PutAllGetAllOperations'
+      ;;
+      "11")
+        exname='CqQuery'
+      ;;
+      "12")
+              exname='ExecuteFunctions'
+      ;;
+      "13")
+        exname='DistributedSystem'
+      ;;
+      "14")
+        exname='PoolWithEndpoints'
+      ;;
+      "15")
+        exname='PoolRemoteQuery'
+      ;;
+      "16")
+        exname='PoolCqQuery'
+      ;;
+      "17")
+        exname='Delta'
+      ;;
+      "18")
+        exname='MultiuserSecurity'
+      ;;
+      "19")
+        exname='RefIDExample'
+      ;;
+      "20")
+        exname='Transactions'
+        ;;
+          "21")
+        exname='TransactionsXA'
+                ;;
+      "22")
+        exname='PdxRemoteQuery'
+        ;;
+      "23")
+        exname='PdxSerializer'
+        ;;
+      "24")
+        exname='PdxInstance'
+      ;;
+      "25")
+        exname='PdxAutoSerializer'
+      ;;
+      "26")
+        exname='Quit'
+    exit
+      ;;
+    esac
+  done
+fi
+
+echo Running GemFire C++ QuickStart example $exname ...
+
+export CLASSPATH="$CLASSPATH:${NATIVECLIENT_DIR}/SampleCode/quickstart/lib/javaobject.jar:$GEMFIRE/lib/gfSecurityImpl.jar"
+export PATH="$PATH:$GEMFIRE/bin"
+if [ -z "$LD_LIBRARY_PATH" ]
+then
+    LD_LIBRARY_PATH=${NATIVECLIENT_DIR}/lib
+else
+    LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${NATIVECLIENT_DIR}/lib
+fi
+
+if [ ! -d gfecs ]
+then
+  mkdir gfecs
+fi
+
+
+if [ "$exname" != "Security" ]
+  then
+    if [ "$exname" != "MultiuserSecurity" ]
+      then
+        if [[ "$exname" != "PoolRemoteQuery" && "$exname" != "Delta" && "$exname" != "ExecuteFunctions" ]]
+          then
+            gfsh start server \
+                --cache-xml-file=${CMAKE_BINARY_DIR}/XMLs/server$exname.xml \
+                --mcast-port=0 \
+                --dir=gfecs \
+                --include-system-classpath \
+                --name=the-server
+        else
+          gfsh start locator \
+            --port=34756 \
+            --dir=gfecs \
+            --name=the-locator
+          gfsh start server \
+            --cache-xml-file=${CMAKE_BINARY_DIR}/XMLs/server$exname.xml \
+            --mcast-port=0 \
+            --dir=gfecs \
+            --locators=localhost[34756] \
+            --include-system-classpath \
+            --name=the-server
+        fi
+    else
+      gfsh start server \
+        --cache-xml-file=${CMAKE_BINARY_DIR}/XMLs/server$exname.xml \
+        --mcast-port=0 \
+        --dir=gfecs \
+        --name=the-server \
+        --include-system-classpath \
+        --J=-Dsecurity-client-authenticator=templates.security.DummyAuthenticator.create \
+        --J=-Dsecurity-authz-xml-uri=${CMAKE_BINARY_DIR}/XMLs/authz-dummy.xml \
+        --J=-Dsecurity-client-accessor=templates.security.XmlAuthorization.create
+  fi
+else
+   gfsh start server \
+        --cache-xml-file=${CMAKE_BINARY_DIR}/XMLs/server$exname.xml \
+        --mcast-port=0 \
+        --dir=gfecs \
+        --name=the-server \
+        --include-system-classpath \
+        --J=-Dsecurity-client-authenticator=templates.security.PKCSAuthenticator.create \
+        --J=-Dsecurity-publickey-filepath=${CMAKE_BINARY_DIR}/keystore/publickeyfile \
+        --J=-Dsecurity-publickey-pass=gemfire \
+        --J=-Dsecurity-authz-xml-uri=${CMAKE_BINARY_DIR}/XMLs/authz-pkcs.xml \
+        --J=-Dsecurity-client-accessor=templates.security.XmlAuthorization.create
+fi
+
+if [ "$exname" == "DistributedSystem" ]
+then
+  if [ ! -d gfecs2 ]
+  then
+    mkdir gfecs2
+  fi
+  gfsh start server \
+    --name=the-second-server \
+    --mcast-port=0 \
+    --dir=gfecs2 \
+    --include-system-classpath \
+    --server-port=40405 \
+    --cache-xml-file=${CMAKE_BINARY_DIR}/XMLs/server$exname\2.xml
+fi
+
+
+if [ "$exname" == "HACache"  ]
+then
+  if [ ! -d gfecs2 ]
+  then
+    mkdir gfecs2
+  fi
+  gfsh start server \
+    --cache-xml-file=${CMAKE_BINARY_DIR}/XMLs/server$exname\2.xml \
+    --mcast-port=0 \
+    --dir=gfecs2 \
+    --include-system-classpath \
+    --name=the-second-server
+fi
+
+if [ "$exname" == "ExecuteFunctions" ]
+then
+  if [ ! -d gfecs2 ]
+  then
+    mkdir gfecs2
+  fi
+  gfsh start server \
+    --cache-xml-file=${CMAKE_BINARY_DIR}/XMLs/server$exname\2.xml \
+    --mcast-port=0 \
+    --dir=gfecs2 \
+    --locators=localhost[34756] \
+    --include-system-classpath \
+    --name=the-second-server
+fi
+success=0
+if [ "$exname" != "Security" ]
+then
+  echo "starting client security less"
+else
+  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPENSSL
+fi
+
+if [ "Darwin" = `uname` ]
+then
+    export DYLD_LIBRARY_PATH=$LD_LIBRARY_PATH
+fi
+
+$DEBUGGER ./$exname
+success=$?
+
+gfsh stop server --dir=gfecs
+
+if [[ "$exname" == "PoolRemoteQuery" || "$exname" == "Delta" || "$exname" == "ExecuteFunctions" ]]
+   then
+    gfsh stop locator --dir=gfecs
+fi
+
+if [ "$exname" == "HACache" -o "$exname" == "DistributedSystem" ]
+then
+  echo CacheServer 2 stopped
+  gfsh stop server --dir=gfecs2
+fi
+
+if [ "$exname" == "ExecuteFunctions" ]
+then
+  gfsh stop server --dir=gfecs2
+fi
+
+if [ $success -ne "0" ]; then
+  exit 1
+fi
+
+echo Finished example $exname.
+

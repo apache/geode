@@ -1,0 +1,28 @@
+cmake_minimum_required(VERSION 3.4)
+project(templates.security)
+
+#find_package(OpenSSL 1.0.1 REQUIRED)
+set (OPENSSLLIB ${OPENSSL}/lib/libeay32.lib)
+
+find_package(NativeClient REQUIRED PATHS ../../SampleCode/quickstart)
+
+file(GLOB_RECURSE SOURCES "*.cpp")
+
+add_library(securityImpl SHARED ${SOURCES})
+
+include_directories(${NATIVECLIENT_INCLUDE_DIR})
+include_directories(${OPENSSL}/include)
+
+if (${WIN32})
+  set(GFCPPCACHE "${NATIVECLIENT_LIBRARIES}/gfcppcache${CMAKE_IMPORT_LIBRARY_SUFFIX}")
+else ()
+  get_filename_component(GFCPPCACHE "${NATIVECLIENT_LIBRARIES}/${CMAKE_SHARED_LIBRARY_PREFIX}gfcppcache${CMAKE_SHARED_LIBRARY_SUFFIX}" ABSOLUTE)
+endif()
+
+target_link_libraries(securityImpl
+  PUBLIC
+    ${GFCPPCACHE}
+    ${OPENSSLLIB}
+)
+
+install(TARGETS securityImpl RUNTIME DESTINATION ${GFCPP}/bin)

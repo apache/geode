@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Well-formed and valid xml file -->
+<client-cache
+    xmlns="http://schema.pivotal.io/gemfire/gfcpp-cache"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://schema.pivotal.io/gemfire/gfcpp-cache
+                        http://schema.pivotal.io/gemfire/gfcpp-cache/gfcpp-cache-9.0.xsd"
+    version="9.0">
+
+ <root-region name = "Root1" >
+    <region-attributes id="root1" scope="local" caching-enabled="true" initial-capacity="25" load-factor="0.32" concurrency-level="10" lru-entries-limit = "35">
+       <region-idle-time>
+         <expiration-attributes timeout="20" action="destroy"/> 
+       </region-idle-time>
+       <entry-idle-time>
+         <expiration-attributes timeout="10" action="invalidate"/>
+       </entry-idle-time>
+       <region-time-to-live>
+         <expiration-attributes timeout="0" action="local-destroy"/>
+       </region-time-to-live>
+       <entry-time-to-live>
+         <expiration-attributes timeout="0" action="local-invalidate"/>
+       </entry-time-to-live>
+    </region-attributes>
+
+
+    <region name="SubRegion1">
+         <region-attributes id="sub1" scope="local" caching-enabled="true" initial-capacity="23" load-factor=".89" concurrency-level="52">
+         </region-attributes>
+         
+         <region name="SubRegion11" refid="sub1">
+         	<region-attributes id="sub11" initial-capacity="10" />
+    	 </region>
+    </region>
+    
+    <region name="SubRegion2" refid="sub11">
+    </region>
+
+ </root-region>
+
+
+ <root-region name= "Root2" refid="root1">
+    <region-attributes concurrency-level="16" >                                                         
+      <region-time-to-live>
+        <expiration-attributes timeout="0" action="destroy"/>
+      </region-time-to-live>
+       <region-idle-time>
+        <expiration-attributes timeout="0" action="invalidate"/>
+      </region-idle-time>
+    </region-attributes>
+
+    <region name="SubRegion21" refid="sub1">
+         <region-attributes refid="sub11">
+            <region-idle-time>
+               <expiration-attributes timeout="20" action="destroy"/>
+            </region-idle-time>
+            <entry-idle-time>
+               <expiration-attributes timeout="10" action="invalidate"/>
+            </entry-idle-time>
+         </region-attributes>
+     </region>
+ </root-region>
+
+</client-cache>

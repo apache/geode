@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Well-formed and valid xml file -->
+<client-cache xmlns="http://geode.apache.org/schema/cache"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+              version="1.0">
+
+  <region name = "root1" >
+     <region-attributes refid="CACHING_PROXY" pool-name="poolName1"/>
+  </region>	
+  <region name = "root2" >
+     <region-attributes refid="PROXY" pool-name="poolName2"/>
+  </region>	
+  
+  <pool name="poolName1"  subscription-enabled="true">
+	<server host="localhost" port="40404" />    
+  </pool>
+  <pool name="poolName2"  subscription-enabled="true">
+    <server host="localhost" port="40404" /> 
+  </pool>
+
+</client-cache>
+
+

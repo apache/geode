@@ -1,0 +1,92 @@
+# Shared Doxygen configuration
+
+# Look in subdirectories for files to be documented
+RECURSIVE              = YES
+
+# Generate brief descriptions like Javadoc does
+JAVADOC_AUTOBRIEF      = YES
+
+# Always generate a detailed description of functions
+ALWAYS_DETAILED_SEC    = YES
+
+# Include a detailed description of the class/file like Javadoc does
+DETAILS_AT_TOP         = YES
+
+# We're generating documentation for C
+OPTIMIZE_OUTPUT_FOR_C  = YES
+
+# We're not generating documentation for Java
+OPTIMIZE_OUTPUT_JAVA   = NO
+
+# Don't show #include information, it is not interesting
+SHOW_INCLUDE_FILES     = NO
+
+# Document c, cpp, h, and dox files
+FILE_PATTERNS          = *.c *.cpp *.h *.dox
+
+# Don't include the source code in the generated HTML
+SOURCE_BROWSER         = NO
+
+# Generate HTML output
+GENERATE_HTML          = YES
+
+# Don't generate these kinds of output
+GENERATE_LATEX         = NO
+GENERATE_RTF           = NO
+GENERATE_MAN           = NO
+GENERATE_XML           = NO
+
+# Preprocess macros
+ENABLE_PREPROCESSING   = YES
+
+# Don't generate class diagrams
+CLASS_DIAGRAMS         = NO
+
+# Add aliases to selectivly hide comments
+ALIASES = "cacheserver=\if cacheserver" \
+	  "endcacheserver=\endif"  \
+	  "nativeclient=\if nativeclient"  \
+	  "endnativeclient=\endif" \
+	  "notsupported_cacheserver=\if cacheserver \
+This functionality is unsupported in the C++ Cache Server Product. \endif" \
+	  "notsupported_nativeclient=\if nativeclient \
+This functionality is unsupported in the Native Client Product. \endif" \
+
+ALPHABETICAL_INDEX     = YES
+ENABLED_SECTIONS       = nativeclient
+EXCLUDE_PATTERNS       = */impl/* 
+EXTRACT_PRIVATE        = NO
+EXTRACT_STATIC         = YES
+FILE_PATTERNS          = *.h *.hpp
+GENERATE_TODOLIST      = NO
+GENERATE_TREEVIEW      = YES
+HIDE_UNDOC_CLASSES     = YES
+HIDE_UNDOC_MEMBERS     = YES
+HTML_FOOTER            = @CMAKE_CURRENT_SOURCE_DIR@/footer.html
+IMAGE_PATH             = @CMAKE_CURRENT_SOURCE_DIR@
+INPUT                  = @CMAKE_CURRENT_SOURCE_DIR@/../../clicache
+JAVADOC_AUTOBRIEF      = YES
+MACRO_EXPANSION        = YES
+OUTPUT_DIRECTORY       = @CMAKE_CURRENT_BINARY_DIR@
+PROJECT_NAME           = "@GEMFIRE_PRODUCTNAME@ Cache .NET Reference"
+PROJECT_NUMBER         = "@PRODUCT_VERSION_SHORT@"
+PREDEFINED             = "internal=private" \
+                         "STATICCLASS=" \
+                         "GFINDEXER(x)=Item"
+CPP_CLI_SUPPORT        = YES
+SKIP_FUNCTION_MACROS   = NO
+SORT_BRIEF_DOCS        = YES
+SORT_MEMBER_DOCS       = YES
+WARNINGS               = YES
+WARN_IF_DOC_ERROR      = NO
+WARN_IF_UNDOCUMENTED   = YES
+WARN_LOGFILE           = cliDoxygenWarnings.log
+SOURCE_BROWSER         = NO
+VERBATIM_HEADERS       = NO
+SHOW_INCLUDE_FILES     = NO
+SHOW_USED_FILES        = NO
+SHOW_DIRECTORIES       = NO
+INTERNAL_DOCS          = NO
+INLINE_INHERITED_MEMB  = YES
+INHERIT_DOCS           = YES
+FULL_PATH_NAMES        = NO

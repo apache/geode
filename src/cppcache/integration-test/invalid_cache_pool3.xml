@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Well-formed and valid xml file -->
+<client-cache
+    xmlns="http://schema.pivotal.io/gemfire/gfcpp-cache"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://schema.pivotal.io/gemfire/gfcpp-cache
+                        http://schema.pivotal.io/gemfire/gfcpp-cache/gfcpp-cache-9.0.xsd"
+    version="9.0">
+
+ <root-region name = "Root1" >
+    <region-attributes caching-enabled="true" pool-name="test_pool_3" />
+
+    <region name="SubRegion1">
+         <region-attributes caching-enabled="false" pool-name="test_pool_4" />
+    </region>
+
+ </root-region>
+
+ <root-region name= "Root2">
+    <region-attributes caching-enabled="false" pool-name="test_pool_2" /> 
+  </root-region>
+
+  <pool
+    free-connection-timeout = "12345"    
+    idle-timeout = "5555"
+    load-conditioning-interval = "23456"
+    max-connections = "7"
+    min-connections = "3"
+    name = "test_pool_5"
+    ping-interval = "12345"
+    read-timeout = "23456"
+    retry-attempts = "3"
+    server-group = "ServerGroup1"
+    socket-buffer-size = "32768"
+    statistic-interval = "10123"
+    subscription-ack-interval = "567"
+    subscription-enabled = "true"
+    subscription-message-tracking-timeout = "900123"    
+    subscription-redundancy = "0"    
+    thread-local-connections = "5"
+  >
+    <locator host="localhost" port="LOC_PORT1" />
+    <!-- locator host="localhost" port="34757" / -->
+  </pool>
+  
+  <pool
+    free-connection-timeout = "23456"    
+    idle-timeout = "6666"
+    load-conditioning-interval = "34567"
+    max-connections = "8"
+    min-connections = "2"
+    name = "test_pool_6"
+    ping-interval = "23456"
+    read-timeout = "34567"
+    retry-attempts = "5"
+    server-group = "ServerGroup2"
+    socket-buffer-size = "65536"
+    statistic-interval = "20345"
+    subscription-ack-interval = "678"
+    subscription-enabled = "false"
+    subscription-message-tracking-timeout = "800222"    
+    subscription-redundancy = "1"    
+    thread-local-connections = "3"
+  >
+    <server host="localhost" port="HOST_PORT1" />
+    <server host="localhost" port="HOST_PORT2" />
+  </pool>
+  
+</client-cache>

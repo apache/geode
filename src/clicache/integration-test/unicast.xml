@@ -1,0 +1,860 @@
+<?xml version="1.0"?>
+
+<!-- This is the Ant build file for running C tests.  It is designed 
+     to be invoked from the build.xml Ant script in the top level directory
+     of the GemFire tree, and expects to inherit the properties set
+     there.
+  -->
+
+<project name ="gemfire" default="usage">
+  <description>Runs GemFire C++ Tests</description>
+  <target name="usage">
+    <echo>
+    This script is designed to be invoked from the build.xml script
+    in the base directory.
+    </echo>
+  </target>
+
+  <taskdef name="conditional"
+    classname="com.gemstone.tools.ant.taskdefs.Conditional">
+    <classpath>
+      <pathelement location="${basedir}/../../../buildfiles/taskdefsV10.jar" />
+    </classpath>
+  </taskdef>
+
+
+  <target name="-run-testX">
+    <description>
+       Requires that the testName property be set.
+       If the testScript property is set then bash is used as the executable.
+       The testTimeout property can be set to the number of seconds to
+       wait before timing out. It defaults to 30 seconds.
+       If a test should only be run once against a single sytem then set
+       the testRunOnce property.
+    </description>
+    <conditional unless="cpp.testcase">
+      <conditional unless="cpp.testset">
+        <property name="thisTestOk" value="true"/>
+      </conditional>
+    </conditional> 
+    <conditional if="cpp.testcase">
+      <condition property="thisTestOk">
+        <equals arg1="${testName}" arg2="${cpp.testcase}"/>
+      </condition>
+    </conditional>
+    <conditional if="cpp.testset">
+      <condition property="thisTestOk">
+        <matches pattern="\\*${testName}\\*" string="${cpp.testset}"/>
+      </condition>
+    </conditional>
+    <condition property="okToRun">
+      <and>
+        <or>
+          <not> <isset property="testRunOnce"/> </not>
+          <not> <isset property="userSystem"/> </not>
+          <equals arg1="${iterations.count}" arg2="1"/>
+        </or>
+        <isset property="thisTestOk"/>
+      </and>
+    </condition>
+
+    <conditional unless="okToRun">
+       <echo level="info" message="Skipping test ${testName}"/>
+    </conditional>
+    <conditional if="okToRun">
+      <condition property="myTimeout" value="${testTimeout}">
+         <isset property="testTimeout"/>
+      </condition>
+    <!--  set the timeout for an individual test to 30 minutes -->
+      <condition property="myTimeout" value="1800">
+         <and>
+         <not><isset property="testTimeout"/></not>
+         <not><or>
+           <isset property="msdev"/>
+           <isset property="msdev.profile"/>
+           <isset property="cpp-debug"/>
+         </or></not>
+         </and>
+      </condition>
+      <condition property="myTimeout" value="9999999">
+         <or>
+           <isset property="msdev"/>
+           <isset property="msdev.profile"/>
+           <isset property="cpp-debug"/>
+         </or>
+      </condition>
+      <condition property="myExe" value="cmd">
+         <isset property="msdev.profile"/>
+      </condition>
+      <condition property="myExe" value="msdev">
+         <isset property="msdev"/>
+      </condition>
+      <condition property="msdevTestName" value="${cpptest.exedir}/${testName}.exe">
+         <isset property="msdev"/>
+      </condition>
+      <condition property="msdevTestName" value="/c ftime.bat ${cpptest.exedir}/${testName}">
+         <isset property="msdev.profile"/>
+      </condition>
+      <condition property="myExe" value="bash">
+         <isset property="testScript"/>
+      </condition>
+      <condition property="myExe" value="${cpptest.exedir}/${testName}">
+         <not><isset property="testScript"/></not>
+      </condition>
+      <condition property="myPath" value="${cpptest.exedir}${path.separator}${hiddenlib.dir}/debug${path.separator}${product.library.dir}${path.separator}${myenv.PATH}">
+         <isset property="cpp-debug"/>
+      </condition>
+      <condition property="myPath" value="${cpptest.exedir}${path.separator}${myenv.PATH}">
+         <and>
+         <not><isset property="cpp-debug"/></not>
+         <isset property="testScript"/>
+         </and>
+      </condition>
+      <condition property="myPath" value="${cpptest.exedir}${path.separator}${product.library.dir}${path.separator}${myenv.PATH}">
+         <and>
+         <not><isset property="cpp-debug"/></not>
+         <not><isset property="testScript"/></not>
+         </and>
+      </condition>
+      <condition property="test.library.dir" value="${cpptest.exedir}${path.separator}${product.library.dir}">
+         <and>
+         <not><isset property="cpp-debug"/></not>
+         <not><isset property="testScript"/></not>
+         </and>
+      </condition>
+      <condition property="test.library.dir" value="${cpptest.exedir}${path.separator}${hiddenlib.dir}/debug${path.separator}${product.library.dir}">
+         <isset property="cpp-debug"/>
+      </condition>
+      <property name="additionalLibPath" value=""/>
+      <tstamp>
+        <format property="test.time" pattern="HH:mm:ss"/>
+      </tstamp>
+      <echo level="info" message="${test.time}: ${testName} timeout=${myTimeout} seconds"/>
+      <condition property="working.dir" value="${tst_res}/cpp/${test.type}/native-client-only">
+        <contains string="${testName}" substring="thinclient" casesensitive="no"/>
+      </condition>
+      <condition property="working.dir" value="${tst_res}/cpp/${test.type}">
+        <not><contains string="${testName}" substring="thinclient" casesensitive="no"/></not>
+      </condition>
+     
+      <!-- echo message="Working dir is ${working.dir}"/ -->
+      <exec executable="bash" outputProperty="mport">
+        <arg line=" -c '((res=( ( $RANDOM * ( 52999 - 21111 + 1 ) ) / 53767 ) + 32111)); echo $res'"/>
+      </exec>
+      <exec executable="bash" outputProperty="bbport">
+        <arg line=" -c '((res=( ( $RANDOM * ( 31999 - 21111 + 1 ) ) / 32767 ) + 21115)); echo $res'"/>
+      </exec>
+      <exec executable="bash" outputProperty="maddr">
+        <arg line=" -c '((res=( ( $RANDOM * ( 255 - 1 + 1 ) ) / 32767 ) + 1)); echo $res'"/>
+      </exec>
+
+      <condition property="profiler.cmd" value="${valgrind.dir}/bin/valgrind --tool=${vtool} --log-file=./${vtool}-%lu-%d-%d.out ${vtool.args}">
+         <and>
+         <isset property="valgrind.dir"/>
+         <isset property="vtool"/>
+         </and>
+      </condition>
+      <condition property="profiler.cmd" value="">
+         <not><isset property="vtool"/></not>
+      </condition>
+      <condition property="valgrind.dir" value="">
+         <not><isset property="vtool"/></not>
+      </condition>
+      <!--
+      <property name="profiler.cmd" value="bcheck -all -o ./bcheck-%lu-%d-%d.out ${vtool.args}"/>
+      -->
+
+	  
+      <property name="path.dir" value="${product.library.dir}${path.separator}${myPath}${path.separator}${framework.dir}/lib${additionalLibPath}${path.separator}${openssl.dir}/bin"/>
+      <!--property name="path.dir" value="${myPath}${path.separator}${framework.dir}/lib${additionalLibPath}${path.separator}${valgrind.dir}/bin${path.separator}${openssl.dir}/lib${path.separator}${product.library.dir}"/-->
+      <!-- echo message="PATH is name=${path.dir}"/ -->
+      <!-- echo message="Port is ${mport}"/ -->
+      <!-- echo message="Addr is 224.10.13.${maddr}"/ -->
+      <!-- echo message="Cacheservers will use 224.10.13.${maddr}:${mport} for discovery."/ -->
+      <exec executable="${myExe}"
+                          resultproperty="testResult"
+                          failifexecutionfails="false"
+                          output="${tst_res}/cpp/${test.type}/${testName}.out"
+                          dir="${working.dir}">
+        <env key="LD_LIBRARY_PATH" path="${test.library.dir}${path.separator}${framework.dir}/lib${additionalLibPath}${path.separator}${hiddenlib.dir}${path.separator}${hidden.gpl.dir}${path.separator}${openssl.dir}/lib"/>
+        <env key="PATH" path="${path.dir}"/>
+        <env key="TESTSRC" path="${basedir}"/>    
+        <env key="GFCPP" path="${product.dir}"/>
+        <env key="GF_JAVA" path="${gfe.jre}/bin/java"/>
+        <env key="GFJAVA" path="${gfe.dir}"/>
+        <env key="GFE_LOGLEVEL" value="${gfeLogLevel}"/>
+        <env key="GFE_SECLOGLEVEL" value="${gfeSecLogLevel}"/>
+        <env key="MCAST_PORT" value="${mport}"/>
+        <env key="BB_PORT" value="${bbport}"/>
+        <env key="MCAST_ADDR" value="224.10.13.${maddr}"/>
+        <env key="TIMEBOMB" value="${myTimeout}"/>
+        <env key="TESTNAME" value="${testName}" />
+        <env key="CLASSPATH" path="${gfe.dir}/lib/server-dependencies.jar:${framework.dir}/lib/javaobject.jar:${gfe.dir}/lib/antlr.jar:${gfe.dir}/lib/gfSecurityImpl.jar" />
+        <env key="PROFILERCMD" value="${profiler.cmd}" />
+	<env key="BUG481" value="${BUG481}" />
+        <arg line="${msdevTestName}"/>
+      </exec>
+      <condition property="unitTestFailed">
+        <not>
+           <equals arg1="${testResult}" arg2="0"/>
+        </not>
+      </condition>
+      <property name="xml.reports" 
+                value="${tst_res}/cpp/${test.type}/xml-reports"/>
+      <conditional if="unitTestFailed">
+        <echo level="info" message="FAILED: c++ unicast test ${testName}"/>
+        <propertyfile file="${tst_res}/cpp/${test.type}/cppTestFailures" comment="Number of Tests that Failed">
+          <entry key="failureCount" type="int" operation="+" value="1"/>
+          <entry key="failedTests" operation="+" value=" ${testName}"/>
+        </propertyfile>
+        <copy todir="${errorsDir}" preservelastmodified="true">
+           <fileset dir="${tst_res}/cpp/${test.type}" includes="${testName}*"/>
+        </copy>
+        <loadfile srcfile="${tst_res}/cpp/${test.type}/${testName}.out" property="output">
+          <filterchain>
+            <filterreader classname="org.apache.tools.ant.filters.TailFilter">
+              <param name="lines" value="15"/>
+            </filterreader>
+          </filterchain>
+        </loadfile>
+
+        <concat append="no" destfile="${xml.reports}/${testName}.xml">
+<![CDATA[<testsuite errors="0" failures="1" name="${testName}" tests="1">
+  <testcase classname="${testName}" name="${testName}">
+    <failure message="Log lines that contain suspect phrases">]]>
+<![CDATA[<![CDATA[
+${output}
+]]>]]&gt;
+<![CDATA[      </failure>
+  </testcase>
+</testsuite>]]>
+        </concat>
+      </conditional>
+      <conditional unless="unitTestFailed">
+        <concat append="no" destfile="${xml.reports}/${testName}.xml">
+<![CDATA[<testsuite errors="0" failures="0" name="${testName}" tests="1">
+  <testcase classname="${testName}" name="${testName}"/>
+</testsuite>]]>
+        </concat>
+      </conditional>
+    </conditional>
+  </target>
+
+  <tstamp>
+    <format property="time.stamp" pattern="yyyyMMddHHmmss"/>
+  </tstamp>
+  <propertyregex property="cpp.sanitizedtestcase"
+                 override="true"
+                 input="${cpp.testcase}"
+                 regexp="[+*?]"
+                 replace="_"
+                 global="true" />
+
+  <target name="stable-tests">
+    <property name="ctest" value="ctest"/>
+    <property name="cpp.testcase" value="."/>
+    <conditional if="isWindows">
+      <property name="ctest.log" value="%TESTNAME%.log" />
+    </conditional>
+    <property name="ctest.log" value="${TESTNAME}.log" />
+    <exec executable="${ctest}" dir="${build.dir}/build-${cmake-build-type}/tests/cppcache" failonerror="true">
+      <env key="LOG" value="|tee ${ctest.log}"/>
+      <arg value="-C"/>
+      <arg value="${cmake-build-type}"/>
+      <arg value="-j${parallelTests}"/>
+      <arg line="${ctest.args}"/>
+      <arg value="-L"/>
+      <arg value="STABLE"/>     
+      <arg value="-O"/>
+      <arg value="STABLE_${time.stamp}_tests.log"/>
+    </exec>
+  </target>
+
+  <target name="flaky-tests">
+    <property name="ctest" value="ctest"/>
+    <property name="cpp.testcase" value="."/>
+    <conditional if="isWindows">
+      <property name="ctest.log" value="%TESTNAME%.log" />
+    </conditional>
+    <property name="ctest.log" value="${TESTNAME}.log" />
+    <exec executable="${ctest}" dir="${build.dir}/build-${cmake-build-type}/tests/cppcache" failonerror="true">
+      <env key="LOG" value="|tee ${ctest.log}"/>
+      <arg value="-C"/>
+      <arg value="${cmake-build-type}"/>
+      <arg value="-j${parallelTests}"/>
+      <arg line="${ctest.args}"/>
+      <arg value="-L"/>
+      <arg value="FLAKY"/>     
+      <arg value="-O"/>
+      <arg value="FLAKY_${time.stamp}_tests.log"/>
+    </exec>
+  </target>
+
+	<target name="unicast-tests">
+		<property name="ctest" value="ctest"/>
+		<property name="cpp.testcase" value="."/>
+    <conditional if="isWindows">
+      <property name="ctest.log" value="%TESTNAME%.log" />
+    </conditional>
+    <property name="ctest.log" value="${TESTNAME}.log" />
+		<exec executable="${ctest}" dir="${build.dir}/build-${cmake-build-type}/tests/cppcache" failonerror="true">
+			<env key="LOG" value="|tee ${ctest.log}"/>
+			<arg value="-C"/>
+			<arg value="${cmake-build-type}"/>
+			<arg value="-j${parallelTests}"/>
+			<arg line="${ctest.args}"/>
+			<arg value="-R"/>
+			<arg value="${cpp.testcase}"/>			
+			<arg value="-O"/>
+            <arg value="${cpp.sanitizedtestcase}_${time.stamp}_tests.log"/>			
+		</exec>
+	</target>
+	
+<target name="unicast-testsX">
+
+    <!-- LD_LIBRARY_PATH and PATH are both set to the lib directory so
+         that the loader can find the shared-library/dll and we don't 
+         have to have a different exec task for each operating system -->
+
+    <echo>running tests</echo>
+
+	<!-- added for setting custom new and delete operators -->
+    <condition property="BUG481" value="">
+       <not><isset property="BUG481"/></not>
+    </condition>
+	  
+    <delete file="${tst_res}/cpp/${test.type}/cppTestFailures" quiet="true"/>
+    <propertyfile file="${tst_res}/cpp/${test.type}/cppTestFailures" comment="Number of Tests that Failed">
+      <entry key="failureCount" type="int" value="0"/>
+      <entry key="failedTests" value=""/>
+    </propertyfile>
+
+    <exec executable="bash" outputProperty="unique.mcast.port">
+      <arg line=" -c '((res=( ( $RANDOM * ( 52999 - 21111 + 1 ) ) / 53767 ) + 32111)); echo $res'"/>
+    </exec>
+
+    <copy todir="${tst_res}/cpp/${test.type}/native-client-only" preservelastmodified="true">
+      <fileset dir="${tests.cppcache.src.dir}/">
+        <include name="*.dtd"/>
+      </fileset>
+    </copy>
+    
+    <propertyfile file="${tst_res}/cpp/${test.type}/native-client-only/gfcpp.properties">
+      <entry key="log-level" value="${logLevel}"/>
+      <!--entry key="stacktrace-enabled" value="true"/-->
+      <!--entry key="license-file" value="${hidden.dir}/internal.license.nativeclientonly.zip"/-->
+    </propertyfile>
+
+    <propertyfile file="${tst_res}/cpp/${test.type}/gfcpp.properties">
+      <entry key="log-level" value="${logLevel}"/>
+      <!--entry key="stacktrace-enabled" value="true"/-->
+      <!--entry key="cache-server-version" value="5.7"/-->
+      <!--entry key="license-file" value="${hidden.dir}/internal.license.nativeclientonly.zip"/-->
+    </propertyfile>    
+    <!--propertyfile file="${tst_res}/cpp/${test.type}/native-client-only/gemfire.properties">
+      <entry key="log-level" value="Config"/>
+    </propertyfile-->    
+  <parallel threadCount='${parallelTests}'>
+    <antcall target="-run-test">
+       <param name="testName" value="testSTLport"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientPutAll"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientPutAllWithCallBckArg"/>
+    </antcall>
+    <antcall target="-run-test">
+  	       <param name="testName" value="testThinClientRemoveAll"/>
+  	    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientGatewayTest"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientPutAllTimeout"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientPutGetAll"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientCacheables"/>
+       <param name="testTimeout" value="1800"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientNotification"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientDistOps"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientDistOps2"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientFailover"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientFailover2"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientFailover3"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientInterestList"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientInterestList2"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientFailoverInterest"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientFailoverInterest2"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientFailoverInterestAllWithCache"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientRegex"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientRegex2"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientRegex3"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientRIwithlocalRegionDestroy"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientIntResPolKeysInv"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientFailoverRegex"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientHADistOps"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientHAFailover"/>
+       <param name="testTimeout" value="3600"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientHAFailoverRegex"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientHAMixedRedundancy"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientHAQueryFailover"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientHAEventIDMap"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientHAPeriodicAck"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testMixedHACPPRegions"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientLRUExpiration"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientHeapLRU"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientPoolAttrTest"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientPoolLocator"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientPoolServer"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientRemoteQueryRS"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientRemoteQuerySS"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientRemoteQueryFailover"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientRemoteRegionQuery"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientLocator"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientSSL"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientSSLWithSecurityAuthz"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientSecurityAuthentication"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientSecurityAuthenticationMU"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientSecurityAuthorization"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientSecurityAuthorizationMU"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientSecurityPostAuthorization"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientSecurityDH"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientSecurityDH_MU"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientSecurityMultiUserTest"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientSecurityCQAuthorization"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientSecurityCQAuthorizationMU"/>
+    </antcall>
+    <!--antcall target="-run-test">
+       <param name="testName" value="testThinClientSecurityDurableCQAuthorizationMU"/>
+    </antcall-->
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientDurableConnect"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientDurable"/>
+       <param name="testTimeout" value="3600"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientDurableFailover"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientDurableInterest"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientDurableReconnect"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientRemoteQueryTimeout"/>
+       <param name="testTimeout" value="3600"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientRegionQueryExclusiveness"/>
+    </antcall>
+    <antcall target="-run-test">
+      <param name="testName" value="testThinClientListenerCallbackArgTest"/>
+    </antcall>
+    <antcall target="-run-test">
+      <param name="testName" value="testThinClientPoolRedundancy"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientRegionQueryDifferentServerConfigs"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientStatistics"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientBackwardCompatibility"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientListenerWriter"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientWriterException"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientCallbackArg"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testLogger"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testSystemProperties"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testFWHelper"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testDunit"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testFwPerf"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testEntriesMap"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testEntriesMapForVersioning"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testLinkage"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testLRUList"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testRegionMap"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testDataOutput"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testSpinLock"/>
+    </antcall>
+    <conditional unless="isSolaris">
+      <antcall target="-run-test">
+         <param name="testName" value="testTimedSemaphore"/>
+      </antcall>
+    </conditional>
+    <antcall target="-run-test">
+       <param name="testName" value="testSharedPtr"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testNativeCompareBasic"/>
+    </antcall>
+    <!--antcall target="-run-test">
+       <param name="testName" value="testLicense"/>
+    </antcall-->
+    <antcall target="-run-test">
+       <param name="testName" value="testConnect"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testSerialization"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testCacheless"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testExpiration"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testCache"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testRegionTemplateArgs"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testXmlCacheCreationWithOverFlow"/>
+       <param name="additionalLibPath" value="${path.separator}${sqlite.dir}/lib"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testXmlCacheCreationWithPools"/>
+       <param name="additionalLibPath" value="${path.separator}${bdb.library.dir}"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testXmlCacheCreationWithRefid"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testOverflowPutGet"/>
+       <param name="additionalLibPath" value="${path.separator}${bdb.library.dir}"/>
+    </antcall>
+	<antcall target="-run-test">
+       <param name="testName" value="testOverflowPutGetSqLite"/>
+       <param name="additionalLibPath" value="${path.separator}${sqlite.dir}/lib"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testRegionAccessThreadSafe"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientConflation"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientListenerInit"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testAttributesFactory"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientBigValue"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testAttributesMutator"/>
+    </antcall>
+	<antcall target="-run-test">
+       <param name="testName" value="testThinClientCacheablesLimits"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientInterest1"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientInterest1Cacheless"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientInterest2"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientInterest3"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientInterest3Cacheless"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientInterestNotify"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientCq"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientCqDurable"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientCqIR"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientCqFailover"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientCqHAFailover"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientCqDelta"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientCacheableStringArray"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientPoolExecuteFunction"/>
+    </antcall>
+	<antcall target="-run-test">
+	<param name="testName" value="testThinClientPoolExecuteHAFunction"/>
+	  </antcall>
+	<antcall target="-run-test">
+      <param name="testName" value="testThinClientPoolExecuteFunctionPrSHOP"/>
+    </antcall>
+	<antcall target="-run-test">
+	  <param name="testName" value="testThinClientPoolExecuteHAFunctionPrSHOP"/>
+	</antcall>	
+     <antcall target="-run-test">
+           <param name="testName" value="testThinClientLocatorFailover"/>
+    </antcall>
+    <!--<antcall target="-run-test">
+       <param name="testName" value="testThinClientTracking"/>
+    </antcall> -->
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientTicket303"/>
+       <param name="additionalLibPath" value="${path.separator}${hidden.gpl.dir}"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientTicket317"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientTicket304"/>
+    </antcall>
+    
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientDisconnectionListioner"/>
+    </antcall>
+    
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientAfterRegionLive"/>
+    </antcall>
+    
+    <antcall target="-run-test">
+           <param name="testName" value="testThinClientPutWithDelta"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientDeltaWithNotification"/>
+       <param name="additionalLibPath" value="${path.separator}${bdb.library.dir}"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testCreateAndDestroyPool"/>
+    </antcall>
+    
+    <antcall target="-run-test">
+           <param name="testName" value="testThinClientNotificationWithDeltaWithoutcache"/>
+    </antcall>
+
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientClearRegion"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientGetInterests"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientContainsKeyOnServer"/>
+    </antcall>
+    <antcall target="-run-test">
+        <param name="testName" value="testThinClientLocalCacheLoader"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientMultiDS"/>
+    </antcall> 
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientPRSingleHop"/>
+       <param name="testTimeout" value="3600"/>
+    </antcall> 
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientPutAllPRSingleHop"/>
+       <param name="testTimeout" value="1800"/>
+    </antcall> 
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientPRPutAllFailover"/>
+    </antcall>
+    <antcall target="-run-test">
+       <param name="testName" value="testThinClientPartitionResolver"/>
+   </antcall>
+    <antcall target="-run-test">
+        <param name="testName" value="testThinClientListenerEvents"/>
+    </antcall>
+	<antcall target="-run-test">
+        <param name="testName" value="testThinClientRemoveOps"/>
+    </antcall>
+	<antcall target="-run-test">
+        <param name="testName" value="testThinClientPRSingleHopServerGroup"/>
+    </antcall>	
+	<antcall target="-run-test">
+        <param name="testName" value="testThinClientFixedPartitionResolver"/>
+    </antcall>	
+	<antcall target="-run-test">
+        <param name="testName" value="testThinClientTransactions"/>
+    </antcall>	
+	<antcall target="-run-test">
+        <param name="testName" value="testThinClientTransactionsXA"/>
+    </antcall>	
+	<antcall target="-run-test">
+        <param name="testName" value="testThinClientTXFailover"/>
+    </antcall>	
+  <antcall target="-run-test">
+        <param name="testName" value="testThinClientSSLWithPassword"/>
+  </antcall>
+	<antcall target="-run-test">
+		<param name="testName" value="testThinClientPdxTests"/>
+    <param name="testTimeout" value="1800"/> 
+    </antcall>
+  <antcall target="-run-test">
+    <param name="testName" value="testThinClientPdxSerializer"/>
+  </antcall>
+	<antcall target="-run-test">
+        <param name="testName" value="testThinClientPdxInstance"/>
+    </antcall>
+	<antcall target="-run-test">
+        <param name="testName" value="testThinClientPdxEnum"/>
+    </antcall>		
+    <antcall target="-run-test">
+      <param name="testName" value="testThinClientVersionedOps"/>
+    </antcall>
+	<antcall target="-run-test">
+	  <param name="testName" value="testThinClientExecuteFunctionPrSHOP"/>
+	</antcall>
+ 	<antcall target="-run-test">
+	  <param name="testName" value="testThinClientPdxTestsAuto"/>
+	</antcall>
+	<antcall target="-run-test">
+		<param name="testName" value="testThinClientPdxTestsWithAuto"/>
+		<param name="testTimeout" value="3600"/>
+    </antcall>
+ 	<antcall target="-run-test">
+	  <param name="testName" value="testThinClientInterest1_Bug1001"/>
+	</antcall>	
+	
+  </parallel>  
+</target>
+
+</project>

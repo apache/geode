@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+
+<cache xmlns="http://geode.apache.org/schema/cache"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+       version="1.0">
+	<!--cache-server host="cod" port="24680" /-->
+	<cache-server port="$PORT_NUM"/>
+
+	<region name="dummy">
+		<region-attributes data-policy="partition" cloning-enabled="true" >
+		  <partition-attributes redundant-copies="1"/>
+		</region-attributes>
+		<entry>
+              <key><string>delta1-1</string></key>
+                <value>
+                  <declarable>
+                    <class-name>javaobject.DeltaTestImpl</class-name>
+                  </declarable>
+                </value>
+         </entry>
+	</region>
+	<region name="TestTCR1">
+		<region-attributes data-policy="partition" cloning-enabled="true" >
+		  <partition-attributes redundant-copies="1"/>
+		  </region-attributes>
+		  </region>
+</cache> 

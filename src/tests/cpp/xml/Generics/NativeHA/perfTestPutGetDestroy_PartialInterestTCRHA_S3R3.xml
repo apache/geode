@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">100</data>
+  <data name="cacheType">CLIENT</data>
+  <data name="redundancyLevel">3</data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>100000</item>
+    </list>
+  </data>
+
+  <data name="valueSizes">
+    <list>
+      <item>1000</item>
+    </list>
+  </data>
+
+  <data name="numThreads">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+
+  <data name="keyType">str</data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true"
+            initial-capacity="18500" client-notification="true"/>
+      </region>
+    </snippet>
+  </data>
+  <data name="regionSpec">ThinClientRegion</data>
+
+  <client-set name="JCS1" hostGroup="CS"/>
+  <client-set name="JCS2" hostGroup="CS"/>
+  <client-set name="JCS3" hostGroup="CS"/>
+  <client-set name="Putter1"/>
+  <client-set name="Getter1"/>
+  <client-set name="Destroyer1"/>
+  <client-set name="Putter2"/>
+  <client-set name="Getter2"/>
+  <client-set name="Destroyer2"/>
+
+  <test name="ThinClientPerf" description="Thin Client perf test">
+    <task name="SetupCacheServers" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 3 NativeHA/csAckMirror.xml</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServer 1" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StartCacheServer 2" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StartCacheServer 3" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+
+    <task name="CreateRegion" action="doCreateRegion" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="5m" argTypes="String,byte[]">
+      <client-set name="Putter1"/>
+      <client-set name="Getter1"/>
+      <client-set name="Destroyer1"/>
+      <client-set name="Putter2"/>
+      <client-set name="Getter2"/>
+      <client-set name="Destroyer2"/>
+    </task>
+    <task name="Register Interest List" action="doRegisterInterestList" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" argTypes="String,byte[]">
+      <data name="registerKeys">25000</data>
+      <data name="keyIndexBegin">0</data>
+      <client-set name="Putter1"/>
+      <client-set name="Getter1"/>
+      <client-set name="Destroyer1"/>
+      <client-set name="Putter2"/>
+      <client-set name="Getter2"/>
+      <client-set name="Destroyer2"/>
+    </task>
+    <task name="Measure Put Throughput" action="doPuts" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" argTypes="String,byte[]">
+      <client-set name="Putter1"/>
+    </task>
+    <task name="Measure Get Throughput" action="doGets" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" argTypes="String,byte[]">
+      <client-set name="Getter1"/>
+    </task>
+    <task name="Measure Put Throughput" action="doPuts" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" argTypes="String,byte[]">
+      <client-set name="Putter2"/>
+    </task>
+    <task name="Measure Get Throughput" action="doGets" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" argTypes="String,byte[]">
+      <client-set name="Getter2"/>
+    </task>
+    <task name="Update Entries from Publisher" action="doPuts" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" argTypes="String,byte[]">
+      <data name="valueSizes">
+        <list>
+          <item>200</item>
+        </list>
+      </data>
+      <client-set name="Putter1"/>
+    </task>
+    <task name="Update Entries from Publisher" action="doPuts" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" argTypes="String,byte[]">
+      <data name="valueSizes">
+        <list>
+          <item>200</item>
+        </list>
+      </data>
+      <client-set name="Putter2"/>
+    </task>
+    <task name="Wait for updates" action="doSleep" container="utils" waitTime="2m">
+      <data name="sleepTime">60</data>
+    </task>
+    <task name="Verify update list" action="doVerifyInterestList" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" argTypes="String,byte[]">
+      <client-set name="Getter1"/>
+      <data name="registerKeys">25000</data>
+      <data name="keyIndexBegin">0</data>
+      <data name="valueSizes">200</data>
+    </task>
+    <task name="Verify update list" action="doVerifyInterestList" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" argTypes="String,byte[]">
+      <client-set name="Getter2"/>
+      <data name="registerKeys">25000</data>
+      <data name="keyIndexBegin">0</data>
+      <data name="valueSizes">200</data>
+    </task>
+    <task name="Measure Destroy Throughput" action="doDestroys" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" argTypes="String,byte[]">
+      <client-set name="Destroyer1"/>
+    </task>
+    <task name="Measure Destroy Throughput" action="doDestroys" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="15m" argTypes="String,byte[]">
+      <client-set name="Destroyer2"/>
+    </task>
+
+    <task name="Close Cache" action="doCloseCache" container="NewFwkLib.GemStone.GemFire.Cache.FwkLib.perftests" waitTime="5m" argTypes="String,byte[]"/>
+    <task name="StopCacheServer 1" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="JCS1"/>
+    </task>
+    <task name="StopCacheServer 2" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="JCS2"/>
+    </task>
+    <task name="StopCacheServer 3" action="doRunProcess" container="utils" waitTime="5m">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">3</data>
+      <client-set name="JCS3"/>
+    </task>
+  </test>
+
+</test-driver>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 'distributed' is an unknown scope -->
+
+<client-cache
+    xmlns="http://schema.pivotal.io/gemfire/gfcpp-cache"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://schema.pivotal.io/gemfire/gfcpp-cache
+                        http://schema.pivotal.io/gemfire/gfcpp-cache/gfcpp-cache-9.0.xsd"
+    version="9.0">
+  <root-region name = "root1" >
+     <region-attributes scope="local" caching-enabled="true" lru-entries-limit = "35">
+     </region-attributes>
+  </root-region>
+</client-cache>
+

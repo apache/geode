@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="AckMirrorIl">
+    <snippet>
+      <region name="AckMirrorIl">
+        <region-attributes scope="distributed-ack" mirroring="true" 
+          caching-enabled="true" interest-list-enabled="true"/> 
+      </region>
+    </snippet>
+  </data>
+  
+  <test name="Distributed System" description="Distributed System test" waitTime="5400">
+    <task name="DistributedMemberCount" action="doDistributedMemberCount" container="eventtest" waitTime="600">
+    </task>
+    <task name="Verify CreateRegion-AckMirrorIl" action="doVerifyPeerCount" container="eventtest" waitTime="600">
+      <data name="regionSpec">AckMirrorIl</data>
+      <data name="regionName">AckMirrorIl</data>
+    </task>
+  </test>
+</test-driver>

@@ -1,0 +1,88 @@
+{
+  "variables":{
+    "region":"us-west-2",
+    "source_ami":"",
+    "source_image_name":"X.vmx",
+    "image_name":"test-windows-2012-r2"
+  },
+  "builders":[
+    {
+      "type":"amazon-ebs",
+      "instance_type":"t2.large",
+      "ami_name":"native-{{user `version`}}-{{user `image_name`}} {{timestamp}}",
+      "access_key":"{{user `aws_access_key`}}",
+      "secret_key":"{{user `aws_secret_key`}}",
+      "region":"{{user `region`}}",
+      "source_ami":"{{user `source_ami`}}",
+      "subnet_id":"{{user `subnet_id`}}",
+      "vpc_id":"{{user `vpc_id`}}",
+      "tags":{
+        "team":"native",
+        "version":"{{user `version`}}",
+        "source_ami":"{{user `source_ami`}}"
+      },
+      "communicator":"winrm",
+      "winrm_username":"Administrator",
+      "launch_block_device_mappings":[
+        {
+          "device_name":"/dev/sda1",
+          "delete_on_termination":true,
+          "volume_size":40
+        }
+      ]
+    }
+  ],
+  "provisioners":[
+    {
+      "pause_before":"30s",
+      "type":"powershell",
+      "inline":[
+        "choco install jdk8 -confirm",
+        "choco install cmake.portable -confirm"
+      ]
+    },
+    {
+      "type":"file",
+      "source":"windows/Packer.psm1",
+      "destination":"Documents/WindowsPowerShell/Modules/Packer/Packer.psm1"
+    },
+    {
+      "type":"file",
+      "source":"{{user `gemfire_archive`}}",
+      "destination":"gemfire.tar.gz"
+    },
+    {
+      "type":"powershell",
+      "scripts":[
+        "windows/install-gemfire.ps1"
+      ]
+    },
+    {
+      "type":"powershell",
+      "scripts":[
+        "windows/add-user-build.ps1"
+      ]
+    },
+    {
+      "pause_before":"30s",
+      "type":"file",
+      "source":"windows/init-user-build.ps1",
+      "destination":"C:/Users/build/init-user-build.ps1"
+    },
+    {
+      "type":"powershell",
+      "scripts":[
+        "windows/cleanup.ps1"
+      ]
+    },
+    {
+      "type":"powershell",
+      "scripts":[
+        "windows/setup-ec2config.ps1"
+      ],
+      "only":[
+        "amazon-ebs"
+      ]
+    }
+  ]
+}

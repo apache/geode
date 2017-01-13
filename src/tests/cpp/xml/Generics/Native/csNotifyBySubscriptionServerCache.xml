@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	<cache-server port="$PORT_NUM" />
+	
+	<region name="notifyBySubscriptionRegion">
+		<region-attributes scope="distributed-ack" data-policy="replicate" statistics-enabled="true" />
+	</region>
+	
+	<region name="noNotifyBySubscriptionRegion">
+		<region-attributes scope="distributed-ack" data-policy="replicate" statistics-enabled="true" />
+	</region>
+	
+</cache>

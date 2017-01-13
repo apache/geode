@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+<cache xmlns="http://geode.apache.org/schema/cache"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+       version="1.0">
+  <cache-server port="$PORT_NUM" maximum-time-between-pings="600000" maximum-message-count="50000"/>
+  <region name="IndexRegion">
+    <region-attributes scope="distributed-ack" data-policy="replicate"/>
+    <entry>
+      <key><string>port1-1</string></key>
+      <value>
+        <declarable>
+          <class-name>javaobject.Portfolio</class-name>
+          <parameter name="ID">
+            <string>76343</string>
+          </parameter>
+          <parameter name="pkid">
+            <string>Gemstone</string>
+          </parameter>
+          <parameter name="type">
+            <string>type1</string>
+          </parameter>
+          <parameter name="status">
+            <string>active</string>
+          </parameter>
+          <parameter name="newVal">
+            <string>CCCCC</string>
+          </parameter>
+          <parameter name="position1">
+            <declarable>
+                <class-name>javaobject.Position</class-name>
+                <parameter name="secId">
+                    <string>SUN</string>
+                </parameter>
+                <parameter name="sharesOutstanding">
+                    <string>3400</string>
+                </parameter>
+                <parameter name="secType">
+                    <string>r</string>
+                </parameter>
+                <parameter name="pid">
+                    <string>345</string>
+                </parameter>
+            </declarable>
+          </parameter>
+          <parameter name="position2">
+            <declarable>
+                <class-name>javaobject.Position</class-name>
+                <parameter name="secId">
+                    <string>IBM</string>
+                </parameter>
+                <parameter name="sharesOutstanding">
+                    <string>8765</string>
+                </parameter>
+                <parameter name="secType">
+                   <string>p</string>
+                </parameter>
+                <parameter name="pid">
+                   <string>123</string>
+                </parameter>
+            </declarable>
+          </parameter>
+        </declarable>
+      </value>
+     </entry>
+  </region>
+  <region name="Portfolios">
+    <region-attributes index-update-type="asynchronous" scope="distributed-ack" data-policy="replicate">
+    </region-attributes>
+    <index name="index1" type="range" from-clause="/Portfolios" expression="ID" />
+    <index name="index5" type="range" from-clause="/Portfolios.keys" expression="toString" />
+    <index name="index7" type="range" from-clause="/Portfolios.values k" expression="nvl(k.position2.toString(),'nopes')" />
+    <index name="index8" type="range" from-clause="/Portfolios.keys k" expression="k" />
+    <region name="Positions">
+      <region-attributes scope="distributed-ack" data-policy="replicate">
+      </region-attributes>
+    </region>
+  </region>
+  <region name="Portfolios2">
+    <region-attributes index-update-type="asynchronous" scope="distributed-ack" data-policy="replicate">
+    </region-attributes>
+    <index name="index2" type="range" from-clause="/Portfolios2" expression="ID" />
+  </region>
+  <region name="Portfolios3">
+    <region-attributes index-update-type="asynchronous" scope="distributed-ack" data-policy="replicate">
+    </region-attributes>
+    <index name="index3" type="range" from-clause="/Portfolios3" expression="ID" />
+  </region>
+  <region name="Positions">
+    <region-attributes index-update-type="asynchronous" scope="distributed-ack" data-policy="replicate">
+    </region-attributes>
+    <index name="index4" type="range" from-clause="/Positions" expression="secId" />
+  </region>
+
+</cache> 

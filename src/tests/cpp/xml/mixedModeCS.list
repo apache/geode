@@ -1,0 +1,4 @@
+MixedModeCS/failoverTest.xml
+MixedModeCS/clientEventsQueryTest.xml
+MixedModeCS/clientEventsFailoverQueryTest.xml
+MixedModeCS/throughPuts32K.xml

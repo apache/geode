@@ -1,0 +1,16 @@
+Generics/parReg/tx/serialEntryEvent.xml
+Generics/parReg/tx/serialEntryEventPR.xml
+Generics/parReg/tx/serialEntryEventWithRegInterest.xml
+Generics/parReg/tx/serialEntryEventPRWithRegInterest.xml
+Generics/parReg/tx/serverFailoverAndCQOps.xml
+Generics/parReg/tx/singleRegCQOps.xml
+#Generics/parReg/tx/concDeltaPRBridge.xml
+#Generics/parReg/tx/concDeltaReplicateBridge.xml
+Generics/parReg/tx/conParRegBridgeRedundency1.xml
+Generics/parReg/tx/conParRegBridgeRedundency2.xml
+Generics/parReg/tx/conParRegBridgeRedundency3.xml
+Generics/parReg/tx/conParRegBridgeRRRedundency2.xml
+Generics/parReg/tx/onRegionFunctionExecWithResult.xml
+Generics/parReg/tx/onRegionFunctionExecWithOutResult.xml
+Generics/parReg/tx/replicatedRegionExecution.xml
+Generics/parReg/tx/functionExecutionHA.xml

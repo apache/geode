@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+
+  
+<cache xmlns="http://geode.apache.org/schema/cache"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+       version="1.0" lock-lease="120" lock-timeout="60" search-timeout="300" is-server="true" copy-on-read="false">
+  <cache-server port="40404"/>
+  <region name="product">
+    <region-attributes scope="distributed-no-ack" data-policy="normal">
+    </region-attributes>
+  </region>
+</cache>

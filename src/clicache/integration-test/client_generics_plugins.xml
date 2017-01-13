@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<client-cache
+    xmlns="http://schema.pivotal.io/gemfire/gfcpp-cache"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://schema.pivotal.io/gemfire/gfcpp-cache
+                        http://schema.pivotal.io/gemfire/gfcpp-cache/gfcpp-cache-9.0.xsd"
+    version="9.0"
+    redundancy-level="1" >
+
+
+	<root-region name='DistRegionAck'>
+	   <region-attributes pool-name="__TESTPOOL1_">
+	     <cache-listener library-name="UnitTests" library-function-name="GemStone.GemFire.Cache.UnitTests.NewAPI.TallyListener&lt;System.Object, System.Object&gt;.Create"/>
+	     <cache-loader library-name="UnitTests" library-function-name="GemStone.GemFire.Cache.UnitTests.NewAPI.TallyLoader&lt;System.Object, System.Object&gt;.Create"/>
+	     <cache-writer library-name="UnitTests" library-function-name="GemStone.GemFire.Cache.UnitTests.NewAPI.TallyWriter&lt;System.Object, System.Object&gt;.Create"/>
+	     <partition-resolver library-name="UnitTests" library-function-name="GemStone.GemFire.Cache.UnitTests.NewAPI.TallyResolver&lt;System.Object, System.Object&gt;.Create"/>
+	   </region-attributes>
+	</root-region>
+  
+  <root-region name='DistRegionNoAck'>
+	   <region-attributes pool-name="__TESTPOOL1_">
+	     <cache-listener library-name="UnitTests" library-function-name="GemStone.GemFire.Cache.UnitTests.NewAPI.TallyListener&lt;System.Object, System.Object&gt;.Create"/>
+	     <cache-loader library-name="UnitTests" library-function-name="GemStone.GemFire.Cache.UnitTests.NewAPI.TallyLoader&lt;System.Object, System.Object&gt;.Create"/>
+	     <cache-writer library-name="UnitTests" library-function-name="GemStone.GemFire.Cache.UnitTests.NewAPI.TallyWriter&lt;System.Object, System.Object&gt;.Create"/>
+	     <partition-resolver library-name="UnitTests" library-function-name="GemStone.GemFire.Cache.UnitTests.NewAPI.TallyResolver&lt;System.Object, System.Object&gt;.Create"/>
+	   </region-attributes>
+	</root-region>
+  
+	<pool
+    name="__TESTPOOL1_"
+    subscription-enabled="true"
+    subscription-redundancy="1"
+	pr-single-hop-enabled="true"
+  >
+    <server host="localhost" port="HOST_PORT1" />    
+    <server host="localhost" port="HOST_PORT2" />    
+    
+  </pool>
+	   
+</client-cache> 
+
+

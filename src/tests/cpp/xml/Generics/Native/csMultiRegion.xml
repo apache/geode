@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	<cache-server port="$PORT_NUM" />
+	
+	<region name="receiveValueTrue">
+		<region-attributes scope="distributed-ack" data-policy="replicate" />
+	</region>
+	
+	<region name="receiveValueFalse">
+		<region-attributes scope="distributed-ack" data-policy="replicate"/>
+	</region>
+	<region name="receiveValueNone">
+		<region-attributes scope="distributed-ack" data-policy="replicate"/>
+	</region>
+	
+</cache>

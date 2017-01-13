@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+
+  <data name="timedInterval">100</data>
+  <data name="cacheType">CLIENT</data>
+
+  <data name="distinctKeys">
+    <list>
+      <item>184877</item>
+    </list>
+  </data>
+
+  <data name="valueSizes">
+    <list>
+      <item>3000</item>
+    </list>
+  </data>
+  <data name="numThreads">
+    <list>
+      <item>10</item>
+    </list>
+  </data>
+
+  <data name="keyType">str</data>
+
+  <data name="ThinClientRegion">
+    <snippet>
+      <region name="TestTCR1">
+        <region-attributes caching-enabled="true"
+            initial-capacity="18500" client-notification="true"/>
+      </region>
+    </snippet>
+  </data>
+  <data name="regionSpec">ThinClientRegion</data>
+
+  <client-set name="CS1" hostGroup="CS"/>
+  <client-set name="CS2" hostGroup="CS"/>
+  <client-set name="JCC1" hostGroup="CS"/>
+  <client-set name="JCC2" hostGroup="CS"/>
+  <client-set name="Publisher"/>
+  <client-set name="Subscriber"/>
+
+  <test name="ThinClientPerf" description="Thin Client perf test">
+    <task name="SetupCacheServer CS1" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">setupJavaServers</data>
+      <data name="arguments">-c 2 Native/csNotifySubscription.xml</data>
+      <client-set name="CS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="CS1"/>
+    </task>
+    <task name="StartCacheServers" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">startJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="CS2"/>
+    </task>
+    <task name="SetupJavaClients" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">setupJavaClients</data>
+      <data name="arguments">-t CS1 MixedMode/bridge_client.xml</data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="SetupJavaClients" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">setupJavaClients</data>
+      <data name="arguments">-t CS2 MixedMode/bridge_client.xml</data>
+      <client-set name="JCC2"/>
+    </task>
+    <task name="StartCacheClients" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">startJavaClients</data>
+      <data name="arguments">-t CS1</data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="StartCacheClients" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">startJavaClients</data>
+      <data name="arguments">-t CS2</data>
+      <client-set name="JCC2"/>
+    </task>
+    <task name="CreateRegion" action="doCreateRegion" container="perftests" waitTime="5m">
+      <client-set name="Publisher"/>
+    </task>
+    <task name="CreateRegion" action="doCreateRegion" container="perftests" waitTime="5m">
+      <client-set name="Subscriber"/>
+    </task>
+    <task name="Populate Entries in publisher" action="doPuts" container="perftests" waitTime="15m">
+      <client-set name="Publisher"/>
+    </task>
+    <task name="Register Interest List in JC Subscriber" action="doRunProcess" container="utils" waitTime="1m" continueOnError="true">
+      <data name="program">echo reg keytype=str keyrange=100-1100 base=AAAAAAAAAA seqid=1 >> JC_CS1_1.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="Register Interest List in JC Subscriber" action="doRunProcess" container="utils" waitTime="1m" continueOnError="true">
+      <data name="program">echo reg keytype=str keyrange=100-1100 base=AAAAAAAAAA seqid=1 >> JC_CS2_1.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JCC2"/>
+    </task>
+    <task name="Register Interest List" action="doRegisterInterestList" container="perftests" waitTime="15m">
+      <data name="registerKeys">1000</data>
+      <data name="keyIndexBegin">100</data>
+      <client-set name="Subscriber"/>
+    </task>
+    <task name="waitForRegToFinish" action="doRunProcess" container="utils" waitTime="30m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -t CS1 -p 1</data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="waitForRegToFinish" action="doRunProcess" container="utils" waitTime="30m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -t CS2 -p 1</data>
+      <client-set name="JCC2"/>
+    </task>
+
+    <task name="Get Entries in JC Subscriber" action="doRunProcess" container="utils" waitTime="1m" continueOnError="true">
+      <data name="program">echo mget keytype=str keyrange=0-184877 base=AAAAAAAAAA seqid=2 >> JC_CS1_1.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="Get Entries in JC Subscriber" action="doRunProcess" container="utils" waitTime="1m" continueOnError="true">
+      <data name="program">echo mget keytype=str keyrange=0-184877 base=AAAAAAAAAA seqid=2 >> JC_CS2_1.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JCC2"/>
+    </task>
+    <task name="Gets Entries in Subscriber" action="doGets" container="perftests" waitTime="15m">
+      <client-set name="Subscriber"/>
+    </task>
+    <task name="waitForGetsToFinish for client1" action="doRunProcess" container="utils" waitTime="30m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -t CS1 -p 2</data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="waitForGetsToFinish for client1" action="doRunProcess" container="utils" waitTime="30m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -t CS2 -p 2</data>
+      <client-set name="JCC2"/>
+    </task>
+
+    <task name="Update Entries from Publisher" action="doPuts" container="perftests" waitTime="15m">
+      <data name="valueSizes">
+        <list>
+          <item>500</item>
+        </list>
+      </data>
+      <client-set name="Publisher"/>
+    </task>
+    <task name="doSleep" action="doSleep" container="utils" waitTime="60">
+      <client-set name="Subscriber"/>
+      <data name="sleepTime">5</data>
+    </task>
+    <task name="Verify update list in JC Subscriber" action="doRunProcess" container="utils" waitTime="1m" continueOnError="true">
+      <data name="program">echo mverify keytype=str keyrange=100-1100 base=AAAAAAAAAA valuesize=500 seqid=3 >> JC_CS1_1.cmd; echo mverify keytype=str keyrange=1100-2000 base=AAAAAAAAAA valuesize=3000 seqid=4 >> JC_CS1_1.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="Verify update list in JC Subscriber" action="doRunProcess" container="utils" waitTime="1m" continueOnError="true">
+      <data name="program">echo mverify keytype=str keyrange=100-1100 base=AAAAAAAAAA valuesize=500 seqid=3 >> JC_CS2_1.cmd; echo mverify keytype=str keyrange=1100-2000 base=AAAAAAAAAA valuesize=3000 seqid=4 >> JC_CS2_1.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JCC2"/>
+    </task>
+    <task name="Verify update list" action="doVerifyInterestList" container="perftests" waitTime="15m">
+      <client-set name="Subscriber"/>
+      <data name="registerKeys">1000</data>
+      <data name="keyIndexBegin">100</data>
+      <data name="valueSizes">500</data>
+    </task>
+    <task name="waitForVerifyToFinish for client1" action="doRunProcess" container="utils" waitTime="30m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -t CS1 -p 3</data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="waitForVerifyToFinish for client1" action="doRunProcess" container="utils" waitTime="30m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -t CS2 -p 3</data>
+      <client-set name="JCC2"/>
+    </task>
+    <task name="waitForVerifyToFinish for client1" action="doRunProcess" container="utils" waitTime="30m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -t CS1 -p 4</data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="waitForVerifyToFinish for client1" action="doRunProcess" container="utils" waitTime="30m" continueOnError="true">
+      <data name="program">waitForTask</data>
+      <data name="arguments">-m 10 -t CS2 -p 4</data>
+      <client-set name="JCC2"/>
+    </task>
+
+    <task name="StopCacheClients" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">echo quit >> JC_CS1_1.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JCC1"/>
+    </task>
+    <task name="StopCacheClients" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">echo quit >> JC_CS2_1.cmd</data>
+      <data name="arguments"></data>
+      <client-set name="JCC2"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">1</data>
+      <client-set name="CS1"/>
+    </task>
+    <task name="StopCacheServers" action="doRunProcess" container="utils" waitTime="5m" continueOnError="true">
+      <data name="program">stopJavaServers</data>
+      <data name="arguments">2</data>
+      <client-set name="CS2"/>
+    </task>
+  </test>
+
+</test-driver>

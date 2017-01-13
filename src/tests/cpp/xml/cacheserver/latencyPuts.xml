@@ -1,0 +1,430 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-driver version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../testDefinition.xsd">
+  <data name="BBName">CacheServer</data>
+  <data name="systemName">CSTest</data>
+  <data name="cacheType">PEER</data>
+  <data name="scope">NACK</data>
+  <data name="regionName">CSEvents</data>
+  <data name="enableCache">true</data>
+  
+  <data name="timedInterval">100</data>
+  <data name="keyType">int</data>
+  <data name="opsSecond">100</data>
+  
+  <!-- Loop variables must be lists -->
+  <data name="distinctKeys">
+    <list>
+      <item>100</item>
+    </list>
+  </data>
+  <data name="numThreads">
+    <list>
+      <item>1</item>
+    </list>
+  </data>
+	
+  <client-set>
+    <client name="Feeder"/>
+  </client-set>
+  <client-set count="3" name="Server"/>
+  <client-set count="96" name="Client"/>
+
+  <test name="Setup Feed and 4 Servers" description="Feed latency testing">
+    <task name="Init Feeder" action="doCreateRegion" container="cacheserver" waitTime="10m" continueOnError="false">
+      <data name="cacheType">PEER</data>
+      <client-set>
+        <client name="Feeder"/>
+      </client-set>
+    </task>
+    <task name="InitServers" action="doInitProcess" container="cacheserver" waitTime="10m" continueOnError="false">
+      <data name="cacheType">SERVER</data>
+      <client-set count="3" name="Server"/> 
+    </task>
+    <task name="CreateServerRegion" action="doCreateRegion" container="cacheserver" waitTime="10m" continueOnError="false">
+      <client-set count="1" name="Server"/> 
+    </task>
+  </test>
+  
+  <test name="2M - 12 clients per server" description="Feed latency testing">
+    <task name="Populate server regions" action="doPopServers" container="perftests" waitTime="6h" continueOnError="false">
+      <client-set>
+        <client name="Feeder"/> 
+      </client-set>
+      <data name="valueSizes">
+        <list>
+          <item>2097152</item>
+        </list>
+      </data>
+    </task>
+    <task name="CreateClients" action="doCreateRegion" container="cacheserver" waitTime="10m" continueOnError="false">
+      <data name="listener">createLatencyListener</data>
+      <data name="listenerLib">cacheserver</data>
+      <data name="cacheType">CLIENT</data>
+      <data name="clientCount">12</data>
+      <client-set count="36" name="Client"/>
+    </task> 
+    <task name="Populate Client Regions" action="doPopClient" container="perftests" waitTime="10m" continueOnError="false">
+      <client-set count="36" name="Client"/>
+    </task> 
+    <!-- Latency measurement with 3 servers, 12 clients per server -->
+    <task name="Measure Feed Latency" action="doLatencyPuts" container="perftests" waitTime="6h" continueOnError="false">
+      <client-set>
+        <client name="Feeder"/> 
+      </client-set>
+      <data name="opsSecond">2</data>
+      <data name="valueSizes">
+        <list>
+          <item>2097152</item>
+        </list>
+      </data>
+      <data name="clientCount">12</data>
+    </task>
+    <task name="Client's destroy region" action="doLocalDestroyRegion" container="perftests" waitTime="10m" continueOnError="false">
+      <client-set count="36" name="Client"/>
+    </task>
+  </test>
+  <test name="2M - 22 clients per server" description="Feed latency testing">
+    <task name="CreateClients" action="doCreateRegion" container="cacheserver" waitTime="10m" continueOnError="false">
+      <data name="listener">createLatencyListener</data>
+      <data name="listenerLib">cacheserver</data>
+      <data name="cacheType">CLIENT</data>
+      <data name="clientCount">22</data>
+      <client-set count="66" name="Client"/>
+    </task> 
+    <task name="Populate Client Regions" action="doPopClient" container="perftests" waitTime="10m" continueOnError="false">
+      <client-set count="66" name="Client"/>
+    </task> 
+    <!-- Latency measurement with 3 servers, 22 clients per server -->
+    <task name="Measure Feed Latency" action="doLatencyPuts" container="perftests" waitTime="6h" continueOnError="false">
+      <client-set>
+        <client name="Feeder"/> 
+      </client-set>
+      <data name="opsSecond">2</data>
+      <data name="valueSizes">
+        <list>
+          <item>2097152</item>
+        </list>
+      </data>
+      <data name="clientCount">22</data>
+    </task>
+    <task name="Client's destroy region" action="doLocalDestroyRegion" container="perftests" waitTime="10m" continueOnError="false">
+      <client-set count="66" name="Client"/>
+    </task>
+  </test>
+  <test name="2M - 32 clients per server" description="Feed latency testing">
+    <task name="CreateClients" action="doCreateRegion" container="cacheserver" waitTime="10m" continueOnError="false">
+      <data name="listener">createLatencyListener</data>
+      <data name="listenerLib">cacheserver</data>
+      <data name="cacheType">CLIENT</data>
+      <data name="clientCount">32</data>
+      <client-set count="96" name="Client"/>
+    </task> 
+    <task name="Populate Client Regions" action="doPopClient" container="perftests" waitTime="10m" continueOnError="false">
+      <client-set count="96" name="Client"/>
+    </task> 
+    <!-- Latency measurement with 3 servers, 32 clients per server -->
+    <task name="Measure Feed Latency" action="doLatencyPuts" container="perftests" waitTime="6h" continueOnError="false">
+      <client-set>
+        <client name="Feeder"/> 
+      </client-set>
+      <data name="opsSecond">2</data>
+      <data name="valueSizes">
+        <list>
+          <item>2097152</item>
+        </list>
+      </data>
+      <data name="clientCount">32</data>
+    </task>
+    <task name="Client's destroy region" action="doLocalDestroyRegion" container="perftests" waitTime="10m" continueOnError="false">
+      <client-set count="96" name="Client"/>
+    </task>
+  </test>
+    
+  <test name="32k - 12 clients per server" description="Feed latency testing">
+    <task name="Populate server regions" action="doPopServers" container="perftests" waitTime="6h" continueOnError="false">
+      <client-set>
+        <client name="Feeder"/> 
+      </client-set>
+      <data name="valueSizes">
+        <list>
+          <item>32768</item>
+        </list>
+      </data>
+    </task>
+    <task name="CreateClients" action="doCreateRegion" container="cacheserver" waitTime="10m" continueOnError="false">
+      <data name="listener">createLatencyListener</data>
+      <data name="listenerLib">cacheserver</data>
+      <data name="cacheType">CLIENT</data>
+      <data name="clientCount">12</data>
+      <client-set count="36" name="Client"/>
+    </task> 
+    <task name="Populate Client Regions" action="doPopClient" container="perftests" waitTime="10m" continueOnError="false">
+      <client-set count="36" name="Client"/>
+    </task> 
+    <!-- Latency measurement with 3 servers, 12 clients per server -->
+    <task name="Measure Feed Latency" action="doLatencyPuts" container="perftests" waitTime="6h" continueOnError="false">
+      <client-set>
+        <client name="Feeder"/> 
+      </client-set>
+      <data name="valueSizes">
+        <list>
+          <item>32768</item>
+        </list>
+      </data>
+      <data name="clientCount">12</data>
+    </task>
+    <task name="Client's destroy region" action="doLocalDestroyRegion" container="perftests" waitTime="10m" continueOnError="false">
+      <client-set count="36" name="Client"/>
+    </task>
+  </test>
+  <test name="32k - 22 clients per server" description="Feed latency testing">
+    <task name="CreateClients" action="doCreateRegion" container="cacheserver" waitTime="10m" continueOnError="false">
+      <data name="listener">createLatencyListener</data>
+      <data name="listenerLib">cacheserver</data>
+      <data name="cacheType">CLIENT</data>
+      <data name="clientCount">22</data>
+      <client-set count="66" name="Client"/>
+    </task> 
+    <task name="Populate Client Regions" action="doPopClient" container="perftests" waitTime="10m" continueOnError="false">
+      <client-set count="66" name="Client"/>
+    </task> 
+    <!-- Latency measurement with 3 servers, 22 clients per server -->
+    <task name="Measure Feed Latency" action="doLatencyPuts" container="perftests" waitTime="6h" continueOnError="false">
+      <client-set>
+        <client name="Feeder"/> 
+      </client-set>
+      <data name="valueSizes">
+        <list>
+          <item>32768</item>
+        </list>
+      </data>
+      <data name="clientCount">22</data>
+    </task>
+    <task name="Client's destroy region" action="doLocalDestroyRegion" container="perftests" waitTime="10m" continueOnError="false">
+      <client-set count="66" name="Client"/>
+    </task>
+  </test>
+  <test name="32k - 32 clients per server" description="Feed latency testing">
+    <task name="CreateClients" action="doCreateRegion" container="cacheserver" waitTime="10m" continueOnError="false">
+      <data name="listener">createLatencyListener</data>
+      <data name="listenerLib">cacheserver</data>
+      <data name="cacheType">CLIENT</data>
+      <data name="clientCount">32</data>
+      <client-set count="96" name="Client"/>
+    </task> 
+    <task name="Populate Client Regions" action="doPopClient" container="perftests" waitTime="10m" continueOnError="false">
+      <client-set count="96" name="Client"/>
+    </task> 
+    <!-- Latency measurement with 3 servers, 32 clients per server -->
+    <task name="Measure Feed Latency" action="doLatencyPuts" container="perftests" waitTime="6h" continueOnError="false">
+      <client-set>
+        <client name="Feeder"/> 
+      </client-set>
+      <data name="valueSizes">
+        <list>
+          <item>32768</item>
+        </list>
+      </data>
+      <data name="clientCount">32</data>
+    </task>
+    <task name="Client's destroy region" action="doLocalDestroyRegion" container="perftests" waitTime="10m" continueOnError="false">
+      <client-set count="96" name="Client"/>
+    </task>
+  </test>
+    
+  <test name="8k - 12 clients per server" description="Feed latency testing">
+    <task name="Populate server regions" action="doPopServers" container="perftests" waitTime="6h" continueOnError="false">
+      <client-set>
+        <client name="Feeder"/> 
+      </client-set>
+      <data name="valueSizes">
+        <list>
+          <item>8192</item>
+        </list>
+      </data>
+    </task>
+    <task name="CreateClients" action="doCreateRegion" container="cacheserver" waitTime="10m" continueOnError="false">
+      <data name="listener">createLatencyListener</data>
+      <data name="listenerLib">cacheserver</data>
+      <data name="cacheType">CLIENT</data>
+      <data name="clientCount">12</data>
+      <client-set count="36" name="Client"/>
+    </task> 
+    <task name="Populate Client Regions" action="doPopClient" container="perftests" waitTime="10m" continueOnError="false">
+      <client-set count="36" name="Client"/>
+    </task> 
+    <!-- Latency measurement with 3 servers, 12 clients per server -->
+    <task name="Measure Feed Latency" action="doLatencyPuts" container="perftests" waitTime="6h" continueOnError="false">
+      <client-set>
+        <client name="Feeder"/> 
+      </client-set>
+      <data name="valueSizes">
+        <list>
+          <item>8192</item>
+        </list>
+      </data>
+      <data name="clientCount">12</data>
+    </task>
+    <task name="Client's destroy region" action="doLocalDestroyRegion" container="perftests" waitTime="10m" continueOnError="false">
+      <client-set count="36" name="Client"/>
+    </task>
+  </test>
+  <test name="8k - 22 clients per server" description="Feed latency testing">
+    <task name="CreateClients" action="doCreateRegion" container="cacheserver" waitTime="10m" continueOnError="false">
+      <data name="listener">createLatencyListener</data>
+      <data name="listenerLib">cacheserver</data>
+      <data name="cacheType">CLIENT</data>
+      <data name="clientCount">22</data>
+      <client-set count="66" name="Client"/>
+    </task> 
+    <task name="Populate Client Regions" action="doPopClient" container="perftests" waitTime="10m" continueOnError="false">
+      <client-set count="66" name="Client"/>
+    </task> 
+    <!-- Latency measurement with 3 servers, 22 clients per server -->
+    <task name="Measure Feed Latency" action="doLatencyPuts" container="perftests" waitTime="6h" continueOnError="false">
+      <client-set>
+        <client name="Feeder"/> 
+      </client-set>
+      <data name="valueSizes">
+        <list>
+          <item>8192</item>
+        </list>
+      </data>
+      <data name="clientCount">22</data>
+    </task>
+    <task name="Client's destroy region" action="doLocalDestroyRegion" container="perftests" waitTime="10m" continueOnError="false">
+      <client-set count="66" name="Client"/>
+    </task>
+  </test>
+  <test name="8k - 32 clients per server" description="Feed latency testing">
+    <task name="CreateClients" action="doCreateRegion" container="cacheserver" waitTime="10m" continueOnError="false">
+      <data name="listener">createLatencyListener</data>
+      <data name="listenerLib">cacheserver</data>
+      <data name="cacheType">CLIENT</data>
+      <data name="clientCount">32</data>
+      <client-set count="96" name="Client"/>
+    </task> 
+    <task name="Populate Client Regions" action="doPopClient" container="perftests" waitTime="10m" continueOnError="false">
+      <client-set count="96" name="Client"/>
+    </task> 
+    <!-- Latency measurement with 3 servers, 32 clients per server -->
+    <task name="Measure Feed Latency" action="doLatencyPuts" container="perftests" waitTime="6h" continueOnError="false">
+      <client-set>
+        <client name="Feeder"/> 
+      </client-set>
+      <data name="valueSizes">
+        <list>
+          <item>8192</item>
+        </list>
+      </data>
+      <data name="clientCount">32</data>
+    </task>
+    <task name="Client's destroy region" action="doLocalDestroyRegion" container="perftests" waitTime="10m" continueOnError="false">
+      <client-set count="96" name="Client"/>
+    </task>
+  </test>
+    
+  <test name="1k - 12 clients per server" description="Feed latency testing">
+    <task name="Populate server regions" action="doPopServers" container="perftests" waitTime="6h" continueOnError="false">
+      <client-set>
+        <client name="Feeder"/> 
+      </client-set>
+      <data name="valueSizes">
+        <list>
+          <item>1024</item>
+        </list>
+      </data>
+    </task>
+    <task name="CreateClients" action="doCreateRegion" container="cacheserver" waitTime="10m" continueOnError="false">
+      <data name="listener">createLatencyListener</data>
+      <data name="listenerLib">cacheserver</data>
+      <data name="cacheType">CLIENT</data>
+      <data name="clientCount">12</data>
+      <client-set count="36" name="Client"/>
+    </task> 
+    <task name="Populate Client Regions" action="doPopClient" container="perftests" waitTime="10m" continueOnError="false">
+      <client-set count="36" name="Client"/>
+    </task> 
+    <!-- Latency measurement with 3 servers, 12 clients per server -->
+    <task name="Measure Feed Latency" action="doLatencyPuts" container="perftests" waitTime="6h" continueOnError="false">
+      <client-set>
+        <client name="Feeder"/> 
+      </client-set>
+      <data name="valueSizes">
+        <list>
+          <item>1024</item>
+        </list>
+      </data>
+      <data name="clientCount">12</data>
+    </task>
+    <task name="Client's destroy region" action="doLocalDestroyRegion" container="perftests" waitTime="10m" continueOnError="false">
+      <client-set count="36" name="Client"/>
+    </task>
+  </test>
+  <test name="1k - 22 clients per server" description="Feed latency testing">
+    <task name="CreateClients" action="doCreateRegion" container="cacheserver" waitTime="10m" continueOnError="false">
+      <data name="listener">createLatencyListener</data>
+      <data name="listenerLib">cacheserver</data>
+      <data name="cacheType">CLIENT</data>
+      <data name="clientCount">22</data>
+      <client-set count="66" name="Client"/>
+    </task> 
+    <task name="Populate Client Regions" action="doPopClient" container="perftests" waitTime="10m" continueOnError="false">
+      <client-set count="66" name="Client"/>
+    </task> 
+    <!-- Latency measurement with 3 servers, 22 clients per server -->
+    <task name="Measure Feed Latency" action="doLatencyPuts" container="perftests" waitTime="6h" continueOnError="false">
+      <client-set>
+        <client name="Feeder"/> 
+      </client-set>
+      <data name="valueSizes">
+        <list>
+          <item>1024</item>
+        </list>
+      </data>
+      <data name="clientCount">22</data>
+    </task>
+    <task name="Client's destroy region" action="doLocalDestroyRegion" container="perftests" waitTime="10m" continueOnError="false">
+      <client-set count="66" name="Client"/>
+    </task>
+  </test>
+  <test name="1k - 32 clients per server" description="Feed latency testing">
+    <task name="CreateClients" action="doCreateRegion" container="cacheserver" waitTime="10m" continueOnError="false">
+      <data name="listener">createLatencyListener</data>
+      <data name="listenerLib">cacheserver</data>
+      <data name="cacheType">CLIENT</data>
+      <data name="clientCount">32</data>
+      <client-set count="96" name="Client"/>
+    </task> 
+    <task name="Populate Client Regions" action="doPopClient" container="perftests" waitTime="10m" continueOnError="false">
+      <client-set count="96" name="Client"/>
+    </task> 
+    <!-- Latency measurement with 3 servers, 32 clients per server -->
+    <task name="Measure Feed Latency" action="doLatencyPuts" container="perftests" waitTime="6h" continueOnError="false">
+      <client-set>
+        <client name="Feeder"/> 
+      </client-set>
+      <data name="valueSizes">
+        <list>
+          <item>1024</item>
+        </list>
+      </data>
+      <data name="clientCount">32</data>
+    </task>
+    <task name="Client's destroy region" action="doLocalDestroyRegion" container="perftests" waitTime="10m" continueOnError="false">
+      <client-set count="96" name="Client"/>
+    </task>
+  </test>
+    
+  <test name="Cleanup" description="Feed latency testing">
+    <task name="Clients depart" action="doDepartSystem" container="cacheserver" waitTime="10m">
+      <client-set count="96" name="Client"/>
+      <client-set>
+        <client name="Feeder"/> 
+      </client-set>
+    </task>
+    <task name="Servers depart" action="doDepartSystem" container="cacheserver" waitTime="10m">
+      <client-set count="3" name="Server"/>
+    </task>
+  </test>
+</test-driver>

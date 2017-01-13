@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+
+<!-- Initializes a cache to serve the bridge_region region, 
+    waiting for bridge client communication on port 50505 -->
+
+<cache xmlns="http://geode.apache.org/schema/cache"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+       version="1.0">
+  <cache-server port="50505" />
+    <region name="root">
+      <region-attributes scope="distributed-no-ack"/>
+        <entry>
+          <key><string>entry3</string></key>
+          <value><string>3.0</string></value>
+        </entry>
+    </region>
+    <region name="listenerWriterLoader">
+      <region-attributes scope="distributed-ack" data-policy="replicate">
+        <!--cache-loader>
+          <class-name>cacheRunner.StringLoader</class-name>
+        </cache-loader-->
+      </region-attributes>
+      <entry>
+        <key><string>entry1</string></key>
+        <value><string>1.0</string></value>
+      </entry>
+   </region>
+</cache>
