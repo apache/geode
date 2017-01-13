@@ -217,5 +217,4 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/templates/ DESTINATION templates
   PATTERN "templates/security/CMakeLists.txt.forInstall" EXCLUDE)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/templates/security/CMakeLists.txt.forInstall RENAME CMakeLists.txt DESTINATION templates/security)
 
-install(FILES Pivotal_EULA.txt RENAME EULA.txt DESTINATION .)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/tests/javaobject/javaobject.jar DESTINATION SampleCode/quickstart/lib)
