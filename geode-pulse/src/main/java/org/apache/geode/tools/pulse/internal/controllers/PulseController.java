@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.sun.net.httpserver.Headers;
 import org.apache.geode.tools.pulse.internal.data.Cluster;
 import org.apache.geode.tools.pulse.internal.data.PulseConstants;
 import org.apache.geode.tools.pulse.internal.data.PulseVersion;
@@ -90,6 +91,7 @@ public class PulseController {
     ObjectNode responseMap = mapper.createObjectNode();
 
     JsonNode requestMap = null;
+
 
     try {
       requestMap = mapper.readTree(pulseData);
@@ -416,46 +418,55 @@ public class PulseController {
       }
     }
     response.getOutputStream().write(responseJSON.toString().getBytes());
+
+
   }
 
-  @RequestMapping(value = "/dataBrowserExport", method = RequestMethod.POST)
+
+  @RequestMapping(value = "/dataBrowserExport", method = RequestMethod.GET)
   public void dataBrowserExport(HttpServletRequest request, HttpServletResponse response)
       throws IOException {
-
     // get query string
-    String filename = request.getParameter("filename");
-    String resultContent = request.getParameter("content");
-
-    response.setHeader("Cache-Control", "");
-    response.setHeader("Content-type", "text/plain");
-    if (StringUtils.isNotNullNotEmptyNotWhiteSpace(filename)) {
-      response.setHeader("Content-Disposition", "attachment; filename=" + filename);
-    } else {
-      response.setHeader("Content-Disposition", "attachment; filename=" + DEFAULT_EXPORT_FILENAME);
-    }
-
-    if (!StringUtils.isNotNullNotEmptyNotWhiteSpace(resultContent)) {
-      resultContent = "";
-    }
-
-    response.getOutputStream().write(resultContent.getBytes());
-  }
-
-  @RequestMapping(value = "/pulseProductSupport", method = RequestMethod.GET)
-  public void getConfiguredPulseProduct(HttpServletRequest request, HttpServletResponse response)
-      throws IOException {
-    ObjectNode responseJSON = mapper.createObjectNode();
+    String query = request.getParameter("query");
+    String members = request.getParameter("members");
+    int limit = 0;
 
     try {
-      responseJSON.put("product", pulseProductSupport);
-
-      // Send json response
-      response.getOutputStream().write(responseJSON.toString().getBytes());
-    } catch (Exception e) {
-      if (LOGGER.fineEnabled()) {
-        LOGGER.fine("Exception Occurred : " + e.getMessage());
+      limit = Integer.valueOf(request.getParameter("limit"));
+    } catch (NumberFormatException e) {
+      limit = 0;
+      if (LOGGER.finerEnabled()) {
+        LOGGER.finer(e.getMessage());
       }
     }
+
+    ObjectNode queryResult = mapper.createObjectNode();
+    try {
+
+      if (StringUtils.isNotNullNotEmptyNotWhiteSpace(query)) {
+        // get cluster object
+        Cluster cluster = Repository.get().getCluster();
+        String userName = request.getUserPrincipal().getName();
+
+        // Call execute query method
+        queryResult = cluster.executeQuery(query, members, limit);
+
+        // Add query in history if query is executed successfully
+        if (!queryResult.has("error")) {
+          // Add html escaped query to history
+          String escapedQuery = StringEscapeUtils.escapeHtml(query);
+          cluster.addQueryInHistory(escapedQuery, userName);
+        }
+      }
+    } catch (Exception e) {
+      if (LOGGER.fineEnabled()) {
+        LOGGER.fine("Exception Occured : " + e.getMessage());
+      }
+    }
+
+    response.setContentType("application/json");
+    response.setHeader("Content-Disposition", "attachment; filename=results.json");
+    response.getOutputStream().write(queryResult.toString().getBytes());
   }
 
   @RequestMapping(value = "/getQueryStatisticsGridModel", method = RequestMethod.GET)

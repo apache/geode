@@ -30,6 +30,7 @@ import org.junit.rules.TemporaryFolder;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -96,6 +97,31 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
     members.add(index, locator);
     return locator;
   }
+
+  public Locator startLocatorVMWithPulse(int index, Properties locatorProperties)
+      throws IOException {
+    String name = "locator-" + index;
+    locatorProperties.setProperty(NAME, name);
+    File workingDir = createWorkingDirForMember(name);
+
+    // Setting gemfire.home to this value allows locators started by the rule to run Pulse
+    String geodeInstallDir = new File(".").getAbsoluteFile().getParentFile().getParentFile()
+        .toPath().resolve("geode-assembly").resolve("build").resolve("install")
+        .resolve("apache-geode").toString();
+
+    VM locatorVM = getHost(0).getVM(index);
+    int locatorPort = locatorVM.invoke(() -> {
+      System.setProperty("user.dir", workingDir.getCanonicalPath());
+      System.setProperty("gemfire.home", geodeInstallDir);
+      locatorStarter = new LocatorStarterRule(locatorProperties);
+      locatorStarter.startLocator();
+      return locatorStarter.locator.getPort();
+    });
+    Locator locator = new Locator(locatorVM, locatorPort, workingDir);
+    members.add(index, locator);
+    return locator;
+  }
+
 
   public Locator startLocatorVM(int index) throws IOException {
     return startLocatorVM(index, new Properties());

@@ -51,6 +51,8 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -73,6 +75,8 @@ public class Cluster extends Thread {
   private String port;
   private int stale = 0;
   private double loadPerSec;
+  private CountDownLatch clusterHasBeenInitialized;
+
 
   // start: fields defined in System MBean
   private IClusterUpdater updater = null;
@@ -2258,11 +2262,6 @@ public class Cluster extends Thread {
     }
   }
 
-  /**
-   * Default constructor only used for testing
-   */
-  public Cluster() {}
-
 
   /**
    * This function is used for calling getUpdator function of ClusterDataFactory and starting the
@@ -2282,7 +2281,12 @@ public class Cluster extends Thread {
     this.jmxUserPassword = userPassword;
 
     this.updater = ClusterDataFactory.getUpdater(this, host, port);
+    this.clusterHasBeenInitialized = new CountDownLatch(1);
     // start();
+  }
+
+  public void waitForInitialization(long timeout, TimeUnit unit) throws InterruptedException {
+    clusterHasBeenInitialized.await(timeout, unit);
   }
 
   /**
@@ -2290,31 +2294,36 @@ public class Cluster extends Thread {
    */
   @Override
   public void run() {
-    while (!this.stopUpdates) {
-      try {
-        if (!this.updateData()) {
-          this.stale++;
-        } else {
-          this.stale = 0;
+    try {
+      while (!this.stopUpdates) {
+        try {
+          if (!this.updateData()) {
+            this.stale++;
+          } else {
+            this.stale = 0;
+          }
+        } catch (Exception e) {
+          if (LOGGER.infoEnabled()) {
+            LOGGER.info("Exception Occurred while updating cluster data : " + e.getMessage());
+          }
         }
-      } catch (Exception e) {
-        if (LOGGER.infoEnabled()) {
-          LOGGER.info("Exception Occurred while updating cluster data : " + e.getMessage());
+
+        clusterHasBeenInitialized.countDown();
+        try {
+          Thread.sleep(POLL_INTERVAL);
+        } catch (InterruptedException e) {
+          if (LOGGER.infoEnabled()) {
+            LOGGER.info("InterruptedException Occurred : " + e.getMessage());
+          }
         }
       }
 
-      try {
-        Thread.sleep(POLL_INTERVAL);
-      } catch (InterruptedException e) {
-        if (LOGGER.infoEnabled()) {
-          LOGGER.info("InterruptedException Occurred : " + e.getMessage());
-        }
+      if (LOGGER.infoEnabled()) {
+        LOGGER.info(resourceBundle.getString("LOG_MSG_STOP_THREAD_UPDATES") + " :: "
+            + this.serverName + ":" + this.port);
       }
-    }
-
-    if (LOGGER.infoEnabled()) {
-      LOGGER.info(resourceBundle.getString("LOG_MSG_STOP_THREAD_UPDATES") + " :: " + this.serverName
-          + ":" + this.port);
+    } finally {
+      clusterHasBeenInitialized.countDown();
     }
   }
 
