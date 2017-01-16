@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A Singleton instance of the memory cache for clusters.
@@ -191,8 +192,9 @@ public class Repository {
               PulseConstants.APP_NAME + "-" + this.jmxHost + ":" + this.jmxPort + ":" + username);
           // Start Thread
           data.start();
+          data.waitForInitialization(15, TimeUnit.SECONDS);
           this.clusterMap.put(key, data);
-        } catch (ConnectException e) {
+        } catch (ConnectException | InterruptedException e) {
           data = null;
           if (LOGGER.fineEnabled()) {
             LOGGER.fine(e.getMessage());
