@@ -29,5 +29,7 @@ public class LocatorCancelException extends CancelException {
     super(message, cause);
   }
 
-  public LocatorCancelException() {}
+  public LocatorCancelException() {
+    super();
+  }
 }
