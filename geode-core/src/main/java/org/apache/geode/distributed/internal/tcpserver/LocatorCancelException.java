@@ -17,7 +17,7 @@ package org.apache.geode.distributed.internal.tcpserver;
 import org.apache.geode.CancelException;
 
 public class LocatorCancelException extends CancelException {
-  public LocatorCancelException(final String message) {
+  public LocatorCancelException(String message) {
     super(message);
   }
 
@@ -29,5 +29,7 @@ public class LocatorCancelException extends CancelException {
     super(message, cause);
   }
 
-  public LocatorCancelException() {}
+  public LocatorCancelException() {
+    super();
+  }
 }
