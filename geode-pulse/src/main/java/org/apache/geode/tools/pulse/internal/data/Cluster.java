@@ -2262,6 +2262,11 @@ public class Cluster extends Thread {
     }
   }
 
+  /**
+   * Default constructor only used for testing
+   */
+  public Cluster() {}
+
 
   /**
    * This function is used for calling getUpdator function of ClusterDataFactory and starting the
