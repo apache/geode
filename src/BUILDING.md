@@ -2,7 +2,7 @@
     $ cd <clone>
     $ mkdir build
     $ cd build
-    $ cmake -DGEODE_ROOt=/path/to/geode \
+    $ cmake -DGEODE_ROOT=/path/to/geode \
         -DCMAKE_INSTALL_PREFIX=/path/to/install/destination \
         ../src
     $ cmake --build . -- -j 8 # on UNIX
@@ -20,8 +20,6 @@
 ### Required Tools
 * [CMake 4.3](https://cmake.org/) or newer
 * C++11 compiler *(see platform specific requirements)*
-
-### Optional Tools
 * [Doxygen 8.11](http://www.stack.nl/~dimitri/doxygen/download.html) *(for building source documentation)*
 
 ## Mac OS X
