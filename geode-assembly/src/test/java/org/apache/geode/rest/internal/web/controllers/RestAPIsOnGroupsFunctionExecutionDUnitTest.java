@@ -50,11 +50,6 @@ public class RestAPIsOnGroupsFunctionExecutionDUnitTest extends RestAPITestBase 
   }
 
 
-  @Override
-  protected String getFunctionID() {
-    return OnGroupsFunction.Id;
-  }
-
   private void setupCacheWithGroupsAndFunction() {
     restURLs.add(vm0.invoke("createCacheWithGroups",
         () -> createCacheWithGroups(vm0.getHost().getHostName(), "g0,gm", urlContext)));
@@ -81,7 +76,7 @@ public class RestAPIsOnGroupsFunctionExecutionDUnitTest extends RestAPITestBase 
       assertHttpResponse(response, 200, 3);
     }
 
-    assertCorrectInvocationCount(30, vm0, vm1, vm2);
+    assertCorrectInvocationCount("OnGroupsFunction", 30, vm0, vm1, vm2);
 
     restURLs.clear();
   }
@@ -99,7 +94,7 @@ public class RestAPIsOnGroupsFunctionExecutionDUnitTest extends RestAPITestBase 
       assertHttpResponse(response, 500, 0);
     }
 
-    assertCorrectInvocationCount(0, vm0, vm1, vm2);
+    assertCorrectInvocationCount("OnGroupsFunction", 0, vm0, vm1, vm2);
     restURLs.clear();
   }
 
@@ -114,7 +109,7 @@ public class RestAPIsOnGroupsFunctionExecutionDUnitTest extends RestAPITestBase 
           null, null, "no%20such%20group", null);
       assertHttpResponse(response, 500, 0);
     }
-    assertCorrectInvocationCount(0, vm0, vm1, vm2);
+    assertCorrectInvocationCount("OnGroupsFunction", 0, vm0, vm1, vm2);
 
     for (int i = 0; i < 5; i++) {
 
@@ -123,9 +118,11 @@ public class RestAPIsOnGroupsFunctionExecutionDUnitTest extends RestAPITestBase 
       assertHttpResponse(response, 200, 1);
     }
 
-    assertCorrectInvocationCount(5, vm0, vm1, vm2);
+    assertCorrectInvocationCount("OnGroupsFunction", 5, vm0, vm1, vm2);
 
-    resetInvocationCounts(vm0, vm1, vm2);
+    vm0.invoke(() -> resetInvocationCount("OnGroupsFunction"));
+    vm1.invoke(() -> resetInvocationCount("OnGroupsFunction"));
+    vm2.invoke(() -> resetInvocationCount("OnGroupsFunction"));
 
     restURLs.clear();
   }

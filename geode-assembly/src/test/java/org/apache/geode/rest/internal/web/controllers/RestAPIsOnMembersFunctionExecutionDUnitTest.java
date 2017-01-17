@@ -14,28 +14,27 @@
  */
 package org.apache.geode.rest.internal.web.controllers;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Properties;
-
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.rest.internal.web.RestFunctionTemplate;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Properties;
 
 @Category(DistributedTest.class)
 @RunWith(Parameterized.class)
@@ -61,14 +60,10 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
 
     CacheFactory.create(new RestAPIsOnMembersFunctionExecutionDUnitTest().getSystem(props));
     FunctionService.registerFunction(new OnMembersFunction());
+    FunctionService.registerFunction(new FullyQualifiedFunction());
 
     return "http://" + hostName + ":" + servicePort + urlContext + "/v1";
 
-  }
-
-  @Override
-  protected String getFunctionID() {
-    return OnMembersFunction.Id;
   }
 
   @Test
@@ -81,7 +76,7 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
       assertHttpResponse(response, 200, 4);
     }
 
-    assertCorrectInvocationCount(20, vm0, vm1, vm2, vm3);
+    assertCorrectInvocationCount("OnMembersFunction", 20, vm0, vm1, vm2, vm3);
 
     restURLs.clear();
   }
@@ -107,7 +102,26 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
       assertHttpResponse(response, 200, 3);
     }
 
-    assertCorrectInvocationCount(15, vm0, vm1, vm2, vm3);
+    assertCorrectInvocationCount("OnMembersFunction", 15, vm0, vm1, vm2, vm3);
+
+    restURLs.clear();
+  }
+
+  @Test
+  public void testFunctionExecutionWithFullyQualifiedName() {
+    createCacheForVMs();
+    // restURLs.add(createCacheAndRegisterFunction(vm0.getHost().getHostName(), "m1"));
+
+    for (int i = 0; i < 5; i++) {
+      CloseableHttpResponse response = executeFunctionThroughRestCall(
+          "org.apache.geode.rest.internal.web.controllers.FullyQualifiedFunction", null, null, null,
+          null, "m1,m2,m3");
+      assertHttpResponse(response, 200, 3);
+    }
+
+    assertCorrectInvocationCount(
+        "org.apache.geode.rest.internal.web.controllers.FullyQualifiedFunction", 15, vm0, vm1, vm2,
+        vm3);
 
     restURLs.clear();
   }
@@ -122,7 +136,7 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
       assertHttpResponse(response, 500, 0);
     }
 
-    assertCorrectInvocationCount(0, vm0, vm1, vm2, vm3);
+    assertCorrectInvocationCount("OnMembersFunction", 0, vm0, vm1, vm2, vm3);
 
     restURLs.clear();
   }
@@ -134,7 +148,40 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
     @Override
     public void execute(FunctionContext context) {
 
-      System.out.println("SWAP:1:executing OnMembersFunction:" + invocationCount);
+      invocationCount++;
+
+      context.getResultSender().lastResult(Boolean.TRUE);
+    }
+
+    @Override
+    public String getId() {
+      return Id;
+    }
+
+    @Override
+    public boolean hasResult() {
+      return true;
+    }
+
+    @Override
+    public boolean optimizeForWrite() {
+      return false;
+    }
+
+    @Override
+    public boolean isHA() {
+      return false;
+    }
+  }
+
+  private class FullyQualifiedFunction extends RestFunctionTemplate {
+
+    public static final String Id =
+        "org.apache.geode.rest.internal.web.controllers.FullyQualifiedFunction";
+
+    @Override
+    public void execute(FunctionContext context) {
+
       invocationCount++;
 
       context.getResultSender().lastResult(Boolean.TRUE);

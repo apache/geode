@@ -118,7 +118,7 @@ public class FunctionAccessController extends AbstractBaseController {
    *
    * @return result as a JSON document
    */
-  @RequestMapping(method = RequestMethod.POST, value = "/{functionId}",
+  @RequestMapping(method = RequestMethod.POST, value = "/{functionId:.+}",
       produces = {MediaType.APPLICATION_JSON_VALUE})
   @ApiOperation(value = "execute function",
       notes = "Execute function with arguments on regions, members, or group(s). By default function will be executed on all nodes if none of (onRegion, onMembers, onGroups) specified",

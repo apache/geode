@@ -124,9 +124,8 @@ class RestAPITestBase extends JUnit4DistributedTestCase {
     return "http://" + hostName + ":" + servicePort + context + "/v1";
   }
 
-  private int getInvocationCount() {
-    RestFunctionTemplate function =
-        (RestFunctionTemplate) FunctionService.getFunction(getFunctionID());
+  private int getInvocationCount(String functionID) {
+    RestFunctionTemplate function = (RestFunctionTemplate) FunctionService.getFunction(functionID);
     return function.invocationCount;
   }
 
@@ -176,10 +175,6 @@ class RestAPITestBase extends JUnit4DistributedTestCase {
     return post;
   }
 
-  protected String getFunctionID() {
-    throw new RuntimeException("This method should be overridden");
-  }
-
   void assertHttpResponse(CloseableHttpResponse response, int httpCode,
       int expectedServerResponses) {
     assertEquals(httpCode, response.getStatusLine().getStatusCode());
@@ -215,22 +210,16 @@ class RestAPITestBase extends JUnit4DistributedTestCase {
     return "";
   }
 
-  void assertCorrectInvocationCount(int expectedInvocationCount, VM... vms) {
+  void assertCorrectInvocationCount(String functionID, int expectedInvocationCount, VM... vms) {
     int count = 0;
     for (final VM vm : vms) {
-      count += vm.invoke("getInvocationCount", () -> getInvocationCount());
+      count += vm.invoke("getInvocationCount", () -> getInvocationCount(functionID));
     }
     assertEquals(expectedInvocationCount, count);
   }
 
-  private void resetInvocationCount() {
-    RestFunctionTemplate f = (RestFunctionTemplate) FunctionService.getFunction(getFunctionID());
+  protected void resetInvocationCount(String functionID) {
+    RestFunctionTemplate f = (RestFunctionTemplate) FunctionService.getFunction(functionID);
     f.invocationCount = 0;
-  }
-
-  void resetInvocationCounts(VM... vms) {
-    for (final VM vm : vms) {
-      vm.invoke("resetInvocationCount", () -> resetInvocationCount());
-    }
   }
 }

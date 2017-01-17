@@ -134,11 +134,6 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
 
   }
 
-  @Override
-  protected String getFunctionID() {
-    return SampleFunction.Id;
-  }
-
   private void createCacheAndRegisterFunction() {
     restURLs.add(vm0.invoke("createCacheWithGroups",
         () -> createCacheWithGroups(vm0.getHost().getHostName(), null, urlContext)));
@@ -175,7 +170,7 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
     assertEquals(200, response.getStatusLine().getStatusCode());
     assertNotNull(response.getEntity());
 
-    assertCorrectInvocationCount(1, vm0, vm1, vm2, vm3);
+    assertCorrectInvocationCount("SampleFunction", 1, vm0, vm1, vm2, vm3);
 
     // remove the expected exception
     restURLs.clear();
@@ -194,7 +189,7 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
     assertEquals(200, response.getStatusLine().getStatusCode());
     assertNotNull(response.getEntity());
 
-    assertCorrectInvocationCount(4, vm0, vm1, vm2, vm3);
+    assertCorrectInvocationCount("SampleFunction", 4, vm0, vm1, vm2, vm3);
 
     restURLs.clear();
   }
@@ -212,7 +207,7 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
     assertEquals(200, response.getStatusLine().getStatusCode());
     assertNotNull(response.getEntity());
 
-    assertCorrectInvocationCount(1, vm0, vm1, vm2, vm3);
+    assertCorrectInvocationCount("SampleFunction", 1, vm0, vm1, vm2, vm3);
 
     restURLs.clear();
   }
@@ -242,14 +237,17 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
     assertNotNull(response.getEntity());
 
     // Assert that only 1 node has executed the function.
-    assertCorrectInvocationCount(4, vm0, vm1, vm2, vm3);
+    assertCorrectInvocationCount("SampleFunction", 4, vm0, vm1, vm2, vm3);
 
     jsonBody = "[" + "{\"@type\": \"double\",\"@value\": 220}"
         + ",{\"@type\":\"org.apache.geode.rest.internal.web.controllers.Item\","
         + "\"itemNo\":\"609\",\"description\":\"Part X Free on Bumper Offer\","
         + "\"quantity\":\"3\"," + "\"unitprice\":\"9\"," + "\"totalprice\":\"12.00\"}" + "]";
 
-    resetInvocationCounts(vm0, vm1, vm2, vm3);
+    vm0.invoke(() -> resetInvocationCount("SampleFunction"));
+    vm1.invoke(() -> resetInvocationCount("SampleFunction"));
+    vm2.invoke(() -> resetInvocationCount("SampleFunction"));
+    vm3.invoke(() -> resetInvocationCount("SampleFunction"));
 
     response = executeFunctionThroughRestCall("SampleFunction", PR_REGION_NAME, "key2", jsonBody,
         null, null);
@@ -257,7 +255,7 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
     assertNotNull(response.getEntity());
 
     // Assert that only 1 node has executed the function.
-    assertCorrectInvocationCount(1, vm0, vm1, vm2, vm3);
+    assertCorrectInvocationCount("SampleFunction", 1, vm0, vm1, vm2, vm3);
 
     restURLs.clear();
   }
