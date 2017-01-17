@@ -68,7 +68,7 @@ INPUT                  = @CMAKE_CURRENT_SOURCE_DIR@/../../clicache
 JAVADOC_AUTOBRIEF      = YES
 MACRO_EXPANSION        = YES
 OUTPUT_DIRECTORY       = @CMAKE_CURRENT_BINARY_DIR@
-PROJECT_NAME           = "@GEMFIRE_PRODUCTNAME@ Cache .NET Reference"
+PROJECT_NAME           = "@PRODUCT_VENDOR@ @PRODUCT_NAME@ .NET Reference"
 PROJECT_NUMBER         = "@PRODUCT_VERSION_SHORT@"
 PREDEFINED             = "internal=private" \
                          "STATICCLASS=" \

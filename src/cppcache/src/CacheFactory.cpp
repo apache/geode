@@ -179,11 +179,11 @@ CachePtr CacheFactory::getAnyInstance(bool throwException) {
   return NULLPTR;
 }
 
-const char* CacheFactory::getVersion() { return GEMFIRE_VERSION; }
+const char* CacheFactory::getVersion() { return PRODUCT_VERSION; }
 
 const char* CacheFactory::getProductDescription() {
-  return GEMFIRE_PRODUCTNAME " " GEMFIRE_VERSION " (" GEMFIRE_BITS
-                             ") " GEMFIRE_BUILDDATE;
+  return PRODUCT_VENDOR " " PRODUCT_NAME " " PRODUCT_VERSION " (" PRODUCT_BITS
+                        ") " PRODUCT_BUILDDATE;
 }
 
 CacheFactory::CacheFactory() {

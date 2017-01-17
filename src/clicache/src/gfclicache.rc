@@ -1,5 +1,6 @@
 #include <verrsrc.h>
 
+#include "config.h"
 #include "version.h"
 
 VS_VERSION_INFO VERSIONINFO
@@ -13,14 +14,14 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "CompanyName",      "Pivotal Software, Inc."
-            VALUE "FileDescription",  "GemFire Native Client .NET Library"
-            VALUE "FileVersion",      GEMFIRE_VERSION
+            VALUE "CompanyName",      PRODUCT_VENDOR_NAME
+            VALUE "FileDescription",  PRODUCT_NAME " .NET Library"
+            VALUE "FileVersion",      PRODUCT_VERSION
             VALUE "InternalName",     "Gemstone.Gemfire.Cache"
             VALUE "LegalCopyright",   "Copyright (c) 2010-2017 Pivotal Software, Inc. All Rights Reserved. This product is protected by U.S. and international copyright and intellectual property laws. Pivotal products are covered by one or more patents listed at http://www.pivotal.io/patents."
             VALUE "OriginalFilename", "Gemstone.Gemfire.Cache.dll"
-            VALUE "ProductName",      "GemFire Native Client"
-            VALUE "ProductVersion",   GEMFIRE_VERSION
+            VALUE "ProductName",      PRODUCT_NAME
+            VALUE "ProductVersion",   PRODUCT_VERSION
         END
     END
     BLOCK "VarFileInfo"
