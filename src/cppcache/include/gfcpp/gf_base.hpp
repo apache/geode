@@ -184,11 +184,6 @@ typedef uint64_t uint64; /**< unsigned 64 bit integer */
 #endif
 #endif /* _WIN32*/
 
-/** @mainpage Pivotal GemFire Native Client C++ Reference
- * @image html gemFireCPPLogo.png
- *
-*/
-
 /**@namespace gemfire This namespace contains all the GemFire
  * C++ API classes, enumerations and globals.
  */

@@ -194,8 +194,8 @@ DistributedSystemPtr DistributedSystem::connect(
   }
   // Add version information, source revision, current directory etc.
   LOGCONFIG("Product version: %s", CacheFactory::getProductDescription());
-  LOGCONFIG("Source revision: %s", GEMFIRE_SOURCE_REVISION);
-  LOGCONFIG("Source repository: %s", GEMFIRE_SOURCE_REPOSITORY);
+  LOGCONFIG("Source revision: %s", PRODUCT_SOURCE_REVISION);
+  LOGCONFIG("Source repository: %s", PRODUCT_SOURCE_REPOSITORY);
 
   ACE_utsname u;
   ACE_OS::uname(&u);

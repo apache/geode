@@ -10,9 +10,6 @@
 
 // These definitions are to help parsing by Doxygen.
 
-/// @mainpage Pivotal GemFire Native Client .NET Reference
-/// @image html gemFireDotNETLogo.png
-
 /// @file gf_defs.hpp
 /// API documentation helper file for the Doxygen source-comment-extraction tool.
 

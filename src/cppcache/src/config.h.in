@@ -9,8 +9,10 @@
 //TODO already defined #cmakedefine _WIN32
 //TODO already defined #cmakedefine _SOLARIS
 
-#define GEMFIRE_PRODUCTNAME "@GEMFIRE_PRODUCTNAME@"
-#define GEMFIRE_BITS "@GEMFIRE_BITS@"
+#define PRODUCT_VENDOR "@PRODUCT_VENDOR@"
+#define PRODUCT_VENDOR_NAME "@PRODUCT_VENDOR_NAME@"
+#define PRODUCT_NAME "@PRODUCT_NAME@"
+#define PRODUCT_BITS "@PRODUCT_BITS@"
 
 // TODO relace with CMake checks
 #define WITH_ACE_Select_Reactor 1

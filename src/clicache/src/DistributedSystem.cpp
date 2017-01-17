@@ -731,7 +731,7 @@ namespace GemStone
         
         Log::Config(".NET runtime version: {0} ",System::Environment::Version);
         Log::Config(".NET layer source repository (revision): {0} ({1})",
-          GEMFIRE_SOURCE_REPOSITORY, GEMFIRE_SOURCE_REVISION);
+          PRODUCT_SOURCE_REPOSITORY, PRODUCT_SOURCE_REVISION);
       }
 
       void DistributedSystem::AppDomainInstancePostInitialization()
