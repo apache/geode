@@ -46,6 +46,7 @@ import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -99,7 +100,7 @@ public class PulseDataExportTest extends JUnit4DistributedTestCase {
     await().atMost(2, TimeUnit.MINUTES).until(this::pulseServerHasStarted);
   }
 
-
+  @Ignore // GEODE-2313
   @Test
   public void dataBrowserExportWorksAsExpected() throws Throwable {
     getAuthenticatedJSESSIONID();
