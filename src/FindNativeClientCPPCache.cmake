@@ -14,20 +14,6 @@
 #   NATIVECLIENT_CPPCACH_DEFINITIONS - Compiler switches required for using NativeClient CPPCache library
 #   NATIVECLIENT_CPPCACH_VERSION_STRING - the version of NativeClient CPPCache library found
 
-#=============================================================================
-# Copyright 2006-2009 Kitware, Inc.
-# Copyright 2006 Alexander Neundorf <neundorf@kde.org>
-#
-# Distributed under the OSI-approved BSD License (the "License");
-# see accompanying file Copyright.txt for details.
-#
-# This software is distributed WITHOUT ANY WARRANTY; without even the
-# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# See the License for more information.
-#=============================================================================
-# (TODO: To distribute this file outside of CMake, substitute the full
-#  License text for the above reference.)
-
 find_path(LIBXML2_INCLUDE_DIR NAMES libxml/xpath.h
    HINTS
    ${PC_LIBXML_INCLUDEDIR}

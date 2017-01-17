@@ -68,20 +68,6 @@
 #   find_package(Java COMPONENTS Runtime)
 #   find_package(Java COMPONENTS Development)
 
-#=============================================================================
-# Copyright 2002-2009 Kitware, Inc.
-# Copyright 2009-2011 Mathieu Malaterre <mathieu.malaterre@gmail.com>
-#
-# Distributed under the OSI-approved BSD License (the "License");
-# see accompanying file Copyright.txt for details.
-#
-# This software is distributed WITHOUT ANY WARRANTY; without even the
-# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# See the License for more information.
-#=============================================================================
-# (To distribute this file outside of CMake, substitute the full
-#  License text for the above reference.)
-
 include(${CMAKE_CURRENT_LIST_DIR}/CMakeFindJavaCommon.cmake)
 
 # The HINTS option should only be used for values computed from the system.
