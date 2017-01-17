@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.configuration;
 
 import static org.apache.commons.io.FileUtils.writeByteArrayToFile;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -28,6 +29,7 @@ import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.internal.ClassBuilder;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
@@ -62,6 +64,9 @@ public class ClusterConfigDistributionDUnitTest extends JUnit4DistributedTestCas
     gfshConnector = new GfshShellConnectionRule(locator);
     gfshConnector.connect();
     assertThat(gfshConnector.isConnected()).isTrue();
+
+    // start a server so that we can execute data commands that requires at least a server running
+    lsRule.startServerVM(1, locator.getPort());
   }
 
   @Rule
@@ -69,8 +74,6 @@ public class ClusterConfigDistributionDUnitTest extends JUnit4DistributedTestCas
 
   @Test
   public void testIndexAndAsyncEventQueueCommands() throws Exception {
-    lsRule.startServerVM(1, locator.getPort());
-
     final String DESTROY_REGION = "regionToBeDestroyed";
 
     gfshConnector
@@ -160,5 +163,19 @@ public class ClusterConfigDistributionDUnitTest extends JUnit4DistributedTestCas
 
     writeByteArrayToFile(jarFile, jarBytes);
     return queueCommandsJarName;
+  }
+
+  @Test
+  public void testConfigurePDX() throws Exception {
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CONFIGURE_PDX);
+    csb.addOptionWithValueCheck(CliStrings.CONFIGURE_PDX__AUTO__SERIALIZER__CLASSES, "com.foo.*");
+    csb.addOptionWithValueCheck(CliStrings.CONFIGURE_PDX__IGNORE__UNREAD_FIELDS, "true");
+    csb.addOptionWithValueCheck(CliStrings.CONFIGURE_PDX__PERSISTENT, "true");
+    csb.addOptionWithValueCheck(CliStrings.CONFIGURE_PDX__READ__SERIALIZED, "true");
+
+    CommandResult result = gfshConnector.executeAndVerifyCommand(csb.getCommandString());
+    String message = (String) result.getResultData().getGfJsonObject().getJSONObject("content")
+        .getJSONArray("message").get(0);
+    assertEquals(CliStrings.CONFIGURE_PDX__NORMAL__MEMBERS__WARNING, message);
   }
 }

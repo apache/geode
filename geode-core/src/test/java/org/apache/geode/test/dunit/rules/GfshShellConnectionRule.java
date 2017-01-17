@@ -98,6 +98,7 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
     Awaitility.await().atMost(2, TimeUnit.MINUTES).pollDelay(2, TimeUnit.SECONDS).until(() -> {
       gfsh.executeCommand(connectCommand.toString());
       result.set((CommandResult) gfsh.getResult());
+      System.out.println("connect result: " + result.get().getContent().toString());
       return !gfsh.outputString.contains("no such object in table");
     });
 
