@@ -51,8 +51,12 @@ import org.apache.geode.internal.cache.wan.GatewayReceiverStats;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
+import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.pdx.PdxConfigurationException;
 import org.apache.geode.pdx.PdxRegistryMismatchException;
+import org.apache.geode.pdx.internal.EnumId;
+import org.apache.geode.pdx.internal.EnumInfo;
+import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
 import org.apache.geode.i18n.StringId;
 
@@ -197,6 +201,7 @@ public class GatewayReceiverCommand extends BaseCommand {
     // events need to be subtratced.
     int indexWithoutPDXEvent = -1; //
     for (int i = 0; i < numberOfEvents; i++) {
+      boolean isPdxEvent = false;
       indexWithoutPDXEvent++;
       // System.out.println("Processing event " + i + " in batch " + batchId + "
       // starting with part number " + partNumber);
@@ -233,6 +238,7 @@ public class GatewayReceiverCommand extends BaseCommand {
         regionName = regionNamePart.getString();
         if (regionName.equals(PeerTypeRegistration.REGION_FULL_PATH)) {
           indexWithoutPDXEvent--;
+          isPdxEvent = true;
         }
 
         // Retrieve the event id from the message parts
@@ -354,13 +360,17 @@ public class GatewayReceiverCommand extends BaseCommand {
                 }
                 // Attempt to create the entry
                 boolean result = false;
-                result = region.basicBridgeCreate(key, value, isObject, callbackArg,
-                    servConn.getProxyID(), false, clientEvent, false);
-                // If the create fails (presumably because it already exists),
-                // attempt to update the entry
-                if (!result) {
-                  result = region.basicBridgePut(key, value, null, isObject, callbackArg,
-                      servConn.getProxyID(), false, clientEvent);
+                if (isPdxEvent) {
+                  result = addPdxType(crHelper, key, value);
+                } else {
+                  result = region.basicBridgeCreate(key, value, isObject, callbackArg,
+                      servConn.getProxyID(), false, clientEvent, false);
+                  // If the create fails (presumably because it already exists),
+                  // attempt to update the entry
+                  if (!result) {
+                    result = region.basicBridgePut(key, value, null, isObject, callbackArg,
+                        servConn.getProxyID(), false, clientEvent);
+                  }
                 }
 
                 if (result || clientEvent.isConcurrencyConflict()) {
@@ -465,8 +475,13 @@ public class GatewayReceiverCommand extends BaseCommand {
                   value = putContext.getSerializedValue();
                   isObject = putContext.isObject();
                 }
-                boolean result = region.basicBridgePut(key, value, null, isObject, callbackArg,
-                    servConn.getProxyID(), false, clientEvent);
+                boolean result = false;
+                if (isPdxEvent) {
+                  result = addPdxType(crHelper, key, value);
+                } else {
+                  result = region.basicBridgePut(key, value, null, isObject, callbackArg,
+                      servConn.getProxyID(), false, clientEvent);
+                }
                 if (result || clientEvent.isConcurrencyConflict()) {
                   servConn.setModificationInfo(true, regionName, key);
                   stats.incUpdateRequest();
@@ -786,6 +801,21 @@ public class GatewayReceiverCommand extends BaseCommand {
       // msg.getPayloadLength() + " bytes) with " + (earlyAck ? "early" :
       // "normal") + " acknowledgement on " + getSocketString());
     }
+  }
+
+  private boolean addPdxType(CachedRegionHelper crHelper, Object key, Object value)
+      throws Exception {
+    if (key instanceof EnumId) {
+      EnumId enumId = (EnumId) key;
+      value = BlobHelper.deserializeBlob((byte[]) value);
+      ((GemFireCacheImpl) crHelper.getCache()).getPdxRegistry().addRemoteEnum(enumId.intValue(),
+          (EnumInfo) value);
+    } else {
+      value = BlobHelper.deserializeBlob((byte[]) value);
+      ((GemFireCacheImpl) crHelper.getCache()).getPdxRegistry().addRemoteType((int) key,
+          (PdxType) value);
+    }
+    return true;
   }
 
   private void handleMessageRetry(LocalRegion region, EntryEventImpl clientEvent) {

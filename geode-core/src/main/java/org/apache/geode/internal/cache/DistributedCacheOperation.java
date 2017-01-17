@@ -956,6 +956,10 @@ public abstract class DistributedCacheOperation {
       this.inhibitAllNotifications = inhibit;
     }
 
+    public String getRegionPath() {
+      return this.regionPath;
+    }
+
     /**
      * process a reply
      * 
@@ -1610,5 +1614,4 @@ public abstract class DistributedCacheOperation {
     }
 
   }
-
 }
