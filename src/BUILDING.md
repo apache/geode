@@ -2,7 +2,9 @@
     $ cd <clone>
     $ mkdir build
     $ cd build
-    $ cmake -DGEMFIRE_HOME=/path/to/gemfire ../src
+    $ cmake -DGEODE_ROOt=/path/to/geode \
+        -DCMAKE_INSTALL_PREFIX=/path/to/install/destination \
+        ../src
     $ cmake --build . -- -j 8 # on UNIX
     - OR -
     $ cmake --build . -- /m # on Windows
@@ -20,7 +22,7 @@
 * C++11 compiler *(see platform specific requirements)*
 
 ### Optional Tools
-* [Doxygen 8.11](http://www.stack.nl/~dimitri/doxygen/download.html) *(If building source documentation)*
+* [Doxygen 8.11](http://www.stack.nl/~dimitri/doxygen/download.html) *(for building source documentation)*
 
 ## Mac OS X
 * Mac OS X 10.12 (Sierra)
@@ -65,6 +67,6 @@
 * Solaris 11 x86
 
 ### Required Tools
-* [Solaris Studion 12.4](http://www.oracle.com/technetwork/server-storage/solarisstudio/downloads/index-jsp-141149.html) or newer
+* [Solaris Studio 12.4](http://www.oracle.com/technetwork/server-storage/solarisstudio/downloads/index-jsp-141149.html) or newer
 
 	
