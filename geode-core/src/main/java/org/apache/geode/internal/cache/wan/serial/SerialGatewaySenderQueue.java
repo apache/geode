@@ -467,10 +467,6 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     }
   }
 
-  public void remove(Object object) {
-    remove();
-  }
-
   public Object peek() throws CacheException {
     // resetLastPeeked();
     Object object = peekAhead();

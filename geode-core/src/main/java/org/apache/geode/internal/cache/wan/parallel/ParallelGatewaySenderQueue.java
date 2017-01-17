@@ -1093,7 +1093,11 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
           destroyEventFromQueue(prQ, bucketId, key);
         }
       } finally {
-        event.release();
+        try {
+          event.release();
+        } catch (IllegalStateException e) {
+          logger.error("Exception caught and logged.  The thread will continue running", e);
+        }
       }
     }
   }

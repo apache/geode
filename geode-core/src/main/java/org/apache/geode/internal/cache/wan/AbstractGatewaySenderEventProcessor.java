@@ -223,10 +223,6 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
     return this.resetLastPeekedEvents;
   }
 
-  protected void eventQueueRemove() throws CacheException, InterruptedException {
-    this.queue.remove();
-  }
-
   protected void eventQueueRemove(int size) throws CacheException {
     this.queue.remove(size);
   }
