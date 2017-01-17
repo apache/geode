@@ -1,8 +1,11 @@
 # Building
     $ cd <clone>
-    $ mdkir build
-    $ cmake ../src
-    $ cmake --build .
+    $ mkdir build
+    $ cd build
+    $ cmake -DGEMFIRE_HOME=/path/to/gemfire ../src
+    $ cmake --build . -- -j 8 # on UNIX
+    - OR -
+    $ cmake --build . -- /m # on Windows
 
 # Platforms Known To Build
 * [Mac OS X](#mac-os-x)
@@ -64,3 +67,4 @@
 ### Required Tools
 * [Solaris Studion 12.4](http://www.oracle.com/technetwork/server-storage/solarisstudio/downloads/index-jsp-141149.html) or newer
 
+	
