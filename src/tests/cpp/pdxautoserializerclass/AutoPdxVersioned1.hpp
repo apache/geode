@@ -370,5 +370,5 @@ class GFIGNORE(TESTOBJECT_EXPORT) NestedPdx : public PdxSerializable {
   static PdxSerializable* createDeserializable();
 };
 typedef SharedPtr<NestedPdx> NestedPdxPtr;
-}
+}  // namespace AutoPdxTests
 #endif /* __AUTOPDXVERSIONED1OBJECT_HPP__ */

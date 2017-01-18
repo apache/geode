@@ -66,6 +66,6 @@ class CPPCACHE_EXPORT PreservedDataExpiryHandler : public ACE_Event_Handler {
   // UNUSED uint32_t m_duration;
   PdxSerializablePtr m_pdxObjectPtr;
 };
-}
+}  // namespace gemfire
 
 #endif /* __PRESERVEDDATAEXPIRYHANDLER_HPP__*/

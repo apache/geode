@@ -74,6 +74,6 @@ class CPPCACHE_EXPORT VersionStamp {
                                   VersionTagPtr tag);
 };
 typedef SharedPtr<VersionStamp> VersionStampPtr;
-}
+}  // namespace gemfire
 
 #endif  // __GEMFIRE_IMPL_VERSIONSTAMP_H__

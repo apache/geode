@@ -75,6 +75,6 @@ class CPPCACHE_EXPORT SolarisProcessStats : public ProcessStats {
 
 };  // Class SolarisProcessStats
 
-};  // NameSpace
+}  // namespace gemfire_statistics
 
 #endif  //_GEMFIRE_STATISTICS_SOLARISPROCESSSTATS_HPP_

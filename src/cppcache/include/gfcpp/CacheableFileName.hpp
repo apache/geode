@@ -110,6 +110,6 @@ class CPPCACHE_EXPORT CacheableFileName : public CacheableString {
  private:
   mutable int m_hashcode;
 };
-}
+}  // namespace gemfire
 
 #endif

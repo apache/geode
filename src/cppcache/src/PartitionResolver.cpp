@@ -24,4 +24,4 @@ PartitionResolver::PartitionResolver() {}
 PartitionResolver::~PartitionResolver() {}
 
 const char* PartitionResolver::getName() { return "PartitionResolver"; }
-}
+}  // namespace gemfire

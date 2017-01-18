@@ -76,5 +76,5 @@ class PdxHelper {
 
   static CacheImpl* getCacheImpl();
 };
-}
+}  // namespace gemfire
 #endif /* PDXHELPER_HPP_ */

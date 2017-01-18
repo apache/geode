@@ -19,7 +19,7 @@
 
 namespace {
 std::string g_default_persistence_directory = "GemFireRegionData";
-};
+}  // namespace
 
 using namespace gemfire;
 

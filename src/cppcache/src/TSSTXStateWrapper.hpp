@@ -44,6 +44,6 @@ class TSSTXStateWrapper {
   TSSTXStateWrapper& operator=(const TSSTXStateWrapper&);
   TSSTXStateWrapper(const TSSTXStateWrapper&);
 };
-}
+}  // namespace gemfire
 
 #endif /* TSSTXSTATEWRAPPER_HPP_ */

@@ -151,8 +151,9 @@ void validateEvents() {
 DUNIT_TASK_DEFINITION(SERVER1, CreateServerWithNBSTrue)
   {
     // starting server with notify_subscription true
-    if (isLocalServer)
+    if (isLocalServer) {
       CacheHelper::initServer(1, "cacheserver_notify_subscription.xml");
+    }
     LOG("SERVER1 started");
   }
 END_TASK_DEFINITION
@@ -160,8 +161,9 @@ END_TASK_DEFINITION
 DUNIT_TASK_DEFINITION(SERVER1, CreateServer1)
   {
     LOG("Starting SERVER1...");
-    if (isLocalServer)
+    if (isLocalServer) {
       CacheHelper::initServer(1, "cacheserver_notify_subscriptionBug849.xml");
+    }
     LOG("SERVER1 started");
   }
 END_TASK_DEFINITION
@@ -195,12 +197,12 @@ DUNIT_TASK_DEFINITION(CLIENT1, SetupClient1withCachingEnabled_Pooled_Locator)
   {
     initClient(true);
     LOG("Creating region in CLIENT1, no-ack, no-cache, no-listener");
-    createPooledRegion(myRegNames[0], false, locatorsG, poolName, true,
-                       NULLPTR, true);
-    createPooledRegion(myRegNames[1], false, locatorsG, poolName, true,
-                       NULLPTR, true);
-    createPooledRegion(myRegNames[2], false, locatorsG, poolName, true,
-                       NULLPTR, true);
+    createPooledRegion(myRegNames[0], false, locatorsG, poolName, true, NULLPTR,
+                       true);
+    createPooledRegion(myRegNames[1], false, locatorsG, poolName, true, NULLPTR,
+                       true);
+    createPooledRegion(myRegNames[2], false, locatorsG, poolName, true, NULLPTR,
+                       true);
 
     // create subregion
     RegionPtr exmpRegptr = getHelper()->getRegion(myRegNames[2]);
@@ -280,8 +282,8 @@ DUNIT_TASK_DEFINITION(CLIENT2, SetupClient2withCachingEnabled_Pooled_Locator)
 
     createPooledRegion(myRegNames[0], false, locatorsG, poolName, true,
                        distRegCacheListener, true);
-    createPooledRegion(myRegNames[1], false, locatorsG, poolName, true,
-                       NULL, true);
+    createPooledRegion(myRegNames[1], false, locatorsG, poolName, true, NULL,
+                       true);
     createPooledRegion(myRegNames[2], false, locatorsG, poolName, true,
                        parentRegCacheListener, true);
 
@@ -311,7 +313,6 @@ DUNIT_TASK_DEFINITION(CLIENT2, SetupClient2withCachingEnabled_Pooled_Locator)
     LOG("StepTwo_Pool complete.");
   }
 END_TASK_DEFINITION
-
 
 DUNIT_TASK_DEFINITION(CLIENT3, SetupClient3_Pooled_Locator)
   {

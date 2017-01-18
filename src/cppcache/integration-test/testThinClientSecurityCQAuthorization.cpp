@@ -52,7 +52,8 @@ using namespace testData;
 using namespace gemfire::testframework::security;
 using namespace gemfire;
 
-const char* locHostPort = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locHostPort =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 CredentialGeneratorPtr credentialGeneratorHandler;
 #define CLIENT1 s1p1
 #define SERVER1 s2p1

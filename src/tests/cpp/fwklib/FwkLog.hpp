@@ -117,6 +117,6 @@ const char* getNodeName();
   }
 
 }  // namespace  testframework
-}  // namepace gemfire
+}  // namespace gemfire
 
 #endif  // __FWK_LOG_HPP__

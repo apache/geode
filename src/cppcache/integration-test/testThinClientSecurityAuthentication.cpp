@@ -29,7 +29,8 @@ using namespace test;
 #define INCORRECT_CREDENTIALS 'I'
 #define NOT_PROVIDED_CREDENTIALS 'N'
 
-const char* locHostPort = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locHostPort =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 const char* regionNamesAuth[] = {"DistRegionAck", "DistRegionNoAck"};
 CredentialGeneratorPtr credentialGeneratorHandler;
 
@@ -299,8 +300,8 @@ DUNIT_TASK_DEFINITION(CLIENT2, StepSeven)
     CacheHelper::setJavaConnectionPoolSize(0);
     SLEEP(500);
     try {
-      createRegionForSecurity(regionNamesAuth[0], USE_ACK, true,
-                              NULLPTR, true, 0);
+      createRegionForSecurity(regionNamesAuth[0], USE_ACK, true, NULLPTR, true,
+                              0);
       FAIL("Should have thrown AuthenticationFailedException.");
     } catch (const gemfire::AuthenticationFailedException& other) {
       other.printStackTrace();
@@ -462,35 +463,29 @@ DUNIT_TASK_DEFINITION(LOCATORSERVER, CloseLocator)
   }
 END_TASK_DEFINITION
 
-
-
 void doThinClientSecurityAuthentication() {
- 
-    CALL_TASK(CreateLocator);
-    CALL_TASK(CreateServer1);
-    CALL_TASK(StepOne);
-    CALL_TASK(CreateServer2);
-    CALL_TASK(CloseCache1);
-    CALL_TASK(StepTwo);
-    CALL_TASK(StepThree);
-    CALL_TASK(StepFour);
-    CALL_TASK(CloseServer1);
-    CALL_TASK(StepFive);
-    CALL_TASK(CloseCache1);
-    CALL_TASK(CloseCache2);
-    CALL_TASK(StepSix);
-    CALL_TASK(StepSeven);
-      CALL_TASK(StepEight);  
-    CALL_TASK(CloseCache1);
-    CALL_TASK(CloseCache2);
-    CALL_TASK(CloseCache3);
-    CALL_TASK(CloseServer2);
-    CALL_TASK(CloseLocator);
-  
+  CALL_TASK(CreateLocator);
+  CALL_TASK(CreateServer1);
+  CALL_TASK(StepOne);
+  CALL_TASK(CreateServer2);
+  CALL_TASK(CloseCache1);
+  CALL_TASK(StepTwo);
+  CALL_TASK(StepThree);
+  CALL_TASK(StepFour);
+  CALL_TASK(CloseServer1);
+  CALL_TASK(StepFive);
+  CALL_TASK(CloseCache1);
+  CALL_TASK(CloseCache2);
+  CALL_TASK(StepSix);
+  CALL_TASK(StepSeven);
+  CALL_TASK(StepEight);
+  CALL_TASK(CloseCache1);
+  CALL_TASK(CloseCache2);
+  CALL_TASK(CloseCache3);
+  CALL_TASK(CloseServer2);
+  CALL_TASK(CloseLocator);
 }
 
 DUNIT_MAIN
-  {
-    doThinClientSecurityAuthentication();
-  }
+  { doThinClientSecurityAuthentication(); }
 END_MAIN

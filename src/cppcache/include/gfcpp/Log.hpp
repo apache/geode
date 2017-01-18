@@ -603,7 +603,7 @@ class CPPCACHE_EXPORT LogVarargs {
   static void finer(const char* fmt, ...);
   static void finest(const char* fmt, ...);
 };
-}
+}  // namespace gemfire
 
 /************************ LOGDEBUG ***********************************/
 

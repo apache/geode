@@ -242,6 +242,6 @@ s
 
 };  // class
 
-};  // namespace
+}  // namespace gemfire_statistics
 
 #endif  //  _GEMFIRE_STATISTICS_STATISTICDESCRIPTORIMPL_HPP_

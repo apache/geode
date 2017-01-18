@@ -39,7 +39,8 @@ CacheHelper* cacheHelper = NULL;
 #define SERVERS s2p2
 #define SERVER1 s2p2
 static bool isLocator = false;
-const char* locatorsG = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locatorsG =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 bool g_poolConfig = false;
 bool g_poolLocators = false;
 void initClient(int redundancyLevel) {
@@ -566,7 +567,5 @@ void runThinClientMixedRedundancy() {
   closeLocator();
 }
 DUNIT_MAIN
-  {
-    runThinClientMixedRedundancy();
-  }
+  { runThinClientMixedRedundancy(); }
 END_MAIN

@@ -212,7 +212,7 @@ class CacheableArrayType : public Cacheable {
 
   /** Get the element at given index. */
   inline TObj operator[](uint32_t index) const {
-    if ((int32_t)index >= m_length) {
+    if (static_cast<int32_t>(index) >= m_length) {
       throw OutOfRangeException(
           "CacheableArray::operator[]: Index out of range.");
     }
@@ -258,8 +258,9 @@ class CacheableArrayType : public Cacheable {
    * cache memory utilization.
    */
   virtual uint32_t objectSize() const {
-    return (uint32_t)(sizeof(CacheableArrayType) +
-                      gemfire::serializer::objectSize(m_value, m_length));
+    return static_cast<uint32_t>(
+        sizeof(CacheableArrayType) +
+        gemfire::serializer::objectSize(m_value, m_length));
   }
 };
 
@@ -356,8 +357,8 @@ class CacheableContainerType : public Cacheable, public TBase {
    * cache memory utilization.
    */
   virtual uint32_t objectSize() const {
-    return (uint32_t)(sizeof(CacheableContainerType) +
-                      gemfire::serializer::objectSize(*this));
+    return static_cast<uint32_t>(sizeof(CacheableContainerType) +
+                                 gemfire::serializer::objectSize(*this));
   }
 };
 
@@ -673,6 +674,6 @@ _GF_CACHEABLE_CONTAINER_TYPE_DEF_(_HashSetOfCacheableKey,
  * iteration semantics of java <code>LinkedHashSet</code>.
  */
 _GF_CACHEABLE_CONTAINER_TYPE_(_HashSetOfCacheableKey, CacheableLinkedHashSet);
-}
+}  // namespace gemfire
 
 #endif  // _GEMFIRE_CACHEABLE_BUILTINS_HPP_

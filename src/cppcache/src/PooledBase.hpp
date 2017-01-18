@@ -55,7 +55,7 @@ class CPPCACHE_EXPORT PooledBase {
 
   void operator=(const PooledBase& rhs);
 };
-}
+}  // namespace gemfire
 
 #endif
 

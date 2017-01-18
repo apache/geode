@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 #include "LocalRegion.hpp"
 #include <gfcpp/Log.hpp>
 #include <gfcpp/SystemProperties.hpp>

@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 /**
 * @file    UdpIpc.cpp
 * @since   1.0

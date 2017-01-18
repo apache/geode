@@ -87,6 +87,6 @@ class CPPCACHE_EXPORT CacheableUndefined : public Cacheable {
   CacheableUndefined& operator=(const CacheableUndefined& other);
   CacheableUndefined(const CacheableUndefined& other);
 };
-}
+}  // namespace gemfire
 
 #endif  // _GEMFIRE_CACHEABLEUNDEFINED_HPP_

@@ -65,5 +65,5 @@ class CPPCACHE_EXPORT ExpiryHandler_T : public ACE_Event_Handler {
   TO_HANDLER to_handler_;
 };
 
-}  // end namespace
+}  // namespace gemfire
 #endif  // !defined (EXPIRYHANDLER_T_HPP)

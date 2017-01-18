@@ -44,5 +44,5 @@ class QueueConnectionResponse : public ServerLocationResponse {
   bool m_durableQueueFound;
 };
 typedef SharedPtr<QueueConnectionResponse> QueueConnectionResponsePtr;
-}
+}  // namespace gemfire
 #endif

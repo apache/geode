@@ -76,6 +76,6 @@ class GemfireTypeIds {
     CacheableEnum = 94
   };
 };
-}
+}  // namespace gemfire
 
 #endif

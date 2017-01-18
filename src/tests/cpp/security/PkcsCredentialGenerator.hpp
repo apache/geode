@@ -134,8 +134,8 @@ class PKCSCredentialGenerator : public CredentialGenerator {
   }
 };
 
-};  // security
-};  // testframework
-};  // gemfire
+}  // namespace security
+}  // namespace testframework
+}  // namespace gemfire
 
 #endif /*_GEMFIRE_PKCSCREDENTIALGENERATOR_HPP_*/

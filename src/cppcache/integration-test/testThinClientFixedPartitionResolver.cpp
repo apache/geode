@@ -155,7 +155,8 @@ FixedPartitionResolverPtr cptr3(new CustomFixedPartitionResolver3());
 bool isLocalServer = false;
 
 static bool isLocator = false;
-const char* locatorsG = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locatorsG =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 
 std::vector<char*> storeEndPoints(const char* points) {
   std::vector<char*> endpointNames;

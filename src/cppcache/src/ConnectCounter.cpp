@@ -22,4 +22,4 @@ namespace gemfire {
 ConnectCounter::ConnectCounter() {}
 
 ConnectCounter::~ConnectCounter() {}
-}
+}  // namespace gemfire

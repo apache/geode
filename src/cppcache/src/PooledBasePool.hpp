@@ -73,6 +73,6 @@ class CPPCACHE_EXPORT PooledBasePool {
     }
   }
 };
-}
+}  // namespace gemfire
 
 #endif

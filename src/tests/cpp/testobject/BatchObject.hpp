@@ -86,5 +86,5 @@ class TESTOBJECT_EXPORT BatchObject : public TimestampedObject {
 };
 
 typedef gemfire::SharedPtr<BatchObject> BatchObjectPtr;
-}
+}  // namespace testobject
 #endif

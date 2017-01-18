@@ -93,6 +93,6 @@ class StatisticsTypeImpl : public StatisticsType {
   //                                      StatisticsTypeFactory factory);
 
 };  // class
-};  // namespace
+}  // namespace gemfire_statistics
 
 #endif  // ifndef _GEMFIRE_STATISTICS_STATISTICSTYPEIMPL_HPP_

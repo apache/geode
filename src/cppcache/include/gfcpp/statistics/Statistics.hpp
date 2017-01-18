@@ -517,6 +517,6 @@ class CPPCACHE_EXPORT Statistics {
   virtual ~Statistics() = 0;
 };  // class
 
-};  // namespace
+}  // namespace gemfire_statistics
 
 #endif  // _GEMFIRE_STATISTICS_STATISTICS_HPP_

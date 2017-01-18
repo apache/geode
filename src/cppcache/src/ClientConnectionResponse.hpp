@@ -43,5 +43,5 @@ class ClientConnectionResponse : public ServerLocationResponse {
   ServerLocation m_server;
 };
 typedef SharedPtr<ClientConnectionResponse> ClientConnectionResponsePtr;
-}
+}  // namespace gemfire
 #endif

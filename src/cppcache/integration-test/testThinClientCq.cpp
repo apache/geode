@@ -54,7 +54,8 @@ using namespace testData;
 
 static bool m_isPdx = false;
 
-const char* locHostPort = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locHostPort =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 const char* cqNames[MAX_LISTNER] = {"MyCq_0", "MyCq_1", "MyCq_2", "MyCq_3",
                                     "MyCq_4", "MyCq_5", "MyCq_6", "MyCq_7"};
 

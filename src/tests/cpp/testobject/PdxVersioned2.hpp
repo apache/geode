@@ -254,5 +254,5 @@ class TESTOBJECT_EXPORT PdxVersioned2 : public PdxSerializable {
                         int* arrLengths) const;
 };
 typedef SharedPtr<PdxTests::PdxVersioned2> PdxVersioned2Ptr;
-}
+}  // namespace PdxTests
 #endif /* __PDXVERSIONED2OBJECT_HPP__ */

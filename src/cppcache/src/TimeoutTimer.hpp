@@ -61,6 +61,6 @@ class CPPCACHE_EXPORT TimeoutTimer {
     m_reset = true;
   }
 };
-}
+}  // namespace gemfire
 
 #endif

@@ -49,9 +49,9 @@ class BucketStatus {
     } else {
       ACE_Time_Value to(0, millis * 1000);
       to += m_lastTimeout;
-      if (to > ACE_OS::gettimeofday())
+      if (to > ACE_OS::gettimeofday()) {
         return true;  // timeout as buckste not recovered yet
-      else {
+      } else {
         // reset to zero as we waited enough to recover bucket
         m_lastTimeout = ACE_Time_Value::zero;
         return false;
@@ -60,8 +60,9 @@ class BucketStatus {
   }
 
   void setTimeout() {
-    if (m_lastTimeout == ACE_Time_Value::zero)
+    if (m_lastTimeout == ACE_Time_Value::zero) {
       m_lastTimeout = ACE_OS::gettimeofday();  // set once only for timeout
+    }
   }
 };
 
@@ -198,6 +199,6 @@ class ClientMetadataService : public ACE_Task_Base,
   uint32_t m_bucketWaitTimeout;
   static const char* NC_CMDSvcThread;
 };
-}
+}  // namespace gemfire
 
 #endif

@@ -26,4 +26,4 @@ void ServerLocation::makeEpString() {
     m_epString = epstring;
   }
 }
-}
+}  // namespace gemfire

@@ -55,7 +55,7 @@ namespace {
 StatisticsManager* g_statMngr = NULL;
 
 SystemProperties* g_sysProps = NULL;
-}
+}  // namespace
 
 namespace gemfire {
 void setLFH() {

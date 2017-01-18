@@ -168,6 +168,6 @@ class FairQueue {
   virtual void deleteAction() {}
 };
 
-}  // end namespace
+}  // namespace gemfire
 
 #endif  // ifndef _GEMFIRE_FAIRQUEUE_HPP_

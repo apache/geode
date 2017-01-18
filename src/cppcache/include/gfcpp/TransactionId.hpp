@@ -38,6 +38,6 @@ class CPPCACHE_EXPORT TransactionId : public gemfire::SharedBase {
   TransactionId();
   virtual ~TransactionId();
 };
-}
+}  // namespace gemfire
 
 #endif /* TRANSACTIONID_H_ */

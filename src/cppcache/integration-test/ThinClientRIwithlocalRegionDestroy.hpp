@@ -35,9 +35,9 @@ using namespace test;
 CacheHelper* cacheHelper = NULL;
 bool isLocalServer = false;
 
-
 static bool isLocator = false;
-const char* locatorsG = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locatorsG =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 #include "LocatorHelper.hpp"
 
 class SimpleCacheListener : public CacheListener {

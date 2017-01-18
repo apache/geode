@@ -99,6 +99,6 @@ class CPPCACHE_EXPORT ClientMetadata : public SharedBase, public NonAssignable {
   BucketServerLocationPtr advisePrimaryServerLocation(int bucketId);
   BucketServerLocationPtr adviseRandomServerLocation();
 };
-}
+}  // namespace gemfire
 
 #endif

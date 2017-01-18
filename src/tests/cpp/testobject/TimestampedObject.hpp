@@ -45,5 +45,5 @@ class TESTOBJECT_EXPORT TimestampedObject : public gemfire::Serializable {
   virtual ~TimestampedObject() {}
 };
 typedef gemfire::SharedPtr<TimestampedObject> TimestampedObjectPtr;
-}
+}  // namespace testobject
 #endif  // __TimestampedObjectHPP__

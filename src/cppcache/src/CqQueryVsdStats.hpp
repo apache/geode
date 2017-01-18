@@ -100,6 +100,6 @@ class CqQueryStatType {
 
   inline int32_t getNumEventsId() { return m_numEventsId; }
 };
-}
+}  // namespace gemfire
 
 #endif  // __GEMFIRE_CQ_QUERY_STATS_H__

@@ -84,6 +84,6 @@ class CPPCACHE_EXPORT EntryEvent : public gemfire::SharedBase {
   EntryEvent(const EntryEvent& other);
   void operator=(const EntryEvent& other);
 };
-}
+}  // namespace gemfire
 
 #endif

@@ -233,5 +233,5 @@ class PdxRemoteWriter : public PdxLocalWriter {
                                               int* elementLength);
 };
 typedef SharedPtr<PdxRemoteWriter> PdxRemoteWriterPtr;
-}
+}  // namespace gemfire
 #endif /* PDXREMOTEWRITER_HPP_ */

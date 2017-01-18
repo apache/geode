@@ -17,7 +17,5 @@
 
 #include "ThinClientFailoverRegex.hpp"
 DUNIT_MAIN
-  {
-    runThinClientFailOverRegex();
-  }
+  { runThinClientFailOverRegex(); }
 END_MAIN

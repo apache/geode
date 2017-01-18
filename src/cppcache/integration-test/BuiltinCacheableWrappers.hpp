@@ -76,7 +76,8 @@ const uint32_t m_crc32Table[] = {
 
 inline double random(double maxValue) {
   // Random number generator is initialized in registerBuiltins()
-  return (maxValue * (double)rand()) / ((double)RAND_MAX + 1.0);
+  return (maxValue * static_cast<double>(rand())) /
+         (static_cast<double>(RAND_MAX) + 1.0);
 }
 
 template <typename TPRIM>
@@ -122,9 +123,10 @@ inline void randomString(int32_t size, std::wstring& randStr,
   randStr.resize(size);
   for (int32_t index = 0; index < size; index++) {
     if (useASCII) {
-      randStr[index] = (wchar_t)chooseFrom[random(chooseSize)];
+      randStr[index] = static_cast<wchar_t>(chooseFrom[random(chooseSize)]);
     } else {
-      randStr[index] = (wchar_t)((uint16_t)random(UCHAR_MAX) + 0x0901);
+      randStr[index] = static_cast<wchar_t>(
+          static_cast<uint16_t>(random(UCHAR_MAX)) + 0x0901);
     }
   }
 }
@@ -171,7 +173,7 @@ inline bool isContainerTypeId(int8_t typeId) {
          (typeId == GemfireTypeIds::CacheableLinkedHashSet) ||
          (typeId == GemfireTypeIds::CacheableLinkedList);
 }
-}
+}  // namespace CacheableHelper
 
 // Cacheable types that can be used as keys
 
@@ -217,7 +219,7 @@ class CacheableByteWrapper : public CacheableWrapper {
   virtual int32_t maxKeys() const { return UCHAR_MAX; }
 
   virtual void initKey(int32_t keyIndex, int32_t maxSize) {
-    m_cacheableObject = CacheableByte::create((uint8_t)keyIndex);
+    m_cacheableObject = CacheableByte::create(static_cast<uint8_t>(keyIndex));
   }
 
   virtual void initRandomValue(int32_t maxSize) {
@@ -245,12 +247,12 @@ class CacheableDoubleWrapper : public CacheableWrapper {
   virtual int32_t maxKeys() const { return INT_MAX; }
 
   virtual void initKey(int32_t keyIndex, int32_t maxSize) {
-    m_cacheableObject = CacheableDouble::create((double)keyIndex);
+    m_cacheableObject = CacheableDouble::create(static_cast<double>(keyIndex));
   }
 
   virtual void initRandomValue(int32_t maxSize) {
-    m_cacheableObject =
-        CacheableDouble::create(CacheableHelper::random((double)maxSize));
+    m_cacheableObject = CacheableDouble::create(
+        CacheableHelper::random(static_cast<double>(maxSize)));
   }
 
   virtual uint32_t getCheckSum(const CacheablePtr object) const {
@@ -327,8 +329,8 @@ class CacheableFileNameWrapper : public CacheableWrapper {
 #else
     baseStr[0] = L'/';
 #endif
-    m_cacheableObject =
-        CacheableFileName::create(baseStr.data(), (int32_t)baseStr.size());
+    m_cacheableObject = CacheableFileName::create(
+        baseStr.data(), static_cast<int32_t>(baseStr.size()));
   }
 
   virtual void initRandomValue(int32_t maxSize) {
@@ -338,8 +340,8 @@ class CacheableFileNameWrapper : public CacheableWrapper {
     // make first caharacter as a '/' so java does not change the path
     // taking it to be a relative path
     randStr[0] = '/';
-    m_cacheableObject =
-        CacheableFileName::create(randStr.data(), (int32_t)randStr.size());
+    m_cacheableObject = CacheableFileName::create(
+        randStr.data(), static_cast<int32_t>(randStr.size()));
   }
 
   virtual uint32_t getCheckSum(const CacheablePtr object) const {
@@ -364,12 +366,12 @@ class CacheableFloatWrapper : public CacheableWrapper {
   virtual int32_t maxKeys() const { return INT_MAX; }
 
   virtual void initKey(int32_t keyIndex, int32_t maxSize) {
-    m_cacheableObject = CacheableFloat::create((float)keyIndex);
+    m_cacheableObject = CacheableFloat::create(static_cast<float>(keyIndex));
   }
 
   virtual void initRandomValue(int32_t maxSize) {
-    m_cacheableObject =
-        CacheableFloat::create(CacheableHelper::random((float)maxSize));
+    m_cacheableObject = CacheableFloat::create(
+        CacheableHelper::random(static_cast<float>(maxSize)));
   }
 
   virtual uint32_t getCheckSum(const CacheablePtr object) const {
@@ -393,7 +395,7 @@ class CacheableInt16Wrapper : public CacheableWrapper {
   virtual int32_t maxKeys() const { return SHRT_MAX; }
 
   virtual void initKey(int32_t keyIndex, int32_t maxSize) {
-    m_cacheableObject = CacheableInt16::create((int16_t)keyIndex);
+    m_cacheableObject = CacheableInt16::create(static_cast<int16_t>(keyIndex));
   }
 
   virtual void initRandomValue(int32_t maxSize) {
@@ -451,7 +453,7 @@ class CacheableInt64Wrapper : public CacheableWrapper {
   virtual int32_t maxKeys() const { return INT_MAX; }
 
   virtual void initKey(int32_t keyIndex, int32_t maxSize) {
-    m_cacheableObject = CacheableInt64::create((int64_t)keyIndex);
+    m_cacheableObject = CacheableInt64::create(static_cast<int64_t>(keyIndex));
   }
 
   virtual void initRandomValue(int32_t maxSize) {
@@ -489,16 +491,16 @@ class CacheableStringWrapper : public CacheableWrapper {
     char indexStr[15];
     sprintf(indexStr, "%10d", keyIndex);
     baseStr.append(indexStr);
-    m_cacheableObject =
-        CacheableString::create(baseStr.data(), (int32_t)baseStr.length());
+    m_cacheableObject = CacheableString::create(
+        baseStr.data(), static_cast<int32_t>(baseStr.length()));
   }
 
   virtual void initRandomValue(int32_t maxSize) {
     maxSize %= (0xFFFF + 1);
     std::string randStr;
     CacheableHelper::randomString(maxSize, randStr);
-    m_cacheableObject =
-        CacheableString::create(randStr.data(), (int32_t)randStr.length());
+    m_cacheableObject = CacheableString::create(
+        randStr.data(), static_cast<int32_t>(randStr.length()));
   }
 
   virtual uint32_t getCheckSum(const CacheablePtr object) const {
@@ -531,8 +533,8 @@ class CacheableHugeStringWrapper : public CacheableWrapper {
     char indexStr[15];
     sprintf(indexStr, "%10d", keyIndex);
     baseStr.append(indexStr);
-    m_cacheableObject =
-        CacheableString::create(baseStr.data(), (int32_t)baseStr.length());
+    m_cacheableObject = CacheableString::create(
+        baseStr.data(), static_cast<int32_t>(baseStr.length()));
   }
 
   virtual void initRandomValue(int32_t maxSize) {
@@ -542,8 +544,8 @@ class CacheableHugeStringWrapper : public CacheableWrapper {
     }
     std::string randStr;
     CacheableHelper::randomString(maxSize, randStr);
-    m_cacheableObject =
-        CacheableString::create(randStr.data(), (int32_t)randStr.length());
+    m_cacheableObject = CacheableString::create(
+        randStr.data(), static_cast<int32_t>(randStr.length()));
   }
 
   virtual uint32_t getCheckSum(const CacheablePtr object) const {
@@ -577,8 +579,8 @@ class CacheableHugeUnicodeStringWrapper : public CacheableWrapper {
     wchar_t indexStr[15];
     swprintf(indexStr, 14, L"%10d", keyIndex);
     baseStr.append(indexStr);
-    m_cacheableObject =
-        CacheableString::create(baseStr.data(), (int32_t)baseStr.length());
+    m_cacheableObject = CacheableString::create(
+        baseStr.data(), static_cast<int32_t>(baseStr.length()));
   }
 
   virtual void initRandomValue(int32_t maxSize) {
@@ -588,8 +590,8 @@ class CacheableHugeUnicodeStringWrapper : public CacheableWrapper {
     }
     std::wstring randStr;
     CacheableHelper::randomString(maxSize, randStr);
-    m_cacheableObject =
-        CacheableString::create(randStr.data(), (int32_t)randStr.length());
+    m_cacheableObject = CacheableString::create(
+        randStr.data(), static_cast<int32_t>(randStr.length()));
   }
 
   virtual uint32_t getCheckSum(const CacheablePtr object) const {
@@ -624,16 +626,16 @@ class CacheableUnicodeStringWrapper : public CacheableWrapper {
     wchar_t indexStr[15];
     swprintf(indexStr, 14, L"%10d", keyIndex);
     baseStr.append(indexStr);
-    m_cacheableObject =
-        CacheableString::create(baseStr.data(), (int32_t)baseStr.length());
+    m_cacheableObject = CacheableString::create(
+        baseStr.data(), static_cast<int32_t>(baseStr.length()));
   }
 
   virtual void initRandomValue(int32_t maxSize) {
     maxSize %= 21800;  // so that encoded length is within 64k
     std::wstring randStr;
     CacheableHelper::randomString(maxSize, randStr);
-    m_cacheableObject =
-        CacheableString::create(randStr.data(), (int32_t)randStr.length());
+    m_cacheableObject = CacheableString::create(
+        randStr.data(), static_cast<int32_t>(randStr.length()));
   }
 
   virtual uint32_t getCheckSum(const CacheablePtr object) const {
@@ -658,7 +660,8 @@ class CacheableWideCharWrapper : public CacheableWrapper {
   virtual int32_t maxKeys() const { return SHRT_MAX; }
 
   virtual void initKey(int32_t keyIndex, int32_t maxSize) {
-    m_cacheableObject = CacheableWideChar::create((wchar_t)keyIndex);
+    m_cacheableObject =
+        CacheableWideChar::create(static_cast<wchar_t>(keyIndex));
   }
 
   virtual void initRandomValue(int32_t maxSize) {
@@ -795,7 +798,7 @@ class CacheableHashSetTypeWrapper : public CacheableWrapper {
     std::vector<int8_t> keyTypeIds =
         CacheableWrapperFactory::getRegisteredKeyTypes();
     size_t sizeOfTheVector = keyTypeIds.size();
-    maxSize = maxSize / (int32_t)sizeOfTheVector + 1;
+    maxSize = maxSize / static_cast<int32_t>(sizeOfTheVector) + 1;
     for (size_t i = 0; i < sizeOfTheVector; i++) {
       int8_t keyTypeId = keyTypeIds[i];
       CacheableWrapper* wrapper =
@@ -869,7 +872,8 @@ class CacheableDoubleArrayWrapper : public CacheableWrapper {
 
   virtual void initRandomValue(int32_t maxSize) {
     maxSize = maxSize / sizeof(double) + 1;
-    double* randArr = CacheableHelper::randomArray(maxSize, (double)INT_MAX);
+    double* randArr =
+        CacheableHelper::randomArray(maxSize, static_cast<double>(INT_MAX));
     m_cacheableObject = CacheableDoubleArray::create(randArr, maxSize);
     delete[] randArr;
   }
@@ -894,7 +898,8 @@ class CacheableFloatArrayWrapper : public CacheableWrapper {
 
   virtual void initRandomValue(int32_t maxSize) {
     maxSize = maxSize / sizeof(float) + 1;
-    float* randArr = CacheableHelper::randomArray(maxSize, (float)INT_MAX);
+    float* randArr =
+        CacheableHelper::randomArray(maxSize, static_cast<float>(INT_MAX));
     m_cacheableObject = CacheableFloatArray::create(randArr, maxSize);
     delete[] randArr;
   }
@@ -1026,13 +1031,13 @@ class CacheableStringArrayWrapper : public CacheableWrapper {
       if (arrayIndex % 2 == 0) {
         std::string randStr;
         CacheableHelper::randomString(maxSize, randStr);
-        randArr[arrayIndex] =
-            CacheableString::create(randStr.data(), (int32_t)randStr.length());
+        randArr[arrayIndex] = CacheableString::create(
+            randStr.data(), static_cast<int32_t>(randStr.length()));
       } else {
         std::wstring randStr;
         CacheableHelper::randomString(maxSize, randStr);
-        randArr[arrayIndex] =
-            CacheableString::create(randStr.data(), (int32_t)randStr.length());
+        randArr[arrayIndex] = CacheableString::create(
+            randStr.data(), static_cast<int32_t>(randStr.length()));
       }
     }
     m_cacheableObject = CacheableStringArray::create(randArr, arraySize);
@@ -1094,7 +1099,7 @@ class CacheableVectorTypeWrapper : public CacheableWrapper {
     std::vector<int8_t> valueTypeIds =
         CacheableWrapperFactory::getRegisteredValueTypes();
     size_t sizeOfTheVector = valueTypeIds.size();
-    maxSize = maxSize / (int32_t)sizeOfTheVector + 1;
+    maxSize = maxSize / static_cast<int32_t>(sizeOfTheVector) + 1;
     for (size_t i = 0; i < sizeOfTheVector; i++) {
       int8_t valueTypeId = valueTypeIds[i];
       if (!CacheableHelper::isContainerTypeId(valueTypeId)) {
@@ -1155,7 +1160,7 @@ class CacheableObjectArrayWrapper : public CacheableWrapper {
     std::vector<int8_t> valueTypeIds =
         CacheableWrapperFactory::getRegisteredValueTypes();
     size_t sizeOfTheVector = valueTypeIds.size();
-    maxSize = maxSize / (int32_t)sizeOfTheVector + 1;
+    maxSize = maxSize / static_cast<int32_t>(sizeOfTheVector) + 1;
     for (size_t i = 0; i < sizeOfTheVector; i++) {
       int8_t valueTypeId = valueTypeIds[i];
       if (!CacheableHelper::isContainerTypeId(valueTypeId)) {
@@ -1174,7 +1179,8 @@ class CacheableObjectArrayWrapper : public CacheableWrapper {
         dynamic_cast<const CacheableObjectArray*>(object.ptr());
     ASSERT(arr != NULL, "getCheckSum: null object.");
     uint32_t checkSum = 0;
-    for (uint32_t index = 0; index < (uint32_t)arr->size(); ++index) {
+    for (uint32_t index = 0; index < static_cast<uint32_t>(arr->size());
+         ++index) {
       const CacheablePtr obj = arr->at(index);
       if (obj == NULLPTR) {
         continue;
@@ -1193,7 +1199,7 @@ namespace CacheableHelper {
 
 void registerBuiltins(bool isRegisterFileName = false) {
   // Initialize the random number generator.
-  srand(getpid() + (int)time(0));
+  srand(getpid() + static_cast<int>(time(0)));
 
   // Register the builtin cacheable keys
   CacheableWrapperFactory::registerType(GemfireTypeIds::CacheableBoolean,
@@ -1303,6 +1309,6 @@ void registerBuiltins(bool isRegisterFileName = false) {
                                         "CacheableStack",
                                         CacheableStackWrapper::create, false);
 }
-}
+}  // namespace CacheableHelper
 
 #endif  // _GF_TEST_BUILTIN_CACHEABLEWRAPPERS_HPP_

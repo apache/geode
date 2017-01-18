@@ -18,7 +18,6 @@
  * limitations under the License.
  */
 
-
 #include "CacheableBuiltins.hpp"
 #include "PdxUnreadFields.hpp"
 
@@ -410,5 +409,5 @@ class CPPCACHE_EXPORT PdxReader : public SharedBase {
    */
   virtual PdxUnreadFieldsPtr readUnreadFields() = 0;
 };
-}
+}  // namespace gemfire
 #endif /* PDXREADER_HPP_ */

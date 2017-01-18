@@ -159,10 +159,11 @@ class CPPCACHE_EXPORT MapSegment {
     m_entryFactory->newMapEntry(key, newEntry);
     newEntry->setValueI(newValue);
     if (m_concurrencyChecksEnabled) {
-      if (versionTag != NULLPTR && versionTag.ptr() != NULL)
+      if (versionTag != NULLPTR && versionTag.ptr() != NULL) {
         newEntry->getVersionStamp().setVersions(versionTag);
-      else if (versionStamp != NULL)
+      } else if (versionStamp != NULL) {
         newEntry->getVersionStamp().setVersions(*versionStamp);
+      }
     }
     m_map->bind(key, newEntry);
     return GF_NOERR;
@@ -301,6 +302,6 @@ class CPPCACHE_EXPORT MapSegment {
   static bool boolVal;
 };
 
-}  // gemfire
+}  // namespace gemfire
 
 #endif  // __GEMFIRE_IMPL_MAPSEGMENT_H__

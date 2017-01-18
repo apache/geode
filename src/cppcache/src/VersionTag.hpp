@@ -80,6 +80,6 @@ class VersionTag : public Cacheable {
              int32_t regionVersionLowBytes, uint16_t internalMemId,
              uint16_t previousMemId);
 };
-}
+}  // namespace gemfire
 
 #endif  // __VERSIONTAG_HPP__

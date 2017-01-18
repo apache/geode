@@ -45,7 +45,6 @@ const char* poolName = "__TESTPOOL1_";
 const char* locatorsG =
     CacheHelper::getLocatorHostPort(isLocator, isLocalServer, numberOfLocators);
 
-
 const char* keys[] = {"Key-1", "Key-2", "Key-3", "Key-4"};
 const char* vals[] = {"Value-1", "Value-2", "Value-3", "Value-4"};
 const char* nvals[] = {"New Value-1", "New Value-2", "New Value-3",
@@ -99,16 +98,16 @@ void createRegion(const char* name, bool ackMode, const char* endpoints,
   LOG("Region created.");
 }
 
-void createPooledRegion(const char* name, bool ackMode, 
-                        const char* locators, const char* poolname,
+void createPooledRegion(const char* name, bool ackMode, const char* locators,
+                        const char* poolname,
                         bool clientNotificationEnabled = false,
                         bool cachingEnable = true) {
   LOG("createRegion_Pool() entered.");
   fprintf(stdout, "Creating region --  %s  ackMode is %d\n", name, ackMode);
   fflush(stdout);
-  RegionPtr regPtr = getHelper()->createPooledRegion(
-      name, ackMode, locators, poolname, cachingEnable,
-      clientNotificationEnabled);
+  RegionPtr regPtr =
+      getHelper()->createPooledRegion(name, ackMode, locators, poolname,
+                                      cachingEnable, clientNotificationEnabled);
   ASSERT(regPtr != NULLPTR, "Failed to create region.");
   LOG("Pooled Region created.");
 }
@@ -160,8 +159,8 @@ END_TASK_DEFINITION
 DUNIT_TASK_DEFINITION(CLIENT1, StepOne_Pooled_Locator)
   {
     initThinClientWithClientTypeAsCLIENT(true);
-    createPooledRegion(regionNames[0], USE_ACK,  locatorsG, poolName);
-    createPooledRegion(regionNames[1], NO_ACK,  locatorsG, poolName);
+    createPooledRegion(regionNames[0], USE_ACK, locatorsG, poolName);
+    createPooledRegion(regionNames[1], NO_ACK, locatorsG, poolName);
     LOG("StepOne_Pooled_Locators complete.");
   }
 END_TASK_DEFINITION
@@ -187,8 +186,8 @@ END_TASK_DEFINITION
 DUNIT_TASK_DEFINITION(CLIENT2, StepTwo_Pooled_Locator)
   {
     initThinClientWithClientTypeAsCLIENT(true);
-    createPooledRegion(regionNames[0], USE_ACK,  locatorsG, poolName);
-    createPooledRegion(regionNames[1], NO_ACK,  locatorsG, poolName);
+    createPooledRegion(regionNames[0], USE_ACK, locatorsG, poolName);
+    createPooledRegion(regionNames[1], NO_ACK, locatorsG, poolName);
     LOG("StepTwo_Pooled_Locator complete.");
   }
 END_TASK_DEFINITION

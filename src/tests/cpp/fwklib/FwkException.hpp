@@ -60,6 +60,6 @@ class FwkException {
 // ----------------------------------------------------------------------------
 
 }  // namespace  testframework
-}  // namepace gemfire
+}  // namespace gemfire
 
 #endif  // __FWKEXCEPTION_HPP__

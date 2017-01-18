@@ -27,7 +27,7 @@
 #include "NonCopyable.hpp"
 namespace gemfire_statistics {
 class HostStatSampler;
-}
+}  // namespace gemfire_statistics
 
 namespace gemfire {
 class CacheImpl;

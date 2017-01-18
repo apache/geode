@@ -126,7 +126,7 @@ class PutAllPartialResult : public Serializable {
     return 0;
   }
 
-  int8_t typeId() const { return (int8_t)0; }
+  int8_t typeId() const { return static_cast<int8_t>(0); }
 };
-}
+}  // namespace gemfire
 #endif

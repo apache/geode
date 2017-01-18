@@ -264,8 +264,8 @@ class CredentialGenerator : public SharedBase {
   virtual std::string getClientDummyAuthorizer() { return ""; }
 };
 
-};  // security
-};  // testframework
-};  // gemfire
+}  // namespace security
+}  // namespace testframework
+}  // namespace gemfire
 
 #endif

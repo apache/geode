@@ -29,5 +29,5 @@ class ServerLocationRequest : public Serializable {
   virtual uint32_t objectSize() const = 0;
   virtual ~ServerLocationRequest() {}
 };
-}
+}  // namespace gemfire
 #endif

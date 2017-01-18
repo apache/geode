@@ -37,7 +37,7 @@ class GetAllServersResponse : public Serializable {
     return GemfireTypeIdsImpl::GetAllServersResponse;
   }
   virtual int8_t DSFID() const {
-    return (int8_t)GemfireTypeIdsImpl::FixedIDByte;
+    return static_cast<int8_t>(GemfireTypeIdsImpl::FixedIDByte);
   }
   virtual uint32_t objectSize() const {
     return static_cast<uint32_t>(m_servers.size());
@@ -46,6 +46,6 @@ class GetAllServersResponse : public Serializable {
   virtual ~GetAllServersResponse() {}
 };
 typedef SharedPtr<GetAllServersResponse> GetAllServersResponsePtr;
-}
+}  // namespace gemfire
 
 #endif

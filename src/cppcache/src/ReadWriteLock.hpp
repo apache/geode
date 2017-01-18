@@ -83,6 +83,6 @@ class TryWriteGuard {
   ACE_RW_Thread_Mutex& lock_;
   bool isAcquired_;
 };
-}
+}  // namespace gemfire
 
 #endif

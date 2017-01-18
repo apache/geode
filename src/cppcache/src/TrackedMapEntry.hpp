@@ -73,6 +73,6 @@ class TrackedMapEntry : public MapEntry {
   int m_trackingNumber;
   int m_updateCount;
 };
-}
+}  // namespace gemfire
 
 #endif /* __GEMFIRE_IMPL_TRACKEDMAPENTRY_HPP__ */

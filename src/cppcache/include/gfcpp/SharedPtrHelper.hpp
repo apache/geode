@@ -70,6 +70,6 @@ template <class Src>
 SharedBase* getSB(Src* ptr) {
   return getTarget<SharedBase>(ptr);
 }
-}
+}  // namespace gemfire
 
 #endif

@@ -77,5 +77,5 @@ class NoopAuthInit : public AuthInitialize {
 
  private:
 };
-};
+}  // namespace gemfire;
 #endif  //__NOOPAUTHINIT__

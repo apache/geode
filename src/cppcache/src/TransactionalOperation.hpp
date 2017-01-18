@@ -64,6 +64,6 @@ class TransactionalOperation : public gemfire::SharedBase {
   CacheableKeyPtr m_key;
   VectorOfCacheablePtr m_arguments;
 };
-}
+}  // namespace gemfire
 
 #endif /* TRANSACTIONALOPERATION_HPP_ */

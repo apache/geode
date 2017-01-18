@@ -101,8 +101,9 @@ void validateEventCount(int line) {
 
 DUNIT_TASK_DEFINITION(SERVER1, StartServer)
   {
-    if (isLocalServer)
+    if (isLocalServer) {
       CacheHelper::initServer(1, "cacheserver_notify_subscription.xml");
+    }
     LOG("SERVER started");
   }
 END_TASK_DEFINITION

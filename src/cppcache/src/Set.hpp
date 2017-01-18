@@ -117,6 +117,6 @@ class CPPCACHE_EXPORT Set : private NonAssignable {
   std::unordered_set<T> m_set;
   ACE_Recursive_Thread_Mutex m_mutex;
 };
-}  // end namespace
+}  // namespace gemfire
 
 #endif  // !defined _GEMFIRE_SET_HPP_

@@ -18,7 +18,6 @@
  * limitations under the License.
  */
 
-
 #include "PdxSerializable.hpp"
 #include "CacheableBuiltins.hpp"
 #include "PdxFieldTypes.hpp"
@@ -608,5 +607,5 @@ class CPPCACHE_EXPORT PdxInstance : public PdxSerializable {
   PdxInstance(const PdxInstance& other);
   void operator=(const PdxInstance& other);
 };
-}
+}  // namespace gemfire
 #endif /* __GEMFIRE_PDXINSTANCE_HPP_ */

@@ -18,7 +18,6 @@
  * limitations under the License.
  */
 
-
 #include <gfcpp/PdxInstance.hpp>
 #include <gfcpp/WritablePdxInstance.hpp>
 #include <gfcpp/PdxSerializable.hpp>
@@ -1162,6 +1161,6 @@ class CPPCACHE_EXPORT PdxInstanceImpl : public WritablePdxInstance {
   static PdxFieldTypePtr m_DefaultPdxFieldType;
 };
 typedef SharedPtr<PdxInstanceImpl> PdxInstanceImplPtr;
-}
+}  // namespace gemfire
 
 #endif /* __PDXINSTANCE_IMPL_HPP_*/

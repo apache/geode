@@ -99,10 +99,9 @@ DUNIT_TASK_DEFINITION(CLIENT1, SetupClient)
     std::string clientXml = path;
     clientXml += "/";
     clientXml += clientXmlFile;
-    CacheFactoryPtr cacheFactoryPtr = CacheFactory::createCacheFactory()
-        ->set("cache-xml-file", clientXml.c_str());
-    cachePtr =
-        cacheFactoryPtr->create();
+    CacheFactoryPtr cacheFactoryPtr = CacheFactory::createCacheFactory()->set(
+        "cache-xml-file", clientXml.c_str());
+    cachePtr = cacheFactoryPtr->create();
     LOGINFO("Created the GemFire Cache");
 
     // Get the example Region from the Cache which is declared in the Cache XML
@@ -248,9 +247,7 @@ DUNIT_TASK_DEFINITION(SERVER1, StopServer)
 END_TASK_DEFINITION
 
 DUNIT_TASK_DEFINITION(CLIENT1, CloseCache1)
-  {
-    cleanProc();
-  }
+  { cleanProc(); }
 END_TASK_DEFINITION
 
 void runCacheLoaderTest() {

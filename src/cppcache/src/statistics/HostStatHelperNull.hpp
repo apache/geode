@@ -28,6 +28,6 @@ class HostStatHelperNull {
  public:
   static void refreshProcess(ProcessStats* processStats) {}
 };
-}
+}  // namespace gemfire_statistics
 
 #endif  // _GEMFIRE_STATISTICS_HOSTSTATHELPERLINUX_HPP_

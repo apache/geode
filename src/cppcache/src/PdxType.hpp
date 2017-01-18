@@ -144,20 +144,22 @@ class PdxType : public Serializable,
         size += m_pdxFieldTypes->at(i)->objectSize();
       }
     }
-    size += (uint32_t)strlen(m_className);
+    size += static_cast<uint32_t>(strlen(m_className));
     for (NameVsPdxType::const_iterator iter = m_fieldNameVsPdxType.begin();
          iter != m_fieldNameVsPdxType.end(); ++iter) {
-      size += (uint32_t)iter->first.length();
+      size += static_cast<uint32_t>(iter->first.length());
       size += iter->second->objectSize();
     }
     if (m_remoteToLocalFieldMap != NULL) {
       if (m_pdxFieldTypes != NULL) {
-        size += (uint32_t)(sizeof(int32_t) * m_pdxFieldTypes->size());
+        size +=
+            static_cast<uint32_t>(sizeof(int32_t) * m_pdxFieldTypes->size());
       }
     }
     if (m_localToRemoteFieldMap != NULL) {
       if (m_pdxFieldTypes != NULL) {
-        size += (uint32_t)(sizeof(int32_t) * m_pdxFieldTypes->size());
+        size +=
+            static_cast<uint32_t>(sizeof(int32_t) * m_pdxFieldTypes->size());
       }
     }
     return size;
@@ -171,7 +173,9 @@ class PdxType : public Serializable,
 
   void setNumberOfVarLenFields(int32 value) { m_numberOfVarLenFields = value; }
 
-  int32 getTotalFields() const { return (int32)m_pdxFieldTypes->size(); }
+  int32 getTotalFields() const {
+    return static_cast<int32>(m_pdxFieldTypes->size());
+  }
 
   char* getPdxClassName() const { return m_className; }
 
@@ -215,5 +219,5 @@ class PdxType : public Serializable,
   // This is for PdxType as key in std map.
   bool operator<(const PdxType& other) const;
 };
-}
+}  // namespace gemfire
 #endif /* PDXTYPE_HPP_ */

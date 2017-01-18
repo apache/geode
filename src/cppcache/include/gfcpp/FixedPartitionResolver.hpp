@@ -17,7 +17,6 @@
  * limitations under the License.
  */
 
-
 #include "PartitionResolver.hpp"
 #include "CacheableBuiltins.hpp"
 
@@ -85,5 +84,5 @@ class CPPCACHE_EXPORT FixedPartitionResolver : public PartitionResolver {
   */
   virtual const char* getPartitionName(const EntryEvent& opDetails) = 0;
 };
-}
+}  // namespace gemfire
 #endif

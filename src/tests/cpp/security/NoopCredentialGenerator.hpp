@@ -52,8 +52,8 @@ class NoopCredentialGenerator : public CredentialGenerator {
   std::string getClientAuthorizer() { return "javaobject.NoopAccessor.create"; }
 };
 
-};  // security
-};  // testframework
-};  // gemfire
+}  // namespace security
+}  // namespace testframework
+}  // namespace gemfire
 
 #endif

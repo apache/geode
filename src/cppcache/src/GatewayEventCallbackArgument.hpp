@@ -27,11 +27,12 @@ class GatewayEventCallbackArgument : public Serializable {
   virtual int32_t classId() const { return 0; }
 
   virtual int8_t typeId() const {
-    return (int8_t)GemfireTypeIdsImpl::GatewayEventCallbackArgument;
+    return static_cast<int8_t>(
+        GemfireTypeIdsImpl::GatewayEventCallbackArgument);
   }
 
   virtual int8_t DSFID() const {
-    return (int32_t)GemfireTypeIdsImpl::FixedIDByte;
+    return static_cast<int32_t>(GemfireTypeIdsImpl::FixedIDByte);
   }
 
   virtual uint32_t objectSize() const { return 0; }
@@ -60,6 +61,6 @@ class GatewayEventCallbackArgument : public Serializable {
     return new GatewayEventCallbackArgument();
   }
 };
-}
+}  // namespace gemfire
 
 #endif  // __GATEWAYEVENTCALLBACKARGUMENT_HPP__

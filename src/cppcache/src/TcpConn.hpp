@@ -67,10 +67,11 @@ class CPPCACHE_EXPORT TcpConn : public Connector {
     // Attempt to set chunk size to nearest OS page size
     // for perf improvement
     int pageSize = ACE_OS::getpagesize();
-    if (pageSize > 16000000)
+    if (pageSize > 16000000) {
       return 16000000;
-    else if (pageSize > 0)
+    } else if (pageSize > 0) {
       return pageSize + (16000000 / pageSize) * pageSize;
+    }
 
     return 16000000;
   }
@@ -132,6 +133,6 @@ class CPPCACHE_EXPORT TcpConn : public Connector {
 
   virtual uint16 getPort();
 };
-}  // gemfire
+}  // namespace gemfire
 
 #endif  // __TcpConn_hpp__

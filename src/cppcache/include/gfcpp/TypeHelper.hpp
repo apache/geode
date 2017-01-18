@@ -116,8 +116,8 @@ template <class T, int8_t ID>
 struct UnwrapSharedPtr<SharedArrayPtr<T, ID> > {
   typedef CacheableArrayType<T, ID> type;
 };
-}
-}
+}  // namespace TypeHelper
+}  // namespace gemfire
 
 /** @brief Macro to unwrap the type <code>T</code> inside SharedPtr. */
 #define GF_UNWRAP_SP(T) typename gemfire::TypeHelper::UnwrapSharedPtr<T>::type

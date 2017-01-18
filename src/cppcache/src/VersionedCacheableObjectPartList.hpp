@@ -158,7 +158,9 @@ class VersionedCacheableObjectPartList : public CacheableObjectPartList {
     m_hasTags = (m_versionTags.size() > 0);
   }
 
-  int getVersionedTagsize() const { return (int)(m_versionTags.size()); }
+  int getVersionedTagsize() const {
+    return static_cast<int>(m_versionTags.size());
+  }
 
   VectorOfCacheableKeyPtr getSucceededKeys() { return m_tempKeys; }
 
@@ -215,7 +217,7 @@ class VersionedCacheableObjectPartList : public CacheableObjectPartList {
     if (this->m_hasKeys) {
       return this->m_tempKeys->size();
     } else if (this->m_hasTags) {
-      return (int)this->m_versionTags.size();
+      return static_cast<int>(this->m_versionTags.size());
     } else {
       LOGDEBUG(
           "DEBUG:: Should not call VCOPL.size() if hasKeys and hasTags both "
@@ -275,6 +277,6 @@ class VersionedCacheableObjectPartList : public CacheableObjectPartList {
 
   virtual uint32_t objectSize() const;
 };
-}
+}  // namespace gemfire
 
 #endif  // _GEMFIRE_VERSIONEDCACHEABLEOBJECTPARTLIST_HPP_

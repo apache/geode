@@ -18,7 +18,6 @@
  * limitations under the License.
  */
 
-
 #include "LocalRegion.hpp"
 
 namespace gemfire {

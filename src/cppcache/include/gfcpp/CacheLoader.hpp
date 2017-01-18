@@ -94,5 +94,5 @@ class CPPCACHE_EXPORT CacheLoader : public SharedBase {
   void operator=(const CacheLoader& other);
 };
 
-}  // namespace
+}  // namespace gemfire
 #endif  // ifndef __GEMFIRE_CACHELOADER_H__

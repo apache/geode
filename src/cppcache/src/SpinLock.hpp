@@ -110,6 +110,6 @@ class SpinLockGuard {
 CPPCACHE_EXPORT void* testSpinLockCreate();
 CPPCACHE_EXPORT void testSpinLockAcquire(void* lock);
 CPPCACHE_EXPORT void testSpinLockRelease(void* lock);
-}
+}  // namespace gemfire
 
 #endif

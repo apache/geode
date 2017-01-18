@@ -121,6 +121,6 @@ class GFIGNORE(TESTOBJECT_EXPORT) PdxAutoMegaType : public PdxSerializable {
 };
 
 typedef SharedPtr<PdxAutoMegaType> PdxAutoMegaTypePtr;
-}
+}  // namespace PdxAutoTests
 
 #endif

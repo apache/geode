@@ -42,7 +42,7 @@ using namespace gemfire;
 
 namespace gemfire {
 void gf_log_libinit();
-}
+}  // namespace gemfire
 
 CppCacheLibrary::CppCacheLibrary() {
   // TODO: This should catch any exceptions, log it, and bail out..

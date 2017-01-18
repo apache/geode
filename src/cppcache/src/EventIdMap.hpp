@@ -195,6 +195,6 @@ class CPPCACHE_EXPORT EventSequence : public SharedBase {
   bool operator<=(const EventSequence &rhs) const;
 };
 
-};  // namespace gemfire;
+}  // namespace gemfire
 
 #endif  // __EVENT_ID_MAP_HPP__

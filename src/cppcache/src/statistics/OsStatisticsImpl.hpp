@@ -250,6 +250,6 @@ class OsStatisticsImpl : public Statistics,
 
 };  // class
 
-};  // namespace
+}  // namespace gemfire_statistics
 
 #endif  // _GEMFIRE_STATISTICS_OSSTATISTICSIMPL_HPP_

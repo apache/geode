@@ -108,10 +108,11 @@ class TESTOBJECT_EXPORT CharTypesWithInvalidUsage : public PdxSerializable {
           "ot->m_widecharArray[%d] = %lc m_widecharArray[%d] = %lc",
           i, ot->m_widecharArray[i], i, m_widecharArray[i]);
       if (ot->m_chArray[i] != m_chArray[i] ||
-          ot->m_widecharArray[i] != m_widecharArray[i])
+          ot->m_widecharArray[i] != m_widecharArray[i]) {
         return false;
-      else
+      } else {
         i++;
+}
     }
 
     return true;
@@ -333,8 +334,8 @@ class TESTOBJECT_EXPORT InvalidPdxUsage : public PdxSerializable {
     m_sbyteArray[1] = 0x64;
 
     m_charArray = new wchar_t[2];
-    m_charArray[0] = (wchar_t)L'c';
-    m_charArray[1] = (wchar_t)L'v';
+    m_charArray[0] = L'c';
+    m_charArray[1] = L'v';
 
     // time_t offset = 1310447869154L;
     // m_date = CacheableDate::create(offset);
@@ -393,12 +394,12 @@ class TESTOBJECT_EXPORT InvalidPdxUsage : public PdxSerializable {
     const char* str1 = "one";
     const char* str2 = "two";
 
-    int size = (int)strlen(str1);
+    int size = static_cast<int>(strlen(str1));
     for (int i = 0; i < 2; i++) {
       m_stringArray[i] = new char[size];
     }
-    m_stringArray[0] = (char*)str1;
-    m_stringArray[1] = (char*)str2;
+    m_stringArray[0] = const_cast<char*>(str1);
+    m_stringArray[1] = const_cast<char*>(str2);
 
     m_arraylist = CacheableArrayList::create();
     m_arraylist->push_back(CacheableInt32::create(1));
@@ -688,5 +689,5 @@ class TESTOBJECT_EXPORT InvalidPdxUsage : public PdxSerializable {
                         int* arrLengths) const;
 };
 typedef SharedPtr<PdxTests::InvalidPdxUsage> InvalidPdxUsagePtr;
-}
+}  // namespace PdxTests
 #endif /* PDXOBJECT_HPP_ */

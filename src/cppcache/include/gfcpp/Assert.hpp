@@ -50,7 +50,7 @@ class CPPCACHE_EXPORT Assert {
   static void throwAssertion(const char* expressionText, const char* file,
                              int line);
 };
-}
+}  // namespace gemfire
 
 /** Throws the given assertion. */
 #define GF_R_ASSERT(x) gemfire::Assert::assertTrue(x, #x, __FILE__, __LINE__)

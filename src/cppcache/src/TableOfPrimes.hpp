@@ -35,7 +35,7 @@ static const uint8_t g_primeConcurTable[] = {
     109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181,
     191, 193, 197, 199, 211, 223, 227, 229, 233, 239, 241, 251};
 static const uint8_t g_primeConcurLen =
-    (uint8_t)(sizeof(g_primeConcurTable) / sizeof(uint8_t));
+    static_cast<uint8_t>(sizeof(g_primeConcurTable) / sizeof(uint8_t));
 
 }  // anonymous namespace
 
@@ -82,6 +82,6 @@ class CPPCACHE_EXPORT TableOfPrimes {
         "find a prime number that large");
   }
 };
-}
+}  // namespace gemfire
 
 #endif  // __GEMFIRE_IMPL_TABLEOFPRIMES_H__

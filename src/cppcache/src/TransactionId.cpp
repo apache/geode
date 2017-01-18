@@ -32,4 +32,4 @@ TransactionId::TransactionId() {
 TransactionId::~TransactionId() {
   // TODO Auto-generated destructor stub
 }
-}
+}  // namespace gemfire

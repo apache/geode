@@ -145,6 +145,6 @@ class LRUList {
 
 };  // LRUList
 
-}  // gemfire
+}  // namespace gemfire
 
 #endif  // __GEMFIRE_IMPL_LRULIST_H__

@@ -136,6 +136,6 @@ class StackFrame {
     return symbol;
   }
 };
-}
+}  // namespace gemfire
 
 #endif /* _GEMFIRE_STACKFRAME_HPP_ */

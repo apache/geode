@@ -50,7 +50,7 @@ struct equal_to<gemfire::CacheableKeyPtr> {
     return (*key1.ptr() == *key2.ptr());
   }
 };
-}
+}  // namespace std
 
 typedef std::unordered_map<gemfire::CacheableKeyPtr, int> MapOfUpdateCounters;
 
@@ -73,5 +73,5 @@ typedef ACE_Hash_Map_Manager_Ex<std::string, CqQueryPtr, ACE_Hash<std::string>,
  * other composite operations. ex.. MapOfRegionGuard guard( map->mutex() );
  */
 typedef ACE_Guard<ACE_Recursive_Thread_Mutex> MapOfRegionGuard;
-}
+}  // namespace gemfire
 #endif  // define __GEMFIRE_IMPL_MAP_WITHLOCK_H__

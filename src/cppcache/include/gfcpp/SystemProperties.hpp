@@ -502,6 +502,6 @@ class CPPCACHE_EXPORT SystemProperties {
   friend class DistributedSystemImpl;
 };
 
-}  // namespace
+}  // namespace gemfire
 
 #endif

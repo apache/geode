@@ -139,6 +139,6 @@ class ThinClientRedundancyManager {
   friend class TcrConnectionManager;
   static const char* NC_PerodicACK;
 };
-}
+}  // namespace gemfire
 
 #endif /* THINCLIENTREDUNDANCYMANAGER_HPP_ */

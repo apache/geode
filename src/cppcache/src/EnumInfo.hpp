@@ -57,6 +57,6 @@ class CPPCACHE_EXPORT EnumInfo : public CacheableKey {
   int32_t getEnumOrdinal() const { return m_ordinal; }
 };
 typedef SharedPtr<EnumInfo> EnumInfoPtr;
-}
+}  // namespace gemfire
 
 #endif  // ENUM_INFO_HPP

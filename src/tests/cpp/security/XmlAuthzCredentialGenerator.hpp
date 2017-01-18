@@ -70,7 +70,7 @@ class XmlAuthzCredentialGenerator : public SharedBase {
     m_regionNames = NULL;
     m_prop = NULL;
     /* initialize random seed: */
-    srand((unsigned int)time(NULL));
+    srand(static_cast<unsigned int>(time(NULL)));
   }
   virtual ~XmlAuthzCredentialGenerator() { ; }
 
@@ -303,8 +303,8 @@ class XmlAuthzCredentialGenerator : public SharedBase {
   }  // end of requireRole
 };
 
-};  // security
-};  // testframework
-};  // gemfire
+}  // namespace security
+}  // namespace testframework
+}  // namespace gemfire
 
 #endif /*_GEMFIRE_AUTHZCREDENTIALGENERATOR_HPP_*/

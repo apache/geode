@@ -113,7 +113,7 @@ class CPPCACHE_EXPORT HostAsm {
    */
   inline static void spinLockAcquire(SpinLockField& lockField) {
 #if defined(_MACOSX)
-    OSSpinLockLock((volatile int32_t*)&lockField);
+    OSSpinLockLock(reinterpret_cast<volatile int32_t*>(&lockField));
 #else
     uint32_t lockVal = SPINLOCK_SET_INT;
     int32_t spinCount = HostAsm::getSpinCount();
@@ -138,7 +138,7 @@ class CPPCACHE_EXPORT HostAsm {
     GetSystemInfo(&si);
     return si.dwNumberOfProcessors;
 #else
-    return (int32_t)sysconf(_SC_NPROCESSORS_ONLN);
+    return static_cast<int32_t>(sysconf(_SC_NPROCESSORS_ONLN));
 #endif
   }
 
@@ -212,7 +212,7 @@ class CPPCACHE_EXPORT HostAsm {
     // atomic_cas_32((volatile uin32_t*)&lockField, 1, 0);
     atomic_cas_32(&lockField, 1, 0);
 #elif defined(_MACOSX)
-    OSSpinLockUnlock((volatile int32_t*)&lockField);
+    OSSpinLockUnlock(reinterpret_cast<volatile int32_t*>(&lockField));
 #else
 #error Port incomplete.
 #endif
@@ -432,7 +432,7 @@ return true;
   }
 #endif  // !defined(_MACOSX)
 };
-}
+}  // namespace gemfire
 
 #ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
 #pragma clang diagnostic pop

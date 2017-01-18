@@ -29,33 +29,44 @@ inline bool equals(const TObj& x, const TObj& y) {
 }
 
 inline uint32_t hashcode(const bool value) {
-  if (value)
+  if (value) {
     return 1231;
-  else
+  } else {
     return 1237;
+  }
 }
 
-inline uint32_t hashcode(const uint8_t value) { return (uint32_t)value; }
+inline uint32_t hashcode(const uint8_t value) {
+  return static_cast<uint32_t>(value);
+}
 
-inline uint32_t hashcode(const int8_t value) { return (uint32_t)value; }
+inline uint32_t hashcode(const int8_t value) {
+  return static_cast<uint32_t>(value);
+}
 
-inline uint32_t hashcode(const uint16_t value) { return (uint32_t)value; }
+inline uint32_t hashcode(const uint16_t value) {
+  return static_cast<uint32_t>(value);
+}
 
-inline uint32_t hashcode(const int16_t value) { return (uint32_t)value; }
+inline uint32_t hashcode(const int16_t value) {
+  return static_cast<uint32_t>(value);
+}
 
 inline uint32_t hashcode(const uint32_t value) { return value; }
 
-inline uint32_t hashcode(const int32_t value) { return (uint32_t)value; }
+inline uint32_t hashcode(const int32_t value) {
+  return static_cast<uint32_t>(value);
+}
 
 inline uint32_t hashcode(const uint64_t value) {
-  uint32_t hash = (uint32_t)value;
-  hash = hash ^ (uint32_t)(value >> 32);
+  uint32_t hash = static_cast<uint32_t>(value);
+  hash = hash ^ static_cast<uint32_t>(value >> 32);
   return hash;
 }
 
 inline uint32_t hashcode(const int64_t value) {
-  uint32_t hash = (uint32_t)value;
-  hash = hash ^ (uint32_t)(value >> 32);
+  uint32_t hash = static_cast<uint32_t>(value);
+  hash = hash ^ static_cast<uint32_t>(value >> 32);
   return hash;
 }
 
@@ -76,7 +87,7 @@ inline uint32_t hashcode(const double value) {
   v.d = value;
   return hashcode(v.u);
 }
-}
-}
+}  // namespace serializer
+}  // namespace gemfire
 
 #endif  // _GEMFIRE_CACHEABLEKEYS_HPP_

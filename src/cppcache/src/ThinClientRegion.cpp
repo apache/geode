@@ -41,7 +41,7 @@ using namespace gemfire;
 
 namespace gemfire {
 void setTSSExceptionMessage(const char* exMsg);
-}
+}  // namespace gemfire
 
 class PutAllWork : public PooledWork<GfErrType>,
                    private NonCopyable,

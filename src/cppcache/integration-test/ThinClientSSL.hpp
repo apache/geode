@@ -33,7 +33,8 @@ CacheHelper* cacheHelper = NULL;
 bool isLocalServer = false;
 
 static bool isLocator = false;
-const char* locatorsG = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locatorsG =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 
 #define CLIENT1 s1p1
 #define CLIENT2 s1p2
@@ -68,16 +69,18 @@ void _verifyEntry(const char* name, const char* key, const char* val,
                   bool noKey) {
   // Verify key and value exist in this region, in this process.
   const char* value = (val == 0) ? "" : val;
-  char* buf = (char*)malloc(1024 + strlen(key) + strlen(value));
+  char* buf =
+      reinterpret_cast<char*>(malloc(1024 + strlen(key) + strlen(value)));
   ASSERT(buf, "Unable to malloc buffer for logging.");
-  if (noKey)
+  if (noKey) {
     sprintf(buf, "Verify key %s does not exist in region %s", key, name);
-  else if (val == 0)
+  } else if (val == 0) {
     sprintf(buf, "Verify value for key %s does not exist in region %s", key,
             name);
-  else
+  } else {
     sprintf(buf, "Verify value for key %s is: %s in region %s", key, value,
             name);
+  }
   LOG(buf);
   free(buf);
 
@@ -101,17 +104,19 @@ void _verifyEntry(const char* name, const char* key, const char* val,
 
   for (int i = MAX; i >= 0; i--) {
     if (noKey) {
-      if (regPtr->containsKey(keyPtr))
+      if (regPtr->containsKey(keyPtr)) {
         containsKeyCnt++;
-      else
+      } else {
         break;
+      }
       ASSERT(containsKeyCnt < MAX, "Key found in region.");
     }
     if (val == NULL) {
       if (regPtr->containsValueForKey(keyPtr)) {
         containsValueCnt++;
-      } else
+      } else {
         break;
+      }
       ASSERT(containsValueCnt < MAX, "Value found in region.");
     }
 
@@ -340,10 +345,9 @@ END_TASK_DEFINITION
 
 DUNIT_TASK_DEFINITION(CLIENT1, CreateRegions1_PoolLocators)
   {
-    createPooledRegion(regionNames[0], USE_ACK,  locatorsG, "__TESTPOOL1_",
+    createPooledRegion(regionNames[0], USE_ACK, locatorsG, "__TESTPOOL1_",
                        true);
-    createPooledRegion(regionNames[1], NO_ACK,  locatorsG, "__TESTPOOL1_",
-                       true);
+    createPooledRegion(regionNames[1], NO_ACK, locatorsG, "__TESTPOOL1_", true);
     RegionPtr regPtr = getHelper()->getRegion(regionNames[0]);
     regPtr->registerAllKeys(false, NULLPTR, false, false);
     regPtr = getHelper()->getRegion(regionNames[1]);
@@ -354,10 +358,9 @@ END_TASK_DEFINITION
 
 DUNIT_TASK_DEFINITION(CLIENT2, CreateRegions2_PoolLocators)
   {
-    createPooledRegion(regionNames[0], USE_ACK,  locatorsG, "__TESTPOOL1_",
+    createPooledRegion(regionNames[0], USE_ACK, locatorsG, "__TESTPOOL1_",
                        true);
-    createPooledRegion(regionNames[1], NO_ACK,  locatorsG, "__TESTPOOL1_",
-                       true);
+    createPooledRegion(regionNames[1], NO_ACK, locatorsG, "__TESTPOOL1_", true);
     RegionPtr regPtr = getHelper()->getRegion(regionNames[0]);
     regPtr->registerAllKeys(false, NULLPTR, false, false);
     regPtr = getHelper()->getRegion(regionNames[1]);

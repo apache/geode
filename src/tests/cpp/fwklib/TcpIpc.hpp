@@ -66,7 +66,7 @@ class TcpIpc {
                       int32_t waitSecs = 0);
 };
 
-}  // testframework
-}  // gemfire
+}  // namespace testframework
+}  // namespace gemfire
 
 #endif  // __TcpIpc_hpp__

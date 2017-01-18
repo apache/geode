@@ -1,9 +1,8 @@
 ---
-Checks:          'clang-diagnostic-*,clang-analyzer-*,-clang-analyzer-alpha*,-*,google-*,-google-readability-todo'
+Checks:          'clang-diagnostic-*,clang-analyzer-*,-clang-analyzer-alpha*,-*,google-*,-google-readability-todo,-google-explicit-constructor'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false
-User:            jbarrett
 CheckOptions:    
   - key:             cert-oop11-cpp.UseCERTSemantics
     value:           '1'
@@ -20,7 +19,7 @@ CheckOptions:
   - key:             google-readability-function-size.StatementThreshold
     value:           '800'
   - key:             google-readability-namespace-comments.ShortNamespaceLines
-    value:           '10'
+    value:           '0'
   - key:             google-readability-namespace-comments.SpacesBeforeComments
     value:           '2'
   - key:             google-runtime-int.SignedTypePrefix
@@ -43,3 +42,6 @@ CheckOptions:
     value:           'NULL'
 ...
 
+
+# google-explicit-constructor - disabled due to SharedBase issues.
+# google-readability-todo - disabled because it adds names.

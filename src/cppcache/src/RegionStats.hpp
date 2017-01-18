@@ -225,6 +225,6 @@ class RegionStatType {
 
   inline int32_t getClearsId() { return m_clearsId; }
 };
-}
+}  // namespace gemfire
 
 #endif  // __GEMFIRE_REGIONSTATS_H__

@@ -27,7 +27,8 @@
 bool isLocalServer = false;
 bool isLocator = false;
 
-const char* locHostPort = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locHostPort =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 const char* poolRegNames[] = {"partition_region", "PoolRegion2"};
 const char* poolName = "__TEST_POOL1__";
 

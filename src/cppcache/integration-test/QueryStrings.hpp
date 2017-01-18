@@ -724,6 +724,6 @@ const int cqResultsetRowCounts[CQRS_ARRAY_SIZE] = {20, 1,  19, 0, 0, 0,  0, 20,
 
 const int constantExpectedRowsCQRS[1] = {35};
 
-};  // end of namespace
+}  // namespace testData
 
 #endif  // TEST_QUERYSTRINGS_HPP

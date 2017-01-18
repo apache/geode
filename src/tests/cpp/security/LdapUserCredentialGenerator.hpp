@@ -106,8 +106,8 @@ class LdapUserCredentialGenerator : public CredentialGenerator {
   }
 };
 
-};  // security
-};  // testframework
-};  // gemfire
+}  // namespace security
+}  // namespace testframework
+}  // namespace gemfire
 
 #endif /*_GEMFIRE_LDAPUSERCREDENTIALGENERATOR_HPP_*/

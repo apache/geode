@@ -254,12 +254,12 @@ class TESTOBJECT_EXPORT NonPdxType {
     const char* str1 = "one";
     const char* str2 = "two";
 
-    int size = (int)strlen(str1);
+    int size = static_cast<int>(strlen(str1));
     for (int i = 0; i < 2; i++) {
       m_stringArray[i] = new char[size];
     }
-    m_stringArray[0] = (char*)str1;
-    m_stringArray[1] = (char*)str2;
+    m_stringArray[0] = const_cast<char*>(str1);
+    m_stringArray[1] = const_cast<char*>(str2);
 
     m_arraylist = CacheableArrayList::create();
     m_arraylist->push_back(CacheableInt32::create(1));
@@ -482,5 +482,5 @@ class TESTOBJECT_EXPORT NonPdxType {
   bool generic2DCompare(T1** value1, T2** value2, int length,
                         int* arrLengths) const;
 };
-}
+}  // namespace PdxTests
 #endif /* __NONPDXTYPE_HPP__ */

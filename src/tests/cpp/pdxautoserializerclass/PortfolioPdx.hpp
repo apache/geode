@@ -109,5 +109,5 @@ class GFIGNORE(TESTOBJECT_EXPORT) PortfolioPdx : public PdxSerializable {
 };
 
 typedef SharedPtr<PortfolioPdx> PortfolioPdxPtr;
-}
+}  // namespace AutoPdxTests
 #endif

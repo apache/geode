@@ -39,7 +39,8 @@ CacheHelper* cacheHelper = NULL;
 #define SERVER2 s2p2
 static bool isLocator = false;
 // static int numberOfLocators = 0;
-const char* locatorsG = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locatorsG =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 #include "LocatorHelper.hpp"
 void initClient(const bool isthinClient) {
   if (cacheHelper == NULL) {
@@ -63,17 +64,19 @@ void _verifyEntry(const char* name, const char* key, const char* val,
                   bool noKey, bool isCreated = false) {
   // Verify key and value exist in this region, in this process.
   const char* value = (val == 0) ? "" : val;
-  char* buf = (char*)malloc(1024 + strlen(key) + strlen(value));
+  char* buf =
+      reinterpret_cast<char*>(malloc(1024 + strlen(key) + strlen(value)));
   ASSERT(buf, "Unable to malloc buffer for logging.");
   if (!isCreated) {
-    if (noKey)
+    if (noKey) {
       sprintf(buf, "Verify key %s does not exist in region %s", key, name);
-    else if (val == 0)
+    } else if (val == 0) {
       sprintf(buf, "Verify value for key %s does not exist in region %s", key,
               name);
-    else
+    } else {
       sprintf(buf, "Verify value for key %s is: %s in region %s", key, value,
               name);
+    }
     LOG(buf);
   }
   free(buf);
@@ -104,24 +107,27 @@ void _verifyEntry(const char* name, const char* key, const char* val,
 
   for (int i = MAX; i >= 0; i--) {
     if (isCreated) {
-      if (!regPtr->containsKey(keyPtr))
+      if (!regPtr->containsKey(keyPtr)) {
         containsKeyCnt++;
-      else
+      } else {
         break;
+      }
       ASSERT(containsKeyCnt < MAX, "Key has not been created in region.");
     } else {
       if (noKey) {
-        if (regPtr->containsKey(keyPtr))
+        if (regPtr->containsKey(keyPtr)) {
           containsKeyCnt++;
-        else
+        } else {
           break;
+        }
         ASSERT(containsKeyCnt < MAX, "Key found in region.");
       }
       if (val == NULL) {
-        if (regPtr->containsValueForKey(keyPtr))
+        if (regPtr->containsValueForKey(keyPtr)) {
           containsValueCnt++;
-        else
+        } else {
           break;
+        }
         ASSERT(containsValueCnt < MAX, "Value found in region.");
       }
 
@@ -178,16 +184,16 @@ void createRegion(const char* name, bool ackMode, const char* endpoints,
   ASSERT(regPtr != NULLPTR, "Failed to create region.");
   LOG("Region created.");
 }
-void createPooledRegion(const char* name, bool ackMode, 
-                        const char* locators, const char* poolname,
+void createPooledRegion(const char* name, bool ackMode, const char* locators,
+                        const char* poolname,
                         bool clientNotificationEnabled = false,
                         bool cachingEnable = true) {
   LOG("createRegion_Pool() entered.");
   fprintf(stdout, "Creating region --  %s  ackMode is %d\n", name, ackMode);
   fflush(stdout);
-  RegionPtr regPtr = getHelper()->createPooledRegion(
-      name, ackMode, locators, poolname, cachingEnable,
-      clientNotificationEnabled);
+  RegionPtr regPtr =
+      getHelper()->createPooledRegion(name, ackMode, locators, poolname,
+                                      cachingEnable, clientNotificationEnabled);
   ASSERT(regPtr != NULLPTR, "Failed to create region.");
   LOG("Pooled Region created.");
 }
@@ -287,8 +293,9 @@ const bool NO_ACK = false;
 
 DUNIT_TASK_DEFINITION(SERVER1, CreateServer1)
   {
-    if (isLocalServer)
+    if (isLocalServer) {
       CacheHelper::initServer(1, "cacheserver_notify_subscription.xml");
+    }
     LOG("SERVER1 started");
   }
 END_TASK_DEFINITION
@@ -296,10 +303,10 @@ END_TASK_DEFINITION
 DUNIT_TASK_DEFINITION(CLIENT1, StepOne_Pool_Locator)
   {
     initClient(true);
-    createPooledRegion(regionNames[0], USE_ACK,  locatorsG,
-                       "__TEST_POOL1__", true);
-    createPooledRegion(regionNames[1], NO_ACK,  locatorsG,
-                       "__TEST_POOL1__", true);
+    createPooledRegion(regionNames[0], USE_ACK, locatorsG, "__TEST_POOL1__",
+                       true);
+    createPooledRegion(regionNames[1], NO_ACK, locatorsG, "__TEST_POOL1__",
+                       true);
     LOG("StepOne complete.");
   }
 END_TASK_DEFINITION
@@ -307,10 +314,10 @@ END_TASK_DEFINITION
 DUNIT_TASK_DEFINITION(CLIENT2, StepTwo_Pool_Locator)
   {
     initClient(true);
-    createPooledRegion(regionNames[0], USE_ACK,  locatorsG,
-                       "__TEST_POOL1__", true);
-    createPooledRegion(regionNames[1], NO_ACK,  locatorsG,
-                       "__TEST_POOL1__", true);
+    createPooledRegion(regionNames[0], USE_ACK, locatorsG, "__TEST_POOL1__",
+                       true);
+    createPooledRegion(regionNames[1], NO_ACK, locatorsG, "__TEST_POOL1__",
+                       true);
 
     RegionPtr regPtr0 = getHelper()->getRegion(regionNames[0]);
     RegionPtr regPtr1 = getHelper()->getRegion(regionNames[1]);
@@ -348,8 +355,9 @@ END_TASK_DEFINITION
 
 DUNIT_TASK_DEFINITION(SERVER2, CreateServer2)
   {
-    if (isLocalServer)
+    if (isLocalServer) {
       CacheHelper::initServer(2, "cacheserver_notify_subscription2.xml");
+    }
     LOG("SERVER2 started");
   }
 END_TASK_DEFINITION

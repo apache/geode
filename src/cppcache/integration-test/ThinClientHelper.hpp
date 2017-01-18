@@ -159,16 +159,18 @@ void _verifyEntry(const char* name, const char* key, const char* val,
                   bool noKey, bool checkVal = true) {
   // Verify key and value exist in this region, in this process.
   const char* value = (val == 0) ? "" : val;
-  char* buf = (char*)malloc(1024 + strlen(key) + strlen(value));
+  char* buf =
+      reinterpret_cast<char*>(malloc(1024 + strlen(key) + strlen(value)));
   ASSERT(buf, "Unable to malloc buffer for logging.");
-  if (noKey)
+  if (noKey) {
     sprintf(buf, "Verify key %s does not exist in region %s", key, name);
-  else if (val == 0)
+  } else if (val == 0) {
     sprintf(buf, "Verify value for key %s does not exist in region %s", key,
             name);
-  else
+  } else {
     sprintf(buf, "Verify value for key %s is: %s in region %s", key, value,
             name);
+  }
   LOG(buf);
   free(buf);
 
@@ -193,17 +195,19 @@ void _verifyEntry(const char* name, const char* key, const char* val,
 
   for (int i = MAX; i >= 0; i--) {
     if (noKey) {
-      if (regPtr->containsKey(keyPtr))
+      if (regPtr->containsKey(keyPtr)) {
         containsKeyCnt++;
-      else
+      } else {
         break;
+      }
       ASSERT(containsKeyCnt < MAX, "Key found in region.");
     }
     if (val == NULL) {
       if (regPtr->containsValueForKey(keyPtr)) {
         containsValueCnt++;
-      } else
+      } else {
         break;
+      }
       ASSERT(containsValueCnt < MAX, "Value found in region.");
     }
 
@@ -260,17 +264,18 @@ void _verifyIntEntry(const char* name, const char* key, const int val,
                      bool noKey, bool isCreated = false) {
   // Verify key and value exist in this region, in this process.
   int value = val;
-  char* buf = (char*)malloc(1024 + strlen(key) + 20);
+  char* buf = reinterpret_cast<char*>(malloc(1024 + strlen(key) + 20));
   ASSERT(buf, "Unable to malloc buffer for logging.");
   if (!isCreated) {
-    if (noKey)
+    if (noKey) {
       sprintf(buf, "Verify key %s does not exist in region %s", key, name);
-    else if (val == 0)
+    } else if (val == 0) {
       sprintf(buf, "Verify value for key %s does not exist in region %s", key,
               name);
-    else
+    } else {
       sprintf(buf, "Verify value for key %s is: %d in region %s", key, value,
               name);
+    }
     LOG(buf);
 
     free(buf);
@@ -302,24 +307,27 @@ void _verifyIntEntry(const char* name, const char* key, const int val,
 
   for (int i = MAX; i >= 0; i--) {
     if (isCreated) {
-      if (!regPtr->containsKey(keyPtr))
+      if (!regPtr->containsKey(keyPtr)) {
         containsKeyCnt++;
-      else
+      } else {
         break;
+      }
       ASSERT(containsKeyCnt < MAX, "Key has not been created in region.");
     } else {
       if (noKey) {
-        if (regPtr->containsKey(keyPtr))
+        if (regPtr->containsKey(keyPtr)) {
           containsKeyCnt++;
-        else
+        } else {
           break;
+        }
         ASSERT(containsKeyCnt < MAX, "Key found in region.");
       }
       if (val == 0) {
-        if (regPtr->containsValueForKey(keyPtr))
+        if (regPtr->containsValueForKey(keyPtr)) {
           containsValueCnt++;
-        else
+        } else {
           break;
+        }
         ASSERT(containsValueCnt < MAX, "Value found in region.");
       }
 
@@ -396,8 +404,7 @@ RegionPtr createOverflowRegion(const char* name, bool ackMode, int lel = 0,
 }
 
 RegionPtr createPooledRegion(const char* name, bool ackMode,
-                             const char* locators,
-                             const char* poolname,
+                             const char* locators, const char* poolname,
                              bool clientNotificationEnabled = false,
                              const CacheListenerPtr& listener = NULLPTR,
                              bool caching = true) {
@@ -552,9 +559,10 @@ void doNetsearch(const char* name, const char* key, const char* value,
 
   // ASSERT( !regPtr->containsKey( keyPtr ), "Key should not have been found in
   // region." );
-  if (checkVal)
+  if (checkVal) {
     ASSERT(!regPtr->containsValueForKey(keyPtr),
            "Value should not have been found in region.");
+  }
 
   CacheableStringPtr checkPtr =
       dynCast<CacheableStringPtr>(regPtr->get(keyPtr));  // force a netsearch

@@ -145,13 +145,14 @@ class CPPCACHE_EXPORT Utils {
   }
 
   inline static int64 startStatOpTime() {
-    if (DistributedSystem::getSystemProperties() != NULL)
+    if (DistributedSystem::getSystemProperties() != NULL) {
       return (DistributedSystem::getSystemProperties()
                   ->getEnableTimeStatistics())
                  ? NanoTimer::now()
                  : 0;
-    else
+    } else {
       return 0;
+    }
   }
 
   // Check objectSize() implementation return value and log a warning at most
@@ -159,7 +160,7 @@ class CPPCACHE_EXPORT Utils {
   inline static uint32_t checkAndGetObjectSize(const CacheablePtr& theObject) {
     uint32_t objectSize = theObject->objectSize();
     static bool youHaveBeenWarned = false;
-    if ((objectSize == 0 || objectSize == ((uint32_t)-1)) &&
+    if ((objectSize == 0 || objectSize == (static_cast<uint32_t>(-1))) &&
         !youHaveBeenWarned) {
       LOGWARN(
           "Object size for Heap LRU returned by class ID %d is 0 (zero) or -1 "
@@ -208,7 +209,8 @@ class CPPCACHE_EXPORT Utils {
    */
   inline static CacheableStringPtr convertBytesToString(
       const char* bytes, int32_t length, size_t maxLength = _GF_MSG_LIMIT) {
-    return convertBytesToString((const uint8_t*)bytes, length);
+    return convertBytesToString(reinterpret_cast<const uint8_t*>(bytes),
+                                length);
   }
 };
 

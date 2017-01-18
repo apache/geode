@@ -90,14 +90,14 @@ class CPPCACHE_EXPORT DataOutput {
    *
    * @param value the signed byte to be written
    */
-  inline void write(int8_t value) { write((uint8_t)value); }
+  inline void write(int8_t value) { write(static_cast<uint8_t>(value)); }
 
   /**
    * Write a boolean value to the <code>DataOutput</code>.
    *
    * @param value the boolean value to be written
    */
-  inline void writeBoolean(bool value) { write((uint8_t)value); }
+  inline void writeBoolean(bool value) { write(static_cast<uint8_t>(value)); }
 
   /**
    * Write an array of unsigned bytes to the <code>DataOutput</code>.
@@ -114,7 +114,7 @@ class CPPCACHE_EXPORT DataOutput {
         m_buf += len;
       }
     } else {
-      write((int8_t)-1);
+      write(static_cast<int8_t>(-1));
     }
   }
 
@@ -125,7 +125,7 @@ class CPPCACHE_EXPORT DataOutput {
    * @param len the number of bytes from the start of array to be written
    */
   inline void writeBytes(const int8_t* bytes, int32_t len) {
-    writeBytes((const uint8_t*)bytes, len);
+    writeBytes(reinterpret_cast<const uint8_t*>(bytes), len);
   }
 
   /**
@@ -157,7 +157,7 @@ class CPPCACHE_EXPORT DataOutput {
    * @param len the number of bytes from the start of array to be written
    */
   inline void writeBytesOnly(const int8_t* bytes, uint32_t len) {
-    writeBytesOnly((const uint8_t*)bytes, len);
+    writeBytesOnly(reinterpret_cast<const uint8_t*>(bytes), len);
   }
 
   /**
@@ -167,8 +167,8 @@ class CPPCACHE_EXPORT DataOutput {
    */
   inline void writeInt(uint16_t value) {
     ensureCapacity(2);
-    *(m_buf++) = (uint8_t)(value >> 8);
-    *(m_buf++) = (uint8_t)value;
+    *(m_buf++) = static_cast<uint8_t>(value >> 8);
+    *(m_buf++) = static_cast<uint8_t>(value);
   }
 
   /**
@@ -178,8 +178,8 @@ class CPPCACHE_EXPORT DataOutput {
    */
   inline void writeChar(uint16_t value) {
     ensureCapacity(2);
-    *(m_buf++) = (uint8_t)(value >> 8);
-    *(m_buf++) = (uint8_t)value;
+    *(m_buf++) = static_cast<uint8_t>(value >> 8);
+    *(m_buf++) = static_cast<uint8_t>(value);
   }
 
   /**
@@ -189,10 +189,10 @@ class CPPCACHE_EXPORT DataOutput {
    */
   inline void writeInt(uint32_t value) {
     ensureCapacity(4);
-    *(m_buf++) = (uint8_t)(value >> 24);
-    *(m_buf++) = (uint8_t)(value >> 16);
-    *(m_buf++) = (uint8_t)(value >> 8);
-    *(m_buf++) = (uint8_t)value;
+    *(m_buf++) = static_cast<uint8_t>(value >> 24);
+    *(m_buf++) = static_cast<uint8_t>(value >> 16);
+    *(m_buf++) = static_cast<uint8_t>(value >> 8);
+    *(m_buf++) = static_cast<uint8_t>(value);
   }
 
   /**
@@ -207,26 +207,26 @@ class CPPCACHE_EXPORT DataOutput {
     //#if defined(_LP64) || ( defined(__WORDSIZE) && __WORDSIZE == 64 ) ||
     //( defined(_INTEGRAL_MAX_BITS) && _INTEGRAL_MAX_BITS >= 64 )
     if (sizeof(long) == 8) {
-      *(m_buf++) = (uint8_t)(value >> 56);
-      *(m_buf++) = (uint8_t)(value >> 48);
-      *(m_buf++) = (uint8_t)(value >> 40);
-      *(m_buf++) = (uint8_t)(value >> 32);
-      *(m_buf++) = (uint8_t)(value >> 24);
-      *(m_buf++) = (uint8_t)(value >> 16);
-      *(m_buf++) = (uint8_t)(value >> 8);
-      *(m_buf++) = (uint8_t)value;
+      *(m_buf++) = static_cast<uint8_t>(value >> 56);
+      *(m_buf++) = static_cast<uint8_t>(value >> 48);
+      *(m_buf++) = static_cast<uint8_t>(value >> 40);
+      *(m_buf++) = static_cast<uint8_t>(value >> 32);
+      *(m_buf++) = static_cast<uint8_t>(value >> 24);
+      *(m_buf++) = static_cast<uint8_t>(value >> 16);
+      *(m_buf++) = static_cast<uint8_t>(value >> 8);
+      *(m_buf++) = static_cast<uint8_t>(value);
     } else {
-      uint32_t hword = (uint32_t)(value >> 32);
-      *(m_buf++) = (uint8_t)(hword >> 24);
-      *(m_buf++) = (uint8_t)(hword >> 16);
-      *(m_buf++) = (uint8_t)(hword >> 8);
-      *(m_buf++) = (uint8_t)hword;
+      uint32_t hword = static_cast<uint32_t>(value >> 32);
+      *(m_buf++) = static_cast<uint8_t>(hword >> 24);
+      *(m_buf++) = static_cast<uint8_t>(hword >> 16);
+      *(m_buf++) = static_cast<uint8_t>(hword >> 8);
+      *(m_buf++) = static_cast<uint8_t>(hword);
 
-      hword = (uint32_t)value;
-      *(m_buf++) = (uint8_t)(hword >> 24);
-      *(m_buf++) = (uint8_t)(hword >> 16);
-      *(m_buf++) = (uint8_t)(hword >> 8);
-      *(m_buf++) = (uint8_t)hword;
+      hword = static_cast<uint32_t>(value);
+      *(m_buf++) = static_cast<uint8_t>(hword >> 24);
+      *(m_buf++) = static_cast<uint8_t>(hword >> 16);
+      *(m_buf++) = static_cast<uint8_t>(hword >> 8);
+      *(m_buf++) = static_cast<uint8_t>(hword);
     }
   }
 
@@ -235,21 +235,27 @@ class CPPCACHE_EXPORT DataOutput {
    *
    * @param value the 16-bit signed integer value to be written
    */
-  inline void writeInt(int16_t value) { writeInt((uint16_t)value); }
+  inline void writeInt(int16_t value) {
+    writeInt(static_cast<uint16_t>(value));
+  }
 
   /**
    * Write a 32-bit signed integer value to the <code>DataOutput</code>.
    *
    * @param value the 32-bit signed integer value to be written
    */
-  inline void writeInt(int32_t value) { writeInt((uint32_t)value); }
+  inline void writeInt(int32_t value) {
+    writeInt(static_cast<uint32_t>(value));
+  }
 
   /**
    * Write a 64-bit signed integer value to the <code>DataOutput</code>.
    *
    * @param value the 64-bit signed integer value to be written
    */
-  inline void writeInt(int64_t value) { writeInt((uint64_t)value); }
+  inline void writeInt(int64_t value) {
+    writeInt(static_cast<uint64_t>(value));
+  }
 
   /**
    * Write a 32-bit signed integer array length value to the
@@ -260,14 +266,14 @@ class CPPCACHE_EXPORT DataOutput {
    */
   inline void writeArrayLen(int32_t len) {
     if (len == -1) {
-      write((int8_t)-1);
+      write(static_cast<int8_t>(-1));
     } else if (len <= 252) {  // 252 is java's ((byte)-4 && 0xFF)
-      write((uint8_t)len);
+      write(static_cast<uint8_t>(len));
     } else if (len <= 0xFFFF) {
-      write((int8_t)-2);
-      writeInt((uint16_t)len);
+      write(static_cast<int8_t>(-2));
+      writeInt(static_cast<uint16_t>(len));
     } else {
-      write((int8_t)-3);
+      write(static_cast<int8_t>(-3));
       writeInt(len);
     }
   }
@@ -315,13 +321,13 @@ class CPPCACHE_EXPORT DataOutput {
   inline void writeASCII(const char* value, uint32_t length = 0) {
     if (value != NULL) {
       if (length == 0) {
-        length = (uint32_t)strlen(value);
+        length = static_cast<uint32_t>(strlen(value));
       }
-      uint16_t len = (uint16_t)(length > 0xFFFF ? 0xFFFF : length);
+      uint16_t len = static_cast<uint16_t>(length > 0xFFFF ? 0xFFFF : length);
       writeInt(len);
       writeBytesOnly((int8_t*)value, len);  // K64
     } else {
-      writeInt((uint16_t)0);
+      writeInt(static_cast<uint16_t>(0));
     }
   }
 
@@ -348,12 +354,12 @@ class CPPCACHE_EXPORT DataOutput {
   inline void writeASCIIHuge(const char* value, uint32_t length = 0) {
     if (value != NULL) {
       if (length == 0) {
-        length = (uint32_t)strlen(value);
+        length = static_cast<uint32_t>(strlen(value));
       }
-      writeInt((uint32_t)length);
-      writeBytesOnly((int8_t*)value, (uint32_t)length);
+      writeInt(length);
+      writeBytesOnly((int8_t*)value, length);
     } else {
-      writeInt((uint32_t)0);
+      writeInt(static_cast<uint32_t>(0));
     }
   }
 
@@ -370,17 +376,17 @@ class CPPCACHE_EXPORT DataOutput {
   inline void writeFullUTF(const char* value, uint32_t length = 0) {
     if (value != NULL) {
       int32_t len = getEncodedLength(value, length);
-      uint16_t encodedLen = (uint16_t)(len > 0xFFFF ? 0xFFFF : len);
-      writeInt((int32_t)encodedLen);
+      uint16_t encodedLen = static_cast<uint16_t>(len > 0xFFFF ? 0xFFFF : len);
+      writeInt(static_cast<int32_t>(encodedLen));
       ensureCapacity(encodedLen);
-      write((int8_t)0);  // isObject = 0 BYTE_CODE
+      write(static_cast<int8_t>(0));  // isObject = 0 BYTE_CODE
       uint8_t* end = m_buf + encodedLen;
       while (m_buf < end) {
         encodeChar(*value++);
       }
       if (m_buf > end) m_buf = end;
     } else {
-      writeInt((uint16_t)0);
+      writeInt(static_cast<uint16_t>(0));
     }
   }
 
@@ -398,7 +404,7 @@ class CPPCACHE_EXPORT DataOutput {
   inline void writeUTF(const char* value, uint32_t length = 0) {
     if (value != NULL) {
       int32_t len = getEncodedLength(value, length);
-      uint16_t encodedLen = (uint16_t)(len > 0xFFFF ? 0xFFFF : len);
+      uint16_t encodedLen = static_cast<uint16_t>(len > 0xFFFF ? 0xFFFF : len);
       writeInt(encodedLen);
       ensureCapacity(encodedLen);
       uint8_t* end = m_buf + encodedLen;
@@ -407,7 +413,7 @@ class CPPCACHE_EXPORT DataOutput {
       }
       if (m_buf > end) m_buf = end;
     } else {
-      writeInt((uint16_t)0);
+      writeInt(static_cast<uint16_t>(0));
     }
   }
 
@@ -426,16 +432,16 @@ class CPPCACHE_EXPORT DataOutput {
   inline void writeUTFHuge(const char* value, uint32_t length = 0) {
     if (value != NULL) {
       if (length == 0) {
-        length = (uint32_t)strlen(value);
+        length = static_cast<uint32_t>(strlen(value));
       }
       writeInt(length);
       ensureCapacity(length * 2);
       for (uint32_t pos = 0; pos < length; pos++) {
-        writeNoCheck((int8_t)0);
-        writeNoCheck((int8_t)value[pos]);
+        writeNoCheck(static_cast<int8_t>(0));
+        writeNoCheck(static_cast<int8_t>(value[pos]));
       }
     } else {
-      writeInt((uint32_t)0);
+      writeInt(static_cast<uint32_t>(0));
     }
   }
 
@@ -453,7 +459,7 @@ class CPPCACHE_EXPORT DataOutput {
   inline void writeUTF(const wchar_t* value, uint32_t length = 0) {
     if (value != NULL) {
       int32_t len = getEncodedLength(value, length);
-      uint16_t encodedLen = (uint16_t)(len > 0xFFFF ? 0xFFFF : len);
+      uint16_t encodedLen = static_cast<uint16_t>(len > 0xFFFF ? 0xFFFF : len);
       writeInt(encodedLen);
       ensureCapacity(encodedLen);
       uint8_t* end = m_buf + encodedLen;
@@ -462,7 +468,7 @@ class CPPCACHE_EXPORT DataOutput {
       }
       if (m_buf > end) m_buf = end;
     } else {
-      writeInt((uint16_t)0);
+      writeInt(static_cast<uint16_t>(0));
     }
   }
 
@@ -479,17 +485,17 @@ class CPPCACHE_EXPORT DataOutput {
   inline void writeUTFHuge(const wchar_t* value, uint32_t length = 0) {
     if (value != NULL) {
       if (length == 0) {
-        length = (uint32_t)wcslen(value);
+        length = static_cast<uint32_t>(wcslen(value));
       }
       writeInt(length);
       ensureCapacity(length * 2);
       for (uint32_t pos = 0; pos < length; pos++) {
-        uint16_t item = (uint16_t)value[pos];
-        writeNoCheck((uint8_t)((item & 0xFF00) >> 8));
-        writeNoCheck((uint8_t)(item & 0xFF));
+        uint16_t item = static_cast<uint16_t>(value[pos]);
+        writeNoCheck(static_cast<uint8_t>((item & 0xFF00) >> 8));
+        writeNoCheck(static_cast<uint8_t>(item & 0xFF));
       }
     } else {
-      writeInt((uint32_t)0);
+      writeInt(static_cast<uint32_t>(0));
     }
   }
 
@@ -640,13 +646,13 @@ class CPPCACHE_EXPORT DataOutput {
    *   should not be NULL
    */
   inline const uint8_t* getBuffer(uint32_t* rsize) const {
-    *rsize = (uint32_t)(m_buf - m_bytes);
+    *rsize = static_cast<uint32_t>(m_buf - m_bytes);
     // GF_R_ASSERT(!((uint32_t)(m_bytes) % 4));
     return m_bytes;
   }
 
   inline uint8_t* getBufferCopy() {
-    uint32_t size = (uint32_t)(m_buf - m_bytes);
+    uint32_t size = static_cast<uint32_t>(m_buf - m_bytes);
     uint8_t* result;
     GF_ALLOC(result, uint8_t, size);
     memcpy(result, m_bytes, size);
@@ -658,7 +664,7 @@ class CPPCACHE_EXPORT DataOutput {
    * <code>DataOutput</code>.
    */
   inline uint32_t getBufferLength() const {
-    return (uint32_t)(m_buf - m_bytes);
+    return static_cast<uint32_t>(m_buf - m_bytes);
   }
 
   /**
@@ -681,7 +687,7 @@ class CPPCACHE_EXPORT DataOutput {
 
   // make sure there is room left for the requested size item.
   inline void ensureCapacity(uint32_t size) {
-    uint32_t offset = (uint32_t)(m_buf - m_bytes);
+    uint32_t offset = static_cast<uint32_t>(m_buf - m_bytes);
     if ((m_size - offset) < size) {
       uint32_t newSize = m_size * 2 + (8192 * (size / 8192));
       if (newSize >= m_highWaterMark && !m_haveBigBuffer) {
@@ -764,11 +770,11 @@ class CPPCACHE_EXPORT DataOutput {
   }
 
   inline void encodeChar(const char value) {
-    uint8_t tmp = (uint8_t)value;
+    uint8_t tmp = static_cast<uint8_t>(value);
     if ((tmp == 0) || (tmp & 0x80)) {
       // two byte.
-      *(m_buf++) = (uint8_t)(0xc0 | ((tmp & 0xc0) >> 6));
-      *(m_buf++) = (uint8_t)(0x80 | (tmp & 0x3f));
+      *(m_buf++) = static_cast<uint8_t>(0xc0 | ((tmp & 0xc0) >> 6));
+      *(m_buf++) = static_cast<uint8_t>(0x80 | (tmp & 0x3f));
     } else {
       // one byte.
       *(m_buf++) = tmp;
@@ -777,25 +783,27 @@ class CPPCACHE_EXPORT DataOutput {
 
   // this will lose the character set encoding.
   inline void encodeChar(const wchar_t value) {
-    uint16_t c = (uint16_t)value;
+    uint16_t c = static_cast<uint16_t>(value);
     if (c == 0) {
       *(m_buf++) = 0xc0;
       *(m_buf++) = 0x80;
     } else if (c < 0x80) {  // ASCII character
-      *(m_buf++) = (uint8_t)c;
+      *(m_buf++) = static_cast<uint8_t>(c);
     } else if (c < 0x800) {
-      *(m_buf++) = (uint8_t)(0xC0 | c >> 6);
-      *(m_buf++) = (uint8_t)(0x80 | (c & 0x3F));
+      *(m_buf++) = static_cast<uint8_t>(0xC0 | c >> 6);
+      *(m_buf++) = static_cast<uint8_t>(0x80 | (c & 0x3F));
     } else {
-      *(m_buf++) = (uint8_t)(0xE0 | c >> 12);
-      *(m_buf++) = (uint8_t)(0x80 | ((c >> 6) & 0x3F));
-      *(m_buf++) = (uint8_t)(0x80 | (c & 0x3F));
+      *(m_buf++) = static_cast<uint8_t>(0xE0 | c >> 12);
+      *(m_buf++) = static_cast<uint8_t>(0x80 | ((c >> 6) & 0x3F));
+      *(m_buf++) = static_cast<uint8_t>(0x80 | (c & 0x3F));
     }
   }
 
   inline void writeNoCheck(uint8_t value) { *(m_buf++) = value; }
 
-  inline void writeNoCheck(int8_t value) { writeNoCheck((uint8_t)value); }
+  inline void writeNoCheck(int8_t value) {
+    writeNoCheck(static_cast<uint8_t>(value));
+  }
 
   static uint8_t* checkoutBuffer(uint32_t* size);
   static void checkinBuffer(uint8_t* buffer, uint32_t size);
@@ -804,6 +812,6 @@ class CPPCACHE_EXPORT DataOutput {
   DataOutput(const DataOutput&);
   DataOutput& operator=(const DataOutput&);
 };
-}
+}  // namespace gemfire
 
 #endif  // __GEMFIRE_DATAOUTPUT_H__

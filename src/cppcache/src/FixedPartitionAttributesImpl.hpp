@@ -63,7 +63,7 @@ class FixedPartitionAttributesImpl : public Serializable {
 
   FixedPartitionAttributesImpl* fromData(DataInput& input) {
     input.readNativeString(m_partitionName);
-    input.readBoolean((bool*)&m_isPrimary);
+    input.readBoolean(&m_isPrimary);
     input.readInt((int32_t*)&m_numBuckets);
     input.readInt((int32_t*)&m_startingBucketId);
     return this;
@@ -71,9 +71,10 @@ class FixedPartitionAttributesImpl : public Serializable {
 
   uint32_t objectSize() const {
     if (m_partitionName != NULLPTR) {
-      return (uint32_t)sizeof(int) + (uint32_t)sizeof(int) +
-             (uint32_t)sizeof(bool) +
-             (uint32_t)(m_partitionName->length()) * (uint32_t)sizeof(char);
+      return static_cast<uint32_t>(sizeof(int)) +
+             static_cast<uint32_t>(sizeof(int)) +
+             static_cast<uint32_t>(sizeof(bool)) +
+             (m_partitionName->length()) * static_cast<uint32_t>(sizeof(char));
     }
     return 0;
   }
@@ -83,7 +84,7 @@ class FixedPartitionAttributesImpl : public Serializable {
   }
 
   int8_t DSFID() const {
-    return (int8_t)GemfireTypeIdsImpl::FixedIDByte;  // Never used
+    return static_cast<int8_t>(GemfireTypeIdsImpl::FixedIDByte);  // Never used
   }
 
   int32_t classId() const {
@@ -115,6 +116,6 @@ class FixedPartitionAttributesImpl : public Serializable {
     return getStartingBucketID() <= bucketId && bucketId <= getLastBucketID();
   }
 };
-}
+}  // namespace gemfire
 
 #endif

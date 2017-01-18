@@ -213,6 +213,6 @@ class CPPCACHE_EXPORT HashMapOfException : public _HashMapOfException,
 
 typedef SharedPtr<HashMapOfCacheable> HashMapOfCacheablePtr;
 typedef SharedPtr<HashMapOfException> HashMapOfExceptionPtr;
-}
+}  // namespace gemfire
 
 #endif
