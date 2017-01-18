@@ -78,17 +78,21 @@ if(CMAKE_SYSTEM_NAME STREQUAL "SunOS")
     set(SOURCES ${SOURCES} $<TARGET_OBJECTS:gfcppasm>)
   endif()
 endif()
-if (${WIN32})
+target_link_libraries(_gfcppcache INTERFACE
+  ACE
+  libxml2
+)
+
+if (${UNIX})
+   target_link_libraries(_gfcppcache INTERFACE
+       z
+   )
+elseif (${WIN32})
   target_link_libraries(_gfcppcache INTERFACE
       Dbghelp
   )
 endif()
 
-target_link_libraries(_gfcppcache INTERFACE
-  ACE
-  libxml2
-  z
-)
 target_compile_definitions(_gfcppcache INTERFACE
     # TODO replace BUILD_CPPCACHE with built-in _DLL
     $<BUILD_INTERFACE:BUILD_CPPCACHE>
