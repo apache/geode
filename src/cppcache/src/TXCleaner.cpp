@@ -23,7 +23,9 @@
 
 #include "TXCleaner.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 TXCleaner::TXCleaner(CacheTransactionManagerImpl* cacheTxMgr) {
   m_txStateWrapper = TSSTXStateWrapper::s_gemfireTSSTXState;
@@ -51,4 +53,6 @@ void TXCleaner::clean() {
 TXState* TXCleaner::getTXState() {
   return (m_txStateWrapper == NULL) ? NULL : m_txStateWrapper->getTXState();
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

@@ -51,8 +51,8 @@ namespace GemStone
       void Generic::RegionAttributes<TKey, TValue>::ToData(
         GemStone::GemFire::Cache::Generic::DataOutput^ output )
       {
-        gemfire::DataOutput* nativeOutput =
-          GemStone::GemFire::Cache::Generic::GetNativePtrFromUMWrapGeneric<gemfire::DataOutput>( output );
+        apache::geode::client::DataOutput* nativeOutput =
+          GemStone::GemFire::Cache::Generic::GetNativePtrFromUMWrapGeneric<apache::geode::client::DataOutput>( output );
         if (nativeOutput != nullptr)
         {
           NativePtr->toData( *nativeOutput );
@@ -63,11 +63,11 @@ namespace GemStone
       GemStone::GemFire::Cache::Generic::IGFSerializable^ Generic::RegionAttributes<TKey, TValue>::FromData(
         GemStone::GemFire::Cache::Generic::DataInput^ input )
       {
-        gemfire::DataInput* nativeInput =
-          GemStone::GemFire::Cache::Generic::GetNativePtrFromUMWrapGeneric<gemfire::DataInput>( input );
+        apache::geode::client::DataInput* nativeInput =
+          GemStone::GemFire::Cache::Generic::GetNativePtrFromUMWrapGeneric<apache::geode::client::DataInput>( input );
         if (nativeInput != nullptr)
         {
-          AssignPtr( static_cast<gemfire::RegionAttributes*>(
+          AssignPtr( static_cast<apache::geode::client::RegionAttributes*>(
             NativePtr->fromData( *nativeInput ) ) );
         }
         return this;
@@ -76,9 +76,9 @@ namespace GemStone
       generic <class TKey, class TValue>
       ICacheLoader<TKey, TValue>^ Generic::RegionAttributes<TKey, TValue>::CacheLoader::get()
       {
-        gemfire::CacheLoaderPtr& loaderptr( NativePtr->getCacheLoader( ) );
-        gemfire::ManagedCacheLoaderGeneric* mg_loader =
-          dynamic_cast<gemfire::ManagedCacheLoaderGeneric*>( loaderptr.ptr( ) );
+        apache::geode::client::CacheLoaderPtr& loaderptr( NativePtr->getCacheLoader( ) );
+        apache::geode::client::ManagedCacheLoaderGeneric* mg_loader =
+          dynamic_cast<apache::geode::client::ManagedCacheLoaderGeneric*>( loaderptr.ptr( ) );
 
         if (mg_loader != nullptr)
         {
@@ -90,9 +90,9 @@ namespace GemStone
       generic <class TKey, class TValue>
       ICacheWriter<TKey, TValue>^ Generic::RegionAttributes<TKey, TValue>::CacheWriter::get()
       {
-        gemfire::CacheWriterPtr& writerptr( NativePtr->getCacheWriter( ) );
-        gemfire::ManagedCacheWriterGeneric* mg_writer =
-          dynamic_cast<gemfire::ManagedCacheWriterGeneric*>( writerptr.ptr( ) );
+        apache::geode::client::CacheWriterPtr& writerptr( NativePtr->getCacheWriter( ) );
+        apache::geode::client::ManagedCacheWriterGeneric* mg_writer =
+          dynamic_cast<apache::geode::client::ManagedCacheWriterGeneric*>( writerptr.ptr( ) );
 
         if (mg_writer != nullptr)
         {
@@ -104,9 +104,9 @@ namespace GemStone
       generic <class TKey, class TValue>
       ICacheListener<TKey, TValue>^ Generic::RegionAttributes<TKey, TValue>::CacheListener::get()
       {
-        gemfire::CacheListenerPtr& listenerptr( NativePtr->getCacheListener( ) );
-        gemfire::ManagedCacheListenerGeneric* mg_listener =
-          dynamic_cast<gemfire::ManagedCacheListenerGeneric*>( listenerptr.ptr( ) );
+        apache::geode::client::CacheListenerPtr& listenerptr( NativePtr->getCacheListener( ) );
+        apache::geode::client::ManagedCacheListenerGeneric* mg_listener =
+          dynamic_cast<apache::geode::client::ManagedCacheListenerGeneric*>( listenerptr.ptr( ) );
 
         if (mg_listener != nullptr)
         {
@@ -123,17 +123,17 @@ namespace GemStone
       generic <class TKey, class TValue>
       IPartitionResolver<TKey, TValue>^ Generic::RegionAttributes<TKey, TValue>::PartitionResolver::get()
       {
-        gemfire::PartitionResolverPtr& resolverptr( NativePtr->getPartitionResolver( ) );
-        gemfire::ManagedPartitionResolverGeneric* mg_resolver =
-          dynamic_cast<gemfire::ManagedPartitionResolverGeneric*>( resolverptr.ptr( ) );
+        apache::geode::client::PartitionResolverPtr& resolverptr( NativePtr->getPartitionResolver( ) );
+        apache::geode::client::ManagedPartitionResolverGeneric* mg_resolver =
+          dynamic_cast<apache::geode::client::ManagedPartitionResolverGeneric*>( resolverptr.ptr( ) );
 
         if (mg_resolver != nullptr)
         {
           return (IPartitionResolver<TKey, TValue>^)mg_resolver->userptr( );
         }
 
-        gemfire::ManagedFixedPartitionResolverGeneric* mg_fixedResolver =
-          dynamic_cast<gemfire::ManagedFixedPartitionResolverGeneric*>( resolverptr.ptr( ) );
+        apache::geode::client::ManagedFixedPartitionResolverGeneric* mg_fixedResolver =
+          dynamic_cast<apache::geode::client::ManagedFixedPartitionResolverGeneric*>( resolverptr.ptr( ) );
 
         if (mg_fixedResolver != nullptr)
         {
@@ -290,8 +290,8 @@ namespace GemStone
       generic <class TKey, class TValue>
       bool Generic::RegionAttributes<TKey, TValue>::Equals(Generic::RegionAttributes<TKey, TValue>^ other)
       {
-        gemfire::RegionAttributes* otherPtr =
-          GetNativePtrFromSBWrapGeneric<gemfire::RegionAttributes>( other );
+        apache::geode::client::RegionAttributes* otherPtr =
+          GetNativePtrFromSBWrapGeneric<apache::geode::client::RegionAttributes>( other );
         if (_NativePtr != nullptr && otherPtr != nullptr) {
           return NativePtr->operator==(*otherPtr);
         }
@@ -301,7 +301,7 @@ namespace GemStone
       generic <class TKey, class TValue>
       bool Generic::RegionAttributes<TKey, TValue>::Equals(Object^ other)
       {
-        gemfire::RegionAttributes* otherPtr = GetNativePtrFromSBWrapGeneric<gemfire::
+        apache::geode::client::RegionAttributes* otherPtr = GetNativePtrFromSBWrapGeneric<apache::geode::client::
           RegionAttributes>( dynamic_cast<Generic::RegionAttributes<TKey, TValue>^>( other ) );
         if (_NativePtr != nullptr && otherPtr != nullptr) {
           return NativePtr->operator==(*otherPtr);
@@ -353,7 +353,7 @@ namespace GemStone
       generic <class TKey, class TValue>
       Properties<String^, String^>^Generic::RegionAttributes<TKey, TValue>::PersistenceProperties::get()
       {
-        gemfire::PropertiesPtr& nativeptr(
+        apache::geode::client::PropertiesPtr& nativeptr(
           NativePtr->getPersistenceProperties( ) );
         return Properties<String^, String^>::Create<String^, String^>( nativeptr.ptr( ) );
       }

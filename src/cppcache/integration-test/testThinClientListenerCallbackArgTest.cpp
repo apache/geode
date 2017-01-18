@@ -32,7 +32,7 @@
 #include "testobject/Portfolio.hpp"
 using namespace testobject;
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace test;
 
 bool isLocalServer = true;
@@ -42,10 +42,10 @@ const char* locatorsG =
 #include "LocatorHelper.hpp"
 
 //---------------------------------------------------------------------------------
-using namespace gemfire;
+using namespace apache::geode::client;
 class CallbackListener;
 
-typedef gemfire::SharedPtr<CallbackListener> CallbackListenerPtr;
+typedef apache::geode::client::SharedPtr<CallbackListener> CallbackListenerPtr;
 
 class CallbackListener : public CacheListener {
  private:

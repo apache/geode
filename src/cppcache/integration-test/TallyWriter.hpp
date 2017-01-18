@@ -19,12 +19,12 @@
 
 #include <gfcpp/GemfireCppCache.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace test;
 
 class TallyWriter;
 
-typedef gemfire::SharedPtr<TallyWriter> TallyWriterPtr;
+typedef apache::geode::client::SharedPtr<TallyWriter> TallyWriterPtr;
 
 class TallyWriter : virtual public CacheWriter {
  private:

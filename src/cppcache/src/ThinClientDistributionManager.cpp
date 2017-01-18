@@ -20,7 +20,7 @@
 #include <gfcpp/SystemProperties.hpp>
 #include "DistributedSystemImpl.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 ThinClientDistributionManager::ThinClientDistributionManager(
     TcrConnectionManager& connManager, ThinClientRegion* region)
     : ThinClientBaseDM(connManager, region), m_activeEndpoint(-1) {}

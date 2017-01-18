@@ -24,7 +24,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * @class CqServiceStatistics CqServiceStatistics.hpp
@@ -67,7 +69,8 @@ class CPPCACHE_EXPORT CqServiceStatistics : public SharedBase {
    */
   virtual uint32_t numCqsOnClient() const = 0;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_CQ_SERVICE_STATISTICS_H__

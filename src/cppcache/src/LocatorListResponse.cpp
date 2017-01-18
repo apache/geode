@@ -17,7 +17,7 @@
 #include "LocatorListResponse.hpp"
 #include <gfcpp/DataInput.hpp>
 #include <vector>
-using namespace gemfire;
+using namespace apache::geode::client;
 LocatorListResponse* LocatorListResponse::fromData(DataInput& input) {
   readList(input);
   input.readBoolean(&m_isBalanced);

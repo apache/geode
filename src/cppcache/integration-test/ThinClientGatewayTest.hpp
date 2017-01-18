@@ -29,7 +29,7 @@
 #define CLIENT1 s1p1
 #define CLIENT2 s1p2
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace test;
 
 #include <gfcpp/GemfireCppCache.hpp>
@@ -60,7 +60,7 @@ class MyListener : public CacheListener {
   int getNumEvents() { return m_events; }
 };
 
-typedef gemfire::SharedPtr<MyListener> MyListenerPtr;
+typedef apache::geode::client::SharedPtr<MyListener> MyListenerPtr;
 
 void setCacheListener(const char* regName, TallyListenerPtr regListener) {
   RegionPtr reg = getHelper()->getRegion(regName);

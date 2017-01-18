@@ -17,7 +17,7 @@
 #include "ThinClientPoolStickyHADM.hpp"
 #include "TssConnectionWrapper.hpp"
 #include <algorithm>
-using namespace gemfire;
+using namespace apache::geode::client;
 /*TcrConnection* ThinClientPoolStickyHADM::getConnectionFromQueueW( GfErrType*
 error,
   std::set< ServerLocation >& excludeServers, bool isBGThread, TcrMessage &

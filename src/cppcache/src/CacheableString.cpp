@@ -26,7 +26,7 @@
 #include <ace/ACE.h>
 #include <ace/OS.h>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 void CacheableString::toData(DataOutput& output) const {
   if (m_type == GF_STRING) {

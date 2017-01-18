@@ -34,7 +34,9 @@
 #include <gfcpp/PoolManager.hpp>
 #include "TXCleaner.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 CacheTransactionManagerImpl::CacheTransactionManagerImpl(Cache* cache)
     : m_cache(cache), m_txCond(m_suspendedTxLock) {}
@@ -668,4 +670,6 @@ staticCast<TransactionListenerPtr>(*iter);
         }
 }
 */
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

@@ -18,7 +18,7 @@
 #include "DistributedSystemImpl.hpp"
 #include <gfcpp/SystemProperties.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 // guard for connect/disconnect
 extern ACE_Recursive_Thread_Mutex* g_disconnectLock;

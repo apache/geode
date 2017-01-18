@@ -27,7 +27,9 @@
 #include <gfcpp/PdxUnreadFields.hpp>
 #include <vector>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class PdxRemotePreservedData;
 typedef SharedPtr<PdxRemotePreservedData> PdxRemotePreservedDataPtr;
 
@@ -112,5 +114,7 @@ class PdxRemotePreservedData : public PdxUnreadFields {
     return 0;
   }
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif

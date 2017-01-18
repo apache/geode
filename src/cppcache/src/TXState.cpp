@@ -27,7 +27,9 @@
 #include "TssConnectionWrapper.hpp"
 #include "ThinClientPoolDM.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 TXState::TXState(Cache* cache) {
   m_txId = TXIdPtr(new TXId());
@@ -135,4 +137,6 @@ void TXState::recordTXOperation(ServerRegionOperation op,
   m_operations.push_back(TransactionalOperationPtr(
       new TransactionalOperation(op, regionName, key, arguments)));
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

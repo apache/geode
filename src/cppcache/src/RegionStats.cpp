@@ -28,7 +28,9 @@ const char* statsDesc = (const char*)"Statistics for this region";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 using namespace gemfire_statistics;
 
@@ -278,5 +280,6 @@ RegionStats::~RegionStats() {
     m_regionStats = NULL;
   }
 }
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

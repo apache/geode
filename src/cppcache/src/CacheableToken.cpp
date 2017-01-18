@@ -23,7 +23,7 @@
 #include <gfcpp/CacheableString.hpp>
 #include "GemfireTypeIdsImpl.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 //---- statics
 

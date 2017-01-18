@@ -99,7 +99,9 @@ void DllMainGetPath(char *result, int maxLen) {
 
 #ifdef _WIN32
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 void CPPCACHE_EXPORT setNewAndDelete(pNew pn, pDelete pd) {
   Utils::s_pNew = pn;
   Utils::s_pDelete = pd;
@@ -138,7 +140,8 @@ operators.");
   }
 }
 */
-
-}  // namespace gemfire
+}
+}
+}
 
 #endif  // _WIN32

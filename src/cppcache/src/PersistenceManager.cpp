@@ -18,7 +18,7 @@
 #include <gfcpp/PersistenceManager.hpp>
 #include <gfcpp/Region.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 PersistenceManager::PersistenceManager(const RegionPtr& regionPtr)
     : m_regionPtr(regionPtr) {

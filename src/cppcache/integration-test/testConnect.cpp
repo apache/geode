@@ -20,7 +20,7 @@
 #include "fw_dunit.hpp"
 #include <gfcpp/GemfireCppCache.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 const char* host_name = "Suds";
 DUNIT_TASK(s1p1, CreateRegionOne)

@@ -21,7 +21,9 @@
 #include <gfcpp/CacheableString.hpp>
 #include <gfcpp/CacheableKey.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class CPPCACHE_EXPORT EnumInfo : public CacheableKey {
  private:
@@ -57,6 +59,8 @@ class CPPCACHE_EXPORT EnumInfo : public CacheableKey {
   int32_t getEnumOrdinal() const { return m_ordinal; }
 };
 typedef SharedPtr<EnumInfo> EnumInfoPtr;
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ENUM_INFO_HPP

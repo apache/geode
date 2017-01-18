@@ -37,7 +37,7 @@ namespace GemStone
         _GF_MG_EXCEPTION_TRY2
 
           ManagedString mg_lfname( logFileName );
-          gemfire::Log::init( static_cast<gemfire::Log::LogLevel>( level ),
+          apache::geode::client::Log::init( static_cast<apache::geode::client::Log::LogLevel>( level ),
             mg_lfname.CharPtr );
 
         _GF_MG_EXCEPTION_CATCH_ALL2
@@ -48,7 +48,7 @@ namespace GemStone
         _GF_MG_EXCEPTION_TRY2
 
           ManagedString mg_lfname( logFileName );
-          gemfire::Log::init( static_cast<gemfire::Log::LogLevel>( level ),
+          apache::geode::client::Log::init( static_cast<apache::geode::client::Log::LogLevel>( level ),
             mg_lfname.CharPtr, logFileLimit );
 
         _GF_MG_EXCEPTION_CATCH_ALL2
@@ -56,33 +56,33 @@ namespace GemStone
 
       void Log::Close( )
       {
-        gemfire::Log::close( );
+        apache::geode::client::Log::close( );
       }
 
       LogLevel Log::Level( )
       {
-        return static_cast<LogLevel>( gemfire::Log::logLevel( ) );
+        return static_cast<LogLevel>( apache::geode::client::Log::logLevel( ) );
       }
 
       void Log::SetLevel( LogLevel level )
       {
-        gemfire::Log::setLogLevel(
-          static_cast<gemfire::Log::LogLevel>( level ) );
+        apache::geode::client::Log::setLogLevel(
+          static_cast<apache::geode::client::Log::LogLevel>( level ) );
       }
 
       String^ Log::LogFileName( )
       {
         _GF_MG_EXCEPTION_TRY2
 
-          return ManagedString::Get( gemfire::Log::logFileName( ) );
+          return ManagedString::Get( apache::geode::client::Log::logFileName( ) );
 
         _GF_MG_EXCEPTION_CATCH_ALL2
       }
 
       bool Log::Enabled( LogLevel level )
       {
-        return gemfire::Log::enabled(
-          static_cast<gemfire::Log::LogLevel>( level ) );
+        return apache::geode::client::Log::enabled(
+          static_cast<apache::geode::client::Log::LogLevel>( level ) );
       }
 
       void Log::Write( LogLevel level, String^ msg )
@@ -90,7 +90,7 @@ namespace GemStone
         _GF_MG_EXCEPTION_TRY2
 
           ManagedString mg_msg( msg );
-          gemfire::Log::log( static_cast<gemfire::Log::LogLevel>( level ),
+          apache::geode::client::Log::log( static_cast<apache::geode::client::Log::LogLevel>( level ),
             mg_msg.CharPtr );
 
         _GF_MG_EXCEPTION_CATCH_ALL2

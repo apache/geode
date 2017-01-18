@@ -27,7 +27,9 @@
 #include "Properties.hpp"
 #include "VectorT.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 /**
  * @class DistributedSystem DistributedSystem.hpp
  * DistributedSystem encapsulates this applications "connection" into the
@@ -117,7 +119,8 @@ class CPPCACHE_EXPORT DistributedSystem : public SharedBase {
   DistributedSystem(const DistributedSystem&);
   const DistributedSystem& operator=(const DistributedSystem&);
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_DISTRIBUTEDSYSTEM_H__

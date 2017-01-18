@@ -55,25 +55,25 @@ namespace GemStone
       };
 
       /// <summary>
-      /// Helper function to convert native <c>gemfire::Serializable</c> object
+      /// Helper function to convert native <c>apache::geode::client::Serializable</c> object
       /// to managed <see cref="IGFSerializable" /> object.
       /// </summary>
       inline static GemStone::GemFire::Cache::Generic::IGFSerializable^
-        SafeUMSerializableConvertGeneric( gemfire::Serializable* obj )
+        SafeUMSerializableConvertGeneric( apache::geode::client::Serializable* obj )
       {
 
         if (obj == nullptr) return nullptr;
         
-        gemfire::ManagedCacheableKeyGeneric* mg_obj = nullptr;          
-        gemfire::ManagedCacheableKeyBytesGeneric* mg_bytesObj = nullptr;          
+        apache::geode::client::ManagedCacheableKeyGeneric* mg_obj = nullptr;          
+        apache::geode::client::ManagedCacheableKeyBytesGeneric* mg_bytesObj = nullptr;          
 
         if(!SafeConvertClassGeneric::isAppDomainEnabled)
-          mg_obj = dynamic_cast<gemfire::ManagedCacheableKeyGeneric*>( obj );
+          mg_obj = dynamic_cast<apache::geode::client::ManagedCacheableKeyGeneric*>( obj );
         else
-          mg_bytesObj = dynamic_cast<gemfire::ManagedCacheableKeyBytesGeneric*>( obj );
+          mg_bytesObj = dynamic_cast<apache::geode::client::ManagedCacheableKeyBytesGeneric*>( obj );
 
-        gemfire::ManagedCacheableDeltaGeneric* mg_obj_delta = nullptr;
-        gemfire::ManagedCacheableDeltaBytesGeneric* mg_bytesObj_delta = nullptr;
+        apache::geode::client::ManagedCacheableDeltaGeneric* mg_obj_delta = nullptr;
+        apache::geode::client::ManagedCacheableDeltaBytesGeneric* mg_bytesObj_delta = nullptr;
         
         if (mg_obj != nullptr)
         {
@@ -86,9 +86,9 @@ namespace GemStone
         else
         {
           if(!SafeConvertClassGeneric::isAppDomainEnabled)
-            mg_obj_delta = dynamic_cast<gemfire::ManagedCacheableDeltaGeneric*>( obj );
+            mg_obj_delta = dynamic_cast<apache::geode::client::ManagedCacheableDeltaGeneric*>( obj );
           else
-            mg_bytesObj_delta = dynamic_cast<gemfire::ManagedCacheableDeltaBytesGeneric*>( obj );
+            mg_bytesObj_delta = dynamic_cast<apache::geode::client::ManagedCacheableDeltaBytesGeneric*>( obj );
           
           if( mg_obj_delta != nullptr )
           {
@@ -102,8 +102,8 @@ namespace GemStone
           {
             if ( obj->typeId( ) == 0 ) {
               //Special case for UserFunctionExecutionException which is not registered.
-              gemfire::UserFunctionExecutionException* mg_UFEEobj = nullptr;
-              mg_UFEEobj = dynamic_cast<gemfire::UserFunctionExecutionException*>( obj );
+              apache::geode::client::UserFunctionExecutionException* mg_UFEEobj = nullptr;
+              mg_UFEEobj = dynamic_cast<apache::geode::client::UserFunctionExecutionException*>( obj );
               if (mg_UFEEobj != nullptr) 
               {              
                 return gcnew UserFunctionExecutionException(mg_UFEEobj);              
@@ -128,7 +128,7 @@ namespace GemStone
       /// <remarks>
       /// <para>
       /// Consider the scenario that we have both native objects of class
-      /// <c>gemfire::Serializable</c> and managed objects of class
+      /// <c>apache::geode::client::Serializable</c> and managed objects of class
       /// <see cref="IGFSerializable" /> in a Region.
       /// </para><para>
       /// The former would be passed wrapped inside the
@@ -150,8 +150,8 @@ namespace GemStone
       inline static NativeType* SafeM2UMConvertGeneric( ManagedType^ mg_obj )
       {
         /*
-        *return SafeM2UMConvertGeneric<IGFSerializable, gemfire::ManagedCacheableKey,
-          gemfire::Serializable, Serializable>( mg_obj );
+        *return SafeM2UMConvertGeneric<IGFSerializable, apache::geode::client::ManagedCacheableKey,
+          apache::geode::client::Serializable, Serializable>( mg_obj );
         */
         //TODO: need to look this further for all types
         if (mg_obj == nullptr) return NULL;
@@ -169,15 +169,15 @@ namespace GemStone
             dynamic_cast<GemStone::GemFire::Cache::Generic::IGFDelta^> (mg_obj);
           if(sDelta != nullptr){
             if(!SafeConvertClassGeneric::isAppDomainEnabled)
-              return new gemfire::ManagedCacheableDeltaGeneric( sDelta);
+              return new apache::geode::client::ManagedCacheableDeltaGeneric( sDelta);
             else
-              return new gemfire::ManagedCacheableDeltaBytesGeneric( sDelta, true);
+              return new apache::geode::client::ManagedCacheableDeltaBytesGeneric( sDelta, true);
           }
           else{
             if(!SafeConvertClassGeneric::isAppDomainEnabled)
               return new ManagedWrapper(mg_obj, mg_obj->GetHashCode(), mg_obj->ClassId);
             else
-              return new gemfire::ManagedCacheableKeyBytesGeneric( mg_obj, true);
+              return new apache::geode::client::ManagedCacheableKeyBytesGeneric( mg_obj, true);
           }
         }
          //if (mg_obj == nullptr) return NULL;
@@ -191,21 +191,21 @@ namespace GemStone
       }
 
       generic<class TValue>
-      inline static TValue SafeGenericUMSerializableConvert( gemfire::Serializable* obj )
+      inline static TValue SafeGenericUMSerializableConvert( apache::geode::client::Serializable* obj )
       {
 
         if (obj == nullptr) return TValue();
         
-        gemfire::ManagedCacheableKeyGeneric* mg_obj = nullptr;          
-        gemfire::ManagedCacheableKeyBytesGeneric* mg_bytesObj = nullptr;          
+        apache::geode::client::ManagedCacheableKeyGeneric* mg_obj = nullptr;          
+        apache::geode::client::ManagedCacheableKeyBytesGeneric* mg_bytesObj = nullptr;          
 
         if(!SafeConvertClassGeneric::isAppDomainEnabled)
-          mg_obj = dynamic_cast<gemfire::ManagedCacheableKeyGeneric*>( obj );
+          mg_obj = dynamic_cast<apache::geode::client::ManagedCacheableKeyGeneric*>( obj );
         else
-          mg_bytesObj = dynamic_cast<gemfire::ManagedCacheableKeyBytesGeneric*>( obj );
+          mg_bytesObj = dynamic_cast<apache::geode::client::ManagedCacheableKeyBytesGeneric*>( obj );
 
-        gemfire::ManagedCacheableDeltaGeneric* mg_obj_delta = nullptr;
-        gemfire::ManagedCacheableDeltaBytesGeneric* mg_bytesObj_delta = nullptr;
+        apache::geode::client::ManagedCacheableDeltaGeneric* mg_obj_delta = nullptr;
+        apache::geode::client::ManagedCacheableDeltaBytesGeneric* mg_bytesObj_delta = nullptr;
         
         if (mg_obj != nullptr)
         {
@@ -218,9 +218,9 @@ namespace GemStone
         else
         {
           if(!SafeConvertClassGeneric::isAppDomainEnabled)
-            mg_obj_delta = dynamic_cast<gemfire::ManagedCacheableDeltaGeneric*>( obj );
+            mg_obj_delta = dynamic_cast<apache::geode::client::ManagedCacheableDeltaGeneric*>( obj );
           else
-            mg_bytesObj_delta = dynamic_cast<gemfire::ManagedCacheableDeltaBytesGeneric*>( obj );
+            mg_bytesObj_delta = dynamic_cast<apache::geode::client::ManagedCacheableDeltaBytesGeneric*>( obj );
           
           if( mg_obj_delta != nullptr )
           {
@@ -233,8 +233,8 @@ namespace GemStone
           else
           {            
             if ( obj->typeId( ) == 0 ) {
-              gemfire::UserFunctionExecutionException* mg_UFEEobj = nullptr;
-              mg_UFEEobj = dynamic_cast<gemfire::UserFunctionExecutionException*>( obj );              
+              apache::geode::client::UserFunctionExecutionException* mg_UFEEobj = nullptr;
+              mg_UFEEobj = dynamic_cast<apache::geode::client::UserFunctionExecutionException*>( obj );              
               if (mg_UFEEobj != nullptr) 
               {                
                 return safe_cast<TValue> (gcnew UserFunctionExecutionException(mg_UFEEobj));              
@@ -254,20 +254,20 @@ namespace GemStone
 
       /// <summary>
       /// Helper function to convert managed <see cref="IGFSerializable" />
-      /// object to native <c>gemfire::Serializable</c> object using
+      /// object to native <c>apache::geode::client::Serializable</c> object using
       /// <c>SafeM2UMConvert</c>.
       /// </summary>
-      inline static gemfire::Serializable* SafeMSerializableConvertGeneric(
+      inline static apache::geode::client::Serializable* SafeMSerializableConvertGeneric(
         GemStone::GemFire::Cache::Generic::IGFSerializable^ mg_obj )
       {
         //it is called for cacheables types  only
         return SafeM2UMConvertGeneric<GemStone::GemFire::Cache::Generic::IGFSerializable,
-          gemfire::ManagedCacheableKeyGeneric, gemfire::Serializable,
+          apache::geode::client::ManagedCacheableKeyGeneric, apache::geode::client::Serializable,
           GemStone::GemFire::Cache::Generic::Serializable>( mg_obj );
       }
 
       generic<class TValue>
-      inline static gemfire::Cacheable* SafeGenericM2UMConvert( TValue mg_val )
+      inline static apache::geode::client::Cacheable* SafeGenericM2UMConvert( TValue mg_val )
       {
         if (mg_val == nullptr) return NULL;
 
@@ -289,9 +289,9 @@ namespace GemStone
         {
           //TODO:: probably need to do for appdomain
 					if(!SafeConvertClassGeneric::isAppDomainEnabled)
-						return new gemfire::PdxManagedCacheableKey(pdxType);
+						return new apache::geode::client::PdxManagedCacheableKey(pdxType);
 					else
-						return new gemfire::PdxManagedCacheableKeyBytes(pdxType, true);
+						return new apache::geode::client::PdxManagedCacheableKeyBytes(pdxType, true);
         }
       
 				GemStone::GemFire::Cache::Generic::IGFDelta^ sDelta =
@@ -299,9 +299,9 @@ namespace GemStone
           if(sDelta != nullptr)
 					{
             if(!SafeConvertClassGeneric::isAppDomainEnabled)
-              return new gemfire::ManagedCacheableDeltaGeneric( sDelta);
+              return new apache::geode::client::ManagedCacheableDeltaGeneric( sDelta);
             else
-              return new gemfire::ManagedCacheableDeltaBytesGeneric( sDelta, true);
+              return new apache::geode::client::ManagedCacheableDeltaBytesGeneric( sDelta, true);
           }
           else
 					{
@@ -311,11 +311,11 @@ namespace GemStone
 						{
 							if(!SafeConvertClassGeneric::isAppDomainEnabled)
 							{
-									return new gemfire::ManagedCacheableKeyGeneric( tmpIGFS );
+									return new apache::geode::client::ManagedCacheableKeyGeneric( tmpIGFS );
 							}
 							else
 							{
-								return new gemfire::ManagedCacheableKeyBytesGeneric( tmpIGFS, true);
+								return new apache::geode::client::ManagedCacheableKeyBytesGeneric( tmpIGFS, true);
 							}
 						}
             
@@ -323,30 +323,30 @@ namespace GemStone
             {
               //TODO:: probably need to do for appdomain
 					    if(!SafeConvertClassGeneric::isAppDomainEnabled)
-					    	return new gemfire::PdxManagedCacheableKey(gcnew PdxWrapper(mg_obj));
+					    	return new apache::geode::client::PdxManagedCacheableKey(gcnew PdxWrapper(mg_obj));
 					    else
-						    return new gemfire::PdxManagedCacheableKeyBytes(gcnew PdxWrapper(mg_obj), true);
+						    return new apache::geode::client::PdxManagedCacheableKeyBytes(gcnew PdxWrapper(mg_obj), true);
             }
             throw gcnew GemStone::GemFire::Cache::Generic::IllegalStateException(String::Format("Unable to map object type {0}. Possible Object type may not be registered or PdxSerializer is not registered. ", mg_obj->GetType()));
           }	
       }
 
       generic<class TValue>
-      inline static gemfire::Cacheable* SafeGenericMSerializableConvert( TValue mg_obj )
+      inline static apache::geode::client::Cacheable* SafeGenericMSerializableConvert( TValue mg_obj )
       {
         return SafeGenericM2UMConvert<TValue>( mg_obj );
       }
 
-			inline static IPdxSerializable^ SafeUMSerializablePDXConvert( gemfire::Serializable* obj )
+			inline static IPdxSerializable^ SafeUMSerializablePDXConvert( apache::geode::client::Serializable* obj )
       {
-        gemfire::PdxManagedCacheableKey* mg_obj = nullptr; 
+        apache::geode::client::PdxManagedCacheableKey* mg_obj = nullptr; 
 
-         mg_obj = dynamic_cast<gemfire::PdxManagedCacheableKey*>( obj );
+         mg_obj = dynamic_cast<apache::geode::client::PdxManagedCacheableKey*>( obj );
 
          if(mg_obj != nullptr)
            return mg_obj->ptr();
 
-				 gemfire::PdxManagedCacheableKeyBytes* mg_bytes = dynamic_cast<gemfire::PdxManagedCacheableKeyBytes*>( obj );
+				 apache::geode::client::PdxManagedCacheableKeyBytes* mg_bytes = dynamic_cast<apache::geode::client::PdxManagedCacheableKeyBytes*>( obj );
 
 				 if(mg_bytes != nullptr)
            return mg_bytes->ptr();
@@ -355,21 +355,21 @@ namespace GemStone
       }
 
       /// <summary>
-      /// Helper function to convert native <c>gemfire::CacheableKey</c> object
+      /// Helper function to convert native <c>apache::geode::client::CacheableKey</c> object
       /// to managed <see cref="ICacheableKey" /> object.
       /// </summary>
       generic<class TKey>
-      inline static Generic::ICacheableKey^ SafeGenericUMKeyConvert( gemfire::CacheableKey* obj )
+      inline static Generic::ICacheableKey^ SafeGenericUMKeyConvert( apache::geode::client::CacheableKey* obj )
       {
         //All cacheables will be ManagedCacheableKey only
         if (obj == nullptr) return nullptr;
-        gemfire::ManagedCacheableKeyGeneric* mg_obj = nullptr;
-        gemfire::ManagedCacheableKeyBytesGeneric* mg_bytesObj = nullptr;
+        apache::geode::client::ManagedCacheableKeyGeneric* mg_obj = nullptr;
+        apache::geode::client::ManagedCacheableKeyBytesGeneric* mg_bytesObj = nullptr;
 
         if (!SafeConvertClassGeneric::isAppDomainEnabled)
-          mg_obj = dynamic_cast<gemfire::ManagedCacheableKeyGeneric*>( obj );
+          mg_obj = dynamic_cast<apache::geode::client::ManagedCacheableKeyGeneric*>( obj );
         else
-          mg_bytesObj = dynamic_cast<gemfire::ManagedCacheableKeyBytesGeneric*>( obj );
+          mg_bytesObj = dynamic_cast<apache::geode::client::ManagedCacheableKeyBytesGeneric*>( obj );
 
         if (mg_obj != nullptr)
         {
@@ -392,10 +392,10 @@ namespace GemStone
       }
 
       generic <class TKey>
-      inline static gemfire::CacheableKey* SafeGenericMKeyConvert( TKey mg_obj )
+      inline static apache::geode::client::CacheableKey* SafeGenericMKeyConvert( TKey mg_obj )
       {
         if (mg_obj == nullptr) return NULL;
-        gemfire::CacheableKey* obj = GemStone::GemFire::Cache::Generic::Serializable::GetUnmanagedValueGeneric<TKey>( mg_obj ).ptr();
+        apache::geode::client::CacheableKey* obj = GemStone::GemFire::Cache::Generic::Serializable::GetUnmanagedValueGeneric<TKey>( mg_obj ).ptr();
         if (obj != nullptr)
         {
           return obj;
@@ -403,9 +403,9 @@ namespace GemStone
         else
         {
           if(!SafeConvertClassGeneric::isAppDomainEnabled)
-            return new gemfire::ManagedCacheableKeyGeneric( SafeUMSerializableConvertGeneric(obj) );
+            return new apache::geode::client::ManagedCacheableKeyGeneric( SafeUMSerializableConvertGeneric(obj) );
           else
-            return new gemfire::ManagedCacheableKeyBytesGeneric( SafeUMSerializableConvertGeneric(obj), true );
+            return new apache::geode::client::ManagedCacheableKeyBytesGeneric( SafeUMSerializableConvertGeneric(obj), true );
         }
       }
 
@@ -414,24 +414,24 @@ namespace GemStone
       {
         if (mg_obj == nullptr) return NULL;
         //for cacheables types
-        //return new gemfire::ManagedCacheableKey(mg_obj, mg_obj->GetHashCode(), mg_obj->ClassId);
+        //return new apache::geode::client::ManagedCacheableKey(mg_obj, mg_obj->GetHashCode(), mg_obj->ClassId);
         {
           if(!SafeConvertClassGeneric::isAppDomainEnabled)
-            return new gemfire::ManagedCacheableKeyGeneric( mg_obj, mg_obj->GetHashCode(), mg_obj->ClassId );
+            return new apache::geode::client::ManagedCacheableKeyGeneric( mg_obj, mg_obj->GetHashCode(), mg_obj->ClassId );
           else
-            return new gemfire::ManagedCacheableKeyBytesGeneric( mg_obj, true );
+            return new apache::geode::client::ManagedCacheableKeyBytesGeneric( mg_obj, true );
         }
       }
 
-      template<typename NativeType> //where NativeType : gemfire::SharedPtr<NativeType>
-      //generic<typename ManagedType> where ManagedType : Internal::SBWrap<gemfire::RegionAttributes>
+      template<typename NativeType> //where NativeType : apache::geode::client::SharedPtr<NativeType>
+      //generic<typename ManagedType> where ManagedType : Internal::SBWrap<apache::geode::client::RegionAttributes>
       inline static NativeType* GetNativePtrFromSBWrap( GemStone::GemFire::Cache::Generic::Internal::SBWrap<NativeType>^ mg_obj )
       {
         return (mg_obj != nullptr ? mg_obj->_NativePtr : NULL);
       }
 
-			 template<typename NativeType> //where NativeType : gemfire::SharedPtr<NativeType>
-      //generic<typename ManagedType> where ManagedType : Internal::SBWrap<gemfire::RegionAttributes>
+			 template<typename NativeType> //where NativeType : apache::geode::client::SharedPtr<NativeType>
+      //generic<typename ManagedType> where ManagedType : Internal::SBWrap<apache::geode::client::RegionAttributes>
 			 inline static NativeType* GetNativePtrFromSBWrapGeneric( GemStone::GemFire::Cache::Generic::Internal::SBWrap<NativeType>^ mg_obj )
       {
         return (mg_obj != nullptr ? mg_obj->_NativePtr : NULL);

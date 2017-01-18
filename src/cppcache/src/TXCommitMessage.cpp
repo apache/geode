@@ -29,7 +29,9 @@
 #include "FarSideEntryOp.hpp"
 #include <vector>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 TXCommitMessage::TXCommitMessage()
 // UNUSED : m_processorId(0)
@@ -100,7 +102,8 @@ m_processorId = -1;
       ClientProxyMembershipID memId1;
       /* adongre
        * CID 28816: Resource leak (RESOURCE_LEAK)
-       * Calling allocation function "gemfire::DataInput::readBytes(signed char
+       * Calling allocation function
+       * "apache::geode::client::DataInput::readBytes(signed char
        * **, int *)" on "bytes".
        * no need to read the bytes, just advance curstor
        * more performant solution
@@ -189,4 +192,6 @@ ops.end() != iter; iter++)
         return events;
 }
 */
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

@@ -25,7 +25,7 @@ extern "C" {
 #include <stdio.h>
 }
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 #ifdef _WIN32
 
@@ -35,11 +35,11 @@ bool Utils::s_setNewAndDelete = false;
 
 void* operator new(size_t size) {
   if (!Utils::s_pNew) {
-    gemfire::setDefaultNewAndDelete();
+    apache::geode::client::setDefaultNewAndDelete();
   }
   void* ret = Utils::s_pNew(size);
   if (ret == NULL) {
-    throw gemfire::OutOfMemoryException(
+    throw apache::geode::client::OutOfMemoryException(
         "Out of memory while executing operator new");
   }
   return ret;

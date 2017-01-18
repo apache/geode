@@ -27,7 +27,7 @@
 #include "MapEntry.hpp"
 #include "RegionInternal.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 TombstoneExpiryHandler::TombstoneExpiryHandler(TombstoneEntryPtr entryPtr,
                                                TombstoneList* tombstoneList,

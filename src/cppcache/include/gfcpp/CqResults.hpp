@@ -27,7 +27,9 @@
 #include "Serializable.hpp"
 #include "CacheableBuiltins.hpp"
 #include "SelectResults.hpp"
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * @class CqResults CqResults.hpp
@@ -36,7 +38,8 @@ namespace gemfire {
  * This will be a StructSet.
  */
 class CPPCACHE_EXPORT CqResults : public SelectResults {};
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_CQRESULTS_H__

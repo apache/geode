@@ -29,7 +29,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 /**
  * @class StructSet StructSet.hpp
  *
@@ -93,7 +95,8 @@ class CPPCACHE_EXPORT StructSet : public CqResults {
    */
   virtual ~StructSet(){};
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_STRUCTSET_H__

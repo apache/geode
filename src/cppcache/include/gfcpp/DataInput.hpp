@@ -37,7 +37,9 @@
 
 #define checkBufferSize(x) _checkBufferSize(x, __LINE__)
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 extern int gf_sprintf(char* buffer, const char* fmt, ...);
 
@@ -628,19 +630,23 @@ class CPPCACHE_EXPORT DataInput {
     } else if (compId == GemfireTypeIds::CacheableNullString) {
       csPtr = CacheableStringPtr(dynamic_cast<CacheableString*>(
           CacheableString::createDeserializable()));
-    } else if (compId == gemfire::GemfireTypeIds::CacheableASCIIString) {
+    } else if (compId ==
+               apache::geode::client::GemfireTypeIds::CacheableASCIIString) {
       csPtr = CacheableStringPtr(dynamic_cast<CacheableString*>(
           CacheableString::createDeserializable()));
       csPtr.ptr()->fromData(*this);
-    } else if (compId == gemfire::GemfireTypeIds::CacheableASCIIStringHuge) {
+    } else if (compId == apache::geode::client::GemfireTypeIds::
+                             CacheableASCIIStringHuge) {
       csPtr = CacheableStringPtr(dynamic_cast<CacheableString*>(
           CacheableString::createDeserializableHuge()));
       csPtr.ptr()->fromData(*this);
-    } else if (compId == gemfire::GemfireTypeIds::CacheableString) {
+    } else if (compId ==
+               apache::geode::client::GemfireTypeIds::CacheableString) {
       csPtr = CacheableStringPtr(dynamic_cast<CacheableString*>(
           CacheableString::createUTFDeserializable()));
       csPtr.ptr()->fromData(*this);
-    } else if (compId == gemfire::GemfireTypeIds::CacheableStringHuge) {
+    } else if (compId ==
+               apache::geode::client::GemfireTypeIds::CacheableStringHuge) {
       csPtr = CacheableStringPtr(dynamic_cast<CacheableString*>(
           CacheableString::createUTFDeserializableHuge()));
       csPtr.ptr()->fromData(*this);
@@ -1068,6 +1074,8 @@ class CPPCACHE_EXPORT DataInput {
   DataInput(const DataInput&);
   DataInput& operator=(const DataInput&);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __GEMFIRE_DATAINPUT_H__

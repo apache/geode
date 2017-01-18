@@ -29,7 +29,9 @@
 #include "PdxType.hpp"
 #include "CacheImpl.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class PdxHelper {
  private:
@@ -76,5 +78,7 @@ class PdxHelper {
 
   static CacheImpl* getCacheImpl();
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif /* PDXHELPER_HPP_ */

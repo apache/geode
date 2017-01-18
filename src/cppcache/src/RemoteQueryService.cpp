@@ -22,7 +22,7 @@
 #include "ThinClientPoolDM.hpp"
 #include "UserAttributes.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 RemoteQueryService::RemoteQueryService(CacheImpl* cptr,
                                        ThinClientPoolDM* poolDM)

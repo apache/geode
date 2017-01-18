@@ -20,7 +20,9 @@
 
 #include <gfcpp/gfcpp_globals.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 template <typename T>
 class DeleteObject {
  private:
@@ -62,6 +64,8 @@ class DeleteArray {
     }
   }
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // #ifndef _GEMFIRE_AUTODELETE_HPP_

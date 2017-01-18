@@ -25,7 +25,9 @@
 #include "SpinLock.hpp"
 #include "MersenneTwister.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace testframework {
 
 class GsRandom {
@@ -86,7 +88,9 @@ class GsRandom {
     * @return the next pseudorandom, uniformly distributed <code>byte</code>
     *         value from this random number generator's sequence.
     */
-  inline uint8_t nextByte() { return static_cast<uint8_t>(singleton->gen.randInt(0xff)); }
+  inline uint8_t nextByte() {
+    return static_cast<uint8_t>(singleton->gen.randInt(0xff));
+  }
 
   /**
     * @param   min the minimum range (inclusive) for the pseudorandom.
@@ -139,7 +143,8 @@ class GsRandom {
 
   /** @brief return random number where: min <= retValue < max */
   static uint32_t random(uint32_t min, uint32_t max) {
-    return static_cast<uint32_t>(GsRandom::getInstance()->nextInt(min, max - 1));
+    return static_cast<uint32_t>(
+        GsRandom::getInstance()->nextInt(min, max - 1));
   }
 
   /** @brief return random number where: 0 <= retValue < max */
@@ -167,7 +172,7 @@ class GsRandom {
 
     for (uint32_t idx = 0; idx < size; idx++) {
       str[idx] = chooseFrom[random(chooseSize)];
-}
+    }
 
     return str;
   }
@@ -186,7 +191,7 @@ class GsRandom {
 
     for (uint32_t idx = 0; idx < size; idx++) {
       buffer[idx] = chooseFrom[random(chooseSize)];
-}
+    }
   }
 
   //  /**
@@ -226,5 +231,7 @@ class GsRandom {
 };
 
 }  // namespace testframework
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // __GS_RANDOM_HPP__

@@ -25,7 +25,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * @cacheserver
@@ -87,6 +89,8 @@ class CPPCACHE_EXPORT CqListener : public SharedBase {
   CqListener(const CacheListener& other);
   void operator=(const CqListener& other);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  //#ifndef __GEMFIRE_CQ_LISTENER_H__

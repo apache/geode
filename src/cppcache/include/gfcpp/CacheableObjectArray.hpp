@@ -25,7 +25,9 @@
 /** @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * Implement an immutable Vector of <code>Cacheable</code> objects
@@ -95,6 +97,8 @@ class CPPCACHE_EXPORT CacheableObjectArray : public Cacheable,
   CacheableObjectArray& operator=(const CacheableObjectArray& other);
   CacheableObjectArray(const CacheableObjectArray& other);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // _GEMFIRE_CACHEABLEOBJECTARRAY_HPP_

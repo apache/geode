@@ -55,7 +55,9 @@
  * When a region is destroyed, it deregisters itself with the EvictionController
  * Format of object that is put into the region map (int size, int numEntries)
  */
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 typedef IntQueue<int64_t> HeapSizeInfoQueue;
 typedef std::vector<std::string> VectorOfString;
@@ -113,5 +115,7 @@ class CPPCACHE_EXPORT EvictionController : public ACE_Task_Base,
   EvictionThread* evictionThreadPtr;
   static const char* NC_EC_Thread;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  //_EVICTIONCONTROLLER_H__

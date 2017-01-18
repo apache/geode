@@ -28,7 +28,9 @@
 #include "TSSTXStateWrapper.hpp"
 #include "TXState.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class TXCleaner {
  public:
@@ -46,6 +48,8 @@ class TXCleaner {
   TXCleaner& operator=(const TXCleaner& other);
   TXCleaner(const TXCleaner& other);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif /* TXCLEANER_HPP_ */

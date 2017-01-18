@@ -19,7 +19,9 @@
 #include "StackFrame.hpp"
 #include <gfcpp/gf_base.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 char* StackFrame::asString() {
   if (m_string[0] == 0) {
     char* tmp_module = m_module;
@@ -36,4 +38,6 @@ char* StackFrame::asString() {
   }
   return m_string;
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

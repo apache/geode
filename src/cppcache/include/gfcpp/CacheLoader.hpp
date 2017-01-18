@@ -27,7 +27,9 @@
 #include "Cacheable.hpp"
 #include "UserData.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * @class CacheLoader CacheLoader.hpp
@@ -93,6 +95,7 @@ class CPPCACHE_EXPORT CacheLoader : public SharedBase {
   CacheLoader(const CacheLoader& other);
   void operator=(const CacheLoader& other);
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // ifndef __GEMFIRE_CACHELOADER_H__

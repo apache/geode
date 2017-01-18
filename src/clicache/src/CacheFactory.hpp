@@ -46,7 +46,7 @@ namespace GemStone
       /// To get an existing unclosed cache instance, use <see cref="CacheFactory.GetInstance" />.
       /// </para>
       /// </remarks>
-      public ref class CacheFactory :public Internal::SBWrap<gemfire::CacheFactory>
+      public ref class CacheFactory :public Internal::SBWrap<apache::geode::client::CacheFactory>
       {
       public:
 
@@ -128,7 +128,7 @@ namespace GemStone
         /// </summary>
         static void SetNewAndDelete()
         {
-          gemfire::setNewAndDelete( & operator new, & operator delete );
+          apache::geode::client::setNewAndDelete( & operator new, & operator delete );
         }
 
         /// <summary>
@@ -592,7 +592,7 @@ namespace GemStone
         /// Private constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-         inline CacheFactory( gemfire::CacheFactory* nativeptr, Properties<String^, String^>^ dsProps )
+         inline CacheFactory( apache::geode::client::CacheFactory* nativeptr, Properties<String^, String^>^ dsProps )
 					 : SBWrap( nativeptr ) 
          { 
             m_dsProps = dsProps;

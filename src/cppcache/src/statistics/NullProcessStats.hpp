@@ -23,7 +23,7 @@
 #include "ProcessStats.hpp"
 #include "HostStatHelper.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 /** @file
  */

@@ -23,7 +23,9 @@
 #include <set>
 #include "ServerLocation.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class ClientReplacementRequest : public ClientConnectionRequest {
  public:
   ClientReplacementRequest(const std::string& serverName,
@@ -38,5 +40,7 @@ class ClientReplacementRequest : public ClientConnectionRequest {
  private:
   const ServerLocation m_serverLocation;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif

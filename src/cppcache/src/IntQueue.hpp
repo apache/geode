@@ -24,7 +24,9 @@
 #include <ace/Guard_T.h>
 #include <ace/Recursive_Thread_Mutex.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 template <class T>
 
@@ -111,6 +113,8 @@ class CPPCACHE_EXPORT IntQueue {
   ACE_Recursive_Thread_Mutex m_mutex;
   ACE_Condition<ACE_Recursive_Thread_Mutex> m_cond;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // !defined (IMPL_INTQUEUE_INCLUDED)

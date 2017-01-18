@@ -23,7 +23,7 @@
 
 #include "PdxClassV1.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace PdxTests;
 
 /************************************************************

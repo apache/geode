@@ -20,7 +20,7 @@
 #include "ThinClientCacheDistributionManager.hpp"
 #include "TcrMessage.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 CqEventImpl::CqEventImpl(CqQueryPtr& cQuery,
                          CqOperation::CqOperationType baseOp,
                          CqOperation::CqOperationType cqOp,

@@ -22,7 +22,9 @@
 #include <gfcpp/CacheAttributes.hpp>
 #include "TcrEndpoint.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class ThinClientRegion;
 class ThinClientHARegion;
@@ -88,7 +90,8 @@ class CPPCACHE_EXPORT TcrHADistributionManager
   friend class ThinClientHARegion;
   friend class TcrConnectionManager;
 };
-
-};  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __TCRHA_DISTRIBUTION_MANAGER_HPP__

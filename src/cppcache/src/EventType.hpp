@@ -17,7 +17,9 @@
 #ifndef _EVENTTYPE_H__
 #define _EVENTTYPE_H__
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 enum EntryEventType {
   BEFORE_CREATE = 0,
   BEFORE_UPDATE,
@@ -37,6 +39,8 @@ enum RegionEventType {
   BEFORE_REGION_CLEAR,
   AFTER_REGION_CLEAR
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // _EVENTTYPE_H__

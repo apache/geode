@@ -25,7 +25,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * GemFireCache represents the singleton cache that must be created
@@ -74,6 +76,7 @@ class CPPCACHE_EXPORT GemFireCache : public RegionService {
   */
   virtual bool getPdxReadSerialized() = 0;
 };
-
-};      // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // ifndef __GEMFIRE_GEMFIRECACHE_H__

@@ -17,7 +17,11 @@
 
 #include <gfcpp/InternalCacheTransactionManager2PC.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 InternalCacheTransactionManager2PC::InternalCacheTransactionManager2PC() {}
 InternalCacheTransactionManager2PC::~InternalCacheTransactionManager2PC() {}
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

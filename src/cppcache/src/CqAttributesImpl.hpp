@@ -29,7 +29,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * @class CqAttributesImpl CqAttributesImpl.hpp
@@ -70,7 +72,8 @@ class CPPCACHE_EXPORT CqAttributesImpl : public CqAttributes {
   bool m_dataPolicyHasBeenSet;
   ACE_Recursive_Thread_Mutex m_mutex;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_CQ_ATTRIBUTES_IMPL_H__

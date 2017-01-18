@@ -18,7 +18,9 @@
 #define __THINCLIENT_POOL_STICKY_HA_DM__
 #include "ThinClientPoolHADM.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class ThinClientPoolStickyHADM : public ThinClientPoolHADM {
  public:
   ThinClientPoolStickyHADM(const char* name, PoolAttributesPtr poolAttrs,
@@ -49,5 +51,7 @@ isTransaction = false );
   // ThinClientStickyManager* m_manager;
 };
 typedef SharedPtr<ThinClientPoolStickyHADM> ThinClientPoolStickyHADMPtr;
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif

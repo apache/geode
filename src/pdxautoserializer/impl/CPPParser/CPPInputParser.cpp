@@ -35,7 +35,9 @@ void process_line_directive(const char* includedFile,
 
 ANTLR_USING_NAMESPACE(antlr);
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace pdx_auto_serializer {
 /** The name of this module to be used for logging. */
 static std::string ModuleName = "CPPInputParser";
@@ -312,4 +314,6 @@ InputParser* CPPInputParser::create() { return new CPPInputParser(); }
 
 CPPInputParser::~CPPInputParser() {}
 }  // namespace pdx_auto_serializer
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

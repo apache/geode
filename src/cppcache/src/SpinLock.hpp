@@ -25,7 +25,9 @@
 #define GF_SAFELOCK 0
 #endif
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * For an object that needs to be protected by spinlock, declare a field of type
@@ -110,6 +112,8 @@ class SpinLockGuard {
 CPPCACHE_EXPORT void* testSpinLockCreate();
 CPPCACHE_EXPORT void testSpinLockAcquire(void* lock);
 CPPCACHE_EXPORT void testSpinLockRelease(void* lock);
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

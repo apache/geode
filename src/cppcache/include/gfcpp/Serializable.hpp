@@ -24,7 +24,9 @@
 #include "gfcpp_globals.hpp"
 #include "gf_types.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class DataOutput;
 class DataInput;
@@ -137,9 +139,9 @@ class CPPCACHE_EXPORT Serializable : public SharedBase {
   /** Factory method that creates the Serializable object that matches the type
    * of value.
    * For customer defined derivations of Serializable, the method
-   * gemfire::createValue
+   * apache::geode::client::createValue
    * may be overloaded. For pointer types (e.g. char*) the method
-   * gemfire::createValueArr may be overloaded.
+   * apache::geode::client::createValueArr may be overloaded.
    */
   template <class PRIM>
   inline static SerializablePtr create(const PRIM value);
@@ -160,7 +162,8 @@ class CPPCACHE_EXPORT Serializable : public SharedBase {
   Serializable(const Serializable& other);
   void operator=(const Serializable& other);
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_SERIALIZABLE_H__

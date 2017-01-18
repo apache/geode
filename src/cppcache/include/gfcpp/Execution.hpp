@@ -34,7 +34,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 /**
  * @class Execution Execution.hpp
  * gathers results from function execution
@@ -105,5 +107,7 @@ class CPPCACHE_EXPORT Execution : public SharedBase {
                                      CacheablePtr& args, ResultCollectorPtr& rs,
                                      const char* func, uint32_t timeout) = 0;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  //__GEMFIRE_EXECUTION_H__

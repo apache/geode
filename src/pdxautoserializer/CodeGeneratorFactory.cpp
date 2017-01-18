@@ -21,7 +21,9 @@
 //#include "impl/CPPCLICodeGenerator.hpp"
 //#include "impl/CSharpCodeGenerator.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace pdx_auto_serializer {
 CodeGeneratorFactory::CodeGeneratorFactory() {
   // Register the available code generators here.
@@ -53,4 +55,6 @@ StringVector CodeGeneratorFactory::getGenerators() const {
 
 CodeGeneratorFactory::~CodeGeneratorFactory() { m_generatorMap.clear(); }
 }  // namespace pdx_auto_serializer
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

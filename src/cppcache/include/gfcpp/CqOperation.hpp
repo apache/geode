@@ -23,7 +23,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 /**
  * @class Operation CqOperation.hpp
  * Enumerated type for Operation actions.
@@ -43,5 +45,7 @@ class CPPCACHE_EXPORT CqOperation {
     OP_TYPE_MARKER = 32
   } CqOperationType;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // ifndef __GEMFIRE_CQ_OPERATION_H__

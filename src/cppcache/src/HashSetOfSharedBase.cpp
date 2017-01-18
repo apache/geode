@@ -17,7 +17,9 @@
 
 #include <gfcpp/HashSetOfSharedBase.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 // Iterator methods
 
@@ -160,4 +162,6 @@ HashSetOfSharedBase::~HashSetOfSharedBase() {
   m_stdHashSet->clear();
   delete m_stdHashSet;
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

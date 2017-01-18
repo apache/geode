@@ -22,7 +22,9 @@
 #include <ace/ACE.h>
 #include <ace/OS.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 void CacheableFileName::toData(DataOutput& output) const {
   output.write(m_type);
@@ -65,4 +67,6 @@ uint32_t CacheableFileName::hashcode() const {
   }
   return m_hashcode;
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

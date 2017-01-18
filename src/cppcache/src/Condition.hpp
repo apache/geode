@@ -21,7 +21,9 @@
 #include <ace/Condition_Recursive_Thread_Mutex.h>
 #include <ace/OS_NS_sys_time.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * Condition wrapper when you want an absolute signal or timeout condition.
@@ -68,6 +70,8 @@ class CPPCACHE_EXPORT Condition {
   /** Must be called with the mutex held. */
   inline void reset() { m_signaled = false; }
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

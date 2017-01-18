@@ -31,8 +31,8 @@
    thrown and no data in local region.
    4. test also check the localput operation.
 */
-using namespace gemfire::testframework::security;
-using namespace gemfire;
+using namespace apache::geode::client::testframework::security;
+using namespace apache::geode::client;
 
 TallyListenerPtr regListener;
 TallyWriterPtr regWriter;
@@ -85,20 +85,20 @@ opCodeList::value_type tmpRArr[] = {OP_GET, OP_REGISTER_INTEREST,
                                     OP_UNREGISTER_INTEREST, OP_KEY_SET,
                                     OP_CONTAINS_KEY};
 
-#define HANDLE_NOT_AUTHORIZED_EXCEPTION            \
-  catch (const gemfire::NotAuthorizedException&) { \
-    LOG("NotAuthorizedException Caught");          \
-    LOG("Success");                                \
-  }                                                \
-  catch (const gemfire::Exception& other) {        \
-    other.printStackTrace();                       \
-    FAIL(other.getMessage());                      \
+#define HANDLE_NOT_AUTHORIZED_EXCEPTION                          \
+  catch (const apache::geode::client::NotAuthorizedException&) { \
+    LOG("NotAuthorizedException Caught");                        \
+    LOG("Success");                                              \
+  }                                                              \
+  catch (const apache::geode::client::Exception& other) {        \
+    other.printStackTrace();                                     \
+    FAIL(other.getMessage());                                    \
   }
 
-#define HANDLE_CACHEWRITER_EXCEPTION             \
-  catch (const gemfire::CacheWriterException&) { \
-    LOG("CacheWriterException  Caught");         \
-    LOG("Success");                              \
+#define HANDLE_CACHEWRITER_EXCEPTION                           \
+  catch (const apache::geode::client::CacheWriterException&) { \
+    LOG("CacheWriterException  Caught");                       \
+    LOG("Success");                                            \
   }
 
 #define ADMIN_CLIENT s1p1

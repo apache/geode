@@ -50,7 +50,7 @@ namespace GemStone
       /// This class is intentionally not thread safe.
       /// </summary>
       public ref class DataOutput sealed
-				: public Generic::Internal::UMWrap<gemfire::DataOutput>
+				: public Generic::Internal::UMWrap<apache::geode::client::DataOutput>
       {
       private:
         int32_t m_cursor;
@@ -64,7 +64,7 @@ namespace GemStone
         /// Default constructor.
         /// </summary>
         inline DataOutput( )
-          : UMWrap( new gemfire::DataOutput( ), true )
+          : UMWrap( new apache::geode::client::DataOutput( ), true )
         { 
           m_isManagedObject = true;
           m_cursor = 0;
@@ -564,7 +564,7 @@ namespace GemStone
               m_bytes = const_cast<uint8_t *>( NativePtr->getCursor());
               m_remainingBufferLength = (int32_t)NativePtr->getRemainingBufferLength();
             }
-            catch(gemfire::OutOfMemoryException ex )
+            catch(apache::geode::client::OutOfMemoryException ex )
             {
               throw gcnew OutOfMemoryException(ex);
             }            
@@ -593,7 +593,7 @@ namespace GemStone
         /// Internal constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline DataOutput( gemfire::DataOutput* nativeptr, bool managedObject )
+        inline DataOutput( apache::geode::client::DataOutput* nativeptr, bool managedObject )
           : UMWrap( nativeptr, false )
         {
           m_isManagedObject = managedObject;

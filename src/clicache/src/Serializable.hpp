@@ -44,13 +44,13 @@ namespace GemStone
         interface class IPdxSerializer;
       /// <summary>
       /// Signature of native function delegates passed to native
-      /// <c>gemfire::Serializable::registerType</c>.
+      /// <c>apache::geode::client::Serializable::registerType</c>.
       /// Such functions should return an empty instance of the type they
       /// represent. The instance will typically be initialized immediately
       /// after creation by a call to native
-      /// <c>gemfire::Serializable::fromData</c>.
+      /// <c>apache::geode::client::Serializable::fromData</c>.
       /// </summary>
-      delegate gemfire::Serializable* TypeFactoryNativeMethodGeneric();
+      delegate apache::geode::client::Serializable* TypeFactoryNativeMethodGeneric();
 
       /// <summary>
       /// Signature of function delegates passed to
@@ -63,13 +63,13 @@ namespace GemStone
       /// </summary>
       public delegate GemStone::GemFire::Cache::Generic::IGFSerializable^ TypeFactoryMethodGeneric();
       /// <summary>
-      /// Delegate to wrap a native <c>gemfire::Serializable</c> type.
+      /// Delegate to wrap a native <c>apache::geode::client::Serializable</c> type.
       /// </summary>
       /// <remarks>
       /// This delegate should return an object of type <c>IGFSerializable</c>
       /// given a native object.
       /// </remarks>
-      delegate GemStone::GemFire::Cache::Generic::IGFSerializable^ WrapperDelegateGeneric(gemfire::Serializable* obj);
+      delegate GemStone::GemFire::Cache::Generic::IGFSerializable^ WrapperDelegateGeneric(apache::geode::client::Serializable* obj);
 
 			/// <summary>
       /// Signature of function delegates passed to
@@ -81,11 +81,11 @@ namespace GemStone
       public delegate GemStone::GemFire::Cache::Generic::IPdxSerializable^ PdxTypeFactoryMethod();
       
       /// <summary>
-      /// This class wraps the native C++ <c>gemfire::Serializable</c> objects
+      /// This class wraps the native C++ <c>apache::geode::client::Serializable</c> objects
       /// as managed <see cref="IGFSerializable" /> objects.
       /// </summary>
       public ref class Serializable
-        : public GemStone::GemFire::Cache::Generic::Internal::SBWrap<gemfire::Serializable>,
+        : public GemStone::GemFire::Cache::Generic::Internal::SBWrap<apache::geode::client::Serializable>,
         public GemStone::GemFire::Cache::Generic::IGFSerializable
       {
       public:
@@ -315,81 +315,81 @@ namespace GemStone
          static Dictionary<String^, PdxTypeFactoryMethod^>^ PdxDelegateMap =
           gcnew Dictionary<String^, PdxTypeFactoryMethod^>();
        
-        static String^ GetString(gemfire::CacheableStringPtr cStr);//gemfire::CacheableString*
+        static String^ GetString(apache::geode::client::CacheableStringPtr cStr);//apache::geode::client::CacheableString*
         
         // These are the new static methods to get/put data from c++
 
         //byte
-        static Byte getByte(gemfire::SerializablePtr nativeptr);
+        static Byte getByte(apache::geode::client::SerializablePtr nativeptr);
         
-        static gemfire::CacheableKeyPtr getCacheableByte(SByte val);
+        static apache::geode::client::CacheableKeyPtr getCacheableByte(SByte val);
         
         //boolean
-        static bool getBoolean(gemfire::SerializablePtr nativeptr);
+        static bool getBoolean(apache::geode::client::SerializablePtr nativeptr);
         
-        static gemfire::CacheableKeyPtr getCacheableBoolean(bool val);
+        static apache::geode::client::CacheableKeyPtr getCacheableBoolean(bool val);
         
         //widechar
-        static Char getChar(gemfire::SerializablePtr nativeptr);
+        static Char getChar(apache::geode::client::SerializablePtr nativeptr);
         
-        static gemfire::CacheableKeyPtr getCacheableWideChar(Char val);
+        static apache::geode::client::CacheableKeyPtr getCacheableWideChar(Char val);
         
         //double
-        static double getDouble(gemfire::SerializablePtr nativeptr);
+        static double getDouble(apache::geode::client::SerializablePtr nativeptr);
         
-        static gemfire::CacheableKeyPtr getCacheableDouble(double val);
+        static apache::geode::client::CacheableKeyPtr getCacheableDouble(double val);
         
         //float
-        static float getFloat(gemfire::SerializablePtr nativeptr);
+        static float getFloat(apache::geode::client::SerializablePtr nativeptr);
         
-        static gemfire::CacheableKeyPtr getCacheableFloat(float val);
+        static apache::geode::client::CacheableKeyPtr getCacheableFloat(float val);
         
         //int16
-        static int16 getInt16(gemfire::SerializablePtr nativeptr);
+        static int16 getInt16(apache::geode::client::SerializablePtr nativeptr);
         
-        static gemfire::CacheableKeyPtr getCacheableInt16(int val);
+        static apache::geode::client::CacheableKeyPtr getCacheableInt16(int val);
         
         //int32
-        static int32 getInt32(gemfire::SerializablePtr nativeptr);
+        static int32 getInt32(apache::geode::client::SerializablePtr nativeptr);
         
-        static gemfire::CacheableKeyPtr getCacheableInt32(int32 val);
+        static apache::geode::client::CacheableKeyPtr getCacheableInt32(int32 val);
         
         //int64
-        static int64 getInt64(gemfire::SerializablePtr nativeptr);
+        static int64 getInt64(apache::geode::client::SerializablePtr nativeptr);
         
-        static gemfire::CacheableKeyPtr getCacheableInt64(int64 val);
+        static apache::geode::client::CacheableKeyPtr getCacheableInt64(int64 val);
         
         //cacheable ascii string
-        static String^ getASCIIString(gemfire::SerializablePtr nativeptr);        
+        static String^ getASCIIString(apache::geode::client::SerializablePtr nativeptr);        
 
-        static gemfire::CacheableKeyPtr getCacheableASCIIString(String^ val);
+        static apache::geode::client::CacheableKeyPtr getCacheableASCIIString(String^ val);
 
-        static gemfire::CacheableKeyPtr getCacheableASCIIString2(String^ val);
+        static apache::geode::client::CacheableKeyPtr getCacheableASCIIString2(String^ val);
         
         //cacheable ascii string huge
-        static String^ getASCIIStringHuge(gemfire::SerializablePtr nativeptr);
+        static String^ getASCIIStringHuge(apache::geode::client::SerializablePtr nativeptr);
         
-        static gemfire::CacheableKeyPtr getCacheableASCIIStringHuge(String^ val);        
+        static apache::geode::client::CacheableKeyPtr getCacheableASCIIStringHuge(String^ val);        
 
         //cacheable string
-        static String^ getUTFString(gemfire::SerializablePtr nativeptr);        
+        static String^ getUTFString(apache::geode::client::SerializablePtr nativeptr);        
 
-        static gemfire::CacheableKeyPtr getCacheableUTFString(String^ val);
+        static apache::geode::client::CacheableKeyPtr getCacheableUTFString(String^ val);
         
 
         //cacheable string huge
-        static String^ getUTFStringHuge(gemfire::SerializablePtr nativeptr);
+        static String^ getUTFStringHuge(apache::geode::client::SerializablePtr nativeptr);
         
 
-        static gemfire::CacheableKeyPtr getCacheableUTFStringHuge(String^ val);
+        static apache::geode::client::CacheableKeyPtr getCacheableUTFStringHuge(String^ val);
         
 
-       static gemfire::CacheableStringPtr GetCacheableString(String^ value);       
+       static apache::geode::client::CacheableStringPtr GetCacheableString(String^ value);       
 
-       static gemfire::CacheableStringPtr GetCacheableString2(String^ value); 
+       static apache::geode::client::CacheableStringPtr GetCacheableString2(String^ value); 
 
        /*
-        static String^ GetString(gemfire::CacheableStringPtr cStr)//gemfire::CacheableString*
+        static String^ GetString(apache::geode::client::CacheableStringPtr cStr)//apache::geode::client::CacheableString*
         {
           if (cStr == NULLPTR) {
             return nullptr;
@@ -416,14 +416,14 @@ namespace GemStone
         /// Default constructor.
         /// </summary>
         inline GemStone::GemFire::Cache::Generic::Serializable()
-          : GemStone::GemFire::Cache::Generic::Internal::SBWrap<gemfire::Serializable>() { }
+          : GemStone::GemFire::Cache::Generic::Internal::SBWrap<apache::geode::client::Serializable>() { }
 
         /// <summary>
         /// Internal constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline GemStone::GemFire::Cache::Generic::Serializable(gemfire::Serializable* nativeptr)
-          : Generic::Internal::SBWrap<gemfire::Serializable>(nativeptr) { }
+        inline GemStone::GemFire::Cache::Generic::Serializable(apache::geode::client::Serializable* nativeptr)
+          : Generic::Internal::SBWrap<apache::geode::client::Serializable>(nativeptr) { }
 
         /// <summary>
         /// Register an instance factory method for a given type and typeId.
@@ -447,20 +447,20 @@ namespace GemStone
         static void UnregisterTypeGeneric(Byte typeId);
 
         generic<class TValue>
-        static TValue GetManagedValueGeneric(gemfire::SerializablePtr val);
+        static TValue GetManagedValueGeneric(apache::geode::client::SerializablePtr val);
 
         generic<class TKey>
-        static gemfire::CacheableKeyPtr GetUnmanagedValueGeneric(TKey key);
+        static apache::geode::client::CacheableKeyPtr GetUnmanagedValueGeneric(TKey key);
 
         generic<class TKey>
-        static gemfire::CacheableKeyPtr GetUnmanagedValueGeneric(TKey key, bool isAciiChar);
+        static apache::geode::client::CacheableKeyPtr GetUnmanagedValueGeneric(TKey key, bool isAciiChar);
 
         generic<class TKey>
-        static gemfire::CacheableKeyPtr GetUnmanagedValueGeneric(
+        static apache::geode::client::CacheableKeyPtr GetUnmanagedValueGeneric(
           Type^ managedType, TKey key);
 
         generic<class TKey>
-        static gemfire::CacheableKeyPtr GetUnmanagedValueGeneric(
+        static apache::geode::client::CacheableKeyPtr GetUnmanagedValueGeneric(
           Type^ managedType, TKey key, bool isAsciiChar);
 
         /// <summary>
@@ -484,7 +484,7 @@ namespace GemStone
         /// Note the order of preserveSB() and releaseSB(). This handles the
         /// corner case when <c>m_nativeptr</c> is same as <c>nativeptr</c>.
         /// </remarks>
-        inline void AssignSP(gemfire::Serializable* nativeptr)
+        inline void AssignSP(apache::geode::client::Serializable* nativeptr)
         {
           AssignPtr(nativeptr);
         }
@@ -492,7 +492,7 @@ namespace GemStone
         /// <summary>
         /// Used to assign the native Serializable pointer to a new object.
         /// </summary>
-        inline void SetSP(gemfire::Serializable* nativeptr)
+        inline void SetSP(apache::geode::client::Serializable* nativeptr)
         {
           if (nativeptr != nullptr) {
             nativeptr->preserveSB();
@@ -609,7 +609,7 @@ namespace GemStone
 
         /// <summary>
         /// Static method to register a managed wrapper for a native
-        /// <c>gemfire::Serializable</c> type.
+        /// <c>apache::geode::client::Serializable</c> type.
         /// </summary>
         /// <param name="wrapperMethod">
         /// A factory delegate of the managed wrapper class that returns the
@@ -631,7 +631,7 @@ namespace GemStone
         /// Static method to lookup the wrapper delegate for a given typeId.
         /// </summary>
         /// <param name="typeId">
-        /// The typeId of the native <c>gemfire::Serializable</c> type.
+        /// The typeId of the native <c>apache::geode::client::Serializable</c> type.
         /// </param>
         /// <returns>
         /// If a managed wrapper is registered for the given typeId then the
@@ -652,53 +652,53 @@ namespace GemStone
 
           {
           Dictionary<Object^, Object^>^ dic = gcnew Dictionary<Object^, Object^>();
-          ManagedTypeMappingGeneric[dic->GetType()] = gemfire::GemfireTypeIds::CacheableHashMap;
-          ManagedTypeMappingGeneric[dic->GetType()->GetGenericTypeDefinition()] = gemfire::GemfireTypeIds::CacheableHashMap;
+          ManagedTypeMappingGeneric[dic->GetType()] = apache::geode::client::GemfireTypeIds::CacheableHashMap;
+          ManagedTypeMappingGeneric[dic->GetType()->GetGenericTypeDefinition()] = apache::geode::client::GemfireTypeIds::CacheableHashMap;
           }
 
           {
           System::Collections::ArrayList^ arr = gcnew System::Collections::ArrayList();
-          ManagedTypeMappingGeneric[arr->GetType()] = gemfire::GemfireTypeIds::CacheableVector;
+          ManagedTypeMappingGeneric[arr->GetType()] = apache::geode::client::GemfireTypeIds::CacheableVector;
           }
 		  
           {
           System::Collections::Generic::LinkedList<Object^>^ linketList = gcnew  System::Collections::Generic::LinkedList<Object^>();
-          ManagedTypeMappingGeneric[linketList->GetType()] = gemfire::GemfireTypeIds::CacheableLinkedList;
-          ManagedTypeMappingGeneric[linketList->GetType()->GetGenericTypeDefinition()] = gemfire::GemfireTypeIds::CacheableLinkedList;
+          ManagedTypeMappingGeneric[linketList->GetType()] = apache::geode::client::GemfireTypeIds::CacheableLinkedList;
+          ManagedTypeMappingGeneric[linketList->GetType()->GetGenericTypeDefinition()] = apache::geode::client::GemfireTypeIds::CacheableLinkedList;
           }
 		  
           {
           System::Collections::Generic::IList<Object^>^ iList = gcnew System::Collections::Generic::List<Object^>();
-          ManagedTypeMappingGeneric[iList->GetType()] = gemfire::GemfireTypeIds::CacheableArrayList;
-          ManagedTypeMappingGeneric[iList->GetType()->GetGenericTypeDefinition()] = gemfire::GemfireTypeIds::CacheableArrayList;
+          ManagedTypeMappingGeneric[iList->GetType()] = apache::geode::client::GemfireTypeIds::CacheableArrayList;
+          ManagedTypeMappingGeneric[iList->GetType()->GetGenericTypeDefinition()] = apache::geode::client::GemfireTypeIds::CacheableArrayList;
           }
 
           //TODO: Linked list, non generic stack, some other map types and see if more
 
           {
             System::Collections::Generic::Stack<Object^>^ stack = gcnew System::Collections::Generic::Stack<Object^>();
-            ManagedTypeMappingGeneric[stack->GetType()] = gemfire::GemfireTypeIds::CacheableStack;
-            ManagedTypeMappingGeneric[stack->GetType()->GetGenericTypeDefinition()] = gemfire::GemfireTypeIds::CacheableStack;
+            ManagedTypeMappingGeneric[stack->GetType()] = apache::geode::client::GemfireTypeIds::CacheableStack;
+            ManagedTypeMappingGeneric[stack->GetType()->GetGenericTypeDefinition()] = apache::geode::client::GemfireTypeIds::CacheableStack;
           }
           {
-            ManagedTypeMappingGeneric[SByte::typeid] = gemfire::GemfireTypeIds::CacheableByte;
-            ManagedTypeMappingGeneric[Boolean::typeid] = gemfire::GemfireTypeIds::CacheableBoolean;
-            ManagedTypeMappingGeneric[Char::typeid] = gemfire::GemfireTypeIds::CacheableWideChar;
-            ManagedTypeMappingGeneric[Double::typeid] = gemfire::GemfireTypeIds::CacheableDouble;
-            ManagedTypeMappingGeneric[String::typeid] = gemfire::GemfireTypeIds::CacheableASCIIString;
-            ManagedTypeMappingGeneric[float::typeid] = gemfire::GemfireTypeIds::CacheableFloat;
-            ManagedTypeMappingGeneric[Int16::typeid] = gemfire::GemfireTypeIds::CacheableInt16;
-            ManagedTypeMappingGeneric[Int32::typeid] = gemfire::GemfireTypeIds::CacheableInt32;
-            ManagedTypeMappingGeneric[Int64::typeid] = gemfire::GemfireTypeIds::CacheableInt64;
-            ManagedTypeMappingGeneric[Type::GetType("System.Byte[]")] = gemfire::GemfireTypeIds::CacheableBytes;
-            ManagedTypeMappingGeneric[Type::GetType("System.Double[]")] = gemfire::GemfireTypeIds::CacheableDoubleArray;
-            ManagedTypeMappingGeneric[Type::GetType("System.Single[]")] = gemfire::GemfireTypeIds::CacheableFloatArray;
-            ManagedTypeMappingGeneric[Type::GetType("System.Int16[]")] = gemfire::GemfireTypeIds::CacheableInt16Array;
-            ManagedTypeMappingGeneric[Type::GetType("System.Int32[]")] = gemfire::GemfireTypeIds::CacheableInt32Array;
-            ManagedTypeMappingGeneric[Type::GetType("System.Int64[]")] = gemfire::GemfireTypeIds::CacheableInt64Array;
-            ManagedTypeMappingGeneric[Type::GetType("System.String[]")] = gemfire::GemfireTypeIds::CacheableStringArray;
-            ManagedTypeMappingGeneric[Type::GetType("System.DateTime")] = gemfire::GemfireTypeIds::CacheableDate;
-            ManagedTypeMappingGeneric[Type::GetType("System.Collections.Hashtable")] = gemfire::GemfireTypeIds::CacheableHashTable;
+            ManagedTypeMappingGeneric[SByte::typeid] = apache::geode::client::GemfireTypeIds::CacheableByte;
+            ManagedTypeMappingGeneric[Boolean::typeid] = apache::geode::client::GemfireTypeIds::CacheableBoolean;
+            ManagedTypeMappingGeneric[Char::typeid] = apache::geode::client::GemfireTypeIds::CacheableWideChar;
+            ManagedTypeMappingGeneric[Double::typeid] = apache::geode::client::GemfireTypeIds::CacheableDouble;
+            ManagedTypeMappingGeneric[String::typeid] = apache::geode::client::GemfireTypeIds::CacheableASCIIString;
+            ManagedTypeMappingGeneric[float::typeid] = apache::geode::client::GemfireTypeIds::CacheableFloat;
+            ManagedTypeMappingGeneric[Int16::typeid] = apache::geode::client::GemfireTypeIds::CacheableInt16;
+            ManagedTypeMappingGeneric[Int32::typeid] = apache::geode::client::GemfireTypeIds::CacheableInt32;
+            ManagedTypeMappingGeneric[Int64::typeid] = apache::geode::client::GemfireTypeIds::CacheableInt64;
+            ManagedTypeMappingGeneric[Type::GetType("System.Byte[]")] = apache::geode::client::GemfireTypeIds::CacheableBytes;
+            ManagedTypeMappingGeneric[Type::GetType("System.Double[]")] = apache::geode::client::GemfireTypeIds::CacheableDoubleArray;
+            ManagedTypeMappingGeneric[Type::GetType("System.Single[]")] = apache::geode::client::GemfireTypeIds::CacheableFloatArray;
+            ManagedTypeMappingGeneric[Type::GetType("System.Int16[]")] = apache::geode::client::GemfireTypeIds::CacheableInt16Array;
+            ManagedTypeMappingGeneric[Type::GetType("System.Int32[]")] = apache::geode::client::GemfireTypeIds::CacheableInt32Array;
+            ManagedTypeMappingGeneric[Type::GetType("System.Int64[]")] = apache::geode::client::GemfireTypeIds::CacheableInt64Array;
+            ManagedTypeMappingGeneric[Type::GetType("System.String[]")] = apache::geode::client::GemfireTypeIds::CacheableStringArray;
+            ManagedTypeMappingGeneric[Type::GetType("System.DateTime")] = apache::geode::client::GemfireTypeIds::CacheableDate;
+            ManagedTypeMappingGeneric[Type::GetType("System.Collections.Hashtable")] = apache::geode::client::GemfireTypeIds::CacheableHashTable;
           }
         }
       };

@@ -25,7 +25,9 @@
 #define GF_TRACK_MAX 4
 #define GF_UPDATE_MAX 8
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 // this class encapsulates the common functionality of the MapEntryT<>
 // generic template class and its specializations
 template <typename TBase, int NUM_TRACKERS, int UPDATE_COUNT>
@@ -284,6 +286,8 @@ template <typename TBase, int UPDATE_COUNT>
 inline int MapEntryST<TBase, 0, UPDATE_COUNT>::incUpdateCount(TBase* loc) {
   return UPDATE_COUNT;
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __GEMFIRE_IMPL_MAPENTRY_T_HPP__

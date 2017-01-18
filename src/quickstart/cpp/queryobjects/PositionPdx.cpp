@@ -19,7 +19,7 @@
 #include <cwchar>
 #include <wchar.h>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace testobject;
 
 int32_t PositionPdx::cnt = 0;

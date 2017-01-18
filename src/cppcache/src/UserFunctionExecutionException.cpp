@@ -16,7 +16,9 @@
  */
 #include <gfcpp/UserFunctionExecutionException.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 void UserFunctionExecutionException::toData(DataOutput& output) const {
   throw IllegalStateException(
@@ -48,4 +50,6 @@ int8_t UserFunctionExecutionException::typeId() const {
 UserFunctionExecutionException::UserFunctionExecutionException(
     CacheableStringPtr msg)
     : m_message(msg) {}
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

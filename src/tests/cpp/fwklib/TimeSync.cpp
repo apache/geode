@@ -36,8 +36,8 @@
 #include <arpa/inet.h>
 #endif
 
-using namespace gemfire;
-using namespace gemfire::testframework;
+using namespace apache::geode::client;
+using namespace apache::geode::client::testframework;
 
 // Our configuration parameters
 #define TIME_SYNC_ADDR "224.0.37.37"

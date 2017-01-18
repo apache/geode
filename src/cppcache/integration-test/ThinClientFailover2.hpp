@@ -27,7 +27,7 @@
 
 #include "CacheHelper.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace test;
 /*
  * This test for client failover with client notification.

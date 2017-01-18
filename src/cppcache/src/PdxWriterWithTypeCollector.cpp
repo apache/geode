@@ -27,7 +27,9 @@
 #include "PdxTypes.hpp"
 #include <gfcpp/PdxFieldTypes.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 PdxWriterWithTypeCollector::PdxWriterWithTypeCollector() {}
 
@@ -329,4 +331,6 @@ PdxWriterPtr PdxWriterWithTypeCollector::markIdentityField(
   pft->setIdentityField(true);
   return PdxWriterPtr(this);
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

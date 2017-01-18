@@ -18,7 +18,7 @@
 #include <gfcpp/CacheStatistics.hpp>
 #include <HostAsm.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 CacheStatistics::CacheStatistics() {
   m_lastModifiedTime = 0;

@@ -17,11 +17,15 @@
 #include <gfcpp/PartitionResolver.hpp>
 #include <gfcpp/EntryEvent.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 PartitionResolver::PartitionResolver() {}
 
 PartitionResolver::~PartitionResolver() {}
 
 const char* PartitionResolver::getName() { return "PartitionResolver"; }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

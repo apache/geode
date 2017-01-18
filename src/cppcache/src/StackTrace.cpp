@@ -30,7 +30,9 @@
 #include <ace/Recursive_Thread_Mutex.h>
 #include <ace/Guard_T.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 ACE_Recursive_Thread_Mutex lockFrame;
 StackTrace::StackTrace() {
   addFrame(m_frames);
@@ -85,7 +87,10 @@ void StackTrace::addFrame(std::list<std::string>& frames) {
   }
   free(symbol);
 }
-}
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
+
 
 #elif defined(_LINUX)
 #include <execinfo.h>
@@ -93,7 +98,9 @@ void StackTrace::addFrame(std::list<std::string>& frames) {
 #include <stdio.h>
 #include <stdlib.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 StackTrace::StackTrace() {
   void* nativetrace_array[GF_TRACE_LEN];
@@ -104,14 +111,19 @@ StackTrace::StackTrace() {
   }
   free(symbols);
 }
-}
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
+
 #elif defined(_SOLARIS)
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <ucontext.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 StackTrace::StackTrace() {
   void* nativetrace_array[GF_TRACE_LEN];
   // NOT YET IMPLEMENTED
@@ -121,11 +133,15 @@ StackTrace::StackTrace() {
   }
   */
 }
-}
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #elif defined(_MACOSX)
 #include <execinfo.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 StackTrace::StackTrace() {
   void* nativetrace_array[GF_TRACE_LEN];
   m_size = backtrace(nativetrace_array, GF_TRACE_LEN);
@@ -135,13 +151,17 @@ StackTrace::StackTrace() {
   }
   free(symbols);
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #else
 #error porting error
 #endif
 
 #ifndef _WIN32
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 StackTrace::~StackTrace() {}
 void StackTrace::addFrame(const char* line, int i) { m_frames[i].init(line); }
 
@@ -180,5 +200,7 @@ void StackTrace::getString(std::string& tracestring) const {
   }
 }
 #endif
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif

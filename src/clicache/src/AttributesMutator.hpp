@@ -54,7 +54,7 @@ namespace GemStone
       /// <seealso cref="AttributesFactory" />
       generic<class TKey, class TValue>
       public ref class AttributesMutator sealed
-        : public Internal::SBWrap<gemfire::AttributesMutator>
+        : public Internal::SBWrap<apache::geode::client::AttributesMutator>
       {
       public:
 
@@ -242,7 +242,7 @@ namespace GemStone
         /// <returns>
         /// The managed wrapper object; null if the native pointer is null.
         /// </returns>
-        inline static AttributesMutator<TKey, TValue>^ Create( gemfire::AttributesMutator* nativeptr )
+        inline static AttributesMutator<TKey, TValue>^ Create( apache::geode::client::AttributesMutator* nativeptr )
         {
           return ( nativeptr != nullptr ?
             gcnew AttributesMutator<TKey, TValue>( nativeptr ) : nullptr );
@@ -255,7 +255,7 @@ namespace GemStone
         /// Private constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline AttributesMutator<TKey, TValue>( gemfire::AttributesMutator* nativeptr )
+        inline AttributesMutator<TKey, TValue>( apache::geode::client::AttributesMutator* nativeptr )
           : SBWrap( nativeptr ) { }
       };
 

@@ -37,7 +37,7 @@ namespace GemStone
       public interface class IPartitionResolverProxy
       {
       public:
-        gemfire::CacheableKeyPtr getRoutingObject(const gemfire::EntryEvent& ev);
+        apache::geode::client::CacheableKeyPtr getRoutingObject(const apache::geode::client::EntryEvent& ev);
         const char * getName();
       };
 
@@ -55,7 +55,7 @@ namespace GemStone
             m_resolver = resolver;
           }
 
-          virtual gemfire::CacheableKeyPtr getRoutingObject(const gemfire::EntryEvent& ev)
+          virtual apache::geode::client::CacheableKeyPtr getRoutingObject(const apache::geode::client::EntryEvent& ev)
           {
             EntryEvent<TKey, TValue> gevent(&ev);
 						Object^ groutingobject = m_resolver->GetRoutingObject(%gevent);

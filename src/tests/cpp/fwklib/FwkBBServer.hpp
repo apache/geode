@@ -35,7 +35,9 @@
 
 // ----------------------------------------------------------------------------
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace testframework {
 
 // ----------------------------------------------------------------------------
@@ -216,6 +218,8 @@ class BBProcessor : public ServiceTask {
 };
 
 }  // namespace  testframework
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __FWK_BB_SERVER_HPP__

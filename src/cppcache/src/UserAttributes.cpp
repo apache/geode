@@ -17,7 +17,7 @@
 #include "UserAttributes.hpp"
 #include "ProxyCache.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 UserAttributes::UserAttributes(PropertiesPtr credentials, PoolPtr pool,
                                ProxyCache* proxyCache)

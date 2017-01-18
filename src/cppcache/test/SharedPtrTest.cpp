@@ -21,7 +21,7 @@
 
 #include <gfcpp/SharedPtr.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 class NotifyOnDelete : public SharedBase {
  public:

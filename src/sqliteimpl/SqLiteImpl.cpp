@@ -21,7 +21,7 @@ namespace {
 std::string g_default_persistence_directory = "GemFireRegionData";
 }  // namespace
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 void SqLiteImpl::init(const RegionPtr& region, PropertiesPtr& diskProperties) {
   // Set the default values

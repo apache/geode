@@ -19,7 +19,9 @@
 
 #include "CqListener.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
 * Extension of CqListener. Adds two new methods to CqListener, one that
@@ -41,7 +43,8 @@ class CPPCACHE_EXPORT CqStatusListener : public CqListener {
   */
   virtual void onCqConnected();
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  //#ifndef __GEMFIRE_CQ_STATUS_LISTENER_HPP__

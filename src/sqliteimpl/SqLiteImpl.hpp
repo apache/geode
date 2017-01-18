@@ -23,7 +23,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * @class SqLite(3.7) Implementation SqLiteImpl.hpp
@@ -132,5 +134,7 @@ class SqLiteImpl : public PersistenceManager {
   std::string m_regionDir;
   std::string m_persistanceDir;
 };
-}
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  //_SqLiteIMPL_HPP__

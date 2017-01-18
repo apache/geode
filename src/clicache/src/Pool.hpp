@@ -48,7 +48,7 @@ namespace GemStone
       /// </remarks>
      // generic<class TKey, class TValue>
       public ref class Pool sealed
-				: public Generic::Internal::SBWrap<gemfire::Pool>
+				: public Generic::Internal::SBWrap<apache::geode::client::Pool>
       {
       public:
 
@@ -324,7 +324,7 @@ namespace GemStone
       /// <returns>
       /// The managed wrapper object; null if the native pointer is null.
       /// </returns>
-      inline static Pool^ Create( gemfire::Pool* nativeptr )
+      inline static Pool^ Create( apache::geode::client::Pool* nativeptr )
       {
         return ( nativeptr != nullptr ?
           gcnew Pool( nativeptr ) : nullptr );
@@ -336,7 +336,7 @@ namespace GemStone
         /// Private constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline Pool( gemfire::Pool* nativeptr )
+        inline Pool( apache::geode::client::Pool* nativeptr )
           : SBWrap( nativeptr ) { }
       };
 

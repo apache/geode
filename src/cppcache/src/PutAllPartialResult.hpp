@@ -22,7 +22,9 @@
 #include "VersionedCacheableObjectPartList.hpp"
 #include <ace/Task.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class PutAllPartialResult;
 typedef SharedPtr<PutAllPartialResult> PutAllPartialResultPtr;
 
@@ -128,5 +130,7 @@ class PutAllPartialResult : public Serializable {
 
   int8_t typeId() const { return static_cast<int8_t>(0); }
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif

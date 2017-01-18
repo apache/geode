@@ -21,7 +21,9 @@
 #include "TcrConnectionManager.hpp"
 #include "ThinClientHARegion.hpp"
 //#include "TcrPoolEndPoint.hpp"
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class ThinClientPoolHADM : public ThinClientPoolDM {
  public:
@@ -140,5 +142,7 @@ class ThinClientPoolHADM : public ThinClientPoolDM {
   static const char* NC_Redundancy;
 };
 typedef SharedPtr<ThinClientPoolHADM> ThinClientPoolHADMPtr;
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif

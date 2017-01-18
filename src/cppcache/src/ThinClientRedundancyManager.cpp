@@ -38,7 +38,7 @@
 #include <set>
 #include <algorithm>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 const char* ThinClientRedundancyManager::NC_PerodicACK = "NC PerodicACK";
 

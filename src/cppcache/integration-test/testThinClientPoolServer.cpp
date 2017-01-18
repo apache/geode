@@ -108,7 +108,7 @@ DUNIT_TASK_DEFINITION(CLIENT1, CreateClient1Entries)
     try {
       createEntry(poolRegNames[1], keys[0], vals[0]);
       FAIL("Operations on R2 should throw RegionNotFoundException");
-    } catch (const gemfire::CacheServerException&) {
+    } catch (const apache::geode::client::CacheServerException&) {
       LOG("Expected exception.");
     } catch (...) {
       LOG("Operation on Region 2 got unexpected exception.");
@@ -131,7 +131,7 @@ DUNIT_TASK_DEFINITION(CLIENT2, CreateClient2Entries)
     try {
       createEntry(poolRegNames[2], keys[0], vals[0]);
       FAIL("Operations on R3 should throw RegionNotFoundException");
-    } catch (const gemfire::CacheServerException&) {
+    } catch (const apache::geode::client::CacheServerException&) {
       LOG("Expected exception.");
     } catch (...) {
       LOG("Operation on Region 2 got unexpected exception.");

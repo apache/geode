@@ -71,31 +71,31 @@ namespace GemStone
 
 
       inline void CacheableString::GetCacheableString(String^ value,
-        gemfire::CacheableStringPtr& cStr)
+        apache::geode::client::CacheableStringPtr& cStr)
       {
         size_t len;
         if (value != nullptr && (len = value->Length) > 0) {
           pin_ptr<const wchar_t> pin_value = PtrToStringChars(value);
-          cStr = gemfire::CacheableString::create(pin_value, (int32_t)len);
+          cStr = apache::geode::client::CacheableString::create(pin_value, (int32_t)len);
         }
         else {
-          cStr = (gemfire::CacheableString*)
-            gemfire::CacheableString::createDeserializable();
+          cStr = (apache::geode::client::CacheableString*)
+            apache::geode::client::CacheableString::createDeserializable();
         }
       }
 
       inline void CacheableString::GetCacheableString(array<Char>^ value,
-        gemfire::CacheableStringPtr& cStr)
+        apache::geode::client::CacheableStringPtr& cStr)
       {
         size_t len;
         if (value != nullptr && (len = value->Length) > 0) {
           pin_ptr<const Char> pin_value = &value[0];
-          cStr = gemfire::CacheableString::create(
+          cStr = apache::geode::client::CacheableString::create(
             (const wchar_t*)pin_value, (int32_t)len);
         }
         else {
-          cStr = (gemfire::CacheableString*)
-            gemfire::CacheableString::createDeserializable();
+          cStr = (apache::geode::client::CacheableString*)
+            apache::geode::client::CacheableString::createDeserializable();
         }
       }
 

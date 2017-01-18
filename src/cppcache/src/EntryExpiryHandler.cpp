@@ -28,7 +28,7 @@
 
 #include "RegionInternal.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 EntryExpiryHandler::EntryExpiryHandler(RegionInternalPtr& rptr,
                                        MapEntryImplPtr& entryPtr,

@@ -19,7 +19,7 @@
 
 #include <gfcppBanner.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 TEST(gfcppBannerTest, ValidateBanner) {
   EXPECT_LT(0, gfcppBanner::getBanner().size()) << "Non-empty banner";

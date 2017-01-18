@@ -31,7 +31,7 @@
 
 #include <string>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 /**
  * An abstract superclass of implementation of GemFire cache callbacks

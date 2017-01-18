@@ -32,12 +32,15 @@
  */
 
 // macros to resolve ambiguity between PoolPtr and RegionServicePtr
-#define GF_TYPE_IS_POOL(T) \
-  gemfire::TypeHelper::SuperSubclass<gemfire::Pool, T>::result
+#define GF_TYPE_IS_POOL(T)                          \
+  apache::geode::client::TypeHelper::SuperSubclass< \
+      apache::geode::client::Pool, T>::result
 #define GF_TYPE_IS_POOL_TYPE(T) \
-  gemfire::TypeHelper::YesNoType<GF_TYPE_IS_POOL(T)>::value
+  apache::geode::client::TypeHelper::YesNoType<GF_TYPE_IS_POOL(T)>::value
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 /**
  * @class FunctionService FunctionService.hpp
  * entry point for function execution
@@ -181,7 +184,8 @@ class CPPCACHE_EXPORT FunctionService : public SharedBase {
     return onServersWithCache(cache);
   }
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  //__GEMFIRE_FUNCTION_SERVICE_H__

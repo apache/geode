@@ -25,7 +25,9 @@
 #include "Cacheable.hpp"
 #include "DataInput.hpp"
 #include "DataOutput.hpp"
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * This interface is used for delta propagation.
@@ -88,7 +90,8 @@ class Delta {
 
   virtual ~Delta() {}
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif /* DELTA_HPP_ */

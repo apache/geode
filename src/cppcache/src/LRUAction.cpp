@@ -20,7 +20,7 @@
 #include "LRUEntriesMap.hpp"
 #include "CacheImpl.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 LRUAction* LRUAction::newLRUAction(const LRUAction::Action& actionType,
                                    RegionInternal* regionPtr,

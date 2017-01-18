@@ -151,7 +151,7 @@ namespace GemStone
         /// <summary>
         /// Factory function to register wrapper
         /// </summary>
-        static IGFSerializable^ Create(gemfire::Serializable* obj)
+        static IGFSerializable^ Create(apache::geode::client::Serializable* obj)
         {
           return (obj != nullptr ?
             gcnew CacheableStringArray(obj) : nullptr);
@@ -171,7 +171,7 @@ namespace GemStone
         inline CacheableStringArray()
           : Serializable() 
         { 
-          //gemfire::Serializable* sp = gemfire::CacheableStringArray::createDeserializable();
+          //apache::geode::client::Serializable* sp = apache::geode::client::CacheableStringArray::createDeserializable();
           //SetSP(sp);
         }
 
@@ -179,7 +179,7 @@ namespace GemStone
         /// Private constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline CacheableStringArray(gemfire::Serializable* nativeptr)
+        inline CacheableStringArray(apache::geode::client::Serializable* nativeptr)
           : Serializable(nativeptr) { }
       };
     }

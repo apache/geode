@@ -21,7 +21,9 @@
 #include <gfcpp/SharedPtr.hpp>
 #include "ThinClientDistributionManager.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 /**
  * @brief Distribute data between caches
  */
@@ -57,6 +59,7 @@ class CPPCACHE_EXPORT ThinClientCacheDistributionManager
 
 typedef SharedPtr<ThinClientCacheDistributionManager>
     ThinClientCacheDistributionManagerPtr;
-
-};      // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // __THINCLIENT_CACHE_DISTRIBUTION_MANAGER_HPP__

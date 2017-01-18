@@ -29,7 +29,9 @@
 #include <vector>
 #include <utility>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class EventSource;
 class EventSequence;
@@ -194,7 +196,8 @@ class CPPCACHE_EXPORT EventSequence : public SharedBase {
 
   bool operator<=(const EventSequence &rhs) const;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __EVENT_ID_MAP_HPP__

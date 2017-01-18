@@ -31,7 +31,7 @@
 #include <gfcpp/Query.hpp>
 #include <gfcpp/QueryService.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace test;
 using namespace testobject;
 
@@ -114,7 +114,7 @@ DUNIT_TASK_DEFINITION(CLIENT1, pdxEnumQuery)
     try {
       Serializable::registerPdxType(PdxEnumTestClass::createDeserializable);
       LOG("PdxEnumTestClass Registered Successfully....");
-    } catch (gemfire::IllegalStateException& /* ex*/) {
+    } catch (apache::geode::client::IllegalStateException& /* ex*/) {
       LOG("PdxEnumTestClass IllegalStateException");
     }
 

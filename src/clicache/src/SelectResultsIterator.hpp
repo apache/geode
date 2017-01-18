@@ -38,7 +38,7 @@ namespace GemStone
       /// </summary>
       generic<class TResult>
       public ref class SelectResultsIterator sealed
-        : public Internal::UMWrap<gemfire::SelectResultsIterator>,
+        : public Internal::UMWrap<apache::geode::client::SelectResultsIterator>,
         public System::Collections::Generic::IEnumerator</*GemStone::GemFire::Cache::Generic::IGFSerializable^*/TResult>
       {
       public:
@@ -97,7 +97,7 @@ namespace GemStone
         /// The managed wrapper object; null if the native pointer is null.
         /// </returns>
         inline static GemStone::GemFire::Cache::Generic::SelectResultsIterator<TResult>^ Create(
-          gemfire::SelectResultsIterator* nativeptr )
+          apache::geode::client::SelectResultsIterator* nativeptr )
         {
           return ( nativeptr != nullptr ?
             gcnew GemStone::GemFire::Cache::Generic::SelectResultsIterator<TResult>( nativeptr ) : nullptr );
@@ -120,7 +120,7 @@ namespace GemStone
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
         inline SelectResultsIterator(
-          gemfire::SelectResultsIterator* nativeptr )
+          apache::geode::client::SelectResultsIterator* nativeptr )
           : UMWrap( nativeptr, true ) { }
       };
 

@@ -40,10 +40,10 @@ namespace GemStone
       public interface class ICacheLoaderProxy
       {
       public:
-        gemfire::CacheablePtr load( const gemfire::RegionPtr& region,
-          const gemfire::CacheableKeyPtr& key, const gemfire::UserDataPtr& helper );
+        apache::geode::client::CacheablePtr load( const apache::geode::client::RegionPtr& region,
+          const apache::geode::client::CacheableKeyPtr& key, const apache::geode::client::UserDataPtr& helper );
 
-        void close( const gemfire::RegionPtr& region );
+        void close( const apache::geode::client::RegionPtr& region );
       };
 
       generic<class TKey, class TValue>
@@ -60,8 +60,8 @@ namespace GemStone
             m_loader = loader;
           }
 
-          virtual gemfire::CacheablePtr load( const gemfire::RegionPtr& region,
-            const gemfire::CacheableKeyPtr& key, const gemfire::UserDataPtr& helper )
+          virtual apache::geode::client::CacheablePtr load( const apache::geode::client::RegionPtr& region,
+            const apache::geode::client::CacheableKeyPtr& key, const apache::geode::client::UserDataPtr& helper )
           {
             IRegion<TKey, TValue>^ gregion = Region<TKey, TValue>::Create(region.ptr());
 
@@ -73,7 +73,7 @@ namespace GemStone
             return Serializable::GetUnmanagedValueGeneric<TValue>(m_loader->Load(gregion, gkey, ghelper));
           }
 
-          virtual void close( const gemfire::RegionPtr& region )
+          virtual void close( const apache::geode::client::RegionPtr& region )
           {
             IRegion<TKey, TValue>^ gregion = Region<TKey, TValue>::Create(region.ptr());
             m_loader->Close(gregion);

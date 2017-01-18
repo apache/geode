@@ -22,7 +22,7 @@
 #include "fw_helper.hpp"
 #include <string>
 #include <math.h>
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace test;
 
 int testXmlCacheCreationWithRefid(const char* fileName) {

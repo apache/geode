@@ -25,7 +25,9 @@
 /** @file
 */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * The SystemProperties class
@@ -501,7 +503,8 @@ class CPPCACHE_EXPORT SystemProperties {
 
   friend class DistributedSystemImpl;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

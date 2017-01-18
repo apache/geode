@@ -29,7 +29,9 @@
  * the refid attribute on a region element or region-attributes element to the
  * string of each value.
  */
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 enum RegionShortcut {
 
   /**
@@ -68,7 +70,8 @@ enum RegionShortcut {
    */
   LOCAL_ENTRY_LRU
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_REGIONSHORTCUT_H__

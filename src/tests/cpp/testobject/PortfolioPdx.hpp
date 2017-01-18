@@ -24,7 +24,7 @@
 
 #include "PositionPdx.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 namespace testobject {
 

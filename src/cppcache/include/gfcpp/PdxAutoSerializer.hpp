@@ -27,150 +27,154 @@
 #include "GemfireTypeIds.hpp"
 #include "TypeHelper.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace PdxAutoSerializable {
 // Read and write methods for various types
 // uint8_t
 //------------------------------------------------------------------------------------------------
 #ifdef _SOLARIS
-inline void writePdxObject(gemfire::PdxWriterPtr& pw, const char* fieldName,
-                           int8_t value) {
+inline void writePdxObject(apache::geode::client::PdxWriterPtr& pw,
+                           const char* fieldName, int8_t value) {
   pw->writeByte(fieldName, value);
 }
-inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
-                          int8_t& value) {
+inline void readPdxObject(apache::geode::client::PdxReaderPtr& pr,
+                          const char* fieldName, int8_t& value) {
   value = pr->readByte(fieldName);
 }
 #else
-inline void writePdxObject(gemfire::PdxWriterPtr& pw, const char* fieldName,
-                           char value) {
+inline void writePdxObject(apache::geode::client::PdxWriterPtr& pw,
+                           const char* fieldName, char value) {
   pw->writeChar(fieldName, value);
 }
-inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
-                          char& value) {
+inline void readPdxObject(apache::geode::client::PdxReaderPtr& pr,
+                          const char* fieldName, char& value) {
   value = pr->readChar(fieldName);
 }
 #endif
 //------------------------------------------------------------------------------------------------
-inline void writePdxObject(gemfire::PdxWriterPtr& pw, const char* fieldName,
-                           wchar_t value) {
+inline void writePdxObject(apache::geode::client::PdxWriterPtr& pw,
+                           const char* fieldName, wchar_t value) {
   pw->writeWideChar(fieldName, value);
 }
-inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
-                          wchar_t& value) {
+inline void readPdxObject(apache::geode::client::PdxReaderPtr& pr,
+                          const char* fieldName, wchar_t& value) {
   value = pr->readWideChar(fieldName);
 }
 //------------------------------------------------------------------------------------------------
-inline void writePdxObject(gemfire::PdxWriterPtr& pw, const char* fieldName,
-                           bool value) {
+inline void writePdxObject(apache::geode::client::PdxWriterPtr& pw,
+                           const char* fieldName, bool value) {
   pw->writeBoolean(fieldName, value);
 }
-inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
-                          bool& value) {
+inline void readPdxObject(apache::geode::client::PdxReaderPtr& pr,
+                          const char* fieldName, bool& value) {
   value = pr->readBoolean(fieldName);
 }
 //------------------------------------------------------------------------------------------------
-inline void writePdxObject(gemfire::PdxWriterPtr& pw, const char* fieldName,
-                           signed char value) {
+inline void writePdxObject(apache::geode::client::PdxWriterPtr& pw,
+                           const char* fieldName, signed char value) {
   pw->writeByte(fieldName, value);
 }
-inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
-                          signed char& value) {
+inline void readPdxObject(apache::geode::client::PdxReaderPtr& pr,
+                          const char* fieldName, signed char& value) {
   value = pr->readByte(fieldName);
 }
 //------------------------------------------------------------------------------------------------
-inline void writePdxObject(gemfire::PdxWriterPtr& pw, const char* fieldName,
-                           int16_t value) {
+inline void writePdxObject(apache::geode::client::PdxWriterPtr& pw,
+                           const char* fieldName, int16_t value) {
   pw->writeShort(fieldName, value);
 }
-inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
-                          int16_t& value) {
+inline void readPdxObject(apache::geode::client::PdxReaderPtr& pr,
+                          const char* fieldName, int16_t& value) {
   value = pr->readShort(fieldName);
 }
 //------------------------------------------------------------------------------------------------
-inline void writePdxObject(gemfire::PdxWriterPtr& pw, const char* fieldName,
-                           int32_t value) {
+inline void writePdxObject(apache::geode::client::PdxWriterPtr& pw,
+                           const char* fieldName, int32_t value) {
   pw->writeInt(fieldName, value);
 }
-inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
-                          int32_t& value) {
+inline void readPdxObject(apache::geode::client::PdxReaderPtr& pr,
+                          const char* fieldName, int32_t& value) {
   value = pr->readInt(fieldName);
 }
 //------------------------------------------------------------------------------------------------
-inline void writePdxObject(gemfire::PdxWriterPtr& pw, const char* fieldName,
-                           int64_t value) {
+inline void writePdxObject(apache::geode::client::PdxWriterPtr& pw,
+                           const char* fieldName, int64_t value) {
   pw->writeLong(fieldName, value);
 }
-inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
-                          int64_t& value) {
+inline void readPdxObject(apache::geode::client::PdxReaderPtr& pr,
+                          const char* fieldName, int64_t& value) {
   value = pr->readLong(fieldName);
 }
 //------------------------------------------------------------------------------------------------
-inline void writePdxObject(gemfire::PdxWriterPtr& pw, const char* fieldName,
-                           float value) {
+inline void writePdxObject(apache::geode::client::PdxWriterPtr& pw,
+                           const char* fieldName, float value) {
   pw->writeFloat(fieldName, value);
 }
-inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
-                          float& value) {
+inline void readPdxObject(apache::geode::client::PdxReaderPtr& pr,
+                          const char* fieldName, float& value) {
   value = pr->readFloat(fieldName);
 }
 //------------------------------------------------------------------------------------------------
-inline void writePdxObject(gemfire::PdxWriterPtr& pw, const char* fieldName,
-                           double value) {
+inline void writePdxObject(apache::geode::client::PdxWriterPtr& pw,
+                           const char* fieldName, double value) {
   pw->writeDouble(fieldName, value);
 }
-inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
-                          double& value) {
+inline void readPdxObject(apache::geode::client::PdxReaderPtr& pr,
+                          const char* fieldName, double& value) {
   value = pr->readDouble(fieldName);
 }
 //------------------------------------------------------------------------------------------------
-inline void writePdxObject(gemfire::PdxWriterPtr& pw, const char* fieldName,
-                           CacheableDatePtr value) {
+inline void writePdxObject(apache::geode::client::PdxWriterPtr& pw,
+                           const char* fieldName, CacheableDatePtr value) {
   pw->writeDate(fieldName, value);
 }
-inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
-                          CacheableDatePtr& value) {
+inline void readPdxObject(apache::geode::client::PdxReaderPtr& pr,
+                          const char* fieldName, CacheableDatePtr& value) {
   value = pr->readDate(fieldName);
 }
 //------------------------------------------------------------------------------------------------
-inline void writePdxObject(gemfire::PdxWriterPtr& pw, const char* fieldName,
-                           const char* value) {
+inline void writePdxObject(apache::geode::client::PdxWriterPtr& pw,
+                           const char* fieldName, const char* value) {
   pw->writeString(fieldName, value);
 }
-inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
-                          char*& value) {
+inline void readPdxObject(apache::geode::client::PdxReaderPtr& pr,
+                          const char* fieldName, char*& value) {
   value = pr->readString(fieldName);
 }
 //------------------------------------------------------------------------------------------------
-inline void writePdxObject(gemfire::PdxWriterPtr& pw, const char* fieldName,
-                           const wchar_t* value) {
+inline void writePdxObject(apache::geode::client::PdxWriterPtr& pw,
+                           const char* fieldName, const wchar_t* value) {
   pw->writeWideString(fieldName, value);
 }
-inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
-                          wchar_t*& value) {
+inline void readPdxObject(apache::geode::client::PdxReaderPtr& pr,
+                          const char* fieldName, wchar_t*& value) {
   value = pr->readWideString(fieldName);
 }
 // ---- helper methods for bytearrayofarray -------
 #ifdef _SOLARIS
-inline void writePdxObject(gemfire::PdxWriterPtr& pw, const char* fieldName,
-                           char** value, int32_t arraySize,
-                           int32_t* elemArraySize) {
+inline void writePdxObject(apache::geode::client::PdxWriterPtr& pw,
+                           const char* fieldName, char** value,
+                           int32_t arraySize, int32_t* elemArraySize) {
   pw->writeArrayOfByteArrays(fieldName, (char**)value, arraySize,
                              elemArraySize);
 }
-inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
-                          char**& value, int32_t& len, int32_t*& Lengtharr) {
+inline void readPdxObject(apache::geode::client::PdxReaderPtr& pr,
+                          const char* fieldName, char**& value, int32_t& len,
+                          int32_t*& Lengtharr) {
   GF_NEW(Lengtharr, int32_t[len]);
   value = (char**)pr->readArrayOfByteArrays(fieldName, len, &Lengtharr);
 }
 #else
-inline void writePdxObject(gemfire::PdxWriterPtr& pw, const char* fieldName,
-                           int8_t** value, int32_t arraySize,
-                           int32_t* elemArraySize) {
+inline void writePdxObject(apache::geode::client::PdxWriterPtr& pw,
+                           const char* fieldName, int8_t** value,
+                           int32_t arraySize, int32_t* elemArraySize) {
   pw->writeArrayOfByteArrays(fieldName, value, arraySize, elemArraySize);
 }
-inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
-                          int8_t**& value, int32_t& len, int32_t*& Lengtharr) {
+inline void readPdxObject(apache::geode::client::PdxReaderPtr& pr,
+                          const char* fieldName, int8_t**& value, int32_t& len,
+                          int32_t*& Lengtharr) {
   GF_NEW(Lengtharr, int32_t[len]);
   value = (signed char**)pr->readArrayOfByteArrays(fieldName, len, &Lengtharr);
 }
@@ -179,167 +183,183 @@ inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
 //------------------------------------------------------------------------------------------------
 // Base Serializable types
 template <typename TObj>
-inline void writePdxObject(gemfire::PdxWriterPtr& pw, const char* fieldName,
-                           const gemfire::SharedPtr<TObj>& value,
-                           gemfire::TypeHelper::yes_type isSerializable) {
+inline void writePdxObject(
+    apache::geode::client::PdxWriterPtr& pw, const char* fieldName,
+    const apache::geode::client::SharedPtr<TObj>& value,
+    apache::geode::client::TypeHelper::yes_type isSerializable) {
   pw->writeObject(fieldName, value);
 }
 
 template <typename TObj>
-inline void writePdxObject(gemfire::PdxWriterPtr& pw, const char* fieldName,
-                           const gemfire::SharedPtr<TObj>& value) {
+inline void writePdxObject(
+    apache::geode::client::PdxWriterPtr& pw, const char* fieldName,
+    const apache::geode::client::SharedPtr<TObj>& value) {
   writePdxObject(pw, fieldName, value, GF_TYPE_IS_SERIALIZABLE_TYPE(TObj));
 }
 
 template <typename TObj>
-inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
-                          gemfire::SharedPtr<TObj>& value,
-                          gemfire::TypeHelper::yes_type isSerializable) {
-  value = dynCast<gemfire::SharedPtr<TObj> >(pr->readObject(fieldName));
+inline void readPdxObject(
+    apache::geode::client::PdxReaderPtr& pr, const char* fieldName,
+    apache::geode::client::SharedPtr<TObj>& value,
+    apache::geode::client::TypeHelper::yes_type isSerializable) {
+  value = dynCast<apache::geode::client::SharedPtr<TObj> >(
+      pr->readObject(fieldName));
 }
 
 template <typename TObj>
-inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
-                          gemfire::SharedPtr<TObj>& value) {
+inline void readPdxObject(apache::geode::client::PdxReaderPtr& pr,
+                          const char* fieldName,
+                          apache::geode::client::SharedPtr<TObj>& value) {
   readPdxObject(pr, fieldName, value, GF_TYPE_IS_SERIALIZABLE_TYPE(TObj));
 }
 //------------------------------------------------------------------------------------------------
-inline void writePdxObject(gemfire::PdxWriterPtr& pw, const char* fieldName,
-                           bool* value, int32_t len) {
+inline void writePdxObject(apache::geode::client::PdxWriterPtr& pw,
+                           const char* fieldName, bool* value, int32_t len) {
   pw->writeBooleanArray(fieldName, value, len);
 }
 
-inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
-                          bool*& value, int32_t& len) {
+inline void readPdxObject(apache::geode::client::PdxReaderPtr& pr,
+                          const char* fieldName, bool*& value, int32_t& len) {
   value = pr->readBooleanArray(fieldName, len);
 }
 //------------------------------------------------------------------------------------------------
-inline void writePdxObject(gemfire::PdxWriterPtr& pw, const char* fieldName,
-                           wchar_t* value, int32_t len) {
+inline void writePdxObject(apache::geode::client::PdxWriterPtr& pw,
+                           const char* fieldName, wchar_t* value, int32_t len) {
   pw->writeWideCharArray(fieldName, value, len);
 }
 
-inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
-                          wchar_t*& value, int32_t& len) {
+inline void readPdxObject(apache::geode::client::PdxReaderPtr& pr,
+                          const char* fieldName, wchar_t*& value,
+                          int32_t& len) {
   value = pr->readWideCharArray(fieldName, len);
 }
 //------------------------------------------------------------------------------------------------
 #ifdef _SOLARIS
-inline void writePdxObject(gemfire::PdxWriterPtr& pw, const char* fieldName,
-                           int8_t* value, int32_t len) {
+inline void writePdxObject(apache::geode::client::PdxWriterPtr& pw,
+                           const char* fieldName, int8_t* value, int32_t len) {
   pw->writeByteArray(fieldName, value, len);
 }
 
-inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
-                          int8_t*& value, int32_t& len) {
+inline void readPdxObject(apache::geode::client::PdxReaderPtr& pr,
+                          const char* fieldName, int8_t*& value, int32_t& len) {
   value = (int8_t*)pr->readByteArray(fieldName, len);
 }
 #else
 //------------------------------------------------------------------------------------------------
-inline void writePdxObject(gemfire::PdxWriterPtr& pw, const char* fieldName,
-                           char* value, int32_t len) {
+inline void writePdxObject(apache::geode::client::PdxWriterPtr& pw,
+                           const char* fieldName, char* value, int32_t len) {
   pw->writeCharArray(fieldName, value, len);
 }
 
-inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
-                          char*& value, int32_t& len) {
+inline void readPdxObject(apache::geode::client::PdxReaderPtr& pr,
+                          const char* fieldName, char*& value, int32_t& len) {
   value = pr->readCharArray(fieldName, len);
 }
 //------------------------------------------------------------------------------------------------
-inline void writePdxObject(gemfire::PdxWriterPtr& pw, const char* fieldName,
-                           signed char* value, int32_t len) {
+inline void writePdxObject(apache::geode::client::PdxWriterPtr& pw,
+                           const char* fieldName, signed char* value,
+                           int32_t len) {
   pw->writeByteArray(fieldName, value, len);
 }
 
-inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
-                          signed char*& value, int32_t& len) {
+inline void readPdxObject(apache::geode::client::PdxReaderPtr& pr,
+                          const char* fieldName, signed char*& value,
+                          int32_t& len) {
   value = (signed char*)pr->readByteArray(fieldName, len);
 }
 #endif
 //------------------------------------------------------------------------------------------------
-inline void writePdxObject(gemfire::PdxWriterPtr& pw, const char* fieldName,
-                           int16_t* value, int32_t len) {
+inline void writePdxObject(apache::geode::client::PdxWriterPtr& pw,
+                           const char* fieldName, int16_t* value, int32_t len) {
   pw->writeShortArray(fieldName, value, len);
 }
 
-inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
-                          int16_t*& value, int32_t& len) {
+inline void readPdxObject(apache::geode::client::PdxReaderPtr& pr,
+                          const char* fieldName, int16_t*& value,
+                          int32_t& len) {
   value = pr->readShortArray(fieldName, len);
 }
 //------------------------------------------------------------------------------------------------
-inline void writePdxObject(gemfire::PdxWriterPtr& pw, const char* fieldName,
-                           int32_t* value, int32_t len) {
+inline void writePdxObject(apache::geode::client::PdxWriterPtr& pw,
+                           const char* fieldName, int32_t* value, int32_t len) {
   pw->writeIntArray(fieldName, value, len);
 }
 
-inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
-                          int32_t*& value, int32_t& len) {
+inline void readPdxObject(apache::geode::client::PdxReaderPtr& pr,
+                          const char* fieldName, int32_t*& value,
+                          int32_t& len) {
   value = pr->readIntArray(fieldName, len);
 }
 //------------------------------------------------------------------------------------------------
-inline void writePdxObject(gemfire::PdxWriterPtr& pw, const char* fieldName,
-                           int64_t* value, int32_t len) {
+inline void writePdxObject(apache::geode::client::PdxWriterPtr& pw,
+                           const char* fieldName, int64_t* value, int32_t len) {
   pw->writeLongArray(fieldName, value, len);
 }
 
-inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
-                          int64_t*& value, int32_t& len) {
+inline void readPdxObject(apache::geode::client::PdxReaderPtr& pr,
+                          const char* fieldName, int64_t*& value,
+                          int32_t& len) {
   value = pr->readLongArray(fieldName, len);
 }
 //------------------------------------------------------------------------------------------------
-inline void writePdxObject(gemfire::PdxWriterPtr& pw, const char* fieldName,
-                           float* value, int32_t len) {
+inline void writePdxObject(apache::geode::client::PdxWriterPtr& pw,
+                           const char* fieldName, float* value, int32_t len) {
   pw->writeFloatArray(fieldName, value, len);
 }
 
-inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
-                          float*& value, int32_t& len) {
+inline void readPdxObject(apache::geode::client::PdxReaderPtr& pr,
+                          const char* fieldName, float*& value, int32_t& len) {
   value = pr->readFloatArray(fieldName, len);
 }
 //------------------------------------------------------------------------------------------------
-inline void writePdxObject(gemfire::PdxWriterPtr& pw, const char* fieldName,
-                           double* value, int32_t len) {
+inline void writePdxObject(apache::geode::client::PdxWriterPtr& pw,
+                           const char* fieldName, double* value, int32_t len) {
   pw->writeDoubleArray(fieldName, value, len);
 }
 
-inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
-                          double*& value, int32_t& len) {
+inline void readPdxObject(apache::geode::client::PdxReaderPtr& pr,
+                          const char* fieldName, double*& value, int32_t& len) {
   value = pr->readDoubleArray(fieldName, len);
 }
 //------------------------------------------------------------------------------------------------
-inline void writePdxObject(gemfire::PdxWriterPtr& pw, const char* fieldName,
-                           char** value, int32_t len) {
+inline void writePdxObject(apache::geode::client::PdxWriterPtr& pw,
+                           const char* fieldName, char** value, int32_t len) {
   pw->writeStringArray(fieldName, value, len);
 }
 
-inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
-                          char**& value, int32_t& len) {
+inline void readPdxObject(apache::geode::client::PdxReaderPtr& pr,
+                          const char* fieldName, char**& value, int32_t& len) {
   value = pr->readStringArray(fieldName, len);
 }
 //------------------------------------------------------------------------------------------------
-inline void writePdxObject(gemfire::PdxWriterPtr& pw, const char* fieldName,
-                           wchar_t** value, int32_t len) {
+inline void writePdxObject(apache::geode::client::PdxWriterPtr& pw,
+                           const char* fieldName, wchar_t** value,
+                           int32_t len) {
   pw->writeWideStringArray(fieldName, value, len);
 }
 
-inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
-                          wchar_t**& value, int32_t& len) {
+inline void readPdxObject(apache::geode::client::PdxReaderPtr& pr,
+                          const char* fieldName, wchar_t**& value,
+                          int32_t& len) {
   value = pr->readWideStringArray(fieldName, len);
 }
 //------------------------------------------------------------------------------------------------
-inline void writePdxObject(gemfire::PdxWriterPtr& pw, const char* fieldName,
+inline void writePdxObject(apache::geode::client::PdxWriterPtr& pw,
+                           const char* fieldName,
                            CacheableObjectArrayPtr value) {
   pw->writeObjectArray(fieldName, value);
 }
 
-inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
+inline void readPdxObject(apache::geode::client::PdxReaderPtr& pr,
+                          const char* fieldName,
                           CacheableObjectArrayPtr& value) {
   value = pr->readObjectArray(fieldName);
 }
 //------------------------------------------------------------------------------------------------
 // For containers vector/hashmap/hashset
 // template <typename TObj>
-// inline void writePdxObject( gemfire::PdxWriterPtr& pw,  const char*
+// inline void writePdxObject( apache::geode::client::PdxWriterPtr& pw,  const
+// char*
 // fieldName,
 //    const VectorT< TObj >& value )
 //{
@@ -365,7 +385,8 @@ inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
 //}
 
 // template <typename TObj>
-// inline void readPdxObject( gemfire::PdxReaderPtr& pr,  const char* fieldName,
+// inline void readPdxObject( apache::geode::client::PdxReaderPtr& pr,  const
+// char* fieldName,
 //    VectorT< TObj >& value )
 //{
 //  int32_t len;
@@ -380,7 +401,8 @@ inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
 //}
 
 // template <typename TKey, typename TValue>
-// inline void writePdxObject( gemfire::PdxWriterPtr& pw,  const char*
+// inline void writePdxObject( apache::geode::client::PdxWriterPtr& pw,  const
+// char*
 // fieldName,
 //    const HashMapT< TKey, TValue >& value )
 //{
@@ -411,7 +433,8 @@ inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
 //}
 
 // template <typename TKey, typename TValue>
-// inline void readPdxObject( gemfire::PdxReaderPtr& pr,  const char* fieldName,
+// inline void readPdxObject( apache::geode::client::PdxReaderPtr& pr,  const
+// char* fieldName,
 //    HashMapT< TKey, TValue >& value )
 //{
 //  int32_t len;
@@ -428,7 +451,8 @@ inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
 //}
 
 // template <typename TKey>
-// inline void writePdxObject( gemfire::PdxWriterPtr& pw,  const char*
+// inline void writePdxObject( apache::geode::client::PdxWriterPtr& pw,  const
+// char*
 // fieldName,
 //  const HashSetT< TKey >& value )
 //{
@@ -454,7 +478,8 @@ inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
 //}
 
 // template <typename TKey>
-// inline void readPdxObject( gemfire::PdxReaderPtr& pr,  const char* fieldName,
+// inline void readPdxObject( apache::geode::client::PdxReaderPtr& pr,  const
+// char* fieldName,
 //    HashSetT< TKey >& value )
 //{
 //  int32_t len;
@@ -495,6 +520,8 @@ inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
 //}
 
 }  // namespace PdxAutoSerializable
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // _GEMFIRE_SERIALIZER_HPP_

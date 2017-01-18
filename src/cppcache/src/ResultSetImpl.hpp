@@ -29,7 +29,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class CPPCACHE_EXPORT ResultSetImpl : public ResultSet {
  public:
@@ -55,7 +57,8 @@ class CPPCACHE_EXPORT ResultSetImpl : public ResultSet {
   CacheableVectorPtr m_resultSetVector;
   // UNUSED int32_t m_nextIndex;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_RESULTSETIMPL_H__

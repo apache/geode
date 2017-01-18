@@ -26,11 +26,13 @@
 
 #include <gfcpp/gf_types.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
-class TXEntryState : public gemfire::SharedBase {
+class TXEntryState : public apache::geode::client::SharedBase {
  public:
   TXEntryState();
   virtual ~TXEntryState();
@@ -79,6 +81,8 @@ class TXEntryState : public gemfire::SharedBase {
 };
 
 _GF_PTR_DEF_(TXEntryState, TXEntryStatePtr);
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif /* TXENTRYSTATE_HPP_ */

@@ -26,7 +26,9 @@
 
 #include "ThinClientHARegion.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class ThinClientPoolRegion : public ThinClientRegion {
  public:
   /**
@@ -47,6 +49,8 @@ class ThinClientPoolRegion : public ThinClientRegion {
   ThinClientPoolRegion(const ThinClientPoolRegion&);
   ThinClientPoolRegion& operator=(const ThinClientPoolRegion&);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif /* THINCLIENTPOOLREGION_HPP_ */

@@ -39,7 +39,7 @@ namespace GemStone
       /// or a gfcpp.properties file.
       /// </summary>
       public ref class SystemProperties sealed
-        : public Internal::UMWrap<gemfire::SystemProperties>
+        : public Internal::UMWrap<apache::geode::client::SystemProperties>
       {
       public:
 
@@ -424,7 +424,7 @@ namespace GemStone
         /// the managed wrapper object, or null if the native pointer is null.
         /// </returns>
         inline static SystemProperties^ Create(
-          gemfire::SystemProperties* nativeptr )
+          apache::geode::client::SystemProperties* nativeptr )
         {
           return ( nativeptr != nullptr ?
             gcnew SystemProperties( nativeptr ) : nullptr );
@@ -437,7 +437,7 @@ namespace GemStone
         /// Private constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline SystemProperties( gemfire::SystemProperties* nativeptr )
+        inline SystemProperties( apache::geode::client::SystemProperties* nativeptr )
           : UMWrap( nativeptr, false ) { }
       };
       } // end namespace Generic

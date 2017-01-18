@@ -16,7 +16,7 @@
  */
 #include "DeltaFastAssetAccount.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace testframework;
 using namespace testobject;
 
@@ -42,7 +42,8 @@ DeltaFastAssetAccount::DeltaFastAssetAccount(int index, bool encodeTimestp,
   getBeforeUpdate = getbfrUpdate;
 }
 
-void DeltaFastAssetAccount::toData(gemfire::DataOutput& output) const {
+void DeltaFastAssetAccount::toData(
+    apache::geode::client::DataOutput& output) const {
   output.writeInt(static_cast<int32_t>(acctId));
   output.writeObject(customerName);
   output.writeDouble(netWorth);
@@ -50,8 +51,8 @@ void DeltaFastAssetAccount::toData(gemfire::DataOutput& output) const {
   output.writeInt(static_cast<int64_t>(timestamp));
 }
 
-gemfire::Serializable* DeltaFastAssetAccount::fromData(
-    gemfire::DataInput& input) {
+apache::geode::client::Serializable* DeltaFastAssetAccount::fromData(
+    apache::geode::client::DataInput& input) {
   input.readInt(&acctId);
   input.readObject(customerName);
   input.readDouble(&netWorth);
@@ -60,13 +61,14 @@ gemfire::Serializable* DeltaFastAssetAccount::fromData(
   return this;
 }
 
-void DeltaFastAssetAccount::toDelta(gemfire::DataOutput& output) const {
+void DeltaFastAssetAccount::toDelta(
+    apache::geode::client::DataOutput& output) const {
   output.writeDouble(netWorth);
   if (encodeTimestamp) {
     output.writeInt(static_cast<int64_t>(timestamp));
   }
 }
-void DeltaFastAssetAccount::fromDelta(gemfire::DataInput& input) {
+void DeltaFastAssetAccount::fromDelta(apache::geode::client::DataInput& input) {
   if (getBeforeUpdate) {
     input.readDouble(&netWorth);
   } else {

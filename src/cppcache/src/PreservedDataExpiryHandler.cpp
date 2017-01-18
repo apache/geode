@@ -30,7 +30,7 @@
 #include "PreservedDataExpiryHandler.hpp"
 #include "PdxTypeRegistry.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 PreservedDataExpiryHandler::PreservedDataExpiryHandler(
     PdxSerializablePtr pdxObjectPtr, uint32_t duration)

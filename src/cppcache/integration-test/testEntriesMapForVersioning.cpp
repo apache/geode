@@ -57,7 +57,7 @@ END_MAIN
 
 #define CLIENT1 s1p1
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace test;
 
 CacheHelper* cacheHelper = NULL;

@@ -18,7 +18,7 @@
 #include "fwklib/GsRandom.hpp"
 #include "ArrayOfByte.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace testframework;
 using namespace testobject;
 
@@ -39,14 +39,15 @@ PSTObject::PSTObject(int size, bool encodeKey, bool encodeTimestamp) {
 }
 
 PSTObject::~PSTObject() {}
-void PSTObject::toData(gemfire::DataOutput& output) const {
+void PSTObject::toData(apache::geode::client::DataOutput& output) const {
   output.writeInt(static_cast<int64_t>(timestamp));
   output.writeInt(static_cast<int32_t>(field1));
   output.write(field2);
   output.writeObject(valueData);
 }
 
-gemfire::Serializable* PSTObject::fromData(gemfire::DataInput& input) {
+apache::geode::client::Serializable* PSTObject::fromData(
+    apache::geode::client::DataInput& input) {
   input.readInt(reinterpret_cast<int64_t*>(&timestamp));
   input.readInt(&field1);
   input.read(&field2);

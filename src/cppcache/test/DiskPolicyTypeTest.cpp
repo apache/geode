@@ -19,7 +19,7 @@
 
 #include <gfcpp/DiskPolicyType.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 TEST(DiskPolicyTypeTest, VerifyOrdinalAndNameSymmetryForNone) {
   const char* name = DiskPolicyType::fromOrdinal(0);

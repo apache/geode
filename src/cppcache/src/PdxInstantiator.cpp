@@ -28,7 +28,9 @@
 #include "PdxHelper.hpp"
 #include <gfcpp/PdxSerializable.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 PdxInstantiator::PdxInstantiator() {}
 
@@ -51,4 +53,6 @@ Serializable* PdxInstantiator::fromData(DataInput& input) {
 CacheableStringPtr PdxInstantiator::toString() const {
   return CacheableString::create("PdxInstantiator");
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

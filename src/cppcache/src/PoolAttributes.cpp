@@ -18,7 +18,7 @@
 #include <gfcpp/ExceptionTypes.hpp>
 #include <gfcpp/PoolFactory.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 PoolAttributes::PoolAttributes()
     : m_isThreadLocalConn(PoolFactory::DEFAULT_THREAD_LOCAL_CONN),

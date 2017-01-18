@@ -26,7 +26,9 @@
 #include <gfcpp/PdxFieldTypes.hpp>
 #include <ace/OS_NS_stdio.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 PdxReaderWithTypeCollector::PdxReaderWithTypeCollector(DataInput& dataInput,
                                                        PdxTypePtr pdxType,
@@ -619,10 +621,12 @@ CacheableDatePtr PdxReaderWithTypeCollector::readDate(const char* fieldName) {
 
 void PdxReaderWithTypeCollector::readCollection(
     const char* fieldName, CacheableArrayListPtr& collection) {
-  checkType(fieldName, gemfire::GemfireTypeIds::CacheableArrayList,
+  checkType(fieldName,
+            apache::geode::client::GemfireTypeIds::CacheableArrayList,
             "Collection");
   m_newPdxType->addVariableLengthTypeField(
-      fieldName, "Collection", gemfire::GemfireTypeIds::CacheableArrayList);
+      fieldName, "Collection",
+      apache::geode::client::GemfireTypeIds::CacheableArrayList);
   int position = m_pdxType->getFieldPosition(fieldName, m_offsetsBuffer,
                                              m_offsetSize, m_serializedLength);
   LOGDEBUG("PdxReaderWithTypeCollector::readCollection() position = %d",
@@ -635,4 +639,6 @@ void PdxReaderWithTypeCollector::readCollection(
     collection = NULLPTR;
   }
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

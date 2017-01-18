@@ -25,7 +25,7 @@
 #include <gfcpp/GemfireCppCache.hpp>
 #include "Position.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 namespace testobject {
 

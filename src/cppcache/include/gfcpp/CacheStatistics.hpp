@@ -23,7 +23,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class LocalRegion;
 
@@ -102,6 +104,7 @@ class CPPCACHE_EXPORT CacheStatistics : public SharedBase {
 
   friend class LocalRegion;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // ifndef __GEMFIRE_CACHESTATISTICS_H__

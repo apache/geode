@@ -32,7 +32,7 @@ namespace GemStone
       generic<class TKey, class TResult>
       CqQuery<TKey, TResult>^ CqEvent<TKey, TResult>::getCq( )
       {
-        gemfire::CqQueryPtr& cQueryptr( NativePtr->getCq( ) );
+        apache::geode::client::CqQueryPtr& cQueryptr( NativePtr->getCq( ) );
         return CqQuery<TKey, TResult>::Create( cQueryptr.ptr( ) );
       }
 
@@ -51,21 +51,21 @@ namespace GemStone
       generic<class TKey, class TResult>
       TKey CqEvent<TKey, TResult>::getKey( )
       {
-        gemfire::CacheableKeyPtr& keyptr( NativePtr->getKey( ) );
+        apache::geode::client::CacheableKeyPtr& keyptr( NativePtr->getKey( ) );
         return Serializable::GetManagedValueGeneric<TKey>(keyptr);
       }
 
       generic<class TKey, class TResult>
       TResult CqEvent<TKey, TResult>::getNewValue( )
       {
-        gemfire::CacheablePtr& valptr( NativePtr->getNewValue( ) );
+        apache::geode::client::CacheablePtr& valptr( NativePtr->getNewValue( ) );
         return Serializable::GetManagedValueGeneric<TResult>(valptr);
       }
 
       generic<class TKey, class TResult>
       array< Byte >^ CqEvent<TKey, TResult>::getDeltaValue( )
       {
-        gemfire::CacheableBytesPtr deltaBytes = NativePtr->getDeltaValue( );
+        apache::geode::client::CacheableBytesPtr deltaBytes = NativePtr->getDeltaValue( );
         CacheableBytes^ managedDeltaBytes = ( CacheableBytes^ ) CacheableBytes::Create( deltaBytes.ptr( ) );
         return ( array< Byte >^ ) managedDeltaBytes;
       }

@@ -17,7 +17,7 @@
 
 #include "Portfolio.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace testobject;
 
 const char* Portfolio::secIds[] = {"SUN", "IBM",  "YHOO", "GOOG", "MSFT",

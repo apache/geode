@@ -22,7 +22,9 @@
 #include "TypeHelper.hpp"
 #include <typeinfo>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class SharedBase;
 
@@ -39,14 +41,16 @@ class CPPCACHE_EXPORT SPEHelper {
 /* Helper function template for type conversion.
  */
 template <class Target, class Src>
-Target* getTargetHelper(Src* ptr, gemfire::TypeHelper::yes_type yes) {
+Target* getTargetHelper(Src* ptr,
+                        apache::geode::client::TypeHelper::yes_type yes) {
   return ptr;
 }
 
 /* Helper function template for type conversion.
  */
 template <class Target, class Src>
-Target* getTargetHelper(Src* ptr, gemfire::TypeHelper::no_type no) {
+Target* getTargetHelper(Src* ptr,
+                        apache::geode::client::TypeHelper::no_type no) {
   Target* tptr = dynamic_cast<Target*>(ptr);
   if (tptr) {
     return tptr;
@@ -70,6 +74,8 @@ template <class Src>
 SharedBase* getSB(Src* ptr) {
   return getTarget<SharedBase>(ptr);
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

@@ -51,9 +51,9 @@ namespace GemStone
       AttributesFactory<TKey, TValue>::AttributesFactory( GemStone::GemFire::Cache::Generic::RegionAttributes<TKey, TValue>^ regionAttributes )
         : UMWrap( )
       {
-        gemfire::RegionAttributesPtr attribptr(
-          GetNativePtrFromSBWrapGeneric<gemfire::RegionAttributes>( regionAttributes ) );
-        SetPtr( new gemfire::AttributesFactory( attribptr ), true );
+        apache::geode::client::RegionAttributesPtr attribptr(
+          GetNativePtrFromSBWrapGeneric<apache::geode::client::RegionAttributes>( regionAttributes ) );
+        SetPtr( new apache::geode::client::AttributesFactory( attribptr ), true );
       }
 
       // CALLBACKS
@@ -61,12 +61,12 @@ namespace GemStone
       generic<class TKey, class TValue>
       void AttributesFactory<TKey, TValue>::SetCacheLoader( ICacheLoader<TKey, TValue>^ cacheLoader )
       {
-        gemfire::CacheLoaderPtr loaderptr;
+        apache::geode::client::CacheLoaderPtr loaderptr;
         if ( cacheLoader != nullptr ) {
           CacheLoaderGeneric<TKey, TValue>^ clg = gcnew CacheLoaderGeneric<TKey, TValue>();
           clg->SetCacheLoader(cacheLoader);
-          loaderptr = new gemfire::ManagedCacheLoaderGeneric( /*clg,*/ cacheLoader );
-          ((gemfire::ManagedCacheLoaderGeneric*)loaderptr.ptr())->setptr(clg);
+          loaderptr = new apache::geode::client::ManagedCacheLoaderGeneric( /*clg,*/ cacheLoader );
+          ((apache::geode::client::ManagedCacheLoaderGeneric*)loaderptr.ptr())->setptr(clg);
         }
         NativePtr->setCacheLoader( loaderptr );
       }
@@ -74,12 +74,12 @@ namespace GemStone
       generic<class TKey, class TValue>
       void AttributesFactory<TKey, TValue>::SetCacheWriter( ICacheWriter<TKey, TValue>^ cacheWriter )
       {
-        gemfire::CacheWriterPtr writerptr;
+        apache::geode::client::CacheWriterPtr writerptr;
         if ( cacheWriter != nullptr ) {
           CacheWriterGeneric<TKey, TValue>^ cwg = gcnew CacheWriterGeneric<TKey, TValue>();
           cwg->SetCacheWriter(cacheWriter);
-          writerptr = new gemfire::ManagedCacheWriterGeneric( /*cwg,*/ cacheWriter );
-          ((gemfire::ManagedCacheWriterGeneric*)writerptr.ptr())->setptr(cwg);
+          writerptr = new apache::geode::client::ManagedCacheWriterGeneric( /*cwg,*/ cacheWriter );
+          ((apache::geode::client::ManagedCacheWriterGeneric*)writerptr.ptr())->setptr(cwg);
         }
         NativePtr->setCacheWriter( writerptr );
       }
@@ -87,13 +87,13 @@ namespace GemStone
       generic<class TKey, class TValue>
       void AttributesFactory<TKey, TValue>::SetCacheListener( ICacheListener<TKey, TValue>^ cacheListener )
       {
-        gemfire::CacheListenerPtr listenerptr;
+        apache::geode::client::CacheListenerPtr listenerptr;
         if ( cacheListener != nullptr ) {
           CacheListenerGeneric<TKey, TValue>^ clg = gcnew CacheListenerGeneric<TKey, TValue>();
           clg->SetCacheListener(cacheListener);
-          //listenerptr = new gemfire::ManagedCacheListenerGeneric( (ICacheListener<Object^, Object^>^)cacheListener );
-          listenerptr = new gemfire::ManagedCacheListenerGeneric( /*clg,*/ cacheListener );
-          ((gemfire::ManagedCacheListenerGeneric*)listenerptr.ptr())->setptr(clg);
+          //listenerptr = new apache::geode::client::ManagedCacheListenerGeneric( (ICacheListener<Object^, Object^>^)cacheListener );
+          listenerptr = new apache::geode::client::ManagedCacheListenerGeneric( /*clg,*/ cacheListener );
+          ((apache::geode::client::ManagedCacheListenerGeneric*)listenerptr.ptr())->setptr(clg);
         }
         NativePtr->setCacheListener( listenerptr );
       }
@@ -101,21 +101,21 @@ namespace GemStone
       generic<class TKey, class TValue>
       void AttributesFactory<TKey, TValue>::SetPartitionResolver( IPartitionResolver<TKey, TValue>^ partitionresolver )
       {
-        gemfire::PartitionResolverPtr resolverptr;
+        apache::geode::client::PartitionResolverPtr resolverptr;
         if ( partitionresolver != nullptr ) {
           Generic::IFixedPartitionResolver<TKey, TValue>^ resolver = 
             dynamic_cast<Generic::IFixedPartitionResolver<TKey, TValue>^>(partitionresolver);
           if (resolver != nullptr) {            
             FixedPartitionResolverGeneric<TKey, TValue>^ prg = gcnew FixedPartitionResolverGeneric<TKey, TValue>();
             prg->SetPartitionResolver(partitionresolver);
-            resolverptr = new gemfire::ManagedFixedPartitionResolverGeneric( partitionresolver ); 
-            ((gemfire::ManagedFixedPartitionResolverGeneric*)resolverptr.ptr())->setptr(prg);
+            resolverptr = new apache::geode::client::ManagedFixedPartitionResolverGeneric( partitionresolver ); 
+            ((apache::geode::client::ManagedFixedPartitionResolverGeneric*)resolverptr.ptr())->setptr(prg);
           }
           else {            
             PartitionResolverGeneric<TKey, TValue>^ prg = gcnew PartitionResolverGeneric<TKey, TValue>();
             prg->SetPartitionResolver(partitionresolver);
-            resolverptr = new gemfire::ManagedPartitionResolverGeneric( partitionresolver );
-            ((gemfire::ManagedPartitionResolverGeneric*)resolverptr.ptr())->setptr(prg);            
+            resolverptr = new apache::geode::client::ManagedPartitionResolverGeneric( partitionresolver );
+            ((apache::geode::client::ManagedPartitionResolverGeneric*)resolverptr.ptr())->setptr(prg);            
           }         
         }
         NativePtr->setPartitionResolver( resolverptr );
@@ -171,42 +171,42 @@ namespace GemStone
       void AttributesFactory<TKey, TValue>::SetEntryIdleTimeout( ExpirationAction action, uint32_t idleTimeout )
       {
         NativePtr->setEntryIdleTimeout(
-          static_cast<gemfire::ExpirationAction::Action>( action ), idleTimeout );
+          static_cast<apache::geode::client::ExpirationAction::Action>( action ), idleTimeout );
       }
 
       generic<class TKey, class TValue>
       void AttributesFactory<TKey, TValue>::SetEntryTimeToLive( ExpirationAction action, uint32_t timeToLive )
       {
         NativePtr->setEntryTimeToLive(
-          static_cast<gemfire::ExpirationAction::Action>( action ), timeToLive );
+          static_cast<apache::geode::client::ExpirationAction::Action>( action ), timeToLive );
       }
 
       generic<class TKey, class TValue>
       void AttributesFactory<TKey, TValue>::SetRegionIdleTimeout( ExpirationAction action, uint32_t idleTimeout )
       {
         NativePtr->setRegionIdleTimeout(
-          static_cast<gemfire::ExpirationAction::Action>( action ), idleTimeout );
+          static_cast<apache::geode::client::ExpirationAction::Action>( action ), idleTimeout );
       }
 
       generic<class TKey, class TValue>
       void AttributesFactory<TKey, TValue>::SetRegionTimeToLive( ExpirationAction action, uint32_t timeToLive )
       {
         NativePtr->setRegionTimeToLive(
-          static_cast<gemfire::ExpirationAction::Action>( action ), timeToLive );
+          static_cast<apache::geode::client::ExpirationAction::Action>( action ), timeToLive );
       }
 
       // PERSISTENCE
        generic<class TKey, class TValue>
       void AttributesFactory<TKey, TValue>::SetPersistenceManager(IPersistenceManager<TKey, TValue>^ persistenceManager, Properties<String^, String^>^ config )
       {
-        gemfire::PersistenceManagerPtr persistenceManagerptr;
+        apache::geode::client::PersistenceManagerPtr persistenceManagerptr;
         if ( persistenceManager != nullptr ) {
           PersistenceManagerGeneric<TKey, TValue>^ clg = gcnew PersistenceManagerGeneric<TKey, TValue>();
           clg->SetPersistenceManager(persistenceManager);
-          persistenceManagerptr = new gemfire::ManagedPersistenceManagerGeneric( /*clg,*/ persistenceManager );
-          ((gemfire::ManagedPersistenceManagerGeneric*)persistenceManagerptr.ptr())->setptr(clg);
+          persistenceManagerptr = new apache::geode::client::ManagedPersistenceManagerGeneric( /*clg,*/ persistenceManager );
+          ((apache::geode::client::ManagedPersistenceManagerGeneric*)persistenceManagerptr.ptr())->setptr(clg);
         }
-         gemfire::PropertiesPtr configptr(GetNativePtr<gemfire::Properties>( config ) );
+         apache::geode::client::PropertiesPtr configptr(GetNativePtr<apache::geode::client::Properties>( config ) );
          NativePtr->setPersistenceManager( persistenceManagerptr, configptr );
       }
       
@@ -231,8 +231,8 @@ namespace GemStone
         ManagedString mg_factoryFunctionName( factoryFunctionName );
         //  TODO:
 				//TODO::split
-        gemfire::PropertiesPtr configptr(
-          GetNativePtr<gemfire::Properties>( config ) );
+        apache::geode::client::PropertiesPtr configptr(
+          GetNativePtr<apache::geode::client::Properties>( config ) );
 
         NativePtr->setPersistenceManager( mg_libpath.CharPtr,
           mg_factoryFunctionName.CharPtr, configptr );
@@ -291,7 +291,7 @@ namespace GemStone
       void AttributesFactory<TKey, TValue>::SetDiskPolicy( DiskPolicyType diskPolicy )
       {
         NativePtr->setDiskPolicy(
-          static_cast<gemfire::DiskPolicyType::PolicyType>( diskPolicy ) );
+          static_cast<apache::geode::client::DiskPolicyType::PolicyType>( diskPolicy ) );
       }
 
       generic<class TKey, class TValue>
@@ -318,7 +318,7 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-          gemfire::RegionAttributesPtr& nativeptr (
+          apache::geode::client::RegionAttributesPtr& nativeptr (
             NativePtr->createRegionAttributes( ) );
           return GemStone::GemFire::Cache::Generic::RegionAttributes<TKey, TValue>::Create(nativeptr.ptr());
 

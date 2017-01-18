@@ -26,7 +26,9 @@
 
 #include <ace/Recursive_Thread_Mutex.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class CacheImpl;
 class ThinClientPoolDM;
@@ -64,6 +66,7 @@ class CPPCACHE_EXPORT ProxyRemoteQueryService : public QueryService {
 };
 
 typedef SharedPtr<ProxyRemoteQueryService> ProxyRemoteQueryServicePtr;
-
-};      // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // ifndef __GEMFIRE_PROXYREMOTEQUERYSERVICE_H__

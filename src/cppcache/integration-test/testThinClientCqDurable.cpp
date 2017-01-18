@@ -35,7 +35,7 @@
 
 #include "ThinClientCQ.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace test;
 using namespace testData;
 
@@ -216,7 +216,7 @@ void RunDurableCqClient() {
 
   // execute Cq Query
   qry->execute();
-  gemfire::millisleep(10000);
+  apache::geode::client::millisleep(10000);
 
   LOGINFO("Executed new CqQuery");
 
@@ -227,7 +227,7 @@ void RunDurableCqClient() {
   LOGINFO("Sent ReadyForEvents message to server");
 
   // wait for some time to recieve events
-  gemfire::millisleep(10000);
+  apache::geode::client::millisleep(10000);
 
   // Close the GemFire Cache with keepalive = true.  Server will queue events
   // for
@@ -263,7 +263,7 @@ void RunFeederClient() {
 
     regionPtr->put(keyPtr, valPtr);
   }
-  gemfire::millisleep(10000);
+  apache::geode::client::millisleep(10000);
   LOGINFO("put on 0-10 keys done.");
 
   // Close the GemFire Cache
@@ -296,7 +296,7 @@ void RunFeederClient1() {
 
     regionPtr->put(keyPtr, valPtr);
   }
-  gemfire::millisleep(10000);
+  apache::geode::client::millisleep(10000);
   LOGINFO("put on 0-10 keys done.");
 
   // Close the GemFire Cache

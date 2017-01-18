@@ -17,7 +17,9 @@
 #ifndef _GEMFIRE_GEMFIRETYPEIDSIMPL_HPP_
 #define _GEMFIRE_GEMFIRETYPEIDSIMPL_HPP_
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class GemfireTypeIdsImpl {
  public:
@@ -73,6 +75,8 @@ class GemfireTypeIdsImpl {
     DiskVersionTag = 2131
   };
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

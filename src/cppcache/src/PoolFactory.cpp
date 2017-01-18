@@ -26,7 +26,7 @@
 #include <ace/INET_Addr.h>
 #include <ThinClientPoolStickyDM.hpp>
 #include <ThinClientPoolStickyHADM.hpp>
-using namespace gemfire;
+using namespace apache::geode::client;
 const char* PoolFactory::DEFAULT_SERVER_GROUP = "";
 extern HashMapOfPools* connectionPools;
 extern ACE_Recursive_Thread_Mutex connectionPoolsLock;

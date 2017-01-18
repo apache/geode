@@ -40,7 +40,7 @@ namespace GemStone
      // ref class AttributesMutator;
 
       generic<class TKey, class TValue>
-			public ref class Region : public Internal::SBWrap<gemfire::Region>,
+			public ref class Region : public Internal::SBWrap<apache::geode::client::Region>,
         public IRegion<TKey, TValue>,
         public ISubscriptionService<TKey>
       {
@@ -271,7 +271,7 @@ namespace GemStone
         /// </returns>
         //generic<class TKey, class TValue>
         inline static GemStone::GemFire::Cache::Generic::IRegion<TKey, TValue>^
-        Create( gemfire::Region* nativeptr )
+        Create( apache::geode::client::Region* nativeptr )
         {
           return ( nativeptr != nullptr ?
             gcnew Region<TKey, TValue>( nativeptr ) : nullptr );
@@ -283,12 +283,12 @@ namespace GemStone
         /// Private constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline Region( gemfire::Region* nativeptr )
-					: SBWrap<gemfire::Region>( nativeptr ) { }
+        inline Region( apache::geode::client::Region* nativeptr )
+					: SBWrap<apache::geode::client::Region>( nativeptr ) { }
 
-        inline gemfire::SerializablePtr get(gemfire::CacheableKeyPtr& key, gemfire::SerializablePtr& callbackArg);
-        inline gemfire::SerializablePtr get(gemfire::CacheableKeyPtr& key);
-        bool AreValuesEqual(gemfire::CacheablePtr& val1, gemfire::CacheablePtr& val2);
+        inline apache::geode::client::SerializablePtr get(apache::geode::client::CacheableKeyPtr& key, apache::geode::client::SerializablePtr& callbackArg);
+        inline apache::geode::client::SerializablePtr get(apache::geode::client::CacheableKeyPtr& key);
+        bool AreValuesEqual(apache::geode::client::CacheablePtr& val1, apache::geode::client::CacheablePtr& val2);
         bool isPoolInMultiuserMode();
       };
 

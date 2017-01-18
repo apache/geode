@@ -26,7 +26,7 @@
 
 #include "CacheHelper.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace test;
 
 class DupChecker : public CacheListener {
@@ -489,21 +489,21 @@ DUNIT_TASK_DEFINITION(CLIENT1, CreateEntries)
   {
     for (int value = 1; value <= 100; value++) {
       createIntEntry(regionNames[0], keys[0], value);
-      gemfire::millisleep(50);
+      apache::geode::client::millisleep(50);
       createIntEntry(regionNames[0], keys[1], value);
-      gemfire::millisleep(50);
+      apache::geode::client::millisleep(50);
       createIntEntry(regionNames[0], keys[2], value);
-      gemfire::millisleep(50);
+      apache::geode::client::millisleep(50);
       createIntEntry(regionNames[0], keys[3], value);
-      gemfire::millisleep(50);
+      apache::geode::client::millisleep(50);
       createIntEntry(regionNames[1], keys[0], value);
-      gemfire::millisleep(50);
+      apache::geode::client::millisleep(50);
       createIntEntry(regionNames[1], keys[1], value);
-      gemfire::millisleep(50);
+      apache::geode::client::millisleep(50);
       createIntEntry(regionNames[1], keys[2], value);
-      gemfire::millisleep(50);
+      apache::geode::client::millisleep(50);
       createIntEntry(regionNames[1], keys[3], value);
-      gemfire::millisleep(50);
+      apache::geode::client::millisleep(50);
     }
   }
 END_TASK_DEFINITION

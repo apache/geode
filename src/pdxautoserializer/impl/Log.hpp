@@ -21,7 +21,9 @@
 #include <string>
 #include <iosfwd>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace pdx_auto_serializer {
 /**
  * This class provides simple static functions to print messages on the
@@ -81,7 +83,9 @@ class Log {
   Log();
   Log(const Log&);
 };
-}
-}
+}  // namespace pdx_auto_serializer
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // _GFAS_LOG_HPP_

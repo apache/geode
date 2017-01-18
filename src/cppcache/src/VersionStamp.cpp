@@ -22,7 +22,7 @@
 #include "ThinClientRegion.hpp"
 #include "ThinClientPoolDM.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 void VersionStamp::setVersions(VersionTagPtr versionTag) {
   int32_t eVersion = versionTag->getEntryVersion();

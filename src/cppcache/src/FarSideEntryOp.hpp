@@ -32,7 +32,9 @@
 #include <gfcpp/UserData.hpp>
 #include "LocalRegion.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 enum OPERATION {
   MARKER = 0,
@@ -88,7 +90,7 @@ class RegionCommit;
 
 _GF_PTR_DEF_(FarSideEntryOp, FarSideEntryOpPtr);
 
-class FarSideEntryOp : public gemfire::SharedBase {
+class FarSideEntryOp : public apache::geode::client::SharedBase {
  public:
   FarSideEntryOp(RegionCommit* region);
   virtual ~FarSideEntryOp();
@@ -116,6 +118,8 @@ class FarSideEntryOp : public gemfire::SharedBase {
   bool isInvalidate(int8_t op);
   void skipFilterRoutingInfo(DataInput& input);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif /* FARSIDEENTRYOP_HPP_ */

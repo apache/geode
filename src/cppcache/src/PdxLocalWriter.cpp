@@ -27,7 +27,9 @@
 #include <gfcpp/CacheableEnum.hpp>
 #include "GemfireTypeIdsImpl.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /* adongre  - Coverity II
  * Non-static class member "m_currentOffsetIndex" is not initialized in this
@@ -526,4 +528,6 @@ uint8_t* PdxLocalWriter::getPdxStream(int& pdxLen) {
 }
 
 void PdxLocalWriter::writeByte(int8_t byte) { m_dataOutput->write(byte); }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

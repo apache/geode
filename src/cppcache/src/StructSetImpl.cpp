@@ -21,7 +21,7 @@
  * @file
  */
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 StructSetImpl::StructSetImpl(
     const CacheableVectorPtr& response,

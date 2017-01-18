@@ -34,7 +34,7 @@
 #include "testobject/NonPdxType.hpp"
 #include "ThinClientPdxSerializers.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace test;
 using namespace PdxTests;
 

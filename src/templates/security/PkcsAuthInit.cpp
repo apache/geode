@@ -21,7 +21,9 @@
 #include "gfcpp/ExceptionTypes.hpp"
 #include "stdio.h"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 extern "C" {
 LIBEXP AuthInitialize* createPKCSAuthInitInstance() {
@@ -182,4 +184,6 @@ PropertiesPtr PKCSAuthInit::getCredentials(PropertiesPtr& securityprops,
   credentials->insert(CacheableString::create(SIGNATURE_DATA), signatureValPtr);
   return credentials;
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

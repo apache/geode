@@ -20,7 +20,9 @@
 #include "PdxInstanceImpl.hpp"
 #include <ace/OS_NS_stdio.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 PdxInstanceFactoryImpl::~PdxInstanceFactoryImpl() {}
 
@@ -401,4 +403,6 @@ void PdxInstanceFactoryImpl::isFieldAdded(const char* fieldName) {
     throw IllegalStateException(excpStr);
   }
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

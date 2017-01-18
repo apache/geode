@@ -43,7 +43,7 @@ namespace GemStone
       /// <remarks>
       generic<class TResult>
       public ref class FunctionService 
-        : public Internal::SBWrap<gemfire::FunctionService>
+        : public Internal::SBWrap<apache::geode::client::FunctionService>
       {
       public:
 
@@ -98,7 +98,7 @@ namespace GemStone
         /// Private constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline FunctionService( gemfire::FunctionService* nativeptr )
+        inline FunctionService( apache::geode::client::FunctionService* nativeptr )
           : SBWrap( nativeptr ) { }
 
       };

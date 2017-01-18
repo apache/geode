@@ -22,7 +22,9 @@
 #include "stdio.h"
 #include <string>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 CacheableStringPtr convertBytesToString(const uint8_t* bytes, int32_t length,
                                         size_t maxLength) {
   if (bytes != NULL) {
@@ -212,4 +214,6 @@ PropertiesPtr PKCSAuthInitInternal::getCredentials(PropertiesPtr& securityprops,
                       signatureValPtr);
   return credentials;
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

@@ -27,7 +27,7 @@
 #include <gfcpp/CacheAttributes.hpp>
 #include <algorithm>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 ThinClientCacheDistributionManager::ThinClientCacheDistributionManager(
     TcrConnectionManager& connManager)

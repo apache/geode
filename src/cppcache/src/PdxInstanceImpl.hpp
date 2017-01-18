@@ -27,7 +27,9 @@
 #include <vector>
 #include <map>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 typedef std::map<std::string, CacheablePtr> FieldVsValues;
 
@@ -1161,6 +1163,8 @@ class CPPCACHE_EXPORT PdxInstanceImpl : public WritablePdxInstance {
   static PdxFieldTypePtr m_DefaultPdxFieldType;
 };
 typedef SharedPtr<PdxInstanceImpl> PdxInstanceImplPtr;
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif /* __PDXINSTANCE_IMPL_HPP_*/

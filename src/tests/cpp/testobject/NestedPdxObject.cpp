@@ -21,7 +21,7 @@
 
 #include "NestedPdxObject.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace testobject;
 
 ChildPdx::~ChildPdx() {}

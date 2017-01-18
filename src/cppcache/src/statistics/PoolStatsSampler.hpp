@@ -18,13 +18,17 @@
 #define __POOLSTATSSAMPLER__
 #include <ace/Task.h>
 #include <gfcpp/gfcpp_globals.hpp>
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class CacheImpl;
 class ThinClientBaseDM;
 class AdminRegion;
 class ThinClientPoolDM;
-}  // namespace gemfire
-using namespace gemfire;
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
+using namespace apache::geode::client;
 namespace gemfire_statistics {
 class StatisticsManager;
 class CPPCACHE_EXPORT PoolStatsSampler : public ACE_Task_Base {

@@ -21,7 +21,7 @@
 #include <gfcpp/DataOutput.hpp>
 #include <gfcpp/DataInput.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace test;
 
 void dumpnbytes(const uint8_t* buf, uint32_t length) {

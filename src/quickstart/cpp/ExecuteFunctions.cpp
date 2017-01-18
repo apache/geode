@@ -16,7 +16,7 @@
 #include <gfcpp/GemfireCppCache.hpp>
 
 // Use the "gemfire" namespace.
-using namespace gemfire;
+using namespace apache::geode::client;
 
 char* getFuncIName = (char*)"MultiGetFunctionI";
 char* putFuncIName = (char*)"MultiPutFunctionI";

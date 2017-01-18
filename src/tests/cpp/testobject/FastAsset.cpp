@@ -17,7 +17,7 @@
 #include "FastAsset.hpp"
 #include "fwklib/GsRandom.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace testframework;
 using namespace testobject;
 
@@ -26,12 +26,13 @@ FastAsset::FastAsset(int idx, int maxVal) : assetId(idx) {
 }
 
 FastAsset::~FastAsset() {}
-void FastAsset::toData(gemfire::DataOutput& output) const {
+void FastAsset::toData(apache::geode::client::DataOutput& output) const {
   output.writeInt(static_cast<int32_t>(assetId));
   output.writeDouble(value);
 }
 
-gemfire::Serializable* FastAsset::fromData(gemfire::DataInput& input) {
+apache::geode::client::Serializable* FastAsset::fromData(
+    apache::geode::client::DataInput& input) {
   input.readInt(&assetId);
   input.readDouble(&value);
   return this;

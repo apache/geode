@@ -17,7 +17,9 @@
 #include "ClientHealthStats.hpp"
 #include "CacheImpl.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 void ClientHealthStats::toData(DataOutput& output) const {
   output.writeInt(static_cast<int32_t>(m_numGets));
@@ -80,4 +82,6 @@ ClientHealthStats::ClientHealthStats(int gets, int puts, int misses,
 }
 
 ClientHealthStats::~ClientHealthStats() {}
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

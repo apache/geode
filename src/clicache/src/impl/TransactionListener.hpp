@@ -54,20 +54,20 @@ namespace GemStone
 
 					virtual void AfterCommit(GemStone::GemFire::Cache::TransactionEvent^ event) override 
           {
-            GemStone::GemFire::Cache::Generic::TransactionEvent<TKey, TValue> gevent(GetNativePtr<gemfire::TransactionEvent>(event));
+            GemStone::GemFire::Cache::Generic::TransactionEvent<TKey, TValue> gevent(GetNativePtr<apache::geode::client::TransactionEvent>(event));
             m_listener->AfterCommit(%gevent);
             
           }
 
           virtual void AfterFailedCommit(GemStone::GemFire::Cache::TransactionEvent^ event) override 
           {
-            GemStone::GemFire::Cache::Generic::TransactionEvent<TKey, TValue> gevent(GetNativePtr<gemfire::TransactionEvent>(event));
+            GemStone::GemFire::Cache::Generic::TransactionEvent<TKey, TValue> gevent(GetNativePtr<apache::geode::client::TransactionEvent>(event));
             m_listener->AfterFailedCommit(%gevent);
           }
 
           virtual void AfterRollback(GemStone::GemFire::Cache::TransactionEvent^ event) override 
           {
-            GemStone::GemFire::Cache::Generic::TransactionEvent<TKey, TValue> gevent(GetNativePtr<gemfire::TransactionEvent>(event));
+            GemStone::GemFire::Cache::Generic::TransactionEvent<TKey, TValue> gevent(GetNativePtr<apache::geode::client::TransactionEvent>(event));
             m_listener->AfterRollback(%gevent);
           }
 

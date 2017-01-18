@@ -17,7 +17,7 @@
 
 #include <gfcpp/CqListener.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 CqListener::CqListener() {}
 void CqListener::onEvent(const CqEvent& aCqEvent) {}
 void CqListener::onError(const CqEvent& aCqEvent) {}

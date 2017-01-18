@@ -20,7 +20,7 @@
 #include "DeltaEx.hpp"
 #include "fw_dunit.hpp"
 #include <string>
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace test;
 
 CacheHelper* cacheHelper = NULL;

@@ -16,7 +16,7 @@
  */
 #include "EqStruct.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace testframework;
 using namespace testobject;
 
@@ -79,7 +79,7 @@ EqStruct::EqStruct(int index) {
 }
 
 EqStruct::~EqStruct() {}
-void EqStruct::toData(gemfire::DataOutput &out) const {
+void EqStruct::toData(apache::geode::client::DataOutput &out) const {
   // Strings
   out.writeUTF(state);
   out.writeUTF(demandInd);
@@ -139,7 +139,8 @@ void EqStruct::toData(gemfire::DataOutput &out) const {
   out.writeDouble(discretionOffset);
 }
 
-gemfire::Serializable *EqStruct::fromData(gemfire::DataInput &in) {
+apache::geode::client::Serializable *EqStruct::fromData(
+    apache::geode::client::DataInput &in) {
   // Strings
   in.readUTF(&state);
   in.readUTF(&demandInd);

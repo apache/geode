@@ -40,7 +40,7 @@
 #include "queryobjects/Position.hpp"
 
 // Use the "gemfire" namespace.
-using namespace gemfire;
+using namespace apache::geode::client;
 
 // Use the "testobject" namespace for the query objects.
 using namespace testobject;

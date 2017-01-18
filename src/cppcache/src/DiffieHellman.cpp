@@ -20,7 +20,9 @@
 #include <gfcpp/ExceptionTypes.hpp>
 #include <gfcpp/SystemProperties.hpp>
 #include <ace/Guard_T.h>
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 ACE_DLL DiffieHellman::m_dll;
 bool DiffieHellman::m_inited = false;
@@ -194,5 +196,6 @@ bool DiffieHellman::verify(const CacheableStringPtr& subject,
 
   return result;
 }
-
-};  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

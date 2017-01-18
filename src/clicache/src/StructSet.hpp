@@ -42,7 +42,7 @@ namespace GemStone
       /// </summary>
       generic<class TResult>
       public ref class StructSet sealed
-        : public Internal::SBWrap<gemfire::StructSet>, public ICqResults<TResult>
+        : public Internal::SBWrap<apache::geode::client::StructSet>, public ICqResults<TResult>
       {
       public:
 
@@ -138,7 +138,7 @@ namespace GemStone
         /// <returns>
         /// The managed wrapper object; null if the native pointer is null.
         /// </returns>
-        inline static StructSet<TResult>^ Create(gemfire::StructSet* nativeptr)
+        inline static StructSet<TResult>^ Create(apache::geode::client::StructSet* nativeptr)
         {
           return (nativeptr != nullptr ? gcnew StructSet<TResult>(nativeptr) : nullptr);
         }
@@ -153,7 +153,7 @@ namespace GemStone
         /// Private constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline StructSet(gemfire::StructSet* nativeptr)
+        inline StructSet(apache::geode::client::StructSet* nativeptr)
           : SBWrap(nativeptr) { }
       };
 

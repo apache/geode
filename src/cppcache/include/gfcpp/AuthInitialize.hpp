@@ -24,7 +24,9 @@
 #include "gfcpp_globals.hpp"
 #include "gf_types.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * @class AuthInitialize AuthInitialize.hpp
@@ -37,7 +39,8 @@ namespace gemfire {
  * AuthInitialize object) as the <code>security-client-auth-factory</code>
  * system property.
  */
-class CPPCACHE_EXPORT AuthInitialize : public SharedBase {
+class CPPCACHE_EXPORT AuthInitialize
+    : public ::apache::geode::client::SharedBase {
  public:
   /**@brief initialize with the given set of security properties
    * and return the credentials for the client as properties.
@@ -55,7 +58,8 @@ class CPPCACHE_EXPORT AuthInitialize : public SharedBase {
   /**@brief Invoked before the cache goes down. */
   virtual void close() = 0;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_AUTHINITIALIZE_H__

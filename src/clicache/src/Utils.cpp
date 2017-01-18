@@ -70,7 +70,7 @@ namespace GemStone
 
     int32_t Utils::LastError::get( )
     {
-       return gemfire::Utils::getLastError( );
+       return apache::geode::client::Utils::getLastError( );
     }
 			}
 	 }

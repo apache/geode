@@ -23,7 +23,9 @@
 #include "PoolXmlCreation.hpp"
 #include <vector>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class Cache;
 /**
@@ -87,6 +89,8 @@ class CPPCACHE_EXPORT CacheXmlCreation {
   bool m_pdxIgnoreUnreadFields;
   bool m_readPdxSerialized;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // #ifndef  _GEMFIRE_CACHEXMLCREATION_HPP_

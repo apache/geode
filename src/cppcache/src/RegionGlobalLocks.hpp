@@ -20,7 +20,9 @@
 
 #include "LocalRegion.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class CPPCACHE_EXPORT RegionGlobalLocks {
  public:
@@ -35,6 +37,8 @@ class CPPCACHE_EXPORT RegionGlobalLocks {
   LocalRegion* m_region;
   bool m_isFailover;
 };
-};  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_REGIONGLOBAL_H__

@@ -20,7 +20,9 @@
 #include <gfcpp/gfcpp_globals.hpp>
 #include <string>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 // initialize GEMFIRE runtime if it has not already been initialized.
 class CPPCACHE_EXPORT CppCacheLibrary {
@@ -45,7 +47,8 @@ class CPPCACHE_EXPORT CppCacheLibrary {
 
   static std::string getProductDir();
 };
-
-}; /* namespace gemfire */
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __GEMFIRE_IMPL_CPPCACHELIBRARY_H__

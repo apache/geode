@@ -31,7 +31,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * @cacheserver
@@ -96,7 +98,8 @@ class CqEventImpl : public CqEvent {
   CacheableBytesPtr m_deltaValue;
   EventIdPtr m_eventId;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_CQ_EVENT_IMPL_H__

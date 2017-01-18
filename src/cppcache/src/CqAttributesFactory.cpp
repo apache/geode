@@ -18,7 +18,7 @@
 #include <CqAttributesImpl.hpp>
 #include <gfcpp/ExceptionTypes.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 CqAttributesFactory::CqAttributesFactory() {
   m_cqAttributes = new CqAttributesImpl();

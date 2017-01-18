@@ -33,7 +33,9 @@
 
 #include "fwklib/FrameworkTest.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace testframework {
 
 // ----------------------------------------------------------------------------
@@ -81,7 +83,9 @@ class TestProcessor : public ServiceTask {
 };
 
 }  // namespace testframework
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 // ----------------------------------------------------------------------------
 
 #endif  // __UDPIPC_HPP__

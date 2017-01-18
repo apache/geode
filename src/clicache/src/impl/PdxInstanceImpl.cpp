@@ -53,7 +53,7 @@ namespace GemStone
             m_pdxType->InitializeType();//to generate static position map
 
             //need to initiailize stream. this will call todata and in toData we will have stream
-            gemfire::DataOutput* output = gemfire::DataOutput::getDataOutput();
+            apache::geode::client::DataOutput* output = apache::geode::client::DataOutput::getDataOutput();
             
             try
             {
@@ -62,7 +62,7 @@ namespace GemStone
             }
             finally
             {
-              gemfire::DataOutput::releaseDataOutput(output);
+              apache::geode::client::DataOutput::releaseDataOutput(output);
             }
           }
 
@@ -994,7 +994,7 @@ namespace GemStone
             uint8_t* copy = m_buffer; 
             
             if(!m_own)
-              copy = gemfire::DataInput::getBufferCopy(m_buffer, m_bufferLength);
+              copy = apache::geode::client::DataInput::getBufferCopy(m_buffer, m_bufferLength);
 
             DataInput^ dataInput = gcnew DataInput(copy, m_bufferLength);//this will delete buffer
             dataInput->setPdxdeserialization(true);
@@ -1052,7 +1052,7 @@ namespace GemStone
           if(m_own)
           {
             m_own = false;
-            gemfire::DataOutput::safeDelete(m_buffer);
+            apache::geode::client::DataOutput::safeDelete(m_buffer);
           }
         }
 

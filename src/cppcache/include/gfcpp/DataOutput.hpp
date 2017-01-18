@@ -33,7 +33,9 @@ extern "C" {
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * C style memory allocation that throws OutOfMemoryException
@@ -812,6 +814,8 @@ class CPPCACHE_EXPORT DataOutput {
   DataOutput(const DataOutput&);
   DataOutput& operator=(const DataOutput&);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __GEMFIRE_DATAOUTPUT_H__

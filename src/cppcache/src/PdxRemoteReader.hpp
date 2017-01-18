@@ -25,7 +25,9 @@
 
 #include "PdxLocalReader.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class PdxRemoteReader : public PdxLocalReader {
  private:
@@ -211,5 +213,7 @@ class PdxRemoteReader : public PdxLocalReader {
                               CacheableArrayListPtr& collection);
 };
 typedef SharedPtr<PdxRemoteReader> PdxRemoteReaderPtr;
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif /* PDXREMOTEREADER_HPP_ */

@@ -29,17 +29,19 @@
 /** @file
 */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 #ifdef BUILD_CPPCACHE
-typedef std::vector<gemfire::SharedBasePtr> VofSBP;
+typedef std::vector<apache::geode::client::SharedBasePtr> VofSBP;
 typedef VofSBP::const_iterator VofSBPIterator;
 #else
 class VofSBP;
 class VofSBPIterator;
 #endif
 
-/** Represents a vector of <code>gemfire::SharedBasePtr</code>
+/** Represents a vector of <code>apache::geode::client::SharedBasePtr</code>
 */
 class CPPCACHE_EXPORT VectorOfSharedBase {
  private:
@@ -163,6 +165,8 @@ class CPPCACHE_EXPORT VectorOfSharedBase {
   */
   void erase(int32_t index);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

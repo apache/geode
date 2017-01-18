@@ -19,7 +19,7 @@
 #include "EClassIds.hpp"
 #include <stdio.h>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 BankAccount::BankAccount( int customerNum, int accountNum )
 : CacheableKey(),

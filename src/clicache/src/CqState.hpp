@@ -50,7 +50,7 @@ namespace GemStone
       /// Static class containing convenience methods for <c>CqState</c>.
       /// </summary>
       public ref class CqState sealed
-        : public Internal::UMWrap<gemfire::CqState>
+        : public Internal::UMWrap<apache::geode::client::CqState>
       {
       public:
 
@@ -87,7 +87,7 @@ namespace GemStone
         /// Internal constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline CqState( gemfire::CqState* nativeptr )
+        inline CqState( apache::geode::client::CqState* nativeptr )
 		            : UMWrap( nativeptr, false ) { }
 
       };

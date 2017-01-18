@@ -41,24 +41,26 @@
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
 template <>
-class ACE_Hash<gemfire::CacheableKeyPtr> {
+class ACE_Hash<apache::geode::client::CacheableKeyPtr> {
  public:
-  u_long operator()(const gemfire::CacheableKeyPtr& key) {
+  u_long operator()(const apache::geode::client::CacheableKeyPtr& key) {
     return key->hashcode();
   }
 };
 
 template <>
-class ACE_Equal_To<gemfire::CacheableKeyPtr> {
+class ACE_Equal_To<apache::geode::client::CacheableKeyPtr> {
  public:
-  bool operator()(const gemfire::CacheableKeyPtr& key1,
-                  const gemfire::CacheableKeyPtr& key2) {
+  bool operator()(const apache::geode::client::CacheableKeyPtr& key1,
+                  const apache::geode::client::CacheableKeyPtr& key2) {
     return key1->operator==(*key2);
   }
 };
 ACE_END_VERSIONED_NAMESPACE_DECL
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class RegionInternal;
 typedef ::ACE_Hash_Map_Manager_Ex<
@@ -301,7 +303,8 @@ class CPPCACHE_EXPORT MapSegment {
 
   static bool boolVal;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __GEMFIRE_IMPL_MAPSEGMENT_H__

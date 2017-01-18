@@ -18,7 +18,9 @@
 #include <gfcpp/ExceptionTypes.hpp>
 #include <gfcpp/Log.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 void Assert::throwAssertion(const char* expressionText, const char* file,
                             int line) {
@@ -28,4 +30,6 @@ void Assert::throwAssertion(const char* expressionText, const char* file,
   ae.printStackTrace();
   throw ae;
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

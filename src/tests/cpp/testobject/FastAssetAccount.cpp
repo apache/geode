@@ -17,7 +17,7 @@
 #include "FastAssetAccount.hpp"
 #include "FastAsset.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace testframework;
 using namespace testobject;
 
@@ -44,7 +44,7 @@ FastAssetAccount::FastAssetAccount(int idx, bool encodeTimestp, int maxVal,
 }
 
 FastAssetAccount::~FastAssetAccount() {}
-void FastAssetAccount::toData(gemfire::DataOutput& output) const {
+void FastAssetAccount::toData(apache::geode::client::DataOutput& output) const {
   // output.writeBoolean(encodeTimestamp);
   output.writeInt(static_cast<int32_t>(acctId));
   output.writeObject(customerName);
@@ -53,7 +53,8 @@ void FastAssetAccount::toData(gemfire::DataOutput& output) const {
   output.writeInt(static_cast<int64_t>(timestamp));
 }
 
-gemfire::Serializable* FastAssetAccount::fromData(gemfire::DataInput& input) {
+apache::geode::client::Serializable* FastAssetAccount::fromData(
+    apache::geode::client::DataInput& input) {
   // input.readBoolean(&encodeTimestamp);
   input.readInt(&acctId);
   input.readObject(customerName);

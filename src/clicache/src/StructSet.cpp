@@ -52,8 +52,8 @@ namespace GemStone
       generic<class TResult>
       SelectResultsIterator<TResult>^ StructSet<TResult>::GetIterator( )
       {
-        gemfire::SelectResultsIterator* nativeptr =
-          new gemfire::SelectResultsIterator(NativePtr->getIterator());
+        apache::geode::client::SelectResultsIterator* nativeptr =
+          new apache::geode::client::SelectResultsIterator(NativePtr->getIterator());
         return SelectResultsIterator<TResult>::Create( nativeptr );
       }
 

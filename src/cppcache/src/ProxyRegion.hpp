@@ -43,7 +43,9 @@
 #include <gfcpp/Query.hpp>
 #include "ProxyCache.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class FunctionService;
 /**
 * @class ProxyRegion ProxyRegion.hpp
@@ -1513,6 +1515,8 @@ class CPPCACHE_EXPORT ProxyRegion : public Region {
 };
 
 typedef SharedPtr<ProxyRegion> ProxyRegionPtr;
-};  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_PROXYREGION_H__

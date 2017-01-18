@@ -39,7 +39,7 @@
 #include <gfcpp/GemfireCppCache.hpp>
 
 // Use the "gemfire" namespace.
-using namespace gemfire;
+using namespace apache::geode::client;
 
 void distributedsystem(CachePtr cachePtr, char *hostname, int port,
                        char *poolName, char *regionName) {

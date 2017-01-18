@@ -27,7 +27,9 @@
 /** @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 #define GF_STRING (int8_t) GemfireTypeIds::CacheableASCIIString
 #define GF_STRING_HUGE (int8_t) GemfireTypeIds::CacheableASCIIStringHuge
@@ -276,29 +278,31 @@ class CPPCACHE_EXPORT CacheableString : public CacheableKey {
   CacheableString(const CacheableString& other);
 };
 
-/** overload of gemfire::createKeyArr to pass char* */
+/** overload of apache::geode::client::createKeyArr to pass char* */
 inline CacheableKeyPtr createKeyArr(const char* value) {
   return (value != NULL ? CacheableKeyPtr(CacheableString::create(value).ptr())
                         : NULLPTR);
 }
 
-/** overload of gemfire::createKeyArr to pass wchar_t* */
+/** overload of apache::geode::client::createKeyArr to pass wchar_t* */
 inline CacheableKeyPtr createKeyArr(const wchar_t* value) {
   return (value != NULL ? CacheableKeyPtr(CacheableString::create(value).ptr())
                         : NULLPTR);
 }
 
-/** overload of gemfire::createValueArr to pass char* */
+/** overload of apache::geode::client::createValueArr to pass char* */
 inline CacheablePtr createValueArr(const char* value) {
   return (value != NULL ? CacheablePtr(CacheableString::create(value).ptr())
                         : NULLPTR);
 }
 
-/** overload of gemfire::createValueArr to pass wchar_t* */
+/** overload of apache::geode::client::createValueArr to pass wchar_t* */
 inline CacheablePtr createValueArr(const wchar_t* value) {
   return (value != NULL ? CacheablePtr(CacheableString::create(value).ptr())
                         : NULLPTR);
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

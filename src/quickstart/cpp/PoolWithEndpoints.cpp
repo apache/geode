@@ -37,7 +37,7 @@
 #include <gfcpp/GemfireCppCache.hpp>
 
 // Use the "gemfire" namespace.
-using namespace gemfire;
+using namespace apache::geode::client;
 
 // The PoolWithEndpoints QuickStart example.
 int main(int argc, char** argv) {

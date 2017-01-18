@@ -46,7 +46,9 @@
 #include "Query.hpp"
 #define DEFAULT_RESPONSE_TIMEOUT 15
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 /**
 * @class Region Region.hpp
 *
@@ -1444,7 +1446,8 @@ class CPPCACHE_EXPORT Region : public SharedBase {
   Region(const Region&);
   Region& operator=(const Region&);
 };
-
-};  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_REGION_H__

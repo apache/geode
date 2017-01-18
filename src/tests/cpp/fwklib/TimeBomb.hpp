@@ -25,7 +25,9 @@
 #include "ace/Task.h"
 #include <ace/OS.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace testframework {
 
 class TimeBomb : public ACE_Task_Base {
@@ -76,5 +78,7 @@ class TimeBomb : public ACE_Task_Base {
 };
 
 }  // namespace testframework
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // __TimeBomb_hpp__

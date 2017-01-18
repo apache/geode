@@ -24,12 +24,12 @@
 
 #include "PositionPdxAuto.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 namespace testobject {
 #define GFARRAYSIZE(X)
 #define GFID
-class PortfolioPdxAuto : public gemfire::PdxSerializable {
+class PortfolioPdxAuto : public apache::geode::client::PdxSerializable {
  private:
   GFID int32_t id;
 

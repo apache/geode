@@ -20,7 +20,9 @@
 
 #include "MapEntry.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class TrackedMapEntry : public MapEntry {
  public:
@@ -73,6 +75,8 @@ class TrackedMapEntry : public MapEntry {
   int m_trackingNumber;
   int m_updateCount;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif /* __GEMFIRE_IMPL_TRACKEDMAPENTRY_HPP__ */

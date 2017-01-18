@@ -22,7 +22,9 @@
 #include "ClientProxyMembershipID.hpp"
 #include "VersionTag.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 /**
  * @brief This class encapsulates Version Stamp for map entries.
  */
@@ -74,6 +76,8 @@ class CPPCACHE_EXPORT VersionStamp {
                                   VersionTagPtr tag);
 };
 typedef SharedPtr<VersionStamp> VersionStampPtr;
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __GEMFIRE_IMPL_VERSIONSTAMP_H__

@@ -29,15 +29,19 @@ namespace gemfire_statistics {
 class HostStatSampler;
 }  // namespace gemfire_statistics
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class CacheImpl;
 /* adongre
  * CID 28724: Other violation (MISSING_COPY)
- * Class "gemfire::AdminRegion" owns resources that are managed in its
+ * Class "apache::geode::client::AdminRegion" owns resources that are managed in
+ * its
  * constructor and destructor but has no user-written copy constructor.
  *
  * CID 28710: Other violation (MISSING_ASSIGN)
- * Class "gemfire::AdminRegion" owns resources that are managed in its
+ * Class "apache::geode::client::AdminRegion" owns resources that are managed in
+ * its
  * constructor and destructor but has no user-written assignment operator.
  *
  * FIX : Make the class noncopyabl3
@@ -68,6 +72,8 @@ class AdminRegion : public SharedBase,
 };
 
 typedef SharedPtr<AdminRegion> AdminRegionPtr;
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

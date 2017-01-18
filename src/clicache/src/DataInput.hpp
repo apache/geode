@@ -44,7 +44,7 @@ namespace GemStone
       /// strings, <c>IGFSerializable</c> objects from a byte stream.
       /// </summary>
       public ref class DataInput sealed
-				: public Generic::Internal::UMWrap<gemfire::DataInput>
+				: public Generic::Internal::UMWrap<apache::geode::client::DataInput>
       {
       public:
 
@@ -629,7 +629,7 @@ namespace GemStone
         /// Internal constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline DataInput( gemfire::DataInput* nativeptr, bool managedObject )
+        inline DataInput( apache::geode::client::DataInput* nativeptr, bool managedObject )
           : UMWrap(nativeptr, false)
         { 
           m_ispdxDesrialization = false;
@@ -648,7 +648,7 @@ namespace GemStone
 
         DataInput( uint8_t* buffer, int size );
 
-       /* inline DataInput( gemfire::DataInput* nativeptr )
+       /* inline DataInput( apache::geode::client::DataInput* nativeptr )
           : UMWrap(nativeptr, false)
         { 
           m_cursor = 0;

@@ -29,7 +29,9 @@
 #include "CacheableKey.hpp"
 #include "CacheableString.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * @class Properties Properties.hpp
@@ -152,6 +154,7 @@ class CPPCACHE_EXPORT Properties : public Serializable {
   Properties(const Properties&);
   const Properties& operator=(const Properties&);
 };
-
-};      // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // ifndef __GEMFIRE_PROPERTIES_H__

@@ -58,7 +58,9 @@
 #include <unordered_map>
 #include "TSSTXStateWrapper.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 #ifndef CHECK_DESTROY_PENDING
 #define CHECK_DESTROY_PENDING(lock, function)                      \
@@ -489,7 +491,8 @@ class CPPCACHE_EXPORT LocalRegion : public RegionInternal {
   friend class RemoveActions;
   friend class InvalidateActions;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_LOCALREGION_H__

@@ -23,7 +23,9 @@
 #include <gfcpp/DataOutput.hpp>
 #include <vector>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class GetAllServersResponse : public Serializable {
   std::vector<ServerLocation> m_servers;
 
@@ -46,6 +48,8 @@ class GetAllServersResponse : public Serializable {
   virtual ~GetAllServersResponse() {}
 };
 typedef SharedPtr<GetAllServersResponse> GetAllServersResponsePtr;
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

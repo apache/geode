@@ -24,10 +24,11 @@
 #include <iostream>
 
 /**
-* @namespace gemfire::pdx_auto_serializer The namespace containing the
+* @namespace apache::geode::client::pdx_auto_serializer The namespace containing
+* the
 *                                     auto-serializer classes.
 */
-using namespace gemfire::pdx_auto_serializer;
+using namespace apache::geode::client::pdx_auto_serializer;
 
 /** The name used for invocation of the program on command-line. */
 std::string progName;

@@ -46,7 +46,7 @@ namespace GemStone
       /// native GemFire C++ exception name.
       /// </remarks>
       delegate GemFireException^ CreateException2(
-        const gemfire::Exception& nativeEx, System::Exception^ innerException);
+        const apache::geode::client::Exception& nativeEx, System::Exception^ innerException);
 
       /// <summary>
       /// The base exception class of all managed GemFire exceptions.
@@ -108,7 +108,7 @@ namespace GemStone
         /// native exception is a wrapper of a managed system exception.
         /// </summary>
         /// <remarks>
-        /// Wherever the native GemFire C++ code raises a <c>gemfire::Exception</c>,
+        /// Wherever the native GemFire C++ code raises a <c>apache::geode::client::Exception</c>,
         /// the CLI wrapper code should have a catch-all for those and use
         /// this function to create the corresponding managed GemFire exception.
         /// If no managed GemFire exception has been defined (or has not been
@@ -120,7 +120,7 @@ namespace GemStone
         /// The managed GemFire exception object corresponding to the provided
         /// native GemFire exception object.
         /// </returns>
-        static Exception^ Get(const gemfire::Exception& nativeEx);
+        static Exception^ Get(const apache::geode::client::Exception& nativeEx);
 
         /// <summary>
         /// Get the stack trace for the given native exception.
@@ -128,7 +128,7 @@ namespace GemStone
         /// <param name="nativeEx">The native GemFire exception object</param>
         /// <returns>The stack trace of the native exception.</returns>
         inline static String^ GetStackTrace(
-          const gemfire::Exception& nativeEx )
+          const apache::geode::client::Exception& nativeEx )
         {
           char nativeExStack[2048] = { '\0' };
 #ifndef _WIN64
@@ -151,7 +151,7 @@ namespace GemStone
         /// contained in the message. Note that in this process the
         /// original stacktrace is appended to the message of the exception.
         /// </remarks>
-        inline static gemfire::ExceptionPtr GetNative(Exception^ ex)
+        inline static apache::geode::client::ExceptionPtr GetNative(Exception^ ex)
         {
           if (ex != nullptr) {
             GemFireException^ gfEx = dynamic_cast<GemFireException^>(ex);
@@ -159,12 +159,12 @@ namespace GemStone
               return gfEx->GetNative();
             }
             else {
-              gemfire::ExceptionPtr cause;
+              apache::geode::client::ExceptionPtr cause;
               if (ex->InnerException != nullptr) {
                 cause = GemFireException::GetNative(ex->InnerException);
               }
               ManagedString mg_exStr(MgSysExPrefix + ex->ToString());
-              return gemfire::ExceptionPtr(new gemfire::Exception(
+              return apache::geode::client::ExceptionPtr(new apache::geode::client::Exception(
                   mg_exStr.CharPtr, NULL, false, cause));
             }
           }
@@ -175,15 +175,15 @@ namespace GemStone
         /// Gets the C++ native exception object for this managed
         /// <c>GemFireException</c>.
         /// </summary>
-        virtual gemfire::ExceptionPtr GetNative()
+        virtual apache::geode::client::ExceptionPtr GetNative()
         {
           String^ msg = this->Message + ": " + this->StackTrace;
           ManagedString mg_msg(msg);
-          gemfire::ExceptionPtr cause;
+          apache::geode::client::ExceptionPtr cause;
           if (this->InnerException != nullptr) {
             cause = GemFireException::GetNative(this->InnerException);
           }
-          return gemfire::ExceptionPtr(new gemfire::Exception(mg_msg.CharPtr,
+          return apache::geode::client::ExceptionPtr(new apache::geode::client::Exception(mg_msg.CharPtr,
               NULL, false, cause));
         }
 
@@ -204,12 +204,12 @@ namespace GemStone
         inline static void ThrowNative(Exception^ ex)
         {
           if (ex != nullptr) {
-            gemfire::ExceptionPtr cause;
+            apache::geode::client::ExceptionPtr cause;
             if (ex->InnerException != nullptr) {
               cause = GemFireException::GetNative(ex->InnerException);
             }
             ManagedString mg_exStr(MgSysExPrefix + ex->ToString());
-            throw gemfire::Exception(mg_exStr.CharPtr, NULL, false, cause);
+            throw apache::geode::client::Exception(mg_exStr.CharPtr, NULL, false, cause);
           }
         }
 
@@ -272,7 +272,7 @@ namespace GemStone
       try {
 #define _GF_MG_EXCEPTION_CATCH_ALL2  \
       } \
-      catch (const gemfire::Exception& ex) { \
+      catch (const apache::geode::client::Exception& ex) { \
       throw GemStone::GemFire::Cache::Generic::GemFireException::Get(ex); \
       } \
       catch (System::AccessViolationException^ ex) { \
@@ -326,19 +326,19 @@ namespace GemStone
           : GemFireException( info, context ) { } \
       \
       internal: \
-        x(const gemfire::y& nativeEx) \
+        x(const apache::geode::client::y& nativeEx) \
           : GemFireException(ManagedString::Get(nativeEx.getMessage()), \
               gcnew GemFireException(GemFireException::GetStackTrace( \
                 nativeEx))) { } \
         \
-        x(const gemfire::y& nativeEx, Exception^ innerException) \
+        x(const apache::geode::client::y& nativeEx, Exception^ innerException) \
           : GemFireException(ManagedString::Get(nativeEx.getMessage()), \
               innerException) { } \
         \
-        static GemFireException^ Create(const gemfire::Exception& ex, \
+        static GemFireException^ Create(const apache::geode::client::Exception& ex, \
             Exception^ innerException) \
         { \
-          const gemfire::y* nativeEx = dynamic_cast<const gemfire::y*>( &ex ); \
+          const apache::geode::client::y* nativeEx = dynamic_cast<const apache::geode::client::y*>( &ex ); \
           if (nativeEx != nullptr) { \
             if (innerException == nullptr) { \
               return gcnew x(*nativeEx); \
@@ -349,15 +349,15 @@ namespace GemStone
           } \
           return nullptr; \
         } \
-        virtual gemfire::ExceptionPtr GetNative() override \
+        virtual apache::geode::client::ExceptionPtr GetNative() override \
         { \
           String^ msg = this->Message + ": " + this->StackTrace; \
           ManagedString mg_msg(msg); \
-          gemfire::ExceptionPtr cause; \
+          apache::geode::client::ExceptionPtr cause; \
           if (this->InnerException != nullptr) { \
             cause = GemFireException::GetNative(this->InnerException); \
           } \
-          return gemfire::ExceptionPtr(new gemfire::y(mg_msg.CharPtr, \
+          return apache::geode::client::ExceptionPtr(new apache::geode::client::y(mg_msg.CharPtr, \
               NULL, false, cause)); \
         } \
       }

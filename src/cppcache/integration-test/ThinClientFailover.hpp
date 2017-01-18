@@ -26,7 +26,7 @@
 #define ROOT_SCOPE DISTRIBUTED_ACK
 
 #include "CacheHelper.hpp"
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace test;
 
 bool isLocalServer = false;

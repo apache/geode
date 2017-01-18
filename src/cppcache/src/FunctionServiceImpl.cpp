@@ -19,7 +19,7 @@
 #include "ExecutionImpl.hpp"
 #include <gfcpp/PoolManager.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 FunctionServiceImpl::FunctionServiceImpl(ProxyCachePtr proxyCache) {
   m_proxyCache = proxyCache;

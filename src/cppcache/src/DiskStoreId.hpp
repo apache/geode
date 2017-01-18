@@ -22,7 +22,9 @@
 #include "DSMemberForVersionStamp.hpp"
 #include "GemfireTypeIdsImpl.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class DiskStoreId : public DSMemberForVersionStamp {
  public:
@@ -105,6 +107,8 @@ class DiskStoreId : public DSMemberForVersionStamp {
   int64_t m_mostSig;
   int64_t m_leastSig;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __DiskStoreId_HPP__

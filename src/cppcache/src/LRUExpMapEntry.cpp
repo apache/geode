@@ -17,7 +17,7 @@
 #include "LRUExpMapEntry.hpp"
 #include "MapEntryT.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 LRUExpEntryFactory* LRUExpEntryFactory::singleton = NULL;
 

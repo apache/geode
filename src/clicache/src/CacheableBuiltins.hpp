@@ -53,7 +53,7 @@ namespace GemStone
           /// </summary>
           CacheableBuiltinKey()
           {
-            gemfire::SharedPtr<TNative>& nativeptr = TNative::create();
+            apache::geode::client::SharedPtr<TNative>& nativeptr = TNative::create();
 
             SetSP(nativeptr.ptr());
           }
@@ -64,7 +64,7 @@ namespace GemStone
           /// <param name="value">the value of the new instance</param>
           CacheableBuiltinKey(TManaged value)
           {
-            gemfire::SharedPtr<TNative>& nativeptr = TNative::create(value);
+            apache::geode::client::SharedPtr<TNative>& nativeptr = TNative::create(value);
 
             SetSP(nativeptr.ptr());
           }
@@ -149,7 +149,7 @@ namespace GemStone
           /// Protected constructor to wrap a native object pointer
           /// </summary>
           /// <param name="nativeptr">The native object pointer</param>
-          inline CacheableBuiltinKey(gemfire::Serializable* nativeptr)
+          inline CacheableBuiltinKey(apache::geode::client::Serializable* nativeptr)
             : CacheableKey(nativeptr) { }
         };
 
@@ -245,7 +245,7 @@ namespace GemStone
           inline CacheableBuiltinArray()
           {
             //TODO:
-            //gemfire::Serializable* sp = TNative::createDeserializable();
+            //apache::geode::client::Serializable* sp = TNative::createDeserializable();
             //SetSP(sp);
           }
 
@@ -253,12 +253,12 @@ namespace GemStone
           /// Protected constructor to wrap a native object pointer
           /// </summary>
           /// <param name="nativeptr">The native object pointer</param>
-          inline CacheableBuiltinArray(gemfire::Serializable* nptr)
+          inline CacheableBuiltinArray(apache::geode::client::Serializable* nptr)
             : Serializable(nptr)
           { 
             //TODO: ??
-             // ManagedPtrWrap< gemfire::Serializable,
-               // Internal::SBWrap<gemfire::Serializable> > nptr = nativeptr;
+             // ManagedPtrWrap< apache::geode::client::Serializable,
+               // Internal::SBWrap<apache::geode::client::Serializable> > nptr = nativeptr;
               TNative* nativeptr = static_cast<TNative*>(nptr);
               int32_t len = nativeptr->length();
               if (len > 0)
@@ -363,20 +363,20 @@ namespace GemStone
         }                                                                     \
                                                                               \
       internal:                                                               \
-        static IGFSerializable^ Create(gemfire::Serializable* obj)            \
+        static IGFSerializable^ Create(apache::geode::client::Serializable* obj)            \
         {                                                                     \
           return (obj != nullptr ? gcnew m(obj) : nullptr);                   \
         }                                                                     \
                                                                               \
       private:                                                                \
-        inline m(gemfire::Serializable* nativeptr)                            \
+        inline m(apache::geode::client::Serializable* nativeptr)                            \
           : CacheableBuiltinKey(nativeptr) { }                                \
       };
 
 
 #define _GFCLI_CACHEABLE_ARRAY_DEF_NEW(m, mt)                                    \
       ref class m : public CacheableBuiltinArray<            \
-        gemfire::m, gemfire::m##Ptr, mt, GemFireClassIds::m>                  \
+        apache::geode::client::m, apache::geode::client::m##Ptr, mt, GemFireClassIds::m>                  \
       {                                                                       \
       public:                                                                 \
         /** <summary>
@@ -426,7 +426,7 @@ namespace GemStone
         }                                                                     \
                                                                               \
       internal:                                                               \
-        static IGFSerializable^ Create(gemfire::Serializable* obj)            \
+        static IGFSerializable^ Create(apache::geode::client::Serializable* obj)            \
         {                                                                     \
           return (obj != nullptr ? gcnew m(obj) : nullptr);                   \
         }                                                                     \
@@ -459,7 +459,7 @@ namespace GemStone
          */                                                                   \
         inline m(array<mt>^ value, int32_t length)                              \
           : CacheableBuiltinArray(value, length) { }                          \
-        inline m(gemfire::Serializable* nativeptr)                            \
+        inline m(apache::geode::client::Serializable* nativeptr)                            \
           : CacheableBuiltinArray(nativeptr) { }                              \
       };
 
@@ -470,56 +470,56 @@ namespace GemStone
       /// An immutable wrapper for booleans that can serve
       /// as a distributable key object for caching.
       /// </summary>
-      _GFCLI_CACHEABLE_KEY_DEF_NEW(gemfire::CacheableBoolean,
+      _GFCLI_CACHEABLE_KEY_DEF_NEW(apache::geode::client::CacheableBoolean,
         CacheableBoolean, bool);
 
       /// <summary>
       /// An immutable wrapper for bytes that can serve
       /// as a distributable key object for caching.
       /// </summary>
-      _GFCLI_CACHEABLE_KEY_DEF_NEW(gemfire::CacheableByte,
+      _GFCLI_CACHEABLE_KEY_DEF_NEW(apache::geode::client::CacheableByte,
         CacheableByte, Byte);
 
       /// <summary>
       /// An immutable wrapper for 16-bit characters that can serve
       /// as a distributable key object for caching.
       /// </summary>
-      _GFCLI_CACHEABLE_KEY_DEF_NEW(gemfire::CacheableWideChar,
+      _GFCLI_CACHEABLE_KEY_DEF_NEW(apache::geode::client::CacheableWideChar,
         CacheableCharacter, Char);
 
       /// <summary>
       /// An immutable wrapper for doubles that can serve
       /// as a distributable key object for caching.
       /// </summary>
-      _GFCLI_CACHEABLE_KEY_DEF_NEW(gemfire::CacheableDouble,
+      _GFCLI_CACHEABLE_KEY_DEF_NEW(apache::geode::client::CacheableDouble,
         CacheableDouble, Double);
 
       /// <summary>
       /// An immutable wrapper for floats that can serve
       /// as a distributable key object for caching.
       /// </summary>
-      _GFCLI_CACHEABLE_KEY_DEF_NEW(gemfire::CacheableFloat,
+      _GFCLI_CACHEABLE_KEY_DEF_NEW(apache::geode::client::CacheableFloat,
         CacheableFloat, Single);
 
       /// <summary>
       /// An immutable wrapper for 16-bit integers that can serve
       /// as a distributable key object for caching.
       /// </summary>
-      _GFCLI_CACHEABLE_KEY_DEF_NEW(gemfire::CacheableInt16,
+      _GFCLI_CACHEABLE_KEY_DEF_NEW(apache::geode::client::CacheableInt16,
         CacheableInt16, int16_t);
 
       /// <summary>
       /// An immutable wrapper for 32-bit integers that can serve
       /// as a distributable key object for caching.
       /// </summary>
-      _GFCLI_CACHEABLE_KEY_DEF_NEW(gemfire::CacheableInt32,
+      _GFCLI_CACHEABLE_KEY_DEF_NEW(apache::geode::client::CacheableInt32,
         CacheableInt32, int32_t);
 
       /// <summary>
       /// An immutable wrapper for 64-bit integers that can serve
       /// as a distributable key object for caching.
       /// </summary>
-      _GFCLI_CACHEABLE_KEY_DEF_NEW(gemfire::CacheableInt64,
+      _GFCLI_CACHEABLE_KEY_DEF_NEW(apache::geode::client::CacheableInt64,
         CacheableInt64, int64_t);
 
 

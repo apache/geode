@@ -24,7 +24,7 @@
 #include <gfcpp/DataOutput.hpp>
 #include "ByteArrayFixture.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 class TestDataOutput : public DataOutput {
  public:

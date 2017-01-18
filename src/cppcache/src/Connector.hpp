@@ -28,7 +28,9 @@ These are superseded by the connect-timeout system property for SR # 6525.
 #define DEFAULT_READ_TIMEOUT_SECS DEFAULT_TIMEOUT_SECONDS
 #define DEFAULT_WRITE_TIMEOUT DEFAULT_TIMEOUT_SECONDS
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class Connector {
  public:
   /* create one socket connection with settings */
@@ -99,6 +101,8 @@ class Connector {
   Connector(const Connector &);
   Connector &operator=(const Connector &);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __CONNECTOR_HPP__

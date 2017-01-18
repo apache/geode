@@ -17,7 +17,7 @@
 #include "LRUList.hpp"
 #include "SpinLock.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 #define LOCK_HEAD SpinLockGuard headLockGuard(m_headLock)
 #define LOCK_TAIL SpinLockGuard tailLockGuard(m_tailLock)

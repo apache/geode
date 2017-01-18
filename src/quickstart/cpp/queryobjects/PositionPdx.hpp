@@ -38,11 +38,12 @@
 #define TESTOBJECT_EXPORT
 #endif
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 namespace testobject {
 
-class TESTOBJECT_EXPORT PositionPdx : public gemfire::PdxSerializable {
+class TESTOBJECT_EXPORT PositionPdx
+    : public apache::geode::client::PdxSerializable {
  private:
   int64_t avg20DaysVol;
   char* bondRating;
@@ -98,6 +99,6 @@ class TESTOBJECT_EXPORT PositionPdx : public gemfire::PdxSerializable {
   void init();
 };
 
-typedef gemfire::SharedPtr<PositionPdx> PositionPdxPtr;
+typedef apache::geode::client::SharedPtr<PositionPdx> PositionPdxPtr;
 }
 #endif

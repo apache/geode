@@ -23,7 +23,9 @@
 #include <ace/OS.h>
 #include <ace/INET_Addr.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 // to be used only with ACE_TSS<> or WinTSS<>
 class EventIdTSS {
@@ -183,4 +185,6 @@ size_t EventId::logString(char* buffer, size_t maxLength) const {
                           ", seq=%" PRIi64 " )",
                           m_eidThr, m_eidSeq);
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

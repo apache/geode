@@ -34,22 +34,22 @@ namespace GemStone
       generic<class TKey, class TResult>
       array<ICqListener<TKey, TResult>^>^ CqAttributes<TKey, TResult>::getCqListeners( )
       {
-        gemfire::VectorOfCqListener vrr;
+        apache::geode::client::VectorOfCqListener vrr;
         NativePtr->getCqListeners( vrr );
         array<ICqListener<TKey, TResult>^>^ listners = gcnew array<ICqListener<TKey, TResult>^>( vrr.size( ) );
 
         for( int32_t index = 0; index < vrr.size( ); index++ )
         {
-          gemfire::CqListenerPtr& nativeptr( vrr[ index ] );
-          gemfire::ManagedCqListenerGeneric* mg_listener =
-            dynamic_cast<gemfire::ManagedCqListenerGeneric*>( nativeptr.ptr( ) );
+          apache::geode::client::CqListenerPtr& nativeptr( vrr[ index ] );
+          apache::geode::client::ManagedCqListenerGeneric* mg_listener =
+            dynamic_cast<apache::geode::client::ManagedCqListenerGeneric*>( nativeptr.ptr( ) );
           if (mg_listener != nullptr)
           {
             listners[ index ] =  (ICqListener<TKey, TResult>^) mg_listener->userptr( );
           }else 
           {
-            gemfire::ManagedCqStatusListenerGeneric* mg_statuslistener =
-              dynamic_cast<gemfire::ManagedCqStatusListenerGeneric*>( nativeptr.ptr( ) );
+            apache::geode::client::ManagedCqStatusListenerGeneric* mg_statuslistener =
+              dynamic_cast<apache::geode::client::ManagedCqStatusListenerGeneric*>( nativeptr.ptr( ) );
             if (mg_statuslistener != nullptr) {
               listners[ index ] =  (ICqStatusListener<TKey, TResult>^) mg_statuslistener->userptr( );
             }

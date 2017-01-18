@@ -27,7 +27,9 @@
 #include <gfcpp/HashSetT.hpp>
 #include "MapEntry.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class MapSegment;
 class TombstoneExpiryHandler;
 class TombstoneEntry : public SharedBase {
@@ -92,7 +94,8 @@ class TombstoneList : public SharedBase {
   friend class TombstoneExpiryHandler;
 };
 typedef SharedPtr<TombstoneList> TombstoneListPtr;
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // !defined (__GEMFIRE_IMPL_TOMBSTONELIST_H__)

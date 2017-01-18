@@ -96,14 +96,19 @@
 
 #include "gf_base.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 extern void CPPCACHE_EXPORT millisleep(uint32_t millis);
 
 #ifdef _WIN32
 extern void CPPCACHE_EXPORT setNewAndDelete(pNew, pDelete);
 #endif
-}  // namespace gemfire
+
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #include "Log.hpp"
 #include "Assert.hpp"

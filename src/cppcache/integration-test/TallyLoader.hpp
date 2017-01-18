@@ -19,12 +19,12 @@
 
 #include <gfcpp/GemfireCppCache.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace test;
 
 class TallyLoader;
 
-typedef gemfire::SharedPtr<TallyLoader> TallyLoaderPtr;
+typedef apache::geode::client::SharedPtr<TallyLoader> TallyLoaderPtr;
 
 class TallyLoader : virtual public CacheLoader {
  private:

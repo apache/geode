@@ -18,9 +18,9 @@
 #include "fwklib/Timer.hpp"
 #include "fwklib/FwkLog.hpp"
 
-using namespace gemfire;
-using namespace gemfire::testframework;
-using namespace gemfire::testframework::perf;
+using namespace apache::geode::client;
+using namespace apache::geode::client::testframework;
+using namespace apache::geode::client::testframework::perf;
 
 TestClient* TestClient::m_instance = NULL;
 

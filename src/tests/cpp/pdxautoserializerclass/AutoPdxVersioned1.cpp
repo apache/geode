@@ -17,7 +17,7 @@
 
 #include "AutoPdxVersioned1.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace AutoPdxTests;
 
 template <typename T1, typename T2>

@@ -92,7 +92,7 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2
         
-          return NativePtr->resume( gemfire::TransactionIdPtr(transactionId->NativePtr()));
+          return NativePtr->resume( apache::geode::client::TransactionIdPtr(transactionId->NativePtr()));
 
         _GF_MG_EXCEPTION_CATCH_ALL2
       }
@@ -100,7 +100,7 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2
 
-          return NativePtr->isSuspended( gemfire::TransactionIdPtr(transactionId->NativePtr()));
+          return NativePtr->isSuspended( apache::geode::client::TransactionIdPtr(transactionId->NativePtr()));
 
         _GF_MG_EXCEPTION_CATCH_ALL2
       }
@@ -108,7 +108,7 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2
 
-          return NativePtr->tryResume( gemfire::TransactionIdPtr(transactionId->NativePtr()));
+          return NativePtr->tryResume( apache::geode::client::TransactionIdPtr(transactionId->NativePtr()));
 
         _GF_MG_EXCEPTION_CATCH_ALL2
       }
@@ -116,7 +116,7 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2
 
-          return NativePtr->tryResume( gemfire::TransactionIdPtr(transactionId->NativePtr()), waitTimeInMilliSec);
+          return NativePtr->tryResume( apache::geode::client::TransactionIdPtr(transactionId->NativePtr()), waitTimeInMilliSec);
 
         _GF_MG_EXCEPTION_CATCH_ALL2
       }
@@ -124,7 +124,7 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2
 
-          return NativePtr->exists( gemfire::TransactionIdPtr(transactionId->NativePtr()));
+          return NativePtr->exists( apache::geode::client::TransactionIdPtr(transactionId->NativePtr()));
 
         _GF_MG_EXCEPTION_CATCH_ALL2
       }
@@ -136,9 +136,9 @@ namespace GemStone
         _GF_MG_EXCEPTION_TRY2
 
           // Conver the unmanaged object to  managed generic object 
-          gemfire::TransactionWriterPtr& writerPtr( NativePtr->getWriter( ) );
-          gemfire::ManagedTransactionWriterGeneric* twg =
-          dynamic_cast<gemfire::ManagedTransactionWriterGeneric*>( writerPtr.ptr( ) );
+          apache::geode::client::TransactionWriterPtr& writerPtr( NativePtr->getWriter( ) );
+          apache::geode::client::ManagedTransactionWriterGeneric* twg =
+          dynamic_cast<apache::geode::client::ManagedTransactionWriterGeneric*>( writerPtr.ptr( ) );
 
           if (twg != nullptr)
           {
@@ -156,13 +156,13 @@ namespace GemStone
         _GF_MG_EXCEPTION_TRY2
           // Create a unmanaged object using the ManagedTransactionWriterGeneric.
           // Set the generic object inside the TransactionWriterGeneric that is a non generic object
-          gemfire::TransactionWriterPtr writerPtr;
+          apache::geode::client::TransactionWriterPtr writerPtr;
           if ( transactionWriter != nullptr ) 
           {
             TransactionWriterGeneric<TKey, TValue>^ twg = gcnew TransactionWriterGeneric<TKey, TValue> ();
             twg->SetTransactionWriter(transactionWriter);
-            writerPtr = new gemfire::ManagedTransactionWriterGeneric( transactionWriter );
-            ((gemfire::ManagedTransactionWriterGeneric*)writerPtr.ptr())->setptr(twg);
+            writerPtr = new apache::geode::client::ManagedTransactionWriterGeneric( transactionWriter );
+            ((apache::geode::client::ManagedTransactionWriterGeneric*)writerPtr.ptr())->setptr(twg);
           }
           NativePtr->setWriter( writerPtr );
           
@@ -175,13 +175,13 @@ namespace GemStone
         _GF_MG_EXCEPTION_TRY2
           // Create a unmanaged object using the ManagedTransactionListenerGeneric.
           // Set the generic object inside the TransactionListenerGeneric that is a non generic object
-          gemfire::TransactionListenerPtr listenerPtr;
+          apache::geode::client::TransactionListenerPtr listenerPtr;
           if ( transactionListener != nullptr ) 
           {
             TransactionListenerGeneric<TKey, TValue>^ twg = gcnew TransactionListenerGeneric<TKey, TValue> ();
             twg->SetTransactionListener(transactionListener);
-            listenerPtr = new gemfire::ManagedTransactionListenerGeneric( transactionListener );
-            ((gemfire::ManagedTransactionListenerGeneric*)listenerPtr.ptr())->setptr(twg);
+            listenerPtr = new apache::geode::client::ManagedTransactionListenerGeneric( transactionListener );
+            ((apache::geode::client::ManagedTransactionListenerGeneric*)listenerPtr.ptr())->setptr(twg);
           }
           NativePtr->addListener( listenerPtr );
           
@@ -194,13 +194,13 @@ namespace GemStone
         _GF_MG_EXCEPTION_TRY2
           // Create an unmanaged non generic object using the managed generic object
           // use this to call the remove listener
-          gemfire::TransactionListenerPtr listenerPtr;
+          apache::geode::client::TransactionListenerPtr listenerPtr;
           if ( transactionListener != nullptr ) 
           {
             TransactionListenerGeneric<TKey, TValue>^ twg = gcnew TransactionListenerGeneric<TKey, TValue> ();
             twg->SetTransactionListener(transactionListener);
-            listenerPtr = new gemfire::ManagedTransactionListenerGeneric( transactionListener );
-            ((gemfire::ManagedTransactionListenerGeneric*)listenerPtr.ptr())->setptr(twg);
+            listenerPtr = new apache::geode::client::ManagedTransactionListenerGeneric( transactionListener );
+            ((apache::geode::client::ManagedTransactionListenerGeneric*)listenerPtr.ptr())->setptr(twg);
           }
           NativePtr->removeListener( listenerPtr );
 

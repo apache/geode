@@ -24,7 +24,7 @@
 #include "ProcessStats.hpp"
 #include <gfcpp/ExceptionTypes.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 /** @file
 */

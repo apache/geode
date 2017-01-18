@@ -17,7 +17,7 @@
 
 #include "PdxClassV2WithAuto.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace PdxTestsAuto;
 
 /************************************************************

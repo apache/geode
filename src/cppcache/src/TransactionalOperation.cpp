@@ -26,7 +26,9 @@
 #include <gfcpp/Cache.hpp>
 #include <gfcpp/FunctionService.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 TransactionalOperation::TransactionalOperation(ServerRegionOperation op,
                                                const char* regionName,
@@ -122,4 +124,6 @@ CacheablePtr TransactionalOperation::replay(Cache* cache) {
 
   return result;
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

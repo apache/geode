@@ -40,7 +40,9 @@
 #include <ace/Condition_T.h>
 #include <ace/Thread_Mutex.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace testframework {
 namespace perf {
 
@@ -146,7 +148,7 @@ class Record {
       m_testName = strdup(name);
     } else {
       m_testName = NULL;
-}
+    }
   }
 
   void setAction(const char* action) {
@@ -155,7 +157,7 @@ class Record {
       m_action = strdup(action);
     } else {
       m_action = NULL;
-}
+    }
   }
 
   void setDate(const char* date) {
@@ -164,7 +166,7 @@ class Record {
       m_runDate = strdup(date);
     } else {
       m_runDate = NULL;
-}
+    }
   }
 
   void setDate() {
@@ -191,20 +193,21 @@ class Record {
   //      return *this;
   //    }
   //
-  inline void write(gemfire::DataOutput& output) {
+  inline void write(apache::geode::client::DataOutput& output) {
     output.writeASCII(m_testName);
     output.writeInt(static_cast<int32_t>(m_operations));
     output.writeInt(static_cast<int32_t>(m_micros));
   }
 
-  inline void read(gemfire::DataInput& input) {
+  inline void read(apache::geode::client::DataInput& input) {
     input.readASCII(&m_testName);
     input.readInt(reinterpret_cast<int32_t*>(&m_operations));
     input.readInt(reinterpret_cast<int32_t*>(&m_micros));
   }
 
   inline std::string perSec() {
-    double ps = ((1000000.0 * static_cast<double>(m_operations)) / static_cast<double>(m_micros));
+    double ps = ((1000000.0 * static_cast<double>(m_operations)) /
+                 static_cast<double>(m_micros));
     std::ostringstream oss;
     if (ps < 10.0) {
       oss.precision(2);
@@ -326,6 +329,8 @@ class Counter {
 
 }  // namespace perf
 }  // namespace testframework
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __PerfFwk_hpp__

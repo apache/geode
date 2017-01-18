@@ -36,15 +36,15 @@ namespace GemStone
       //generic<class TKey, class TValue>
       PoolFactory/*<TKey, TValue>*/^ PoolManager/*<TKey, TValue>*/::CreateFactory()
       {
-        return PoolFactory/*<TKey, TValue>*/::Create(gemfire::PoolManager::createFactory().ptr());
+        return PoolFactory/*<TKey, TValue>*/::Create(apache::geode::client::PoolManager::createFactory().ptr());
       }
 
       //generic<class TKey, class TValue>
       const Dictionary<String^, Pool/*<TKey, TValue>*/^>^ PoolManager/*<TKey, TValue>*/::GetAll()
       {
-        gemfire::HashMapOfPools pools = gemfire::PoolManager::getAll();
+        apache::geode::client::HashMapOfPools pools = apache::geode::client::PoolManager::getAll();
         Dictionary<String^, Pool/*<TKey, TValue>*/^>^ result = gcnew Dictionary<String^, Pool/*<TKey, TValue>*/^>();
-        for (gemfire::HashMapOfPools::Iterator iter = pools.begin(); iter != pools.end(); ++iter)
+        for (apache::geode::client::HashMapOfPools::Iterator iter = pools.begin(); iter != pools.end(); ++iter)
         {
           String^ key = CacheableString::GetString(iter.first().ptr());
           Pool/*<TKey, TValue>*/^ val = Pool/*<TKey, TValue>*/::Create(iter.second().ptr());
@@ -57,27 +57,27 @@ namespace GemStone
       Pool/*<TKey, TValue>*/^ PoolManager/*<TKey, TValue>*/::Find(String^ name)
       {
         ManagedString mg_name( name );
-        gemfire::PoolPtr pool = gemfire::PoolManager::find(mg_name.CharPtr);
+        apache::geode::client::PoolPtr pool = apache::geode::client::PoolManager::find(mg_name.CharPtr);
         return Pool/*<TKey, TValue>*/::Create(pool.ptr());
       }
 
       //generic <class TKey, class TValue>
       Pool/*<TKey, TValue>*/^ PoolManager/*<TKey, TValue>*/::Find(Generic::Region<Object^, Object^>^ region)
       {
-        //return Pool::Create(gemfire::PoolManager::find(gemfire::RegionPtr(GetNativePtr<gemfire::Region>(region))).ptr());
-        return Pool/*<TKey, TValue>*/::Create(gemfire::PoolManager::find(gemfire::RegionPtr(region->_NativePtr)).ptr());
+        //return Pool::Create(apache::geode::client::PoolManager::find(apache::geode::client::RegionPtr(GetNativePtr<apache::geode::client::Region>(region))).ptr());
+        return Pool/*<TKey, TValue>*/::Create(apache::geode::client::PoolManager::find(apache::geode::client::RegionPtr(region->_NativePtr)).ptr());
       }
 
       //generic<class TKey, class TValue>
       void PoolManager/*<TKey, TValue>*/::Close(Boolean KeepAlive)
       {
-        gemfire::PoolManager::close(KeepAlive);
+        apache::geode::client::PoolManager::close(KeepAlive);
       }
 
       //generic<class TKey, class TValue>
       void PoolManager/*<TKey, TValue>*/::Close()
       {
-        gemfire::PoolManager::close();
+        apache::geode::client::PoolManager::close();
       }
     }
   }

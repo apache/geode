@@ -46,7 +46,9 @@
 
 #endif  // WIN32
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace testframework {
 
 #define UDP_HEADER_SIZE 8
@@ -110,9 +112,10 @@ class UDPMessage : public IPCMessage {
   const char* cmdString(uint32_t cmd) {
     const char* UdpStrings[] = {"Null", "ACK", "ACK_REQUEST", "ADDR_REQUEST",
                                 "ADDR_RESPONSE"};
-    if (cmd > 4) { return "UNKNOWN";
-    
-}return UdpStrings[cmd];
+    if (cmd > 4) {
+      return "UNKNOWN";
+    }
+    return UdpStrings[cmd];
   }
 
   void clearHdr() {
@@ -288,6 +291,8 @@ class Responder : public ServiceTask {
   void finalize() { m_io->close(); }
 };
 }  // namespace testframework
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __UDPIpc_hpp__

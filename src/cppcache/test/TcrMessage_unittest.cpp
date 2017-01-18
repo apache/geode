@@ -22,7 +22,7 @@
 #include <TcrMessage.hpp>
 #include "ByteArrayFixture.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 #define EXPECT_MESSAGE_EQ(e, a) EXPECT_PRED_FORMAT2(assertMessageEqual, e, a)
 
@@ -30,8 +30,8 @@ class TcrMessageTest : public ::testing::Test, protected ByteArrayFixture {
  public:
   ::testing::AssertionResult assertMessageEqual(
       const char *expectedStr, const char *bytesStr, const char *expected,
-      const gemfire::TcrMessage &msg) {
-    gemfire::ByteArray bytes(
+      const apache::geode::client::TcrMessage &msg) {
+    apache::geode::client::ByteArray bytes(
         reinterpret_cast<const uint8_t *>(msg.getMsgData()),
         static_cast<const std::size_t>(msg.getMsgLength()));
     return ByteArrayFixture::assertByteArrayEqual(expectedStr, bytesStr,

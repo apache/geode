@@ -24,7 +24,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 /**
  * @class ExpirationAttributes ExpirationAttributes.hpp
  *
@@ -91,5 +93,7 @@ class CPPCACHE_EXPORT ExpirationAttributes {
    * expires. */
   int m_timeout;
 };
-};      // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // ifndef __GEMFIRE_EXPIRATIONATTRIBUTES_H__

@@ -43,7 +43,8 @@ Tasks are executed in the order, from top to bottom, that they are found in
 the test source file. If any task throws an uncaught exception, the framework
 will catch the exception and consider it a test failure. If the exception is
 of type dunit::TestException, then it will be logged.
-(@TODO: catch and log gemfire::Exception types, and std::exceptions. )
+(@TODO: catch and log apache::geode::client::Exception types, and
+std::exceptions. )
 
 DUNIT_TASK actually begins the definition of a subclass of dunit::Task. And the
 task Method doTask. The block of code between DUNIT_TASK and END_TASK is
@@ -153,41 +154,41 @@ END_TASK(validate)
       try {
 // Close the class definition produced by DUNIT_TASK macro.
 // y is a unique identifier used to generate an instance variable name.
-#define END_TASK(y)                         \
-  }                                         \
-  catch (gemfire::Exception & ex) {         \
-    ex.printStackTrace();                   \
-    FAIL(ex.getMessage());                  \
-  }                                         \
-  catch (std::exception & ex) {             \
-    FAIL(ex.what());                        \
-  }                                         \
-  catch (dunit::TestException&) {           \
-    throw;                                  \
-  }                                         \
-  catch (...) {                             \
-    FAIL("Unknown exception type caught."); \
-  }                                         \
-  }                                         \
-  }                                         \
+#define END_TASK(y)                               \
+  }                                               \
+  catch (apache::geode::client::Exception & ex) { \
+    ex.printStackTrace();                         \
+    FAIL(ex.getMessage());                        \
+  }                                               \
+  catch (std::exception & ex) {                   \
+    FAIL(ex.what());                              \
+  }                                               \
+  catch (dunit::TestException&) {                 \
+    throw;                                        \
+  }                                               \
+  catch (...) {                                   \
+    FAIL("Unknown exception type caught.");       \
+  }                                               \
+  }                                               \
+  }                                               \
   SYMJOIN(a_, __LINE__);
-#define ENDTASK                             \
-  }                                         \
-  catch (gemfire::Exception & ex) {         \
-    ex.printStackTrace();                   \
-    FAIL(ex.getMessage());                  \
-  }                                         \
-  catch (std::exception & ex) {             \
-    FAIL(ex.what());                        \
-  }                                         \
-  catch (dunit::TestException&) {           \
-    throw;                                  \
-  }                                         \
-  catch (...) {                             \
-    FAIL("Unknown exception type caught."); \
-  }                                         \
-  }                                         \
-  }                                         \
+#define ENDTASK                                   \
+  }                                               \
+  catch (apache::geode::client::Exception & ex) { \
+    ex.printStackTrace();                         \
+    FAIL(ex.getMessage());                        \
+  }                                               \
+  catch (std::exception & ex) {                   \
+    FAIL(ex.what());                              \
+  }                                               \
+  catch (dunit::TestException&) {                 \
+    throw;                                        \
+  }                                               \
+  catch (...) {                                   \
+    FAIL("Unknown exception type caught.");       \
+  }                                               \
+  }                                               \
+  }                                               \
   SYMJOIN(a_, __LINE__);
 
 #define DUNIT_TASK_DEFINITION(x, y)                                 \
@@ -199,23 +200,23 @@ END_TASK(validate)
     virtual void doTask() {                                         \
       const char* fwtest_Name ATTR_UNUSED = DTASKDESC(y, __LINE__); \
       try {
-#define END_TASK_DEFINITION                 \
-  }                                         \
-  catch (gemfire::Exception & ex) {         \
-    ex.printStackTrace();                   \
-    FAIL(ex.getMessage());                  \
-  }                                         \
-  catch (std::exception & ex) {             \
-    FAIL(ex.what());                        \
-  }                                         \
-  catch (dunit::TestException&) {           \
-    throw;                                  \
-  }                                         \
-  catch (...) {                             \
-    FAIL("Unknown exception type caught."); \
-  }                                         \
-  }                                         \
-  }                                         \
+#define END_TASK_DEFINITION                       \
+  }                                               \
+  catch (apache::geode::client::Exception & ex) { \
+    ex.printStackTrace();                         \
+    FAIL(ex.getMessage());                        \
+  }                                               \
+  catch (std::exception & ex) {                   \
+    FAIL(ex.what());                              \
+  }                                               \
+  catch (dunit::TestException&) {                 \
+    throw;                                        \
+  }                                               \
+  catch (...) {                                   \
+    FAIL("Unknown exception type caught.");       \
+  }                                               \
+  }                                               \
+  }                                               \
   ;
 #define CALL_TASK(y) \
   DCLASSDEF(y) * DVARNAME(y) ATTR_UNUSED = new DCLASSDEF(y)();
@@ -225,23 +226,23 @@ END_TASK(validate)
    public:                 \
     DCLASSNAME(Main)() {   \
       try {
-#define END_MAIN                            \
-  }                                         \
-  catch (gemfire::Exception & ex) {         \
-    ex.printStackTrace();                   \
-    FAIL(ex.getMessage());                  \
-  }                                         \
-  catch (std::exception & ex) {             \
-    FAIL(ex.what());                        \
-  }                                         \
-  catch (dunit::TestException&) {           \
-    throw;                                  \
-  }                                         \
-  catch (...) {                             \
-    FAIL("Unknown exception type caught."); \
-  }                                         \
-  }                                         \
-  }                                         \
+#define END_MAIN                                  \
+  }                                               \
+  catch (apache::geode::client::Exception & ex) { \
+    ex.printStackTrace();                         \
+    FAIL(ex.getMessage());                        \
+  }                                               \
+  catch (std::exception & ex) {                   \
+    FAIL(ex.what());                              \
+  }                                               \
+  catch (dunit::TestException&) {                 \
+    throw;                                        \
+  }                                               \
+  catch (...) {                                   \
+    FAIL("Unknown exception type caught.");       \
+  }                                               \
+  }                                               \
+  }                                               \
   SYMJOIN(a_, __LINE__);
 
 // identifiers for the different processes.

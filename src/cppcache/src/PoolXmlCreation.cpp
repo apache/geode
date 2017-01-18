@@ -17,7 +17,7 @@
 
 #include "PoolXmlCreation.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 /*
 void PoolXmlCreation::addLocator(const char * host, const char * port)

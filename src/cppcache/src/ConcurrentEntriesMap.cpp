@@ -21,7 +21,7 @@
 
 #include <algorithm>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 bool EntriesMap::boolVal = false;
 

@@ -39,8 +39,8 @@
 
 #include <ctype.h>
 
-using namespace gemfire;
-using namespace gemfire::testframework;
+using namespace apache::geode::client;
+using namespace apache::geode::client::testframework;
 
 const std::string FwkClientSet::m_defaultGroup = "DEFAULT";
 

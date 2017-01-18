@@ -25,7 +25,9 @@
 
 #include <typeinfo>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 PooledBase::PooledBase(PooledBasePool* pool) : m_refCount(0), m_pool(pool) {
   GF_D_ASSERT(m_pool != NULL);
@@ -48,4 +50,6 @@ void PooledBase::releaseSB() const {
 void PooledBase::prePool() {}
 
 void PooledBase::postPool() {}
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

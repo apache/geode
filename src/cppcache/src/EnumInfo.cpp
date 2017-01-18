@@ -18,7 +18,9 @@
 #include "Utils.hpp"
 #include "GemfireTypeIdsImpl.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 EnumInfo::~EnumInfo() {}
 
@@ -61,13 +63,13 @@ bool EnumInfo::operator==(const CacheableKey &other) const {
   return true;
 }
 
-void EnumInfo::toData(gemfire::DataOutput &output) const {
+void EnumInfo::toData(apache::geode::client::DataOutput &output) const {
   output.writeObject(m_enumClassName);
   output.writeObject(m_enumName);
   output.writeInt(m_ordinal);
 }
 
-Serializable *EnumInfo::fromData(gemfire::DataInput &input) {
+Serializable *EnumInfo::fromData(apache::geode::client::DataInput &input) {
   input.readObject(m_enumClassName);
   input.readObject(m_enumName);
   input.readInt(&m_ordinal);
@@ -77,4 +79,6 @@ Serializable *EnumInfo::fromData(gemfire::DataInput &input) {
 int8_t EnumInfo::DSFID() const {
   return static_cast<int8_t>(GemfireTypeIdsImpl::FixedIDByte);
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

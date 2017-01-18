@@ -33,7 +33,7 @@ namespace GemStone
       /// Defines common statistical information for a cq.
       /// </summary>
       public ref class CqStatistics sealed
-        : public Internal::SBWrap<gemfire::CqStatistics>
+        : public Internal::SBWrap<apache::geode::client::CqStatistics>
       {
       public:
 
@@ -67,7 +67,7 @@ namespace GemStone
         /// <returns>
         /// The managed wrapper object; null if the native pointer is null.
         /// </returns>
-        inline static CqStatistics^ Create( gemfire::CqStatistics* nativeptr )
+        inline static CqStatistics^ Create( apache::geode::client::CqStatistics* nativeptr )
         {
           if (nativeptr == nullptr)
           {
@@ -83,7 +83,7 @@ namespace GemStone
         /// Private constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline CqStatistics( gemfire::CqStatistics* nativeptr )
+        inline CqStatistics( apache::geode::client::CqStatistics* nativeptr )
           : SBWrap( nativeptr ) { }
       };
 

@@ -30,8 +30,8 @@
 
 #include "ThinClientSecurity.hpp"
 
-using namespace gemfire::testframework::security;
-using namespace gemfire;
+using namespace apache::geode::client::testframework::security;
+using namespace apache::geode::client;
 
 const char* locHostPort =
     CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
@@ -74,25 +74,25 @@ void initCredentialGenerator() {
   loopNum++;
   if (loopNum > 1) loopNum = 1;
 }
-#define HANDLE_NO_NOT_AUTHORIZED_EXCEPTION                 \
-  catch (const gemfire::NotAuthorizedException&) {         \
-    LOG("NotAuthorizedException Caught");                  \
-    FAIL("should not have caught NotAuthorizedException"); \
-  }                                                        \
-  catch (const gemfire::Exception& other) {                \
-    LOG("Got gemfire::Exception& other ");                 \
-    other.printStackTrace();                               \
-    FAIL(other.getMessage());                              \
+#define HANDLE_NO_NOT_AUTHORIZED_EXCEPTION                       \
+  catch (const apache::geode::client::NotAuthorizedException&) { \
+    LOG("NotAuthorizedException Caught");                        \
+    FAIL("should not have caught NotAuthorizedException");       \
+  }                                                              \
+  catch (const apache::geode::client::Exception& other) {        \
+    LOG("Got apache::geode::client::Exception& other ");         \
+    other.printStackTrace();                                     \
+    FAIL(other.getMessage());                                    \
   }
 
-#define HANDLE_NOT_AUTHORIZED_EXCEPTION            \
-  catch (const gemfire::NotAuthorizedException&) { \
-    LOG("NotAuthorizedException Caught");          \
-    LOG("Success");                                \
-  }                                                \
-  catch (const gemfire::Exception& other) {        \
-    other.printStackTrace();                       \
-    FAIL(other.getMessage());                      \
+#define HANDLE_NOT_AUTHORIZED_EXCEPTION                          \
+  catch (const apache::geode::client::NotAuthorizedException&) { \
+    LOG("NotAuthorizedException Caught");                        \
+    LOG("Success");                                              \
+  }                                                              \
+  catch (const apache::geode::client::Exception& other) {        \
+    other.printStackTrace();                                     \
+    FAIL(other.getMessage());                                    \
   }
 
 #define CLIENT_1 s1p1
@@ -158,7 +158,7 @@ class UserThread : public ACE_Task_Base {
       m_userRegion->get(key);
       LOG("op got passed");
       m_totalOpsPassed++;
-    } catch (const gemfire::NotAuthorizedException&) {
+    } catch (const apache::geode::client::NotAuthorizedException&) {
       LOG("NotAuthorizedException Caught");
       if (isPassed) {
         char tmp[256] = {'\0'};
@@ -167,7 +167,7 @@ class UserThread : public ACE_Task_Base {
         LOG(tmp);
         m_failed = true;
       }
-    } catch (const gemfire::Exception& other) {
+    } catch (const apache::geode::client::Exception& other) {
       other.printStackTrace();
       m_failed = true;
       char tmp[256] = {'\0'};
@@ -199,7 +199,7 @@ class UserThread : public ACE_Task_Base {
       m_userRegion->put(key, "val");
       LOG("op got passed");
       m_totalOpsPassed++;
-    } catch (const gemfire::NotAuthorizedException&) {
+    } catch (const apache::geode::client::NotAuthorizedException&) {
       LOG("NotAuthorizedException Caught");
       if (isPassed) {
         char tmp[256] = {'\0'};
@@ -208,7 +208,7 @@ class UserThread : public ACE_Task_Base {
         LOG(tmp);
         m_failed = true;
       }
-    } catch (const gemfire::Exception& other) {
+    } catch (const apache::geode::client::Exception& other) {
       other.printStackTrace();
       m_failed = true;
       char tmp[256] = {'\0'};

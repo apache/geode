@@ -22,7 +22,9 @@
 
 #include <gfcpp/gfcpp_globals.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class PooledBasePool;
 
@@ -55,7 +57,9 @@ class CPPCACHE_EXPORT PooledBase {
 
   void operator=(const PooledBase& rhs);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif
 

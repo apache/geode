@@ -22,7 +22,9 @@
 #include <vector>
 #include <set>
 #include <ace/Recursive_Thread_Mutex.h>
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class ThinClientPoolDM;
 class ServerLocation;
 class TcrConnection;
@@ -51,5 +53,7 @@ class ThinClientStickyManager {
   std::set<TcrConnection**> m_stickyConnList;
   ACE_Recursive_Thread_Mutex m_stickyLock;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif

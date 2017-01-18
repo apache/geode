@@ -17,7 +17,9 @@
 #include <gfcpp/EntryEvent.hpp>
 #include <CacheableToken.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 EntryEvent::EntryEvent(const RegionPtr& region, const CacheableKeyPtr& key,
                        const CacheablePtr& oldValue,
                        const CacheablePtr& newValue,
@@ -37,4 +39,6 @@ EntryEvent::EntryEvent()
      * CID 28923: Uninitialized scalar field (UNINIT_CTOR)
      */
     : m_remoteOrigin(false) {}
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

@@ -23,7 +23,9 @@
 #include "LRUList.hpp"
 #include "VersionStamp.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 /**
  * This template class adds the recently used, eviction bits and persistence
  * info to the MapEntry class. The earlier design looked like below:
@@ -115,7 +117,8 @@ class CPPCACHE_EXPORT LRUEntryFactory : public EntryFactory {
   virtual void newMapEntry(const CacheableKeyPtr& key,
                            MapEntryImplPtr& result) const;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  //__GEMFIRE_IMPL_LRUMAPENTRY_H__

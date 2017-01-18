@@ -27,7 +27,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 /**
  * @class TombstoneExpiryHandler TombstoneExpiryHandler.hpp
  *
@@ -65,7 +67,8 @@ class CPPCACHE_EXPORT TombstoneExpiryHandler : public ACE_Event_Handler {
 
   TombstoneList* m_tombstoneList;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_TOMBSTONEEXPIRYTASK_H__

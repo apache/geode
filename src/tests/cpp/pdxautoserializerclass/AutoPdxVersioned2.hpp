@@ -62,7 +62,7 @@
 #define GFARRAYSIZE(X)
 #define GFARRAYELEMSIZE(X)
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 namespace AutoPdxTests {
 

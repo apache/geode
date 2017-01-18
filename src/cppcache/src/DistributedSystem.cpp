@@ -41,7 +41,7 @@
 
 #include "version.h"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace gemfire_statistics;
 
 DistributedSystemPtr* DistributedSystem::m_instance_ptr = NULL;
@@ -57,7 +57,9 @@ StatisticsManager* g_statMngr = NULL;
 SystemProperties* g_sysProps = NULL;
 }  // namespace
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 void setLFH() {
 #ifdef _WIN32
   static HINSTANCE kernelMod = NULL;
@@ -103,7 +105,9 @@ void setLFH() {
   }
 #endif
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 DistributedSystem::DistributedSystem(const char* name) : m_name(NULL) {
   LOGDEBUG("DistributedSystem::DistributedSystem");
@@ -266,7 +270,7 @@ DistributedSystemPtr DistributedSystem::connect(
 
   try {
     m_impl->connect();
-  } catch (const gemfire::Exception& e) {
+  } catch (const apache::geode::client::Exception& e) {
     LOGERROR("Exception caught during client initialization: %s",
              e.getMessage());
     std::string msg = "DistributedSystem::connect: caught exception: ";
@@ -308,7 +312,7 @@ void DistributedSystem::disconnect() {
     if (cache != NULLPTR && !cache->isClosed()) {
       cache->close();
     }
-  } catch (const gemfire::Exception& e) {
+  } catch (const apache::geode::client::Exception& e) {
     LOGWARN("Exception while closing: %s: %s", e.getName(), e.getMessage());
   }
 

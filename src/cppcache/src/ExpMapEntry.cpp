@@ -17,7 +17,7 @@
 #include "ExpMapEntry.hpp"
 #include "MapEntryT.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 ExpEntryFactory* ExpEntryFactory::singleton = NULL;
 

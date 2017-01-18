@@ -187,9 +187,9 @@ void initClientCache(int redundancy, int durableTimeout, OperMonitorPtr& mon,
 
 void feederUpdate(int value) {
   createIntEntry(regionNames[0], mixKeys[0], value);
-  gemfire::millisleep(10);
+  apache::geode::client::millisleep(10);
   createIntEntry(regionNames[0], mixKeys[1], value);
-  gemfire::millisleep(10);
+  apache::geode::client::millisleep(10);
 }
 
 /* Close Client 1 with option keep alive = true*/
@@ -224,7 +224,7 @@ DUNIT_TASK_DEFINITION(SERVER1, StartServer2)
     }
 
     //  sleep for 3 seconds to allow redundancy monitor to detect new server.
-    gemfire::millisleep(3000);
+    apache::geode::client::millisleep(3000);
     LOG("SERVER started");
   }
 END_TASK_DEFINITION
@@ -252,7 +252,7 @@ DUNIT_TASK_DEFINITION(FEEDER, FeederUpdate1)
     feederUpdate(1);
 
     //  Wait 5 seconds for events to be removed from ha queues.
-    gemfire::millisleep(5000);
+    apache::geode::client::millisleep(5000);
 
     LOG("FeederUpdate1 complete.");
   }
@@ -263,7 +263,7 @@ DUNIT_TASK_DEFINITION(FEEDER, FeederUpdate2)
     feederUpdate(2);
 
     //  Wait 5 seconds for events to be removed from ha queues.
-    gemfire::millisleep(5000);
+    apache::geode::client::millisleep(5000);
 
     LOG("FeederUpdate2 complete.");
   }
@@ -312,7 +312,7 @@ DUNIT_TASK_DEFINITION(SERVER1, CloseServer1)
   {
     CacheHelper::closeServer(1);
     //  Wait 2 seconds to allow client failover.
-    gemfire::millisleep(2000);
+    apache::geode::client::millisleep(2000);
     LOG("SERVER closed");
   }
 END_TASK_DEFINITION

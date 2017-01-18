@@ -40,7 +40,7 @@ namespace GemStone
       /// </summary>
       generic<class TKey, class TValue>
       public ref class RegionEvent sealed
-        : public Generic::Internal::UMWrap<gemfire::RegionEvent>
+        : public Generic::Internal::UMWrap<apache::geode::client::RegionEvent>
       {
       public:
 
@@ -86,9 +86,9 @@ namespace GemStone
         /// Internal constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline GemStone::GemFire::Cache::Generic::RegionEvent<TKey, TValue>( const gemfire::RegionEvent* nativeptr )
-          : GemStone::GemFire::Cache::Generic::Internal::UMWrap<gemfire::RegionEvent>(
-            const_cast<gemfire::RegionEvent*>( nativeptr ), false ) { }
+        inline GemStone::GemFire::Cache::Generic::RegionEvent<TKey, TValue>( const apache::geode::client::RegionEvent* nativeptr )
+          : GemStone::GemFire::Cache::Generic::Internal::UMWrap<apache::geode::client::RegionEvent>(
+            const_cast<apache::geode::client::RegionEvent*>( nativeptr ), false ) { }
       };
 
     }

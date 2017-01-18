@@ -18,7 +18,7 @@
 #include <gfcpp/DataOutput.hpp>
 #include <gfcpp/DataInput.hpp>
 #include "GemfireTypeIdsImpl.hpp"
-using namespace gemfire;
+using namespace apache::geode::client;
 void ClientConnectionRequest::toData(DataOutput& output) const {
   // output.writeASCII( m_servergroup.c_str() );
   // writeSetOfServerLocation( output );

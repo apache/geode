@@ -17,7 +17,7 @@
 #include "ThinClientPoolStickyDM.hpp"
 #include "TssConnectionWrapper.hpp"
 #include <algorithm>
-using namespace gemfire;
+using namespace apache::geode::client;
 TcrConnection* ThinClientPoolStickyDM::getConnectionFromQueueW(
     GfErrType* error, std::set<ServerLocation>& excludeServers, bool isBGThread,
     TcrMessage& request, int8_t& version, bool& match, bool& connFound,

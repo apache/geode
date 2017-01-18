@@ -18,7 +18,7 @@
 #include <gfcpp/ExceptionTypes.hpp>
 #include <TimeoutTimer.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 ResultCollector::ResultCollector()
     : m_resultList(CacheableVector::create()), m_isResultReady(false) {}
 ResultCollector::~ResultCollector() {}

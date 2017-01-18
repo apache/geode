@@ -23,7 +23,9 @@
 #include "PooledBase.hpp"
 #include <deque>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class CPPCACHE_EXPORT PooledBasePool {
   SpinLock m_poolLock;
@@ -73,6 +75,8 @@ class CPPCACHE_EXPORT PooledBasePool {
     }
   }
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

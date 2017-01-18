@@ -16,9 +16,13 @@
  */
 
 #include <string>
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class gfcppBanner {
  public:
   static std::string getBanner();
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

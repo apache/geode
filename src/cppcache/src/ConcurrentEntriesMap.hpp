@@ -24,7 +24,9 @@
 #include "ExpMapEntry.hpp"
 #include <gfcpp/RegionEntry.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class RegionInternal;
 
 /**
@@ -160,7 +162,8 @@ class CPPCACHE_EXPORT ConcurrentEntriesMap : public EntriesMap {
    */
   uint32_t totalSegmentRehashes() const;
 };  // class EntriesMap
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __GEMFIRE_IMPL_CONCURRENTENTRIESMAP_H__

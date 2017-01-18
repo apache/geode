@@ -16,7 +16,7 @@
  */
 #include "CqAttributesMutatorImpl.hpp"
 #include "CqAttributesImpl.hpp"
-using namespace gemfire;
+using namespace apache::geode::client;
 CqAttributesMutatorImpl::CqAttributesMutatorImpl(const CqAttributesPtr& impl)
     : m_cqAttributes(const_cast<CqAttributes*>(impl.ptr())) {}
 

@@ -25,15 +25,19 @@
 #include <vector>
 #include <map>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace serializer {
 /** write an <code>std::string</code> object to <code>DataOutput</code> */
-inline void writeObject(gemfire::DataOutput& output, const std::string& value) {
+inline void writeObject(apache::geode::client::DataOutput& output,
+                        const std::string& value) {
   output.writeASCIIHuge(value.data(), value.length());
 }
 
 /** read an <code>std::string</code> object from <code>DataInput</code> */
-inline void readObject(gemfire::DataInput& input, std::string& value) {
+inline void readObject(apache::geode::client::DataInput& input,
+                       std::string& value) {
   char* str;
   uint32_t len;
   input.readASCIIHuge(&str, &len);
@@ -42,13 +46,14 @@ inline void readObject(gemfire::DataInput& input, std::string& value) {
 }
 
 /** write an <code>std::wstring</code> object to <code>DataOutput</code> */
-inline void writeObject(gemfire::DataOutput& output,
+inline void writeObject(apache::geode::client::DataOutput& output,
                         const std::wstring& value) {
   output.writeUTFHuge(value.data(), value.length());
 }
 
 /** read an <code>std::wstring</code> object from <code>DataInput</code> */
-inline void readObject(gemfire::DataInput& input, std::wstring& value) {
+inline void readObject(apache::geode::client::DataInput& input,
+                       std::wstring& value) {
   wchar_t* str;
   uint32_t len;
   input.readUTFHuge(&str, &len);
@@ -58,7 +63,7 @@ inline void readObject(gemfire::DataInput& input, std::wstring& value) {
 
 /** write an <code>std::vector</code> object to <code>DataOutput</code> */
 template <typename TObj>
-inline void writeObject(gemfire::DataOutput& output,
+inline void writeObject(apache::geode::client::DataOutput& output,
                         const std::vector<TObj>& value) {
   output.writeInt(value.size());
   for (std::vector<TObj>::const_iterator valIterator = value.begin();
@@ -69,7 +74,8 @@ inline void writeObject(gemfire::DataOutput& output,
 
 /** read an <code>std::vector</code> object from <code>DataInput</code> */
 template <typename TObj>
-inline void readObject(gemfire::DataInput& input, std::vector<TObj>& value) {
+inline void readObject(apache::geode::client::DataInput& input,
+                       std::vector<TObj>& value) {
   std::vector<TObj>::size_type len;
   input.readInt(&len);
   if (len > 0) {
@@ -83,7 +89,7 @@ inline void readObject(gemfire::DataInput& input, std::vector<TObj>& value) {
 
 /** write an <code>std::map</code> object to <code>DataOutput</code> */
 template <typename TKey, typename TVal>
-inline void writeObject(gemfire::DataOutput& output,
+inline void writeObject(apache::geode::client::DataOutput& output,
                         const std::map<TKey, TVal>& value) {
   output.writeInt(value.size());
   for (std::map<TKey, TVal>::const_iterator valIterator = value.begin();
@@ -95,7 +101,8 @@ inline void writeObject(gemfire::DataOutput& output,
 
 /** read an <code>std::map</code> object from <code>DataInput</code> */
 template <typename TKey, typename TVal>
-inline void readObject(gemfire::DataInput& input, std::map<TKey, TVal>& value) {
+inline void readObject(apache::geode::client::DataInput& input,
+                       std::map<TKey, TVal>& value) {
   std::map<TKey, TVal>::size_type len;
   input.readInt(&len);
   if (len > 0) {
@@ -107,6 +114,8 @@ inline void readObject(gemfire::DataInput& input, std::map<TKey, TVal>& value) {
       value[key] = val;
     }
   }
+}
+}
 }
 }
 }

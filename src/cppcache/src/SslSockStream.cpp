@@ -18,9 +18,11 @@
 #include <gfcpp/ExceptionTypes.hpp>
 #include <ace/OS_NS_stdio.h>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 void *SslSockStream::getACESSLFuncPtr(const char *function_name) {
   void *func = m_dll.symbol(function_name);
@@ -116,5 +118,6 @@ int SslSockStream::close() {
 }
 
 SslSockStream::~SslSockStream() { close(); }
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

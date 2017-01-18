@@ -46,7 +46,7 @@ public:
  * Captures the current thread's AppDomain for later use in associating a native
  * thread with this instanaces AppDomain.
  */
-class AppDomainContext : public gemfire::AppDomainContext {
+class AppDomainContext : public apache::geode::client::AppDomainContext {
 public:
   AppDomainContext() {
     functionDelegate = gcnew AppDomainContextWrapper::Delegate(gcnew AppDomainContextWrapper(),
@@ -64,7 +64,7 @@ private:
   AppDomainContextWrapper::Function functionPointer;
 };
 
-gemfire::AppDomainContext* createAppDomainContext();
+apache::geode::client::AppDomainContext* createAppDomainContext();
 
 }
 }

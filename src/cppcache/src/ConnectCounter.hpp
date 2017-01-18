@@ -19,7 +19,9 @@
 
 #include <gfcpp/gfcpp_globals.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class CPPCACHE_EXPORT ConnectCounter {
  public:
@@ -30,6 +32,8 @@ class CPPCACHE_EXPORT ConnectCounter {
   virtual void inc(const char* clientName) = 0;
   virtual void dec(const char* clientName) = 0;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

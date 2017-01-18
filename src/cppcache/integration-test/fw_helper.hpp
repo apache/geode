@@ -115,7 +115,8 @@ class TestException {
 
   void print() {
     char buf[256];
-    gemfire::Log::formatLogLine(buf, gemfire::Log::Error);
+    apache::geode::client::Log::formatLogLine(
+        buf, apache::geode::client::Log::Error);
     fprintf(stdout, "--->%sTestException: %s in %s at line %d<---\n", buf,
             m_message.c_str(), m_filename, m_lineno);
   }
@@ -143,7 +144,7 @@ class TestOp {
     } catch (TestException e) {
       e.print();
       failed.push_back(m_name);
-    } catch (gemfire::Exception ge) {
+    } catch (apache::geode::client::Exception ge) {
       ge.printStackTrace();
       failed.push_back(m_name);
     }
@@ -179,7 +180,7 @@ int main(int argc, char* argv[])
 #endif
 {
   dunit::setupCRTOutput();
-  gemfire::CppCacheLibrary::initLib();
+  apache::geode::client::CppCacheLibrary::initLib();
   // TimeBomb* tb = new TimeBomb();
   // tb->arm();
   try {
@@ -202,7 +203,7 @@ int main(int argc, char* argv[])
       fprintf(stdout, "%d tests failed.\n", failures);
     }
     fprintf(stdout, "%d tests passed.\n", (testsRun - failures));
-    gemfire::CppCacheLibrary::closeLib();
+    apache::geode::client::CppCacheLibrary::closeLib();
     return failures;
   } catch (...) {
     printf("Exception: unhandled/unidentified exception reached main.\n");

@@ -44,7 +44,7 @@ namespace GemStone
       /// DistributedSystem.
       /// </remarks>
       public ref class DistributedSystem sealed
-				: public Generic::Internal::SBWrap<gemfire::DistributedSystem>
+				: public Generic::Internal::SBWrap<apache::geode::client::DistributedSystem>
       {
       public:
 
@@ -131,7 +131,7 @@ namespace GemStone
         /// <returns>
         /// The managed wrapper object; null if the native pointer is null.
         /// </returns>
-        static DistributedSystem^ Create(gemfire::DistributedSystem* nativeptr);
+        static DistributedSystem^ Create(apache::geode::client::DistributedSystem* nativeptr);
 
         static void acquireDisconnectLock();
 
@@ -150,7 +150,7 @@ namespace GemStone
         /// Stuff that needs to be done for Connect in each AppDomain.
         /// </summary>
         static void AppDomainInstanceInitialization(
-          const gemfire::PropertiesPtr& nativepropsptr);
+          const apache::geode::client::PropertiesPtr& nativepropsptr);
 
         /// <summary>
         /// Managed registrations and other stuff to be done for the manage
@@ -181,7 +181,7 @@ namespace GemStone
         /// Private constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        DistributedSystem(gemfire::DistributedSystem* nativeptr);
+        DistributedSystem(apache::geode::client::DistributedSystem* nativeptr);
 
         /// <summary>
         /// Finalizer for the singleton instance of this class.

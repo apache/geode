@@ -19,8 +19,8 @@
 #include "ThinClientHelper.hpp"
 #include "ace/Process.h"
 
-using namespace gemfire::testframework::security;
-using namespace gemfire;
+using namespace apache::geode::client::testframework::security;
+using namespace apache::geode::client;
 bool isLocator = false;
 bool isLocalServer = false;
 
@@ -84,20 +84,20 @@ opCodeList::value_type tmpAArr[] = {OP_CREATE,       OP_UPDATE,
                                     OP_REGION_CLEAR, OP_REGISTER_INTEREST,
                                     OP_GET};
 
-#define HANDLE_NOT_AUTHORIZED_EXCEPTION            \
-  catch (const gemfire::NotAuthorizedException&) { \
-    LOG("NotAuthorizedException Caught");          \
-    LOG("Success");                                \
-  }                                                \
-  catch (const gemfire::Exception& other) {        \
-    other.printStackTrace();                       \
-    FAIL(other.getMessage());                      \
+#define HANDLE_NOT_AUTHORIZED_EXCEPTION                          \
+  catch (const apache::geode::client::NotAuthorizedException&) { \
+    LOG("NotAuthorizedException Caught");                        \
+    LOG("Success");                                              \
+  }                                                              \
+  catch (const apache::geode::client::Exception& other) {        \
+    other.printStackTrace();                                     \
+    FAIL(other.getMessage());                                    \
   }
 
-#define HANDLE_CACHEWRITER_EXCEPTION             \
-  catch (const gemfire::CacheWriterException&) { \
-    LOG("CacheWriterException  Caught");         \
-    LOG("Success");                              \
+#define HANDLE_CACHEWRITER_EXCEPTION                           \
+  catch (const apache::geode::client::CacheWriterException&) { \
+    LOG("CacheWriterException  Caught");                       \
+    LOG("Success");                                            \
   }
 
 #define TYPE_ADMIN_CLIENT 'A'

@@ -56,7 +56,7 @@
 #define PATH_SEP "/"
 #endif
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 extern ClientCleanup gClientCleanup;
 

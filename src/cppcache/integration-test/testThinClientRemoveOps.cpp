@@ -31,7 +31,7 @@
 
 #include "CacheHelper.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace test;
 
 #define CLIENT1 s1p1

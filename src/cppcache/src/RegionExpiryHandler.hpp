@@ -26,7 +26,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 /**
  * @class RegionExpiryHandler RegionExpiryHandler.hpp
  *
@@ -63,7 +65,8 @@ class CPPCACHE_EXPORT RegionExpiryHandler : public ACE_Event_Handler {
   // perform the actual expiration action
   void DoTheExpirationAction();
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_REGIONEXPIRYTASK_H__

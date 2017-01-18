@@ -34,9 +34,9 @@ namespace GemStone
       public interface class IFixedPartitionResolverProxy
       {
       public:
-        gemfire::CacheableKeyPtr getRoutingObject(const gemfire::EntryEvent& ev);
+        apache::geode::client::CacheableKeyPtr getRoutingObject(const apache::geode::client::EntryEvent& ev);
         const char * getName();
-        const char* getPartitionName(const gemfire::EntryEvent& opDetails);       
+        const char* getPartitionName(const apache::geode::client::EntryEvent& opDetails);       
       };
 
       generic<class TKey, class TValue>
@@ -56,7 +56,7 @@ namespace GemStone
             m_strList = gcnew Dictionary<String^, ManagedString^>();
           }
 
-          virtual gemfire::CacheableKeyPtr getRoutingObject(const gemfire::EntryEvent& ev)
+          virtual apache::geode::client::CacheableKeyPtr getRoutingObject(const apache::geode::client::EntryEvent& ev)
           {
             EntryEvent<TKey, TValue> gevent(&ev);
 			      Object^ groutingobject = m_resolver->GetRoutingObject(%gevent);
@@ -69,11 +69,11 @@ namespace GemStone
             return mg_name.CharPtr;
           }
 
-          virtual const char* getPartitionName(const gemfire::EntryEvent& opDetails)
+          virtual const char* getPartitionName(const apache::geode::client::EntryEvent& opDetails)
           {
             if (m_fixedResolver == nullptr)
             {
-              throw gemfire::IllegalStateException("GetPartitionName() called on non fixed partition resolver.");
+              throw apache::geode::client::IllegalStateException("GetPartitionName() called on non fixed partition resolver.");
             }
 
             EntryEvent<TKey, TValue> gevent(&opDetails);                        

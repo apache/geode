@@ -23,7 +23,9 @@
 
 #include <gfcpp/TransactionId.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 TransactionId::TransactionId() {
   // TODO Auto-generated constructor stub
@@ -32,4 +34,6 @@ TransactionId::TransactionId() {
 TransactionId::~TransactionId() {
   // TODO Auto-generated destructor stub
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

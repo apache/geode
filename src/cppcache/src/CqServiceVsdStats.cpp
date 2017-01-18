@@ -28,7 +28,9 @@ const char* cqServiceStatsDesc = (const char*)"Statistics for this cq Service";
 
 ////////////////////////////////////////////////////////////////////////////////
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 using namespace gemfire_statistics;
 
@@ -143,5 +145,6 @@ CqServiceVsdStats::~CqServiceVsdStats() {
     m_cqServiceVsdStats = NULL;
   }
 }
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

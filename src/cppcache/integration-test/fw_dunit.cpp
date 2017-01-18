@@ -842,7 +842,7 @@ int dmain(int argc, ACE_TCHAR* argv[]) {
 #ifdef WIN32
   char* envsetting = ACE_OS::getenv("BUG481");
   if (envsetting != NULL && strlen(envsetting) > 0) {
-    gemfire::setNewAndDelete(&operator new, & operator delete);
+    apache::geode::client::setNewAndDelete(&operator new, & operator delete);
   }
 #endif
 
@@ -929,7 +929,7 @@ int dmain(int argc, ACE_TCHAR* argv[]) {
 
   } catch (dunit::TestException& te) {
     te.print();
-  } catch (gemfire::testframework::FwkException& fe) {
+  } catch (apache::geode::client::testframework::FwkException& fe) {
     printf("Exception: %s\n", fe.what());
     fflush(stdout);
   } catch (...) {
@@ -992,7 +992,7 @@ Record& Record::operator=(const Record& other) {
   return *this;
 }
 
-void Record::write(gemfire::DataOutput& output) {
+void Record::write(apache::geode::client::DataOutput& output) {
   output.writeASCII(m_testName.c_str(),
                     static_cast<uint32_t>(m_testName.length()));
   output.writeInt(m_operations);
@@ -1000,7 +1000,7 @@ void Record::write(gemfire::DataOutput& output) {
   output.writeInt(m_stopTime.msec());
 }
 
-void Record::read(gemfire::DataInput& input) {
+void Record::read(apache::geode::client::DataInput& input) {
   char* buf = NULL;
   input.readASCII(&buf);
   m_testName = buf;
@@ -1054,7 +1054,7 @@ void PerfSuite::save() {
   /* Currently having trouble with windows... not useful until the compare
      function is written anyway...
 
-  gemfire::DataOutput output;
+  apache::geode::client::DataOutput output;
   output.writeASCII( m_suiteName.c_str(), m_suiteName.length() );
 
   char hname[100];

@@ -35,7 +35,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class CPPCACHE_EXPORT RemoteQuery : public Query {
   std::string m_queryString;
@@ -76,7 +78,8 @@ class CPPCACHE_EXPORT RemoteQuery : public Query {
 };
 
 typedef SharedPtr<RemoteQuery> RemoteQueryPtr;
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_REMOTEQUERY_H__

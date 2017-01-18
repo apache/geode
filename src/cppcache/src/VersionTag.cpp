@@ -20,7 +20,7 @@
 #include "MemberListForVersionStamp.hpp"
 #include "ClientProxyMembershipID.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 VersionTag::VersionTag() {
   m_bits = 0;

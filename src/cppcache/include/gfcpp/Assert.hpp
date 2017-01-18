@@ -26,7 +26,9 @@
  *  Assertion functions for debugging
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * @class Assert Assert.hpp
@@ -50,10 +52,13 @@ class CPPCACHE_EXPORT Assert {
   static void throwAssertion(const char* expressionText, const char* file,
                              int line);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 /** Throws the given assertion. */
-#define GF_R_ASSERT(x) gemfire::Assert::assertTrue(x, #x, __FILE__, __LINE__)
+#define GF_R_ASSERT(x) \
+  apache::geode::client::Assert::assertTrue(x, #x, __FILE__, __LINE__)
 
 #ifndef GF_DEBUG_ASSERTS
 /** Change this to 1 to use assertion functions. */
@@ -76,14 +81,16 @@ class CPPCACHE_EXPORT Assert {
 
 /** Throws the given assertion if GF_DEBUG_ASSERTS is true. */
 #if GF_DEBUG_ASSERTS == 1
-#define GF_D_ASSERT(x) gemfire::Assert::assertTrue(x, #x, __FILE__, __LINE__)
+#define GF_D_ASSERT(x) \
+  apache::geode::client::Assert::assertTrue(x, #x, __FILE__, __LINE__)
 #else
 #define GF_D_ASSERT(x)
 #endif
 
 /** Throws the given assertion if GF_DEVEL_ASSERTS is true. */
 #if GF_DEVEL_ASSERTS == 1
-#define GF_DEV_ASSERT(x) gemfire::Assert::assertTrue(x, #x, __FILE__, __LINE__)
+#define GF_DEV_ASSERT(x) \
+  apache::geode::client::Assert::assertTrue(x, #x, __FILE__, __LINE__)
 #else
 #define GF_DEV_ASSERT(x)
 #endif

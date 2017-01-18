@@ -30,8 +30,8 @@ namespace GemStone
       namespace Generic
       {
 
-#define _GF_MG_EXCEPTION_ADD3(x) { "gemfire::" #x, gcnew CreateException2( x::Create ) }
-#define _GF_MG_EXCEPTION_ADD4(x,y) { "gemfire::" #y, gcnew CreateException2( x::Create ) }
+#define _GF_MG_EXCEPTION_ADD3(x) { "apache::geode::client::" #x, gcnew CreateException2( x::Create ) }
+#define _GF_MG_EXCEPTION_ADD4(x,y) { "apache::geode::client::" #y, gcnew CreateException2( x::Create ) }
 
       Dictionary<String^, CreateException2^>^ GemFireException::Init( )
       {
@@ -112,10 +112,10 @@ namespace GemStone
         return Native2ManagedExMap;
       }
 
-      System::Exception^ GemFireException::Get(const gemfire::Exception& nativeEx)
+      System::Exception^ GemFireException::Get(const apache::geode::client::Exception& nativeEx)
       {
         Exception^ innerException = nullptr;
-        const gemfire::ExceptionPtr& cause = nativeEx.getCause();
+        const apache::geode::client::ExceptionPtr& cause = nativeEx.getCause();
         if (cause != NULLPTR) {
           innerException = GemFireException::Get(*cause);
         }

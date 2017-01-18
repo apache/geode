@@ -19,7 +19,7 @@
 #include "LRUEntriesMap.hpp"
 #include "CacheImpl.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 bool LRULocalDestroyAction::evict(const MapEntryImplPtr& mePtr) {
   CacheableKeyPtr keyPtr;

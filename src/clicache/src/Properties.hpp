@@ -69,7 +69,7 @@ namespace GemStone
       /// or an integer.
       /// </summary>
       public ref class Properties sealed
-        : public Internal::SBWrap<gemfire::Properties>, public IGFSerializable,
+        : public Internal::SBWrap<apache::geode::client::Properties>, public IGFSerializable,
         public ISerializable
       {
       public:
@@ -78,7 +78,7 @@ namespace GemStone
         /// Default constructor: returns an empty collection.
         /// </summary>
         inline Properties( )
-          : SBWrap( gemfire::Properties::create( ).ptr( ) ) { }
+          : SBWrap( apache::geode::client::Properties::create( ).ptr( ) ) { }
 
         /// <summary>
         /// Factory method to create an empty collection of properties.
@@ -218,8 +218,8 @@ namespace GemStone
         }
 
         /*
-        inline static IGFSerializable^ ConvertCacheableString(gemfire::CacheablePtr& value);
-        inline static gemfire::CacheableKey *  ConvertCacheableStringKey(CacheableString^ cStr);
+        inline static IGFSerializable^ ConvertCacheableString(apache::geode::client::CacheablePtr& value);
+        inline static apache::geode::client::CacheableKey *  ConvertCacheableStringKey(CacheableString^ cStr);
         */
         
 
@@ -234,7 +234,7 @@ namespace GemStone
         generic<class TPropKey, class TPropValue>
         static Properties<TPropKey, TPropValue>^ CreateFromVoidPtr(void* ptr)
         {
-          gemfire::Properties* nativeptr = (gemfire::Properties*)ptr;
+          apache::geode::client::Properties* nativeptr = (apache::geode::client::Properties*)ptr;
           return ( nativeptr != nullptr ?
             gcnew Properties<TPropKey, TPropValue>( nativeptr ) : nullptr );
         }
@@ -257,7 +257,7 @@ namespace GemStone
         /// The managed wrapper object; null if the native pointer is null.
         /// </returns>
         generic<class TPropKey, class TPropValue>
-        static Properties<TPropKey, TPropValue>^ Create( gemfire::Serializable* nativeptr )
+        static Properties<TPropKey, TPropValue>^ Create( apache::geode::client::Serializable* nativeptr )
         {
           return ( nativeptr != nullptr ?
             gcnew Properties<TPropKey, TPropValue>( nativeptr ) : nullptr );
@@ -272,7 +272,7 @@ namespace GemStone
         /// Factory function to register wrapper
         /// </summary>
         inline static IGFSerializable^ CreateDeserializable(
-          gemfire::Serializable* nativeptr )
+          apache::geode::client::Serializable* nativeptr )
         {
           return Create<String^, String^>( nativeptr );
         }
@@ -283,8 +283,8 @@ namespace GemStone
         /// Private constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline Properties( gemfire::Serializable* nativeptr )
-          : SBWrap( (gemfire::Properties*)nativeptr ) { }
+        inline Properties( apache::geode::client::Serializable* nativeptr )
+          : SBWrap( (apache::geode::client::Properties*)nativeptr ) { }
       };
       } // end namespace Generic
 

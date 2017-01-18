@@ -39,7 +39,9 @@ static const uint8_t g_primeConcurLen =
 
 }  // anonymous namespace
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 /** @brief find a prime number greater than a given integer.
  *  A sampling of primes are used from 0 to 1 million. Not every prime is
  *  necessary, as the map scales, little steps are usually uninteresting.
@@ -82,6 +84,8 @@ class CPPCACHE_EXPORT TableOfPrimes {
         "find a prime number that large");
   }
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __GEMFIRE_IMPL_TABLEOFPRIMES_H__

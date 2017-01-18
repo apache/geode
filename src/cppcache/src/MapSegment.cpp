@@ -26,7 +26,7 @@
 #include "TombstoneExpiryHandler.hpp"
 #include <ace/OS.h>
 #include "ace/Time_Value.h"
-using namespace gemfire;
+using namespace apache::geode::client;
 
 #define _GF_GUARD_SEGMENT SpinLockGuard mapGuard(m_spinlock)
 #define _VERSION_TAG_NULL_CHK \

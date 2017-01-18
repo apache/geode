@@ -17,7 +17,7 @@
 #include "ClientConnectionResponse.hpp"
 #include <gfcpp/DataOutput.hpp>
 #include <gfcpp/DataInput.hpp>
-using namespace gemfire;
+using namespace apache::geode::client;
 ClientConnectionResponse* ClientConnectionResponse::fromData(DataInput& input) {
   input.readBoolean(&m_serverFound);
   if (m_serverFound) {

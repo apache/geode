@@ -30,7 +30,9 @@
 #include <unistd.h>
 #endif
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace testframework {
 
 class Waiter {
@@ -123,6 +125,8 @@ class PaceMeter {
 };
 
 }  // namespace testframework
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __PaceMeter_hpp__

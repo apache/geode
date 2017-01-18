@@ -24,7 +24,9 @@
 #include "gfcpp_globals.hpp"
 #include "Serializable.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 typedef SerializablePtr CacheablePtr;
 typedef Serializable Cacheable;
@@ -34,7 +36,8 @@ inline CacheablePtr createValue(const SharedPtr<TVALUE>& value);
 
 template <typename TVALUE>
 inline CacheablePtr createValue(const TVALUE* value);
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_CACHEABLE_H__
