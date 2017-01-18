@@ -25,6 +25,7 @@ import org.junit.experimental.categories.Category;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 
 @Category(IntegrationTest.class)
@@ -37,11 +38,13 @@ public class AgentUtilJUnitTest {
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @Before
-  public void setUp() {
+  public void setUp() throws IOException {
     // GEODE-958: We need to set gemfire.home to tell AgentUtil where to find wars in case the env
     // variable GEMFIRE is not set
     Path installDir = new File(".").getAbsoluteFile().toPath().resolve("build").resolve("install")
         .resolve("apache-geode");
+    System.out.println("Current dir is " + new File(".").getCanonicalPath());
+    System.out.println("Setting gemfire.home to " + installDir);
     System.setProperty("gemfire.home", installDir.toString());
 
     version = GemFireVersion.getGemFireVersion();

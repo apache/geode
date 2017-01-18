@@ -14,7 +14,7 @@
  *
  */
 
-package org.apache.geode.tools.pulse.tests;
+package org.apache.geode.tools.pulse;
 
 import static com.jayway.awaitility.Awaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -100,7 +100,6 @@ public class PulseDataExportTest extends JUnit4DistributedTestCase {
     await().atMost(2, TimeUnit.MINUTES).until(this::pulseServerHasStarted);
   }
 
-  @Ignore // GEODE-2313
   @Test
   public void dataBrowserExportWorksAsExpected() throws Throwable {
     getAuthenticatedJSESSIONID();
