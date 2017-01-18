@@ -21,7 +21,7 @@
 #include <CacheRegionHelper.hpp>
 #include "fw_helper.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 bool CheckBytesEqual(CacheableBytesPtr result, CacheablePtr expected) {
   CacheableBytesPtr expectedPtr = dynCast<CacheableBytesPtr>(expected);

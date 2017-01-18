@@ -18,7 +18,9 @@
 #include <gfcpp/RegionEntry.hpp>
 #include "TombstoneList.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 // Static initializers for CacheEventFlags
 const CacheEventFlags CacheEventFlags::NORMAL(CacheEventFlags::GF_NORMAL);
@@ -251,4 +253,6 @@ void RegionInternal::txPut(const CacheableKeyPtr& key,
   throw UnsupportedOperationException(
       "txPut only supported by Thin Client Region.");
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

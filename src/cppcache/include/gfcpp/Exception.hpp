@@ -24,7 +24,9 @@
 #include "gfcpp_globals.hpp"
 #include "gf_types.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 #define GF_EX_MSG_LIMIT 2048
 
@@ -116,7 +118,8 @@ class CPPCACHE_EXPORT Exception : public SharedBase {
 
   friend class DistributedSystem;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_EXCEPTION_H__

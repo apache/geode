@@ -16,7 +16,7 @@
  */
 #include "PdxTypeWithAuto.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace PdxTestsAuto;
 
 template <typename T1, typename T2>

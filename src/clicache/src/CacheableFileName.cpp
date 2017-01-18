@@ -34,11 +34,11 @@ namespace GemStone
       void CacheableFileName::ToData(DataOutput^ output)
       {
         if (m_str->Length <= 0xFFFF) {
-          output->WriteByte(gemfire::GemfireTypeIds::CacheableString);
+          output->WriteByte(apache::geode::client::GemfireTypeIds::CacheableString);
           output->WriteUTF(m_str);
         }
         else {
-          output->WriteByte(gemfire::GemfireTypeIds::CacheableStringHuge);
+          output->WriteByte(apache::geode::client::GemfireTypeIds::CacheableStringHuge);
           output->WriteUTFHuge(m_str);
         }
       }
@@ -46,7 +46,7 @@ namespace GemStone
       IGFSerializable^ CacheableFileName::FromData(DataInput^ input)
       {
         unsigned char filetype = input->ReadByte();
-        if (filetype == gemfire::GemfireTypeIds::CacheableString) {
+        if (filetype == apache::geode::client::GemfireTypeIds::CacheableString) {
           m_str = input->ReadUTF();
         }
         else {

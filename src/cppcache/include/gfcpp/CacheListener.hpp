@@ -25,7 +25,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class EntryEvent;
 class RegionEvent;
@@ -201,6 +203,7 @@ class CPPCACHE_EXPORT CacheListener : public SharedBase {
   CacheListener(const CacheListener& other);
   void operator=(const CacheListener& other);
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // ifndef __GEMFIRE_CACHELISTENER_H__

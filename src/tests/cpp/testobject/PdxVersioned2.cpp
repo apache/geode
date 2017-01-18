@@ -23,7 +23,7 @@
 
 #include "PdxVersioned2.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace PdxTests;
 
 // TEST_EXPORT Serializable * createPdxVersioned2(const char* key) {

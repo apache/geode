@@ -21,7 +21,9 @@
 #include <gfcpp/CacheableKey.hpp>
 #include <string>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class DSMemberForVersionStamp;
 typedef SharedPtr<DSMemberForVersionStamp> DSMemberForVersionStampPtr;
 
@@ -37,6 +39,8 @@ class DSMemberForVersionStamp : public CacheableKey {
   /** return the hashcode for this key. */
   virtual uint32_t hashcode() const = 0;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __DSMemberForVersionStamp_HPP__

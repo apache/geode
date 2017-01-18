@@ -66,53 +66,59 @@ using namespace System;
 
 using namespace GemStone::GemFire::Cache;
 
-namespace gemfire
+namespace apache
 {
-  class ManagedCacheLoaderGeneric
-    : public CacheLoader
+  namespace geode
   {
-  public:
+    namespace client
+    {
+      class ManagedCacheLoaderGeneric
+        : public CacheLoader
+      {
+      public:
 
-    static CacheLoader* create(const char* assemblyPath,
-      const char* factoryFunctionName);
-  };
+        static CacheLoader* create(const char* assemblyPath,
+          const char* factoryFunctionName);
+      };
 
-  class ManagedCacheListenerGeneric
-    : public CacheListener
-  {
-  public:
+      class ManagedCacheListenerGeneric
+        : public CacheListener
+      {
+      public:
 
-    static CacheListener* create(const char* assemblyPath,
-      const char* factoryFunctionName);
-  };
+        static CacheListener* create(const char* assemblyPath,
+          const char* factoryFunctionName);
+      };
 
-  class ManagedFixedPartitionResolverGeneric
-    : public FixedPartitionResolver
-  {
-  public:
+      class ManagedFixedPartitionResolverGeneric
+        : public FixedPartitionResolver
+      {
+      public:
 
-    static PartitionResolver* create(const char* assemblyPath,
-      const char* factoryFunctionName);
-  };
+        static PartitionResolver* create(const char* assemblyPath,
+          const char* factoryFunctionName);
+      };
 
-  class ManagedCacheWriterGeneric
-    : public CacheWriter
-  {
-  public:
+      class ManagedCacheWriterGeneric
+        : public CacheWriter
+      {
+      public:
 
-    static CacheWriter* create(const char* assemblyPath,
-      const char* factoryFunctionName);
-  };
+        static CacheWriter* create(const char* assemblyPath,
+          const char* factoryFunctionName);
+      };
 
-  class ManagedAuthInitializeGeneric
-    : public AuthInitialize
-  {
-  public:
+      class ManagedAuthInitializeGeneric
+        : public AuthInitialize
+      {
+      public:
 
-    static AuthInitialize* create(const char* assemblyPath,
-      const char* factoryFunctionName);
-  };
-}
+        static AuthInitialize* create(const char* assemblyPath,
+          const char* factoryFunctionName);
+      };
+    }  // namespace client
+  }  // namespace geode
+}  // namespace apache
 
 
 namespace GemStone
@@ -130,22 +136,22 @@ namespace GemStone
 
       DistributedSystem^ DistributedSystem::Connect(String^ name, Properties<String^, String^>^ config)
       {
-        gemfire::DistributedSystemImpl::acquireDisconnectLock();
+        apache::geode::client::DistributedSystemImpl::acquireDisconnectLock();
 
         _GF_MG_EXCEPTION_TRY2
 
           ManagedString mg_name(name);
 
-          gemfire::PropertiesPtr nativepropsptr(
-            GetNativePtr<gemfire::Properties>(config));
+          apache::geode::client::PropertiesPtr nativepropsptr(
+            GetNativePtr<apache::geode::client::Properties>(config));
           
-         // gemfire::PropertiesPtr nativepropsptr;
+         // apache::geode::client::PropertiesPtr nativepropsptr;
           DistributedSystem::AppDomainInstanceInitialization(nativepropsptr);
 
           // this we are calling after all .NET initialization required in
           // each AppDomain
-          gemfire::DistributedSystemPtr& nativeptr(
-            gemfire::DistributedSystem::connect(mg_name.CharPtr,
+          apache::geode::client::DistributedSystemPtr& nativeptr(
+            apache::geode::client::DistributedSystem::connect(mg_name.CharPtr,
             nativepropsptr));
 
           ManagedPostConnect();
@@ -157,28 +163,28 @@ namespace GemStone
         _GF_MG_EXCEPTION_CATCH_ALL2
 
         finally {
-          gemfire::DistributedSystemImpl::releaseDisconnectLock();
+          apache::geode::client::DistributedSystemImpl::releaseDisconnectLock();
         }
       }
 
       void DistributedSystem::Disconnect()
       {
-        gemfire::DistributedSystemImpl::acquireDisconnectLock();
+        apache::geode::client::DistributedSystemImpl::acquireDisconnectLock();
 
         _GF_MG_EXCEPTION_TRY2
 
-          if (gemfire::DistributedSystem::isConnected()) {
-           // gemfire::CacheImpl::expiryTaskManager->cancelTask(
+          if (apache::geode::client::DistributedSystem::isConnected()) {
+           // apache::geode::client::CacheImpl::expiryTaskManager->cancelTask(
              // s_memoryPressureTaskID);
             Serializable::UnregisterNativesGeneric();
             DistributedSystem::UnregisterBuiltinManagedTypes();
           }
-          gemfire::DistributedSystem::disconnect();
+          apache::geode::client::DistributedSystem::disconnect();
       
         _GF_MG_EXCEPTION_CATCH_ALL2
 
         finally {
-          gemfire::DistributedSystemImpl::releaseDisconnectLock();
+          apache::geode::client::DistributedSystemImpl::releaseDisconnectLock();
         }
       }
 
@@ -191,22 +197,22 @@ namespace GemStone
       DistributedSystem^ DistributedSystem::ConnectOrGetInstance(String^ name,
           Properties^ config)
       {
-        gemfire::DistributedSystemImpl::acquireDisconnectLock();
+        apache::geode::client::DistributedSystemImpl::acquireDisconnectLock();
 
         _GF_MG_EXCEPTION_TRY
 
           ManagedString mg_name(name);
-          gemfire::PropertiesPtr nativepropsptr(
-            GetNativePtr<gemfire::Properties>(config));
+          apache::geode::client::PropertiesPtr nativepropsptr(
+            GetNativePtr<apache::geode::client::Properties>(config));
           DistributedSystem::AppDomainInstanceInitialization(nativepropsptr);
 
           // this we are calling after all .NET initialization required in
           // each AppDomain
-          gemfire::DistributedSystemPtr& nativeptr(
-            gemfire::DistributedSystem::connectOrGetInstance(mg_name.CharPtr,
+          apache::geode::client::DistributedSystemPtr& nativeptr(
+            apache::geode::client::DistributedSystem::connectOrGetInstance(mg_name.CharPtr,
             nativepropsptr));
 
-          if (gemfire::DistributedSystem::currentInstances() == 1) {
+          if (apache::geode::client::DistributedSystem::currentInstances() == 1) {
             // stuff to be done only for the first connect
             ManagedPostConnect();
           }
@@ -218,42 +224,42 @@ namespace GemStone
         _GF_MG_EXCEPTION_CATCH_ALL
 
         finally {
-          gemfire::DistributedSystemImpl::releaseDisconnectLock();
+          apache::geode::client::DistributedSystemImpl::releaseDisconnectLock();
         }
       }
 */
    /*   int DistributedSystem::DisconnectInstance()
       {
-        gemfire::DistributedSystemImpl::acquireDisconnectLock();
+        apache::geode::client::DistributedSystemImpl::acquireDisconnectLock();
 
         _GF_MG_EXCEPTION_TRY
 
           int remainingInstances =
-            gemfire::DistributedSystem::currentInstances();
+            apache::geode::client::DistributedSystem::currentInstances();
           if (remainingInstances <= 0) {
             throw gcnew NotConnectedException("DistributedSystem."
               "DisconnectInstance: no remaining instance connections");
           }
 
-          //gemfire::CacheImpl::expiryTaskManager->cancelTask(
+          //apache::geode::client::CacheImpl::expiryTaskManager->cancelTask(
             //s_memoryPressureTaskID);
           Serializable::UnregisterNatives();
 
           if (remainingInstances == 1) { // last instance
             DistributedSystem::UnregisterBuiltinManagedTypes();
           }
-          return gemfire::DistributedSystem::disconnectInstance();
+          return apache::geode::client::DistributedSystem::disconnectInstance();
 
         _GF_MG_EXCEPTION_CATCH_ALL
 
         finally {
-          gemfire::DistributedSystemImpl::releaseDisconnectLock();
+          apache::geode::client::DistributedSystemImpl::releaseDisconnectLock();
         }
       }
 */
 
       void DistributedSystem::AppDomainInstanceInitialization(
-        const gemfire::PropertiesPtr& nativepropsptr)
+        const apache::geode::client::PropertiesPtr& nativepropsptr)
       {
         _GF_MG_EXCEPTION_TRY2
           
@@ -262,128 +268,128 @@ namespace GemStone
           /*
             Serializable::RegisterWrapperGeneric(
               gcnew WrapperDelegateGeneric(GemStone::GemFire::Cache::CacheableHashSet::Create),
-              gemfire::GemfireTypeIds::CacheableHashSet);
+              apache::geode::client::GemfireTypeIds::CacheableHashSet);
             
              Serializable::RegisterWrapperGeneric(
               gcnew WrapperDelegateGeneric(GemStone::GemFire::Cache::CacheableLinkedHashSet::Create),
-              gemfire::GemfireTypeIds::CacheableLinkedHashSet);
+              apache::geode::client::GemfireTypeIds::CacheableLinkedHashSet);
 
              Serializable::RegisterWrapperGeneric(
               gcnew WrapperDelegateGeneric(GemStone::GemFire::Cache::Struct::Create),
-              gemfire::GemfireTypeIds::Struct);
+              apache::geode::client::GemfireTypeIds::Struct);
             
              Serializable::RegisterWrapperGeneric(
               gcnew WrapperDelegateGeneric(GemStone::GemFire::Cache::Properties::CreateDeserializable),
-              gemfire::GemfireTypeIds::Properties);
+              apache::geode::client::GemfireTypeIds::Properties);
 
           // End register wrapper types for built-in types
 
   // Register with cpp using unmanaged Cacheablekey wrapper
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableByte,
+              apache::geode::client::GemfireTypeIds::CacheableByte,
               gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::CacheableByte::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableBoolean,
+              apache::geode::client::GemfireTypeIds::CacheableBoolean,
               gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::CacheableBoolean::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableBytes,
+              apache::geode::client::GemfireTypeIds::CacheableBytes,
               gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::CacheableBytes::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::BooleanArray, 
+              apache::geode::client::GemfireTypeIds::BooleanArray, 
               gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::BooleanArray::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableWideChar,
+              apache::geode::client::GemfireTypeIds::CacheableWideChar,
               gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::CacheableCharacter::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CharArray,
+              apache::geode::client::GemfireTypeIds::CharArray,
               gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::CharArray::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableDouble,
+              apache::geode::client::GemfireTypeIds::CacheableDouble,
               gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::CacheableDouble::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableDoubleArray,
+              apache::geode::client::GemfireTypeIds::CacheableDoubleArray,
               gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::CacheableDoubleArray::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableFloat,
+              apache::geode::client::GemfireTypeIds::CacheableFloat,
               gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::CacheableFloat::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableFloatArray,
+              apache::geode::client::GemfireTypeIds::CacheableFloatArray,
               gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::CacheableFloatArray::CreateDeserializable));
 
            
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableHashSet,
+              apache::geode::client::GemfireTypeIds::CacheableHashSet,
               gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::CacheableHashSet::CreateDeserializable));
 
            Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableLinkedHashSet,
+              apache::geode::client::GemfireTypeIds::CacheableLinkedHashSet,
               gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::CacheableLinkedHashSet::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableInt16,
+              apache::geode::client::GemfireTypeIds::CacheableInt16,
               gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::CacheableInt16::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableInt16Array,
+              apache::geode::client::GemfireTypeIds::CacheableInt16Array,
               gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::CacheableInt16Array::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableInt32,
+              apache::geode::client::GemfireTypeIds::CacheableInt32,
               gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::CacheableInt32::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableInt32Array,
+              apache::geode::client::GemfireTypeIds::CacheableInt32Array,
               gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::CacheableInt32Array::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableInt64,
+              apache::geode::client::GemfireTypeIds::CacheableInt64,
               gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::CacheableInt64::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableInt64Array,
+              apache::geode::client::GemfireTypeIds::CacheableInt64Array,
               gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::CacheableInt64Array::CreateDeserializable));
               */
 
             /*Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableASCIIString,
+              apache::geode::client::GemfireTypeIds::CacheableASCIIString,
               gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::CacheableString::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableASCIIStringHuge,
+              apache::geode::client::GemfireTypeIds::CacheableASCIIStringHuge,
               gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::CacheableString::createDeserializableHuge));
 
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableString,
+              apache::geode::client::GemfireTypeIds::CacheableString,
               gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::CacheableString::createUTFDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableStringHuge,
+              apache::geode::client::GemfireTypeIds::CacheableStringHuge,
               gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::CacheableString::createUTFDeserializableHuge));*/
 
             /*
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableNullString,
+              apache::geode::client::GemfireTypeIds::CacheableNullString,
               gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::CacheableString::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableStringArray,
+              apache::geode::client::GemfireTypeIds::CacheableStringArray,
               gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::CacheableStringArray::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::Struct,
+              apache::geode::client::GemfireTypeIds::Struct,
               gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::Struct::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::Properties,
+              apache::geode::client::GemfireTypeIds::Properties,
               gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::Properties::CreateDeserializable));
             */
             
@@ -395,209 +401,209 @@ namespace GemStone
 
          /* Serializable::RegisterWrapperGeneric(
             gcnew WrapperDelegateGeneric(CacheableByte::Create),
-            gemfire::GemfireTypeIds::CacheableByte, Byte::typeid);*/
+            apache::geode::client::GemfireTypeIds::CacheableByte, Byte::typeid);*/
 
           Serializable::RegisterWrapperGeneric(
             gcnew WrapperDelegateGeneric(CacheableByte::Create),
-            gemfire::GemfireTypeIds::CacheableByte, SByte::typeid);
+            apache::geode::client::GemfireTypeIds::CacheableByte, SByte::typeid);
           
           //boolean
           Serializable::RegisterWrapperGeneric(
             gcnew WrapperDelegateGeneric(CacheableBoolean::Create),
-            gemfire::GemfireTypeIds::CacheableBoolean, Boolean::typeid);
+            apache::geode::client::GemfireTypeIds::CacheableBoolean, Boolean::typeid);
           //wide char
           Serializable::RegisterWrapperGeneric(
             gcnew WrapperDelegateGeneric(CacheableCharacter::Create),
-            gemfire::GemfireTypeIds::CacheableWideChar, Char::typeid);
+            apache::geode::client::GemfireTypeIds::CacheableWideChar, Char::typeid);
           //double
           Serializable::RegisterWrapperGeneric(
             gcnew WrapperDelegateGeneric(CacheableDouble::Create),
-            gemfire::GemfireTypeIds::CacheableDouble, Double::typeid);
+            apache::geode::client::GemfireTypeIds::CacheableDouble, Double::typeid);
           //ascii string
           Serializable::RegisterWrapperGeneric(
             gcnew WrapperDelegateGeneric(CacheableString::Create),
-            gemfire::GemfireTypeIds::CacheableASCIIString, String::typeid);
+            apache::geode::client::GemfireTypeIds::CacheableASCIIString, String::typeid);
             
           //TODO:
           ////ascii string huge
           //Serializable::RegisterWrapperGeneric(
           //  gcnew WrapperDelegateGeneric(CacheableString::Create),
-          //  gemfire::GemfireTypeIds::CacheableASCIIStringHuge, String::typeid);
+          //  apache::geode::client::GemfireTypeIds::CacheableASCIIStringHuge, String::typeid);
           ////string
           //Serializable::RegisterWrapperGeneric(
           //  gcnew WrapperDelegateGeneric(CacheableString::Create),
-          //  gemfire::GemfireTypeIds::CacheableString, String::typeid);
+          //  apache::geode::client::GemfireTypeIds::CacheableString, String::typeid);
           ////string huge
           //Serializable::RegisterWrapperGeneric(
           //  gcnew WrapperDelegateGeneric(CacheableString::Create),
-          //  gemfire::GemfireTypeIds::CacheableStringHuge, String::typeid);
+          //  apache::geode::client::GemfireTypeIds::CacheableStringHuge, String::typeid);
           //float
 
           Serializable::RegisterWrapperGeneric(
             gcnew WrapperDelegateGeneric(CacheableFloat::Create),
-            gemfire::GemfireTypeIds::CacheableFloat, float::typeid);
+            apache::geode::client::GemfireTypeIds::CacheableFloat, float::typeid);
           //int 16
           Serializable::RegisterWrapperGeneric(
             gcnew WrapperDelegateGeneric(CacheableInt16::Create),
-            gemfire::GemfireTypeIds::CacheableInt16, Int16::typeid);
+            apache::geode::client::GemfireTypeIds::CacheableInt16, Int16::typeid);
           //int32
           Serializable::RegisterWrapperGeneric(
             gcnew WrapperDelegateGeneric(CacheableInt32::Create),
-            gemfire::GemfireTypeIds::CacheableInt32, Int32::typeid);
+            apache::geode::client::GemfireTypeIds::CacheableInt32, Int32::typeid);
           //int64
           Serializable::RegisterWrapperGeneric(
             gcnew WrapperDelegateGeneric(CacheableInt64::Create),
-            gemfire::GemfireTypeIds::CacheableInt64, Int64::typeid);
+            apache::geode::client::GemfireTypeIds::CacheableInt64, Int64::typeid);
 
           ////uint16
           //Serializable::RegisterWrapperGeneric(
           //  gcnew WrapperDelegateGeneric(CacheableInt16::Create),
-          //  gemfire::GemfireTypeIds::CacheableInt16, UInt16::typeid);
+          //  apache::geode::client::GemfireTypeIds::CacheableInt16, UInt16::typeid);
           ////uint32
           //Serializable::RegisterWrapperGeneric(
           //  gcnew WrapperDelegateGeneric(CacheableInt32::Create),
-          //  gemfire::GemfireTypeIds::CacheableInt32, UInt32::typeid);
+          //  apache::geode::client::GemfireTypeIds::CacheableInt32, UInt32::typeid);
           ////uint64
           //Serializable::RegisterWrapperGeneric(
           //  gcnew WrapperDelegateGeneric(CacheableInt64::Create),
-          //  gemfire::GemfireTypeIds::CacheableInt64, UInt64::typeid);
+          //  apache::geode::client::GemfireTypeIds::CacheableInt64, UInt64::typeid);
           //=======================================================================
 
             //Now onwards all will be wrap in managed cacheable key..
 
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableBytes,
+              apache::geode::client::GemfireTypeIds::CacheableBytes,
               gcnew TypeFactoryMethodGeneric(CacheableBytes::CreateDeserializable), 
               Type::GetType("System.Byte[]"));
 
            /* Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableBytes,
+              apache::geode::client::GemfireTypeIds::CacheableBytes,
               gcnew TypeFactoryMethodGeneric(CacheableBytes::CreateDeserializable), 
               Type::GetType("System.SByte[]"));*/
 
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableDoubleArray,
+              apache::geode::client::GemfireTypeIds::CacheableDoubleArray,
               gcnew TypeFactoryMethodGeneric(CacheableDoubleArray::CreateDeserializable),
               Type::GetType("System.Double[]"));
 
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableFloatArray,
+              apache::geode::client::GemfireTypeIds::CacheableFloatArray,
               gcnew TypeFactoryMethodGeneric(CacheableFloatArray::CreateDeserializable),
               Type::GetType("System.Single[]"));
 
            //TODO:
             //as it is
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableHashSet,
+              apache::geode::client::GemfireTypeIds::CacheableHashSet,
               gcnew TypeFactoryMethodGeneric(CacheableHashSet::CreateDeserializable),
               nullptr);
 
             //as it is
            Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableLinkedHashSet,
+              apache::geode::client::GemfireTypeIds::CacheableLinkedHashSet,
               gcnew TypeFactoryMethodGeneric(CacheableLinkedHashSet::CreateDeserializable),
               nullptr);
 
 
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableInt16Array,
+              apache::geode::client::GemfireTypeIds::CacheableInt16Array,
               gcnew TypeFactoryMethodGeneric(CacheableInt16Array::CreateDeserializable),
               Type::GetType("System.Int16[]"));
 
           /*  Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableInt16Array,
+              apache::geode::client::GemfireTypeIds::CacheableInt16Array,
               gcnew TypeFactoryMethodGeneric(CacheableInt16Array::CreateDeserializable),
               Type::GetType("System.UInt16[]"));*/
 
 
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableInt32Array,
+              apache::geode::client::GemfireTypeIds::CacheableInt32Array,
               gcnew TypeFactoryMethodGeneric(CacheableInt32Array::CreateDeserializable),
               Type::GetType("System.Int32[]"));
 
            /* Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableInt32Array,
+              apache::geode::client::GemfireTypeIds::CacheableInt32Array,
               gcnew TypeFactoryMethodGeneric(CacheableInt32Array::CreateDeserializable),
               Type::GetType("System.UInt32[]"));*/
 
 
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableInt64Array,
+              apache::geode::client::GemfireTypeIds::CacheableInt64Array,
               gcnew TypeFactoryMethodGeneric(CacheableInt64Array::CreateDeserializable),
               Type::GetType("System.Int64[]"));
 
            /* Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableInt64Array,
+              apache::geode::client::GemfireTypeIds::CacheableInt64Array,
               gcnew TypeFactoryMethodGeneric(CacheableInt64Array::CreateDeserializable),
               Type::GetType("System.UInt64[]"));*/
 						//TODO:;split
 
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::BooleanArray,
+              apache::geode::client::GemfireTypeIds::BooleanArray,
               gcnew TypeFactoryMethodGeneric(BooleanArray::CreateDeserializable),
               Type::GetType("System.Boolean[]"));
 
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CharArray,
+              apache::geode::client::GemfireTypeIds::CharArray,
               gcnew TypeFactoryMethodGeneric(CharArray::CreateDeserializable),
               Type::GetType("System.Char[]"));
 
             //TODO::
 
             //Serializable::RegisterTypeGeneric(
-            //  gemfire::GemfireTypeIds::CacheableNullString,
+            //  apache::geode::client::GemfireTypeIds::CacheableNullString,
             //  gcnew TypeFactoryMethodNew(GemStone::GemFire::Cache::CacheableString::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableStringArray,
+              apache::geode::client::GemfireTypeIds::CacheableStringArray,
               gcnew TypeFactoryMethodGeneric(CacheableStringArray::CreateDeserializable),
               Type::GetType("System.String[]"));
 
             //as it is
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::Struct,
+              apache::geode::client::GemfireTypeIds::Struct,
               gcnew TypeFactoryMethodGeneric(Struct::CreateDeserializable),
               nullptr);
 
             //as it is
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::Properties,
+              apache::geode::client::GemfireTypeIds::Properties,
               gcnew TypeFactoryMethodGeneric(Properties<String^, String^>::CreateDeserializable),
               nullptr);
               
           /*  Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::PdxType,
+              apache::geode::client::GemfireTypeIds::PdxType,
               gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::Generic::Internal::PdxType::CreateDeserializable),
               nullptr);*/
 
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::EnumInfo,
+              apache::geode::client::GemfireTypeIds::EnumInfo,
               gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::Generic::Internal::EnumInfo::CreateDeserializable),
               nullptr);
           
           // End register generic wrapper types for built-in types
 
-          if (!gemfire::DistributedSystem::isConnected()) 
+          if (!apache::geode::client::DistributedSystem::isConnected()) 
           {
             // Set the Generic ManagedAuthInitialize factory function
-            gemfire::SystemProperties::managedAuthInitializeFn =
-              gemfire::ManagedAuthInitializeGeneric::create;
+            apache::geode::client::SystemProperties::managedAuthInitializeFn =
+              apache::geode::client::ManagedAuthInitializeGeneric::create;
 
             // Set the Generic ManagedCacheLoader/Listener/Writer factory functions.
-            gemfire::CacheXmlParser::managedCacheLoaderFn =
-              gemfire::ManagedCacheLoaderGeneric::create;
-            gemfire::CacheXmlParser::managedCacheListenerFn =
-              gemfire::ManagedCacheListenerGeneric::create;
-            gemfire::CacheXmlParser::managedCacheWriterFn =
-              gemfire::ManagedCacheWriterGeneric::create;
+            apache::geode::client::CacheXmlParser::managedCacheLoaderFn =
+              apache::geode::client::ManagedCacheLoaderGeneric::create;
+            apache::geode::client::CacheXmlParser::managedCacheListenerFn =
+              apache::geode::client::ManagedCacheListenerGeneric::create;
+            apache::geode::client::CacheXmlParser::managedCacheWriterFn =
+              apache::geode::client::ManagedCacheWriterGeneric::create;
 
             // Set the Generic ManagedPartitionResolver factory function
-            gemfire::CacheXmlParser::managedPartitionResolverFn =
-              gemfire::ManagedFixedPartitionResolverGeneric::create;
+            apache::geode::client::CacheXmlParser::managedPartitionResolverFn =
+              apache::geode::client::ManagedFixedPartitionResolverGeneric::create;
 
             // Set the Generic ManagedPersistanceManager factory function
-            gemfire::CacheXmlParser::managedPersistenceManagerFn =
-              gemfire::ManagedPersistenceManagerGeneric::create;
+            apache::geode::client::CacheXmlParser::managedPersistenceManagerFn =
+              apache::geode::client::ManagedPersistenceManagerGeneric::create;
           }
 
         _GF_MG_EXCEPTION_CATCH_ALL2
@@ -611,36 +617,36 @@ namespace GemStone
         // Register other built-in types
         /*
         Serializable::RegisterTypeGeneric(
-          gemfire::GemfireTypeIds::CacheableDate,
+          apache::geode::client::GemfireTypeIds::CacheableDate,
           gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::CacheableDate::CreateDeserializable));
         Serializable::RegisterTypeGeneric(
-          gemfire::GemfireTypeIds::CacheableFileName,
+          apache::geode::client::GemfireTypeIds::CacheableFileName,
           gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::CacheableFileName::CreateDeserializable));
         Serializable::RegisterTypeGeneric(
-          gemfire::GemfireTypeIds::CacheableHashMap,
+          apache::geode::client::GemfireTypeIds::CacheableHashMap,
           gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::CacheableHashMap::CreateDeserializable));
         Serializable::RegisterTypeGeneric(
-          gemfire::GemfireTypeIds::CacheableHashTable,
+          apache::geode::client::GemfireTypeIds::CacheableHashTable,
           gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::CacheableHashTable::CreateDeserializable));
         Serializable::RegisterTypeGeneric(
-          gemfire::GemfireTypeIds::CacheableIdentityHashMap,
+          apache::geode::client::GemfireTypeIds::CacheableIdentityHashMap,
           gcnew TypeFactoryMethodGeneric(
           GemStone::GemFire::Cache::CacheableIdentityHashMap::CreateDeserializable));
         Serializable::RegisterTypeGeneric(
-          gemfire::GemfireTypeIds::CacheableUndefined,
+          apache::geode::client::GemfireTypeIds::CacheableUndefined,
           gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::CacheableUndefined::CreateDeserializable));
         Serializable::RegisterTypeGeneric(
-          gemfire::GemfireTypeIds::CacheableVector,
+          apache::geode::client::GemfireTypeIds::CacheableVector,
           gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::CacheableVector::CreateDeserializable));
         Serializable::RegisterTypeGeneric(
-          gemfire::GemfireTypeIds::CacheableObjectArray,
+          apache::geode::client::GemfireTypeIds::CacheableObjectArray,
           gcnew TypeFactoryMethodGeneric(
           GemStone::GemFire::Cache::CacheableObjectArray::CreateDeserializable));
         Serializable::RegisterTypeGeneric(
-          gemfire::GemfireTypeIds::CacheableArrayList,
+          apache::geode::client::GemfireTypeIds::CacheableArrayList,
           gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::CacheableArrayList::CreateDeserializable));
         Serializable::RegisterTypeGeneric(
-          gemfire::GemfireTypeIds::CacheableStack,
+          apache::geode::client::GemfireTypeIds::CacheableStack,
           gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::CacheableStack::CreateDeserializable));
         Serializable::RegisterTypeGeneric(
           GemFireClassIds::CacheableManagedObject - 0x80000000,
@@ -655,63 +661,63 @@ namespace GemStone
         //c# datatime
         
         Serializable::RegisterTypeGeneric(
-          gemfire::GemfireTypeIds::CacheableDate,
+          apache::geode::client::GemfireTypeIds::CacheableDate,
           gcnew TypeFactoryMethodGeneric(CacheableDate::CreateDeserializable),
           Type::GetType("System.DateTime"));
         
         //as it is
         Serializable::RegisterTypeGeneric(
-          gemfire::GemfireTypeIds::CacheableFileName,
+          apache::geode::client::GemfireTypeIds::CacheableFileName,
           gcnew TypeFactoryMethodGeneric(CacheableFileName::CreateDeserializable),
           nullptr);
         
         //for generic dictionary define its type in static constructor of Serializable.hpp
         Serializable::RegisterTypeGeneric(
-          gemfire::GemfireTypeIds::CacheableHashMap,
+          apache::geode::client::GemfireTypeIds::CacheableHashMap,
           gcnew TypeFactoryMethodGeneric(CacheableHashMap::CreateDeserializable),
           nullptr);
 
         //c# hashtable
         Serializable::RegisterTypeGeneric(
-          gemfire::GemfireTypeIds::CacheableHashTable,
+          apache::geode::client::GemfireTypeIds::CacheableHashTable,
           gcnew TypeFactoryMethodGeneric(CacheableHashTable::CreateDeserializable),
           Type::GetType("System.Collections.Hashtable"));
 
         //Need to keep public as no counterpart in c#
         Serializable::RegisterTypeGeneric(
-          gemfire::GemfireTypeIds::CacheableIdentityHashMap,
+          apache::geode::client::GemfireTypeIds::CacheableIdentityHashMap,
           gcnew TypeFactoryMethodGeneric(
           CacheableIdentityHashMap::CreateDeserializable),
           nullptr);
         
         //keep as it is
         Serializable::RegisterTypeGeneric(
-          gemfire::GemfireTypeIds::CacheableUndefined,
+          apache::geode::client::GemfireTypeIds::CacheableUndefined,
           gcnew TypeFactoryMethodGeneric(CacheableUndefined::CreateDeserializable),
           nullptr);
 
         //c# arraylist
         Serializable::RegisterTypeGeneric(
-          gemfire::GemfireTypeIds::CacheableVector,
+          apache::geode::client::GemfireTypeIds::CacheableVector,
           gcnew TypeFactoryMethodGeneric(CacheableVector::CreateDeserializable),
           nullptr);
 
         //as it is
         Serializable::RegisterTypeGeneric(
-          gemfire::GemfireTypeIds::CacheableObjectArray,
+          apache::geode::client::GemfireTypeIds::CacheableObjectArray,
           gcnew TypeFactoryMethodGeneric(
           CacheableObjectArray::CreateDeserializable),
           nullptr);
 
         //Generic::List
         Serializable::RegisterTypeGeneric(
-          gemfire::GemfireTypeIds::CacheableArrayList,
+          apache::geode::client::GemfireTypeIds::CacheableArrayList,
           gcnew TypeFactoryMethodGeneric(CacheableArrayList::CreateDeserializable),
           nullptr);
         
         //c# generic stack 
         Serializable::RegisterTypeGeneric(
-          gemfire::GemfireTypeIds::CacheableStack,
+          apache::geode::client::GemfireTypeIds::CacheableStack,
           gcnew TypeFactoryMethodGeneric(CacheableStack::CreateDeserializable),
           nullptr);
 
@@ -746,44 +752,44 @@ namespace GemStone
       void DistributedSystem::AppDomainInstancePostInitialization()
       {
         //to create .net memory pressure handler 
-        Create(gemfire::DistributedSystem::getInstance().ptr());
+        Create(apache::geode::client::DistributedSystem::getInstance().ptr());
 
         // Register managed AppDomain context with unmanaged.
-        gemfire::createAppDomainContext = &GemStone::GemFire::Cache::Generic::createAppDomainContext;
+        apache::geode::client::createAppDomainContext = &GemStone::GemFire::Cache::Generic::createAppDomainContext;
       }
 
       void DistributedSystem::UnregisterBuiltinManagedTypes()
       {
          _GF_MG_EXCEPTION_TRY2
 
-         gemfire::DistributedSystemImpl::acquireDisconnectLock();
+         apache::geode::client::DistributedSystemImpl::acquireDisconnectLock();
 
          Serializable::UnregisterNativesGeneric();
          
          int remainingInstances =
-           gemfire::DistributedSystemImpl::currentInstances();
+           apache::geode::client::DistributedSystemImpl::currentInstances();
 
           if (remainingInstances == 0) { // last instance
            
             
             Serializable::UnregisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableDate);
+              apache::geode::client::GemfireTypeIds::CacheableDate);
             Serializable::UnregisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableFileName);
+              apache::geode::client::GemfireTypeIds::CacheableFileName);
             Serializable::UnregisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableHashMap);
+              apache::geode::client::GemfireTypeIds::CacheableHashMap);
             Serializable::UnregisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableHashTable);
+              apache::geode::client::GemfireTypeIds::CacheableHashTable);
             Serializable::UnregisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableIdentityHashMap);
+              apache::geode::client::GemfireTypeIds::CacheableIdentityHashMap);
             Serializable::UnregisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableVector);
+              apache::geode::client::GemfireTypeIds::CacheableVector);
             Serializable::UnregisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableObjectArray);
+              apache::geode::client::GemfireTypeIds::CacheableObjectArray);
             Serializable::UnregisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableArrayList);
+              apache::geode::client::GemfireTypeIds::CacheableArrayList);
             Serializable::UnregisterTypeGeneric(
-              gemfire::GemfireTypeIds::CacheableStack);
+              apache::geode::client::GemfireTypeIds::CacheableStack);
             Serializable::UnregisterTypeGeneric(
               GemFireClassIds::CacheableManagedObject - 0x80000000);
             Serializable::UnregisterTypeGeneric(
@@ -794,7 +800,7 @@ namespace GemStone
            _GF_MG_EXCEPTION_CATCH_ALL2
 
         finally {
-          gemfire::DistributedSystemImpl::releaseDisconnectLock();
+          apache::geode::client::DistributedSystemImpl::releaseDisconnectLock();
         }
       }
 
@@ -804,7 +810,7 @@ namespace GemStone
 
           //  TODO
 					return GemStone::GemFire::Cache::Generic::SystemProperties::Create(
-            gemfire::DistributedSystem::getSystemProperties());
+            apache::geode::client::DistributedSystem::getSystemProperties());
             
          //return nullptr;
 
@@ -818,13 +824,13 @@ namespace GemStone
 
       bool DistributedSystem::IsConnected::get()
       {
-        return gemfire::DistributedSystem::isConnected();
+        return apache::geode::client::DistributedSystem::isConnected();
       }
 
       DistributedSystem^ DistributedSystem::GetInstance()
       {
-        gemfire::DistributedSystemPtr& nativeptr(
-          gemfire::DistributedSystem::getInstance());
+        apache::geode::client::DistributedSystemPtr& nativeptr(
+          apache::geode::client::DistributedSystem::getInstance());
         return Create(nativeptr.ptr());
       }
 
@@ -836,7 +842,7 @@ namespace GemStone
       }
 
       DistributedSystem^ DistributedSystem::Create(
-        gemfire::DistributedSystem* nativeptr)
+        apache::geode::client::DistributedSystem* nativeptr)
       {
         if (m_instance == nullptr) {
           msclr::lock lockInstance(m_singletonSync);
@@ -849,7 +855,7 @@ namespace GemStone
         return instance;
       }
 
-      DistributedSystem::DistributedSystem(gemfire::DistributedSystem* nativeptr)
+      DistributedSystem::DistributedSystem(apache::geode::client::DistributedSystem* nativeptr)
         : SBWrap(nativeptr) 
       {
         System::Threading::TimerCallback^ timerCallback = gcnew System::
@@ -865,22 +871,22 @@ namespace GemStone
 
       void DistributedSystem::acquireDisconnectLock()
       {
-        gemfire::DistributedSystemImpl::acquireDisconnectLock();
+        apache::geode::client::DistributedSystemImpl::acquireDisconnectLock();
       }
 
       void DistributedSystem::disconnectInstance()
       {
-        gemfire::DistributedSystemImpl::disconnectInstance();
+        apache::geode::client::DistributedSystemImpl::disconnectInstance();
       }
 
       void DistributedSystem::releaseDisconnectLock()
       {
-        gemfire::DistributedSystemImpl::releaseDisconnectLock();
+        apache::geode::client::DistributedSystemImpl::releaseDisconnectLock();
       }
 
       void DistributedSystem::connectInstance()
       {
-        gemfire::DistributedSystemImpl::connectInstance();
+        apache::geode::client::DistributedSystemImpl::connectInstance();
       }
 
       void DistributedSystem::registerCliCallback()
@@ -890,15 +896,15 @@ namespace GemStone
           gcnew cliCallback(m_cliCallBackObj,
           &CliCallbackDelegate::Callback);
 
-        gemfire::DistributedSystemImpl::registerCliCallback( System::Threading::Thread::GetDomainID(),
-              (gemfire::CliCallbackMethod)System::Runtime::InteropServices::
+        apache::geode::client::DistributedSystemImpl::registerCliCallback( System::Threading::Thread::GetDomainID(),
+              (apache::geode::client::CliCallbackMethod)System::Runtime::InteropServices::
 							Marshal::GetFunctionPointerForDelegate(
 							nativeCallback).ToPointer());
       }
 
       void DistributedSystem::unregisterCliCallback()
       {
-        gemfire::DistributedSystemImpl::unregisterCliCallback( System::Threading::Thread::GetDomainID());
+        apache::geode::client::DistributedSystemImpl::unregisterCliCallback( System::Threading::Thread::GetDomainID());
       }
       } // end namespace generic
     }

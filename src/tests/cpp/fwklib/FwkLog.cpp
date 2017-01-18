@@ -19,14 +19,16 @@
 #include "fwklib/PerfFwk.hpp"
 #include <gfcpp/Exception.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace testframework;
 
 static ACE_utsname u;
 
-const char* gemfire::testframework::getNodeName() { return u.nodename; }
+const char* apache::geode::client::testframework::getNodeName() {
+  return u.nodename;
+}
 
-const char* gemfire::testframework::dirAndFile(const char* str) {
+const char* apache::geode::client::testframework::dirAndFile(const char* str) {
   if (str == NULL) {
     return "NULL";
   }
@@ -48,8 +50,9 @@ const char* gemfire::testframework::dirAndFile(const char* str) {
   return ptr;
 }
 
-void gemfire::testframework::plog(const char* l, const char* s,
-                                  const char* filename, int32_t lineno) {
+void apache::geode::client::testframework::plog(const char* l, const char* s,
+                                                const char* filename,
+                                                int32_t lineno) {
   // ACE_TCHAR tstamp[64];
   // ACE::timestamp( tstamp, 64, 1 );
   // tstamp is like "Tue May 17 2005 12:54:22.546780"
@@ -78,7 +81,7 @@ void gemfire::testframework::plog(const char* l, const char* s,
   fflush(stdout);
 }
 
-void gemfire::testframework::dumpStack() {
-  gemfire::Exception trace("StackTrace", "  ", true);
+void apache::geode::client::testframework::dumpStack() {
+  apache::geode::client::Exception trace("StackTrace", "  ", true);
   trace.printStackTrace();
 }

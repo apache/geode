@@ -55,7 +55,7 @@ namespace GemStone
         /// </summary>
         generic<class TKey, class TValue>
           public ref class TransactionEvent sealed
-            : public Internal::UMWrap<gemfire::TransactionEvent>
+            : public Internal::UMWrap<apache::geode::client::TransactionEvent>
           {
           public:
             /// <summary>
@@ -89,7 +89,7 @@ namespace GemStone
             /// Internal constructor to wrap a native object pointer
             /// </summary>
             /// <param name="nativeptr">The native object pointer</param>
-            inline TransactionEvent( gemfire::TransactionEvent* nativeptr )
+            inline TransactionEvent( apache::geode::client::TransactionEvent* nativeptr )
               : UMWrap( nativeptr, false ) { }
           };
 

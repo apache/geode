@@ -28,11 +28,13 @@
 #include <gfcpp/HashMapT.hpp>
 #include "TXEntryState.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
-class TXRegionState : public gemfire::SharedBase {
+class TXRegionState : public apache::geode::client::SharedBase {
  public:
   TXRegionState();
   virtual ~TXRegionState();
@@ -42,6 +44,8 @@ class TXRegionState : public gemfire::SharedBase {
 };
 
 _GF_PTR_DEF_(TXRegionState, TXRegionStatePtr);
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif /* TXREGIONSTATE_HPP_ */

@@ -21,7 +21,7 @@
 #include <CacheRegionHelper.hpp>
 #include "fw_helper.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 using namespace test;
 BEGIN_TEST(CacheFunction)

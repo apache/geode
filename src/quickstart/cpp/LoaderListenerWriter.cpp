@@ -44,7 +44,7 @@
 #include "plugins/SimpleCacheWriter.hpp"
 
 // Use the "gemfire" namespace.
-using namespace gemfire;
+using namespace apache::geode::client;
 
 // The LoaderListenerWriter QuickStart example.
 int main(int argc, char** argv) {

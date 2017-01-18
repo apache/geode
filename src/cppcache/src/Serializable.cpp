@@ -21,7 +21,9 @@
 #include <Utils.hpp>
 #include <gfcpp/CacheableString.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 int8_t Serializable::typeId() const {
   int32_t classIdToCheck = classId();
@@ -55,4 +57,6 @@ void Serializable::registerPdxSerializer(PdxSerializerPtr pdxSerializer) {
 CacheableStringPtr Serializable::toString() const {
   return Utils::demangleTypeName(typeid(*this).name());
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

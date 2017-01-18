@@ -25,7 +25,9 @@
 /**
  * @file
  */
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * A Special ResultCollector implementation. Functions having
@@ -57,7 +59,8 @@ class CPPCACHE_EXPORT NoResult : public ResultCollector {
     throw UnsupportedOperationException("can not clear results on NoResult");
   }
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_NO_RESULT_HPP__

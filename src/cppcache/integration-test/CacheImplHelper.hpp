@@ -32,7 +32,7 @@ ROOT_NAME++ +
 #define ROOT_SCOPE LOCAL
 #endif
 
-    using namespace gemfire;
+    using namespace apache::geode::client;
 using namespace unitTests;
 
 class CacheImplHelper : public CacheHelper {

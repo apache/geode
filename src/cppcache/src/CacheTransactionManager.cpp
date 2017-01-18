@@ -17,7 +17,11 @@
 
 #include <gfcpp/CacheTransactionManager.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 CacheTransactionManager::CacheTransactionManager() {}
 CacheTransactionManager::~CacheTransactionManager() {}
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

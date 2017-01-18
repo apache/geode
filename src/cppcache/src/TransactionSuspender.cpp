@@ -24,7 +24,9 @@
 #include "TransactionSuspender.hpp"
 #include "TSSTXStateWrapper.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 TransactionSuspender::TransactionSuspender() {
   TSSTXStateWrapper* txStateWrapper = TSSTXStateWrapper::s_gemfireTSSTXState;
@@ -35,4 +37,6 @@ TransactionSuspender::TransactionSuspender() {
 TransactionSuspender::~TransactionSuspender() {
   TSSTXStateWrapper::s_gemfireTSSTXState->setTXState(m_TXState);
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

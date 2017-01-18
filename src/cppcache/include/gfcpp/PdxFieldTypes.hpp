@@ -18,7 +18,9 @@
  * limitations under the License.
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class CPPCACHE_EXPORT PdxFieldTypes {
  public:
@@ -47,5 +49,7 @@ class CPPCACHE_EXPORT PdxFieldTypes {
     ARRAY_OF_BYTE_ARRAYS
   };
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif /* __GEMFIRE_PDXFIELDTYPES_HPP_ */

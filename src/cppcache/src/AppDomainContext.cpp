@@ -17,9 +17,13 @@
 
 #include "AppDomainContext.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 AppDomainContext* nullAppDomainContext() { return nullptr; }
 
 AppDomainContext::factory createAppDomainContext = &nullAppDomainContext;
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

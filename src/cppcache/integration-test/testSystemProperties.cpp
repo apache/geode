@@ -26,7 +26,7 @@
 #include <unistd.h>
 #endif
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 const bool checkSecurityProperties(PropertiesPtr securityProperties,
                                    const char* key, const char* value) {

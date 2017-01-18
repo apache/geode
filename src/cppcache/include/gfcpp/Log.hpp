@@ -49,7 +49,9 @@
 /** @file
 */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class Exception;
 
@@ -58,10 +60,10 @@ class Exception;
 
 /* Logs the message if the given level is less than or equal to the current
  * logging level. */
-#define GF_LOG(level, expr)               \
-  if (level > gemfire::Log::logLevel()) { \
-  } else                                  \
-    gemfire::Log::log(level, expr)
+#define GF_LOG(level, expr)                             \
+  if (level > apache::geode::client::Log::logLevel()) { \
+  } else                                                \
+    apache::geode::client::Log::log(level, expr)
 
 /** Defines methods available to clients that want to write a log message
   * to their GemFire system's shared log file.
@@ -603,53 +605,65 @@ class CPPCACHE_EXPORT LogVarargs {
   static void finer(const char* fmt, ...);
   static void finest(const char* fmt, ...);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 /************************ LOGDEBUG ***********************************/
 
-#define LOGDEBUG                                       \
-  if (gemfire::Log::Debug <= gemfire::Log::logLevel()) \
-  gemfire::LogVarargs::debug
+#define LOGDEBUG                              \
+  if (apache::geode::client::Log::Debug <=    \
+      apache::geode::client::Log::logLevel()) \
+  apache::geode::client::LogVarargs::debug
 
 /************************ LOGERROR ***********************************/
 
-#define LOGERROR                                       \
-  if (gemfire::Log::Error <= gemfire::Log::logLevel()) \
-  gemfire::LogVarargs::error
+#define LOGERROR                              \
+  if (apache::geode::client::Log::Error <=    \
+      apache::geode::client::Log::logLevel()) \
+  apache::geode::client::LogVarargs::error
 
 /************************ LOGWARN ***********************************/
 
-#define LOGWARN                                          \
-  if (gemfire::Log::Warning <= gemfire::Log::logLevel()) \
-  gemfire::LogVarargs::warn
+#define LOGWARN                               \
+  if (apache::geode::client::Log::Warning <=  \
+      apache::geode::client::Log::logLevel()) \
+  apache::geode::client::LogVarargs::warn
 
 /************************ LOGINFO ***********************************/
 
-#define LOGINFO \
-  if (gemfire::Log::Info <= gemfire::Log::logLevel()) gemfire::LogVarargs::info
+#define LOGINFO                               \
+  if (apache::geode::client::Log::Info <=     \
+      apache::geode::client::Log::logLevel()) \
+  apache::geode::client::LogVarargs::info
 
 /************************ LOGCONFIG ***********************************/
 
-#define LOGCONFIG                                       \
-  if (gemfire::Log::Config <= gemfire::Log::logLevel()) \
-  gemfire::LogVarargs::config
+#define LOGCONFIG                             \
+  if (apache::geode::client::Log::Config <=   \
+      apache::geode::client::Log::logLevel()) \
+  apache::geode::client::LogVarargs::config
 
 /************************ LOGFINE ***********************************/
 
-#define LOGFINE \
-  if (gemfire::Log::Fine <= gemfire::Log::logLevel()) gemfire::LogVarargs::fine
+#define LOGFINE                               \
+  if (apache::geode::client::Log::Fine <=     \
+      apache::geode::client::Log::logLevel()) \
+  apache::geode::client::LogVarargs::fine
 
 /************************ LOGFINER ***********************************/
 
-#define LOGFINER                                       \
-  if (gemfire::Log::Finer <= gemfire::Log::logLevel()) \
-  gemfire::LogVarargs::finer
+#define LOGFINER                              \
+  if (apache::geode::client::Log::Finer <=    \
+      apache::geode::client::Log::logLevel()) \
+  apache::geode::client::LogVarargs::finer
 
 /************************ LOGFINEST ***********************************/
 
-#define LOGFINEST                                       \
-  if (gemfire::Log::Finest <= gemfire::Log::logLevel()) \
-  gemfire::LogVarargs::finest
+#define LOGFINEST                             \
+  if (apache::geode::client::Log::Finest <=   \
+      apache::geode::client::Log::logLevel()) \
+  apache::geode::client::LogVarargs::finest
 
 /******************************************************************************/
 

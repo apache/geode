@@ -16,7 +16,7 @@
  */
 #include <gfcpp/CqState.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 bool CqState::isRunning() const { return (m_state == RUNNING); }
 

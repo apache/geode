@@ -204,8 +204,9 @@ const char* StatisticDescriptorImpl::getUnit() { return unit.c_str(); }
 
 /* adongre
  * CID 28912: Uncaught exception (UNCAUGHT_EXCEPT)An exception of type
- * "gemfire::IllegalStateException *"
- * is thrown but the throw list "throw (gemfire::IllegalArgumentException)"
+ * "apache::geode::client::IllegalStateException *"
+ * is thrown but the throw list "throw
+ * (apache::geode::client::IllegalArgumentException)"
  * doesn't allow it to be thrown.
  * This will cause a call to unexpected() which usually calls terminate().
  */

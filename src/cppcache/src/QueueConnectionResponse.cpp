@@ -19,7 +19,7 @@
 #include "GemfireTypeIdsImpl.hpp"
 #include <gfcpp/DataInput.hpp>
 #include "ServerLocation.hpp"
-using namespace gemfire;
+using namespace apache::geode::client;
 QueueConnectionResponse* QueueConnectionResponse::fromData(DataInput& input) {
   input.readBoolean(&m_durableQueueFound);
   readList(input);

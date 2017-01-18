@@ -26,7 +26,9 @@
 #include <PdxHelper.hpp>
 #include <SerializationRegistry.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 PdxWrapper::PdxWrapper(void *userObject, const char *className) {
   m_userObject = userObject;
@@ -124,7 +126,7 @@ bool PdxWrapper::operator==(const CacheableKey &other) const {
 
 uint32_t PdxWrapper::hashcode() const {
   uint64_t hash = static_cast<uint64_t>((intptr_t)m_userObject);
-  return gemfire::serializer::hashcode(hash);
+  return apache::geode::client::serializer::hashcode(hash);
 }
 
 void PdxWrapper::toData(PdxWriterPtr output) {
@@ -171,5 +173,6 @@ PdxWrapper::~PdxWrapper() {
   }
   delete[] m_className;
 }
-
-} /* namespace gemfire */
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

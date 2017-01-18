@@ -23,7 +23,9 @@
 
 #include "InternalDataView.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 InternalDataView::InternalDataView() {
   // TODO Auto-generated constructor stub
@@ -32,4 +34,6 @@ InternalDataView::InternalDataView() {
 InternalDataView::~InternalDataView() {
   // TODO Auto-generated destructor stub
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

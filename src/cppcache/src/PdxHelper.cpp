@@ -35,7 +35,9 @@
 #include "CacheRegionHelper.hpp"
 #include <gfcpp/Cache.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 uint8_t PdxHelper::PdxHeader = 8;
 
 PdxHelper::PdxHelper() {}
@@ -83,49 +85,77 @@ void PdxHelper::serializePdx(DataOutput& output,
     of 932
     ==18904==    at 0x400791A: operator new[](unsigned int)
     (vg_replace_malloc.c:378)
-    ==18904==    by 0x4324354: gemfire::PdxLocalWriter::getPdxStream(int&)
+    ==18904==    by 0x4324354:
+    apache::geode::client::PdxLocalWriter::getPdxStream(int&)
     (DataOutput.hpp:744)
     ==18904==    by 0x4303E6F:
-    gemfire::PdxHelper::serializePdx(gemfire::DataOutput&,
-    gemfire::PdxSerializable const&) (PdxHelper.cpp:64)
+    apache::geode::client::PdxHelper::serializePdx(apache::geode::client::DataOutput&,
+    apache::geode::client::PdxSerializable const&) (PdxHelper.cpp:64)
     ==18904==    by 0x4377028:
-    gemfire::TcrMessage::writeObjectPart(gemfire::SharedPtr<gemfire::Serializable>
-    const&, bool, bool, gemfire::VectorOfCacheableKey const*)
+    apache::geode::client::TcrMessage::writeObjectPart(apache::geode::client::SharedPtr<apache::geode::client::Serializable>
+    const&, bool, bool, apache::geode::client::VectorOfCacheableKey const*)
     (DataOutput.hpp:580)
     ==18904==    by 0x437BB9E:
-    gemfire::TcrMessage::TcrMessage(gemfire::TcrMessage::MsgType,
-    gemfire::Region const*, gemfire::SharedPtr<gemfire::CacheableKey> const&,
-    gemfire::SharedPtr<gemfire::Serializable> const&,
-    gemfire::SharedPtr<gemfire::Serializable> const&, bool,
-    gemfire::ThinClientBaseDM*, bool, bool, char const*) (TcrMessage.cpp:2216)
+    apache::geode::client::TcrMessage::TcrMessage(apache::geode::client::TcrMessage::MsgType,
+    apache::geode::client::Region const*,
+    apache::geode::client::SharedPtr<apache::geode::client::CacheableKey>
+    const&,
+    apache::geode::client::SharedPtr<apache::geode::client::Serializable>
+    const&,
+    apache::geode::client::SharedPtr<apache::geode::client::Serializable>
+    const&, bool,
+    apache::geode::client::ThinClientBaseDM*, bool, bool, char const*)
+    (TcrMessage.cpp:2216)
     ==18904==    by 0x43B9EE5:
-    gemfire::ThinClientRegion::putNoThrow_remote(gemfire::SharedPtr<gemfire::CacheableKey>
-    const&, gemfire::SharedPtr<gemfire::Serializable> const&,
-    gemfire::SharedPtr<gemfire::Serializable> const&,
-    gemfire::SharedPtr<gemfire::VersionTag>&, bool) (ThinClientRegion.cpp:909)
+    apache::geode::client::ThinClientRegion::putNoThrow_remote(apache::geode::client::SharedPtr<apache::geode::client::CacheableKey>
+    const&,
+    apache::geode::client::SharedPtr<apache::geode::client::Serializable>
+    const&,
+    apache::geode::client::SharedPtr<apache::geode::client::Serializable>
+    const&,
+    apache::geode::client::SharedPtr<apache::geode::client::VersionTag>&, bool)
+    (ThinClientRegion.cpp:909)
     ==18904==    by 0x42EFCEF: GfErrType
-    gemfire::LocalRegion::updateNoThrow<gemfire::PutActions>(gemfire::SharedPtr<gemfire::CacheableKey>
-    const&, gemfire::SharedPtr<gemfire::Serializable> const&,
-    gemfire::SharedPtr<gemfire::Serializable> const&,
-    gemfire::SharedPtr<gemfire::Serializable>&, int, gemfire::CacheEventFlags,
-    gemfire::SharedPtr<gemfire::VersionTag>, gemfire::DataInput*,
-    gemfire::SharedPtr<gemfire::EventId>) (LocalRegion.cpp:1097)
+    apache::geode::client::LocalRegion::updateNoThrow<apache::geode::client::PutActions>(apache::geode::client::SharedPtr<apache::geode::client::CacheableKey>
+    const&,
+    apache::geode::client::SharedPtr<apache::geode::client::Serializable>
+    const&,
+    apache::geode::client::SharedPtr<apache::geode::client::Serializable>
+    const&,
+    apache::geode::client::SharedPtr<apache::geode::client::Serializable>&, int,
+    apache::geode::client::CacheEventFlags,
+    apache::geode::client::SharedPtr<apache::geode::client::VersionTag>,
+    apache::geode::client::DataInput*,
+    apache::geode::client::SharedPtr<apache::geode::client::EventId>)
+    (LocalRegion.cpp:1097)
     ==18904==    by 0x42E4DC6:
-    gemfire::LocalRegion::putNoThrow(gemfire::SharedPtr<gemfire::CacheableKey>
-    const&, gemfire::SharedPtr<gemfire::Serializable> const&,
-    gemfire::SharedPtr<gemfire::Serializable> const&,
-    gemfire::SharedPtr<gemfire::Serializable>&, int, gemfire::CacheEventFlags,
-    gemfire::SharedPtr<gemfire::VersionTag>, gemfire::DataInput*,
-    gemfire::SharedPtr<gemfire::EventId>) (LocalRegion.cpp:1799)
+    apache::geode::client::LocalRegion::putNoThrow(apache::geode::client::SharedPtr<apache::geode::client::CacheableKey>
+    const&,
+    apache::geode::client::SharedPtr<apache::geode::client::Serializable>
+    const&,
+    apache::geode::client::SharedPtr<apache::geode::client::Serializable>
+    const&,
+    apache::geode::client::SharedPtr<apache::geode::client::Serializable>&, int,
+    apache::geode::client::CacheEventFlags,
+    apache::geode::client::SharedPtr<apache::geode::client::VersionTag>,
+    apache::geode::client::DataInput*,
+    apache::geode::client::SharedPtr<apache::geode::client::EventId>)
+    (LocalRegion.cpp:1799)
     ==18904==    by 0x42DBEB4:
-    gemfire::LocalRegion::put(gemfire::SharedPtr<gemfire::CacheableKey> const&,
-    gemfire::SharedPtr<gemfire::Serializable> const&,
-    gemfire::SharedPtr<gemfire::Serializable> const&) (LocalRegion.cpp:342)
+    apache::geode::client::LocalRegion::put(apache::geode::client::SharedPtr<apache::geode::client::CacheableKey>
+    const&,
+    apache::geode::client::SharedPtr<apache::geode::client::Serializable>
+    const&,
+    apache::geode::client::SharedPtr<apache::geode::client::Serializable>
+    const&) (LocalRegion.cpp:342)
     ==18904==    by 0x8069744: void
-    gemfire::Region::put<gemfire::SharedPtr<gemfire::WritablePdxInstance>
-    >(gemfire::SharedPtr<gemfire::CacheableKey> const&,
-    gemfire::SharedPtr<gemfire::WritablePdxInstance> const&,
-    gemfire::SharedPtr<gemfire::Serializable> const&) (in
+    apache::geode::client::Region::put<apache::geode::client::SharedPtr<apache::geode::client::WritablePdxInstance>
+    >(apache::geode::client::SharedPtr<apache::geode::client::CacheableKey>
+    const&,
+    apache::geode::client::SharedPtr<apache::geode::client::WritablePdxInstance>
+    const&,
+    apache::geode::client::SharedPtr<apache::geode::client::Serializable>
+    const&) (in
     /export/pnq-gst-dev01a/users/adongre/cedar_dev_Nov12/build-artifacts/linux/tests/cppcache/testThinClientPdxInstance)
     ==18904==    by 0x808D107: Task_modifyPdxInstance::doTask() (in
     /export/pnq-gst-dev01a/users/adongre/cedar_dev_Nov12/build-artifacts/linux/tests/cppcache/testThinClientPdxInstance)
@@ -391,42 +421,54 @@ PdxSerializablePtr PdxHelper::deserializePdx(DataInput& dataInput,
     ==2018==    at 0x400791A: operator new[](unsigned int)
     (vg_replace_malloc.c:378)
     ==2018==    by 0x4303969:
-    gemfire::PdxHelper::deserializePdx(gemfire::DataInput&, bool)
+    apache::geode::client::PdxHelper::deserializePdx(apache::geode::client::DataInput&,
+    bool)
     (DataInput.hpp:1007)
     ==2018==    by 0x43210D4:
-    gemfire::PdxInstantiator::fromData(gemfire::DataInput&)
+    apache::geode::client::PdxInstantiator::fromData(apache::geode::client::DataInput&)
     (PdxInstantiator.cpp:30)
     ==2018==    by 0x434A72E:
-    gemfire::SerializationRegistry::deserialize(gemfire::DataInput&, signed
+    apache::geode::client::SerializationRegistry::deserialize(apache::geode::client::DataInput&,
+    signed
     char) (SerializationRegistry.cpp:378)
     ==2018==    by 0x42280FB:
-    gemfire::DataInput::readObjectInternal(gemfire::SharedPtr<gemfire::Serializable>&,
+    apache::geode::client::DataInput::readObjectInternal(apache::geode::client::SharedPtr<apache::geode::client::Serializable>&,
     signed char) (DataInput.cpp:9)
     ==2018==    by 0x438107E:
-    gemfire::TcrMessage::readObjectPart(gemfire::DataInput&, bool)
+    apache::geode::client::TcrMessage::readObjectPart(apache::geode::client::DataInput&,
+    bool)
     (DataInput.hpp:694)
-    ==2018==    by 0x4375638: gemfire::TcrMessage::handleByteArrayResponse(char
+    ==2018==    by 0x4375638:
+    apache::geode::client::TcrMessage::handleByteArrayResponse(char
     const*, int, unsigned short) (TcrMessage.cpp:1087)
-    ==2018==    by 0x4375B2E: gemfire::TcrMessage::setData(char const*, int,
+    ==2018==    by 0x4375B2E: apache::geode::client::TcrMessage::setData(char
+    const*, int,
     unsigned short) (TcrMessage.cpp:3933)
     ==2018==    by 0x4367EE6:
-    gemfire::TcrEndpoint::sendRequestConn(gemfire::TcrMessage const&,
-    gemfire::TcrMessage&, gemfire::TcrConnection*, stlp_std::basic_string<char,
+    apache::geode::client::TcrEndpoint::sendRequestConn(apache::geode::client::TcrMessage
+    const&,
+    apache::geode::client::TcrMessage&, apache::geode::client::TcrConnection*,
+    stlp_std::basic_string<char,
     stlp_std::char_traits<char>, stlp_std::allocator<char> >&)
     (TcrEndpoint.cpp:764)
     ==2018==    by 0x43682E3:
-    gemfire::TcrEndpoint::sendRequestWithRetry(gemfire::TcrMessage const&,
-    gemfire::TcrMessage&, gemfire::TcrConnection*&, bool&,
+    apache::geode::client::TcrEndpoint::sendRequestWithRetry(apache::geode::client::TcrMessage
+    const&,
+    apache::geode::client::TcrMessage&, apache::geode::client::TcrConnection*&,
+    bool&,
     stlp_std::basic_string<char, stlp_std::char_traits<char>,
     stlp_std::allocator<char> >&, int, bool, long long, bool)
     (TcrEndpoint.cpp:869)
     ==2018==    by 0x4368EBA:
-    gemfire::TcrEndpoint::sendRequestConnWithRetry(gemfire::TcrMessage const&,
-    gemfire::TcrMessage&, gemfire::TcrConnection*&, bool) (TcrEndpoint.cpp:1060)
+    apache::geode::client::TcrEndpoint::sendRequestConnWithRetry(apache::geode::client::TcrMessage
+    const&,
+    apache::geode::client::TcrMessage&, apache::geode::client::TcrConnection*&,
+    bool) (TcrEndpoint.cpp:1060)
     ==2018==    by 0x4393D2D:
-    gemfire::ThinClientPoolDM::sendSyncRequest(gemfire::TcrMessage&,
-    gemfire::TcrMessage&, bool, bool,
-    gemfire::SharedPtr<gemfire::BucketServerLocation> const&)
+    apache::geode::client::ThinClientPoolDM::sendSyncRequest(apache::geode::client::TcrMessage&,
+    apache::geode::client::TcrMessage&, bool, bool,
+    apache::geode::client::SharedPtr<apache::geode::client::BucketServerLocation>
+    const&)
     (ThinClientPoolDM.cpp:1408)
     ==2018==
     */
@@ -534,4 +576,6 @@ EnumInfoPtr PdxHelper::getEnum(int enumId) {
   EnumInfoPtr ei = PdxTypeRegistry::getEnum(enumId);
   return ei;
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

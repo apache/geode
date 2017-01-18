@@ -23,7 +23,9 @@
  */
 #include <gfcpp/gfcpp_globals.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 /**
  * @class InterestResultPolicy InterestResultPolicy.hpp
  * Policy class for interest result.
@@ -44,6 +46,7 @@ class CPPCACHE_EXPORT InterestResultPolicy {
  private:
   InterestResultPolicy() { ordinal = nextOrdinal++; }
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // ifndef __GEMFIRE_INTERESTRESULTPOLICY_H__

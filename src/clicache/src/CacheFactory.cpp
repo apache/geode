@@ -48,10 +48,10 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2
 
-           gemfire::PropertiesPtr nativepropsptr(
-            GetNativePtr<gemfire::Properties>(dsProps));
+           apache::geode::client::PropertiesPtr nativepropsptr(
+            GetNativePtr<apache::geode::client::Properties>(dsProps));
 
-          gemfire::CacheFactoryPtr& nativeptr( gemfire::CacheFactory::createCacheFactory( nativepropsptr) );         
+          apache::geode::client::CacheFactoryPtr& nativeptr( apache::geode::client::CacheFactory::createCacheFactory( nativepropsptr) );         
           if (nativeptr.ptr() != nullptr)
             return gcnew CacheFactory( nativeptr.ptr(), dsProps );
             
@@ -71,22 +71,22 @@ namespace GemStone
     
           if(!m_connected)
           {
-             gemfire::PropertiesPtr nativepropsptr(
-               GetNativePtr<gemfire::Properties>(m_dsProps));
+             apache::geode::client::PropertiesPtr nativepropsptr(
+               GetNativePtr<apache::geode::client::Properties>(m_dsProps));
             DistributedSystem::AppDomainInstanceInitialization(nativepropsptr);                  
           }
 
-          gemfire::CachePtr& nativeptr( NativePtr->create( ) );
+          apache::geode::client::CachePtr& nativeptr( NativePtr->create( ) );
 					pdxIgnoreUnreadFields = nativeptr->getPdxIgnoreUnreadFields();
           pdxReadSerialized = nativeptr->getPdxReadSerialized();
 
           appDomainEnable = DistributedSystem::SystemProperties->AppDomainEnabled;
-          Log::SetLogLevel(static_cast<LogLevel>(gemfire::Log::logLevel( )));
+          Log::SetLogLevel(static_cast<LogLevel>(apache::geode::client::Log::logLevel( )));
 					//TODO::split
           SafeConvertClassGeneric::SetAppDomainEnabled(appDomainEnable);
 
             Serializable::RegisterTypeGeneric(
-              gemfire::GemfireTypeIds::PdxType,
+              apache::geode::client::GemfireTypeIds::PdxType,
               gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::Generic::Internal::PdxType::CreateDeserializable),
               nullptr);
 
@@ -115,10 +115,10 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2
 
-          gemfire::DistributedSystemPtr p_system(
-            GetNativePtr<gemfire::DistributedSystem>( system ) );
-          gemfire::CachePtr& nativeptr(
-            gemfire::CacheFactory::getInstance( p_system ) );
+          apache::geode::client::DistributedSystemPtr p_system(
+            GetNativePtr<apache::geode::client::DistributedSystem>( system ) );
+          apache::geode::client::CachePtr& nativeptr(
+            apache::geode::client::CacheFactory::getInstance( p_system ) );
 
           return Cache::Create( nativeptr.ptr( ) );
 
@@ -129,10 +129,10 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2
 
-          gemfire::DistributedSystemPtr p_system(
-            GetNativePtr<gemfire::DistributedSystem>( system ) );
-          gemfire::CachePtr& nativeptr(
-            gemfire::CacheFactory::getInstanceCloseOk( p_system ) );
+          apache::geode::client::DistributedSystemPtr p_system(
+            GetNativePtr<apache::geode::client::DistributedSystem>( system ) );
+          apache::geode::client::CachePtr& nativeptr(
+            apache::geode::client::CacheFactory::getInstanceCloseOk( p_system ) );
 
           return Cache::Create( nativeptr.ptr( ) );
 
@@ -143,8 +143,8 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2
 
-          gemfire::CachePtr& nativeptr(
-            gemfire::CacheFactory::getAnyInstance( ) );
+          apache::geode::client::CachePtr& nativeptr(
+            apache::geode::client::CacheFactory::getAnyInstance( ) );
           return Cache::Create( nativeptr.ptr( ) );
 
         _GF_MG_EXCEPTION_CATCH_ALL2
@@ -152,13 +152,13 @@ namespace GemStone
 
       String^ CacheFactory::Version::get( )
       {
-        return ManagedString::Get( gemfire::CacheFactory::getVersion( ) );
+        return ManagedString::Get( apache::geode::client::CacheFactory::getVersion( ) );
       }
 
       String^ CacheFactory::ProductDescription::get( )
       {
         return ManagedString::Get(
-          gemfire::CacheFactory::getProductDescription( ) );
+          apache::geode::client::CacheFactory::getProductDescription( ) );
       }
 
 

@@ -16,7 +16,9 @@
  */
 #include "PutAllPartialResultServerException.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 PutAllPartialResultServerException::PutAllPartialResultServerException(
     PutAllPartialResultPtr result) {
@@ -96,4 +98,6 @@ int8_t PutAllPartialResultServerException::typeId() const {
 PutAllPartialResultServerException::PutAllPartialResultServerException(
     CacheableStringPtr msg)
     : m_message(msg) {}
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

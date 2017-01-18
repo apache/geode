@@ -20,7 +20,9 @@
 
 #include <typeinfo>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 void SharedBase::preserveSB() const { HostAsm::atomicAdd(m_refCount, 1); }
 
@@ -32,4 +34,6 @@ void SharedBase::releaseSB() const {
 
 // dummy instance to use for NULLPTR
 const NullSharedBase* const NullSharedBase::s_instancePtr = NULL;
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

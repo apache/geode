@@ -23,7 +23,9 @@
 #include "CacheableBuiltins.hpp"
 #include "CacheableDate.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class PdxWriter;
 typedef SharedPtr<PdxWriter> PdxWriterPtr;
@@ -440,5 +442,7 @@ class CPPCACHE_EXPORT PdxWriter : public SharedBase {
    */
   virtual PdxWriterPtr writeUnreadFields(PdxUnreadFieldsPtr unread) = 0;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif /* PDXWRITER_HPP_ */

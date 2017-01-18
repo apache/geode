@@ -22,7 +22,7 @@
 #include "ThinClientPoolDM.hpp"
 #include "NoResult.hpp"
 #include "UserAttributes.hpp"
-// using namespace gemfire;
+// using namespace apache::geode::client;
 
 FunctionToFunctionAttributes ExecutionImpl::m_func_attrs;
 ACE_Recursive_Thread_Mutex ExecutionImpl::m_func_attrs_lock;
@@ -525,12 +525,14 @@ CacheableVectorPtr ExecutionImpl::executeOnPool(std::string& func,
     ==25848==    at 0x4007D75: operator new(unsigned int)
     (vg_replace_malloc.c:313)
     ==25848==    by 0x42B575A:
-    gemfire::ExecutionImpl::executeOnPool(stlp_std::basic_string<char,
+    apache::geode::client::ExecutionImpl::executeOnPool(stlp_std::basic_string<char,
     stlp_std::char_traits<char>, stlp_std::allocator<char> >&, unsigned char,
     int, unsigned int) (ExecutionImpl.cpp:426)
-    ==25848==    by 0x42B65E6: gemfire::ExecutionImpl::execute(char const*,
+    ==25848==    by 0x42B65E6:
+    apache::geode::client::ExecutionImpl::execute(char const*,
     bool, unsigned int, bool, bool, bool) (ExecutionImpl.cpp:292)
-    ==25848==    by 0x42B7897: gemfire::ExecutionImpl::execute(char const*,
+    ==25848==    by 0x42B7897:
+    apache::geode::client::ExecutionImpl::execute(char const*,
     bool, unsigned int, bool, bool) (ExecutionImpl.cpp:76)
     ==25848==    by 0x8081320: Task_Client1OpTest::doTask() (in
     /export/pnq-gst-dev01a/users/adongre/cedar_dev_Nov12/build-artifacts/linux/tests/cppcache/testThinClientPoolExecuteFunctionPrSHOP)

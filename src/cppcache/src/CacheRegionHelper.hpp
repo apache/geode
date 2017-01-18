@@ -26,7 +26,9 @@
 #include "CacheImpl.hpp"
 #include <gfcpp/DistributedSystem.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class CacheRegionHelper {
   /**
@@ -42,5 +44,7 @@ class CacheRegionHelper {
     return DistributedSystem::m_impl;
   }
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // ifndef __GEMFIRE_IMPL_CACHEHELPER_H__

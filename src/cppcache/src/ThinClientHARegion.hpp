@@ -25,7 +25,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * @class ThinHAClientRegion ThinHAClientRegion.hpp
@@ -80,7 +82,8 @@ class CPPCACHE_EXPORT ThinClientHARegion : public ThinClientRegion {
 
   void destroyDM(bool keepEndpoints);
 };
-
-};  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_THINCLIENTHAREGION_H__

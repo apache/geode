@@ -21,7 +21,9 @@
 #include "PdxSerializer.hpp"
 #include "PdxSerializable.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class CPPCACHE_EXPORT PdxWrapper : public PdxSerializable {
   /**
@@ -127,6 +129,8 @@ class CPPCACHE_EXPORT PdxWrapper : public PdxSerializable {
 
   const PdxWrapper& operator=(const PdxWrapper&);
 };
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
-} /* namespace gemfire */
 #endif /* _PDXWRAPPER_HPP_ */

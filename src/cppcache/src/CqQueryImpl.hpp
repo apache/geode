@@ -41,7 +41,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * @class CqQueryImpl CqQueryImpl.hpp
@@ -266,7 +268,8 @@ class CqQueryImpl : public CqQuery {
   ThinClientBaseDM* m_tccdm;
   ProxyCachePtr m_proxyCache;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_CQ_QUERY_IMPL_H__

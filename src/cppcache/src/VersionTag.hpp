@@ -20,7 +20,9 @@
 #include <gfcpp/Cacheable.hpp>
 #include "GemfireTypeIdsImpl.hpp"
 #include "MemberListForVersionStamp.hpp"
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class RegionInternal;
 class CacheImpl;
@@ -80,6 +82,8 @@ class VersionTag : public Cacheable {
              int32_t regionVersionLowBytes, uint16_t internalMemId,
              uint16_t previousMemId);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __VERSIONTAG_HPP__

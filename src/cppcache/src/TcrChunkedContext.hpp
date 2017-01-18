@@ -31,7 +31,9 @@
 #include "Utils.hpp"
 #include "AppDomainContext.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * Base class for holding chunked results, processing a chunk
@@ -178,6 +180,8 @@ class TcrChunkedContext {
     }
   }
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __TCR_CHUNKED_CONTEXT_HPP__

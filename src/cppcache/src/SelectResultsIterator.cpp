@@ -21,7 +21,9 @@
 
 #include <gfcpp/SelectResultsIterator.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 SelectResultsIterator::SelectResultsIterator(const CacheableVectorPtr& vectorSR,
                                              SelectResultsPtr srp)
@@ -53,5 +55,6 @@ const SerializablePtr SelectResultsIterator::current() const {
 }
 
 void SelectResultsIterator::reset() { m_nextIndex = 0; }
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

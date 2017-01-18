@@ -20,7 +20,9 @@
 #include "gfcpp/Log.hpp"
 #include "gfcpp/ExceptionTypes.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 extern "C" {
 LIBEXP AuthInitialize* createNoopAuthInitInstance() {
@@ -35,4 +37,6 @@ PropertiesPtr NoopAuthInit::getCredentials(PropertiesPtr& securityprops,
   PropertiesPtr credentials = Properties::create();
   return credentials;
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

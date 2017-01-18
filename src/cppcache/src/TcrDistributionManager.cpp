@@ -20,7 +20,7 @@
 #include "TcrEndpoint.hpp"
 #include <gfcpp/ExceptionTypes.hpp>
 #include "Utils.hpp"
-using namespace gemfire;
+using namespace apache::geode::client;
 
 TcrDistributionManager::TcrDistributionManager(
     ThinClientRegion* region, TcrConnectionManager& connManager)

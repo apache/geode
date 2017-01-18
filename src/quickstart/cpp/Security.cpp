@@ -31,7 +31,7 @@
 #include <gfcpp/GeodeCppCache.hpp>
 
 // Use the "gemfire" namespace.
-using namespace gemfire;
+using namespace apache::geode::client;
 
 // The Security QuickStart example.
 int main(int argc, char** argv) {
@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
       CacheablePtr result1Ptr = regionPtr->get("Key1");
 
       // collect NotAuthorized exception
-    } catch (const gemfire::NotAuthorizedException& expected) {
+    } catch (const apache::geode::client::NotAuthorizedException& expected) {
       LOGINFO(
           "Got expected authorization failure while obtaining the Entry: %s",
           expected.getMessage());

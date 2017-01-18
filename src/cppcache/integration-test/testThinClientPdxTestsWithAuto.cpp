@@ -32,7 +32,7 @@
 #include "CachePerfStats.hpp"
 #include <LocalRegion.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace PdxTestsAuto;
 
 #define CLIENT1 s1p1

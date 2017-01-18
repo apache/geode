@@ -36,7 +36,9 @@
 
 /** @file
 */
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * Implement a date object based on system epoch that can serve as a
@@ -141,6 +143,8 @@ inline CacheableKeyPtr createKey(const timeval& value) {
 inline CacheablePtr createValue(const timeval& value) {
   return CacheablePtr(CacheableDate::create(value));
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

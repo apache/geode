@@ -27,203 +27,230 @@
 #include "GemfireTypeIds.hpp"
 #include "TypeHelper.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace serializer {
 
 // Read and write methods for various types
 
-inline void writeObject(gemfire::DataOutput& output, uint8_t value) {
+inline void writeObject(apache::geode::client::DataOutput& output,
+                        uint8_t value) {
   output.write(value);
 }
 
-inline void readObject(gemfire::DataInput& input, uint8_t& value) {
+inline void readObject(apache::geode::client::DataInput& input,
+                       uint8_t& value) {
   input.read(&value);
 }
 
-inline void writeObject(gemfire::DataOutput& output, int8_t value) {
+inline void writeObject(apache::geode::client::DataOutput& output,
+                        int8_t value) {
   output.write(value);
 }
 
-inline void readObject(gemfire::DataInput& input, int8_t& value) {
+inline void readObject(apache::geode::client::DataInput& input, int8_t& value) {
   input.read(&value);
 }
 
-inline void writeObject(gemfire::DataOutput& output, const uint8_t* bytes,
-                        int32_t len) {
+inline void writeObject(apache::geode::client::DataOutput& output,
+                        const uint8_t* bytes, int32_t len) {
   output.writeBytes(bytes, len);
 }
 
-inline void readObject(gemfire::DataInput& input, uint8_t*& bytes,
+inline void readObject(apache::geode::client::DataInput& input, uint8_t*& bytes,
                        int32_t& len) {
   input.readBytes(&bytes, &len);
 }
 
-inline void writeObject(gemfire::DataOutput& output, const int8_t* bytes,
-                        int32_t len) {
+inline void writeObject(apache::geode::client::DataOutput& output,
+                        const int8_t* bytes, int32_t len) {
   output.writeBytes(bytes, len);
 }
 
-inline void readObject(gemfire::DataInput& input, int8_t*& bytes,
+inline void readObject(apache::geode::client::DataInput& input, int8_t*& bytes,
                        int32_t& len) {
   input.readBytes(&bytes, &len);
 }
 
-inline void writeObject(gemfire::DataOutput& output, int16_t value) {
+inline void writeObject(apache::geode::client::DataOutput& output,
+                        int16_t value) {
   output.writeInt(value);
 }
 
-inline void readObject(gemfire::DataInput& input, int16_t& value) {
+inline void readObject(apache::geode::client::DataInput& input,
+                       int16_t& value) {
   input.readInt(&value);
 }
 
-inline void writeObject(gemfire::DataOutput& output, int32_t value) {
+inline void writeObject(apache::geode::client::DataOutput& output,
+                        int32_t value) {
   output.writeInt(value);
 }
 
-inline void readObject(gemfire::DataInput& input, int32_t& value) {
+inline void readObject(apache::geode::client::DataInput& input,
+                       int32_t& value) {
   input.readInt(&value);
 }
 
-inline void writeObject(gemfire::DataOutput& output, int64_t value) {
+inline void writeObject(apache::geode::client::DataOutput& output,
+                        int64_t value) {
   output.writeInt(value);
 }
 
-inline void readObject(gemfire::DataInput& input, int64_t& value) {
+inline void readObject(apache::geode::client::DataInput& input,
+                       int64_t& value) {
   input.readInt(&value);
 }
 
-inline void writeObject(gemfire::DataOutput& output, uint16_t value) {
+inline void writeObject(apache::geode::client::DataOutput& output,
+                        uint16_t value) {
   output.writeInt(value);
 }
 
-inline void readObject(gemfire::DataInput& input, uint16_t& value) {
+inline void readObject(apache::geode::client::DataInput& input,
+                       uint16_t& value) {
   input.readInt(&value);
 }
 
-inline void writeObject(gemfire::DataOutput& output, uint32_t value) {
+inline void writeObject(apache::geode::client::DataOutput& output,
+                        uint32_t value) {
   output.writeInt(value);
 }
 
-inline void readObject(gemfire::DataInput& input, uint32_t& value) {
+inline void readObject(apache::geode::client::DataInput& input,
+                       uint32_t& value) {
   input.readInt(&value);
 }
 
-inline void writeObject(gemfire::DataOutput& output, uint64_t value) {
+inline void writeObject(apache::geode::client::DataOutput& output,
+                        uint64_t value) {
   output.writeInt(value);
 }
 
-inline void readObject(gemfire::DataInput& input, uint64_t& value) {
+inline void readObject(apache::geode::client::DataInput& input,
+                       uint64_t& value) {
   input.readInt(&value);
 }
 
-inline void writeObject(gemfire::DataOutput& output, bool value) {
+inline void writeObject(apache::geode::client::DataOutput& output, bool value) {
   output.writeBoolean(value);
 }
 
-inline void readObject(gemfire::DataInput& input, bool& value) {
+inline void readObject(apache::geode::client::DataInput& input, bool& value) {
   input.readBoolean(&value);
 }
 
-inline void writeObject(gemfire::DataOutput& output, double value) {
+inline void writeObject(apache::geode::client::DataOutput& output,
+                        double value) {
   output.writeDouble(value);
 }
 
-inline void readObject(gemfire::DataInput& input, double& value) {
+inline void readObject(apache::geode::client::DataInput& input, double& value) {
   input.readDouble(&value);
 }
 
-inline void writeObject(gemfire::DataOutput& output, float value) {
+inline void writeObject(apache::geode::client::DataOutput& output,
+                        float value) {
   output.writeFloat(value);
 }
 
-inline void readObject(gemfire::DataInput& input, float& value) {
+inline void readObject(apache::geode::client::DataInput& input, float& value) {
   input.readFloat(&value);
 }
 
-inline void writeObject(gemfire::DataOutput& output, wchar_t value) {
+inline void writeObject(apache::geode::client::DataOutput& output,
+                        wchar_t value) {
   output.writeInt(static_cast<int16_t>(value));
 }
 
-inline void readObject(gemfire::DataInput& input, wchar_t& value) {
+inline void readObject(apache::geode::client::DataInput& input,
+                       wchar_t& value) {
   int16_t val;
   input.readInt(&val);
   value = val;
 }
 
-inline void writeObject(gemfire::DataOutput& output, const char* value,
-                        uint32_t length) {
+inline void writeObject(apache::geode::client::DataOutput& output,
+                        const char* value, uint32_t length) {
   output.writeASCII(value, length);
 }
 
 template <typename TLen>
-inline void readObject(gemfire::DataInput& input, char*& value, TLen& length) {
+inline void readObject(apache::geode::client::DataInput& input, char*& value,
+                       TLen& length) {
   uint16_t len;
   input.readASCII(&value, &len);
   length = len;
 }
 
-inline void writeObject(gemfire::DataOutput& output, const char* value) {
+inline void writeObject(apache::geode::client::DataOutput& output,
+                        const char* value) {
   output.writeASCII(value);
 }
 
-inline void readObject(gemfire::DataInput& input, char*& value) {
+inline void readObject(apache::geode::client::DataInput& input, char*& value) {
   input.readASCII(&value);
 }
 
-inline void writeObject(gemfire::DataOutput& output, const wchar_t* value,
-                        uint32_t length) {
+inline void writeObject(apache::geode::client::DataOutput& output,
+                        const wchar_t* value, uint32_t length) {
   output.writeUTF(value, length);
 }
 
 template <typename TLen>
-inline void readObject(gemfire::DataInput& input, wchar_t*& value,
+inline void readObject(apache::geode::client::DataInput& input, wchar_t*& value,
                        TLen& length) {
   uint16_t len;
   input.readUTF(&value, &len);
   length = len;
 }
 
-inline void writeObject(gemfire::DataOutput& output, const wchar_t* value) {
+inline void writeObject(apache::geode::client::DataOutput& output,
+                        const wchar_t* value) {
   output.writeUTF(value);
 }
 
-inline void readObject(gemfire::DataInput& input, wchar_t*& value) {
+inline void readObject(apache::geode::client::DataInput& input,
+                       wchar_t*& value) {
   input.readUTF(&value);
 }
 
 // Base Serializable types
 
 template <typename TObj>
-inline void writeObject(gemfire::DataOutput& output,
-                        const gemfire::SharedPtr<TObj>& value,
-                        gemfire::TypeHelper::yes_type isSerializable) {
+inline void writeObject(
+    apache::geode::client::DataOutput& output,
+    const apache::geode::client::SharedPtr<TObj>& value,
+    apache::geode::client::TypeHelper::yes_type isSerializable) {
   output.writeObject(value);
 }
 
 template <typename TObj>
-inline void writeObject(gemfire::DataOutput& output,
-                        const gemfire::SharedPtr<TObj>& value) {
+inline void writeObject(apache::geode::client::DataOutput& output,
+                        const apache::geode::client::SharedPtr<TObj>& value) {
   writeObject(output, value, GF_TYPE_IS_SERIALIZABLE_TYPE(TObj));
 }
 
 template <typename TObj>
-inline void readObject(gemfire::DataInput& input,
-                       gemfire::SharedPtr<TObj>& value,
-                       gemfire::TypeHelper::yes_type isSerializable) {
+inline void readObject(
+    apache::geode::client::DataInput& input,
+    apache::geode::client::SharedPtr<TObj>& value,
+    apache::geode::client::TypeHelper::yes_type isSerializable) {
   input.readObject(value, true);
 }
 
 template <typename TObj>
-inline void readObject(gemfire::DataInput& input,
-                       gemfire::SharedPtr<TObj>& value) {
+inline void readObject(apache::geode::client::DataInput& input,
+                       apache::geode::client::SharedPtr<TObj>& value) {
   readObject(input, value, GF_TYPE_IS_SERIALIZABLE_TYPE(TObj));
 }
 
 // For arrays
 
 template <typename TObj, typename TLen>
-inline void writeObject(gemfire::DataOutput& output, const TObj* array,
-                        TLen len) {
+inline void writeObject(apache::geode::client::DataOutput& output,
+                        const TObj* array, TLen len) {
   if (array == NULL) {
     output.write(static_cast<int8_t>(-1));
   } else {
@@ -236,7 +263,8 @@ inline void writeObject(gemfire::DataOutput& output, const TObj* array,
 }
 
 template <typename TObj, typename TLen>
-inline void readObject(gemfire::DataInput& input, TObj*& array, TLen& len) {
+inline void readObject(apache::geode::client::DataInput& input, TObj*& array,
+                       TLen& len) {
   input.readArrayLen(&len);
   if (len > 0) {
     GF_NEW(array, TObj[len]);
@@ -251,8 +279,9 @@ inline void readObject(gemfire::DataInput& input, TObj*& array, TLen& len) {
 }
 
 template <typename TObj, typename TLen>
-inline uint32_t objectSize(const TObj* array, TLen len,
-                           gemfire::TypeHelper::yes_type isSerializable) {
+inline uint32_t objectSize(
+    const TObj* array, TLen len,
+    apache::geode::client::TypeHelper::yes_type isSerializable) {
   uint32_t size = 0;
   const TObj* endArray = array + len;
   while (array < endArray) {
@@ -266,8 +295,9 @@ inline uint32_t objectSize(const TObj* array, TLen len,
 }
 
 template <typename TObj, typename TLen>
-inline uint32_t objectSize(const TObj* array, TLen len,
-                           gemfire::TypeHelper::no_type isNotSerializable) {
+inline uint32_t objectSize(
+    const TObj* array, TLen len,
+    apache::geode::client::TypeHelper::no_type isNotSerializable) {
   return (uint32_t)(sizeof(TObj) * len);
 }
 
@@ -279,7 +309,7 @@ inline uint32_t objectSize(const TObj* array, TLen len) {
 // For containers vector/hashmap/hashset
 
 template <typename TObj>
-inline void writeObject(gemfire::DataOutput& output,
+inline void writeObject(apache::geode::client::DataOutput& output,
                         const VectorT<TObj>& value) {
   int32_t len = (int32_t)value.size();
   output.writeArrayLen(len);
@@ -302,7 +332,8 @@ inline uint32_t objectSize(const _VectorOfCacheable& value) {
 }
 
 template <typename TObj>
-inline void readObject(gemfire::DataInput& input, VectorT<TObj>& value) {
+inline void readObject(apache::geode::client::DataInput& input,
+                       VectorT<TObj>& value) {
   int32_t len;
   input.readArrayLen(&len);
   if (len >= 0) {
@@ -315,7 +346,7 @@ inline void readObject(gemfire::DataInput& input, VectorT<TObj>& value) {
 }
 
 template <typename TKey, typename TValue>
-inline void writeObject(gemfire::DataOutput& output,
+inline void writeObject(apache::geode::client::DataOutput& output,
                         const HashMapT<TKey, TValue>& value) {
   int32_t len = (int32_t)value.size();
   output.writeArrayLen(len);
@@ -343,7 +374,7 @@ inline uint32_t objectSize(const _HashMapOfCacheable& value) {
 }
 
 template <typename TKey, typename TValue>
-inline void readObject(gemfire::DataInput& input,
+inline void readObject(apache::geode::client::DataInput& input,
                        HashMapT<TKey, TValue>& value) {
   int32_t len;
   input.readArrayLen(&len);
@@ -359,7 +390,7 @@ inline void readObject(gemfire::DataInput& input,
 }
 
 template <typename TKey>
-inline void writeObject(gemfire::DataOutput& output,
+inline void writeObject(apache::geode::client::DataOutput& output,
                         const HashSetT<TKey>& value) {
   int32_t len = (int32_t)value.size();
   output.writeArrayLen(len);
@@ -382,7 +413,8 @@ inline uint32_t objectSize(const _HashSetOfCacheableKey& value) {
 }
 
 template <typename TKey>
-inline void readObject(gemfire::DataInput& input, HashSetT<TKey>& value) {
+inline void readObject(apache::geode::client::DataInput& input,
+                       HashSetT<TKey>& value) {
   int32_t len;
   input.readArrayLen(&len);
   if (len > 0) {
@@ -416,6 +448,8 @@ inline float zeroObject<float>() {
   return 0.0F;
 }
 }  // namespace serializer
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // _GEMFIRE_SERIALIZER_HPP_

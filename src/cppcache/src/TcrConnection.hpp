@@ -54,7 +54,9 @@
     x = NULL;                 \
   }
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 enum ConnErrType {
   CONN_NOERR = 0x0,
@@ -397,6 +399,8 @@ class CPPCACHE_EXPORT TcrConnection {
   volatile uint32_t m_isUsed;
   ThinClientPoolDM* m_poolDM;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __TCR_CONNECTION_HPP__

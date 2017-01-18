@@ -25,7 +25,7 @@
 
 #include "ThinClientSecurity.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace test;
 
 #define CORRECT_CREDENTIALS 'C'
@@ -177,7 +177,8 @@ DUNIT_TASK_DEFINITION(CLIENT1, StepOne)
     try {
       initClientAuth(INCORRECT_CREDENTIALS);
       LOG(" 3");
-    } catch (const gemfire::AuthenticationFailedException& other) {
+    } catch (
+        const apache::geode::client::AuthenticationFailedException& other) {
       other.printStackTrace();
       LOG(other.getMessage());
     }
@@ -200,10 +201,11 @@ DUNIT_TASK_DEFINITION(CLIENT1, StepOne)
         LOG("Pool is NULL");
       }
       FAIL("Should have thrown AuthenticationFailedException.");
-    } catch (const gemfire::AuthenticationFailedException& other) {
+    } catch (
+        const apache::geode::client::AuthenticationFailedException& other) {
       other.printStackTrace();
       LOG(other.getMessage());
-    } catch (const gemfire::Exception& other) {
+    } catch (const apache::geode::client::Exception& other) {
       other.printStackTrace();
       LOG(other.getMessage());
       FAIL("Only AuthenticationFailedException is expected");
@@ -227,12 +229,12 @@ DUNIT_TASK_DEFINITION(CLIENT1, StepTwo)
         virtualRegion->create(keys[0], vals[0]);
         virtualRegion->put(keys[0], nvals[0]);
         virtualRegion->containsKeyOnServer(
-            gemfire::CacheableKey::create(keys[0]));
+            apache::geode::client::CacheableKey::create(keys[0]));
         LOG("Operation allowed.");
       } else {
         LOG("Pool is NULL");
       }
-    } catch (const gemfire::Exception& other) {
+    } catch (const apache::geode::client::Exception& other) {
       other.printStackTrace();
       FAIL(other.getMessage());
     }
@@ -256,7 +258,7 @@ DUNIT_TASK_DEFINITION(CLIENT2, StepThree)
       } else {
         LOG("Pool is NULL");
       }
-    } catch (const gemfire::Exception& other) {
+    } catch (const apache::geode::client::Exception& other) {
       other.printStackTrace();
       FAIL(other.getMessage());
     }
@@ -270,7 +272,8 @@ DUNIT_TASK_DEFINITION(CLIENT3, StepFour)
     initCredentialGenerator();
     try {
       initClientAuth(NOT_PROVIDED_CREDENTIALS);
-    } catch (const gemfire::AuthenticationRequiredException& other) {
+    } catch (
+        const apache::geode::client::AuthenticationRequiredException& other) {
       other.printStackTrace();
       FAIL(other.getMessage());
     }
@@ -287,13 +290,15 @@ DUNIT_TASK_DEFINITION(CLIENT3, StepFour)
         LOG("Pool is NULL");
       }
       FAIL("Should have thrown AuthenticationRequiredException.");
-    } catch (const gemfire::AuthenticationRequiredException& other) {
+    } catch (
+        const apache::geode::client::AuthenticationRequiredException& other) {
       other.printStackTrace();
       LOG(other.getMessage());
-    } catch (const gemfire::AuthenticationFailedException& other) {
+    } catch (
+        const apache::geode::client::AuthenticationFailedException& other) {
       other.printStackTrace();
       LOG(other.getMessage());
-    } catch (const gemfire::Exception& other) {
+    } catch (const apache::geode::client::Exception& other) {
       other.printStackTrace();
       LOG(other.getMessage());
       FAIL("Only AuthenticationRequiredException is expected");
@@ -331,7 +336,7 @@ DUNIT_TASK_DEFINITION(CLIENT2, StepFive)
       } else {
         LOG("checkPtr is NULL");
       }
-    } catch (const gemfire::Exception& other) {
+    } catch (const apache::geode::client::Exception& other) {
       other.printStackTrace();
       FAIL(other.getMessage());
     }
@@ -358,7 +363,7 @@ DUNIT_TASK_DEFINITION(CLIENT1, StepSix)
       } else {
         LOG("Pool is NULL");
       }
-    } catch (const gemfire::Exception& other) {
+    } catch (const apache::geode::client::Exception& other) {
       other.printStackTrace();
       FAIL(other.getMessage());
     }
@@ -371,7 +376,8 @@ DUNIT_TASK_DEFINITION(CLIENT2, StepSeven)
   {
     try {
       initClientAuth(INCORRECT_CREDENTIALS);
-    } catch (const gemfire::AuthenticationFailedException& other) {
+    } catch (
+        const apache::geode::client::AuthenticationFailedException& other) {
       other.printStackTrace();
       LOG(other.getMessage());
     }
@@ -394,10 +400,11 @@ DUNIT_TASK_DEFINITION(CLIENT2, StepSeven)
         LOG("Pool is NULL");
       }
       FAIL("Should have thrown AuthenticationFailedException.");
-    } catch (const gemfire::AuthenticationFailedException& other) {
+    } catch (
+        const apache::geode::client::AuthenticationFailedException& other) {
       other.printStackTrace();
       LOG(other.getMessage());
-    } catch (const gemfire::Exception& other) {
+    } catch (const apache::geode::client::Exception& other) {
       other.printStackTrace();
       LOG(other.getMessage());
       FAIL("Only AuthenticationFailedException is expected");
@@ -467,7 +474,7 @@ DUNIT_TASK_DEFINITION(CLIENT1, StepEight)
       } else {
         LOG("checkPtr is NULL");
       }
-    } catch (const gemfire::Exception& other) {
+    } catch (const apache::geode::client::Exception& other) {
       other.printStackTrace();
       FAIL(other.getMessage());
     }

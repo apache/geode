@@ -22,7 +22,9 @@
 #include <gfcpp/statistics/Statistics.hpp>
 #include <gfcpp/statistics/StatisticsFactory.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 using namespace gemfire_statistics;
 
@@ -352,6 +354,8 @@ class CPPCACHE_EXPORT CachePerfStats {
   int32_t m_pdxDeserializationsId;
   int32_t m_pdxDeserializedBytesId;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __GEMFIRE_CACHEPERFSTATS_H__

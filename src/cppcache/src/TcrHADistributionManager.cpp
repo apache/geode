@@ -24,7 +24,7 @@
 #include "CacheImpl.hpp"
 #include "RemoteQueryService.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 TcrHADistributionManager::TcrHADistributionManager(
     ThinClientRegion* theRegion, TcrConnectionManager& connManager,

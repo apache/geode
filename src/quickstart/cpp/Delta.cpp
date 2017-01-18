@@ -39,7 +39,7 @@
 #include "deltaobjects/DeltaExample.hpp"
 
 // Use the "gemfire" namespace.
-using namespace gemfire;
+using namespace apache::geode::client;
 
 // The Delta QuickStart example.
 typedef SharedPtr<DeltaExample> DeltaExamplePtr;

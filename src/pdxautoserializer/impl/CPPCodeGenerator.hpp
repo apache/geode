@@ -21,7 +21,9 @@
 #include "../CodeGenerator.hpp"
 #include "../OutputFormatter.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace pdx_auto_serializer {
 /**
  * The C++ code generator backend.
@@ -227,7 +229,9 @@ class CPPCodeGenerator : public CodeGenerator {
    */
   static std::string s_GenSuffixOption;
 };
-}
-}
+}  // namespace pdx_auto_serializer
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // _GFAS_CPPCODEGENERATOR_HPP_

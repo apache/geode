@@ -39,7 +39,7 @@ namespace GemStone
       /// <seealso cref="Region.Statistics" />
       /// <seealso cref="RegionEntry.Statistics" />
       public ref class CacheStatistics sealed
-        : public Internal::SBWrap<gemfire::CacheStatistics>
+        : public Internal::SBWrap<apache::geode::client::CacheStatistics>
       {
       public:
 
@@ -131,7 +131,7 @@ namespace GemStone
         /// <returns>
         /// The managed wrapper object; null if the native pointer is null.
         /// </returns>
-        inline static CacheStatistics^ Create( gemfire::CacheStatistics* nativeptr )
+        inline static CacheStatistics^ Create( apache::geode::client::CacheStatistics* nativeptr )
         {
           return ( nativeptr != nullptr ?
             gcnew CacheStatistics( nativeptr ) : nullptr );
@@ -144,7 +144,7 @@ namespace GemStone
         /// Private constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline CacheStatistics( gemfire::CacheStatistics* nativeptr )
+        inline CacheStatistics( apache::geode::client::CacheStatistics* nativeptr )
           : SBWrap( nativeptr ) { }
       };
 

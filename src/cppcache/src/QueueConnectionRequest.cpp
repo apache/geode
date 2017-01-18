@@ -18,7 +18,7 @@
 #include "GemfireTypeIdsImpl.hpp"
 #include <gfcpp/DataInput.hpp>
 #include <gfcpp/DataOutput.hpp>
-using namespace gemfire;
+using namespace apache::geode::client;
 
 void QueueConnectionRequest::toData(DataOutput& output) const {
   // CacheableStringPtr abe = CacheableString::create(m_serverGp.c_str());

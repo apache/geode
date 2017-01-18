@@ -33,11 +33,13 @@
 #include <vector>
 #include "FarSideEntryOp.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 _GF_PTR_DEF_(RegionCommit, RegionCommitPtr);
 
-class RegionCommit : public gemfire::SharedBase {
+class RegionCommit : public apache::geode::client::SharedBase {
  public:
   RegionCommit();
   virtual ~RegionCommit();
@@ -54,6 +56,8 @@ class RegionCommit : public gemfire::SharedBase {
   CacheableStringPtr m_parentRegionPath;
   VectorOfSharedBase m_farSideEntryOps;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif /* REGIONCOMMIT_HPP_ */

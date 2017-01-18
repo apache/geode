@@ -37,8 +37,8 @@ namespace GemStone
       generic<class TKey, class TValue>
       TValue LocalRegion<TKey, TValue>::Get(TKey key, Object^ callbackArg)
       {
-        gemfire::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( key ) );
-        gemfire::CacheablePtr nativeptr(this->getRegionEntryValue(keyptr));
+        apache::geode::client::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( key ) );
+        apache::geode::client::CacheablePtr nativeptr(this->getRegionEntryValue(keyptr));
         if (nativeptr == NULLPTR)
         {
           throw gcnew KeyNotFoundException("The given key was not present in the region");
@@ -48,10 +48,10 @@ namespace GemStone
       }     
 
       generic<class TKey, class TValue>
-      gemfire::SerializablePtr LocalRegion<TKey, TValue>::getRegionEntryValue(gemfire::CacheableKeyPtr& keyptr)
+      apache::geode::client::SerializablePtr LocalRegion<TKey, TValue>::getRegionEntryValue(apache::geode::client::CacheableKeyPtr& keyptr)
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
-          gemfire::RegionEntryPtr entryPtr =  NativePtr->getEntry( keyptr );
+          apache::geode::client::RegionEntryPtr entryPtr =  NativePtr->getEntry( keyptr );
           if (entryPtr != NULLPTR) {
             return entryPtr->getValue() ;
           }
@@ -66,9 +66,9 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-        gemfire::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( key ) );
-        gemfire::CacheablePtr valueptr( Serializable::GetUnmanagedValueGeneric<TValue>( value ) );        
-        gemfire::UserDataPtr callbackptr(
+        apache::geode::client::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( key ) );
+        apache::geode::client::CacheablePtr valueptr( Serializable::GetUnmanagedValueGeneric<TValue>( value ) );        
+        apache::geode::client::UserDataPtr callbackptr(
           Serializable::GetUnmanagedValueGeneric<Object^>( callbackArg ) );
         NativePtr->localPut( keyptr, valueptr, callbackptr );
 
@@ -78,8 +78,8 @@ namespace GemStone
       generic<class TKey, class TValue>
       TValue LocalRegion<TKey, TValue>::default::get(TKey key)
       { 
-        gemfire::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( key ) );
-        gemfire::CacheablePtr nativeptr(this->getRegionEntryValue(keyptr));
+        apache::geode::client::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( key ) );
+        apache::geode::client::CacheablePtr nativeptr(this->getRegionEntryValue(keyptr));
         if (nativeptr == NULLPTR)
         {
           throw gcnew KeyNotFoundException("The given key was not present in the region");
@@ -93,8 +93,8 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-        gemfire::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( key ) );
-        gemfire::CacheablePtr valueptr( Serializable::GetUnmanagedValueGeneric<TValue>( value ) );
+        apache::geode::client::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( key ) );
+        apache::geode::client::CacheablePtr valueptr( Serializable::GetUnmanagedValueGeneric<TValue>( value ) );
         NativePtr->localPut( keyptr, valueptr );
 
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
@@ -105,7 +105,7 @@ namespace GemStone
         LocalRegion<TKey, TValue>::GetEnumerator()
       {
         array<KeyValuePair<TKey,TValue>>^ toArray;
-        gemfire::VectorOfRegionEntry vc;
+        apache::geode::client::VectorOfRegionEntry vc;
 
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
@@ -117,7 +117,7 @@ namespace GemStone
 
         for( int32_t index = 0; index < vc.size( ); index++ )
         {
-          gemfire::RegionEntryPtr nativeptr =  vc[ index ];  
+          apache::geode::client::RegionEntryPtr nativeptr =  vc[ index ];  
           TKey key = Serializable::GetManagedValueGeneric<TKey> (nativeptr->getKey());
           TValue val = Serializable::GetManagedValueGeneric<TValue> (nativeptr->getValue());
           toArray[ index ] = KeyValuePair<TKey,TValue>(key, val);           
@@ -130,7 +130,7 @@ namespace GemStone
         LocalRegion<TKey, TValue>::GetEnumeratorOld()
       {
         array<Object^>^ toArray;
-        gemfire::VectorOfRegionEntry vc;
+        apache::geode::client::VectorOfRegionEntry vc;
 
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
@@ -142,7 +142,7 @@ namespace GemStone
 
         for( int32_t index = 0; index < vc.size( ); index++ )
         {
-          gemfire::RegionEntryPtr nativeptr =  vc[ index ];                       
+          apache::geode::client::RegionEntryPtr nativeptr =  vc[ index ];                       
           TKey key = Serializable::GetManagedValueGeneric<TKey> (nativeptr->getKey());
           TValue val = Serializable::GetManagedValueGeneric<TValue> (nativeptr->getValue());            
           toArray[ index ] = KeyValuePair<TKey,TValue>(key, val);           
@@ -152,7 +152,7 @@ namespace GemStone
 
 
       generic<class TKey, class TValue>
-      bool LocalRegion<TKey, TValue>::AreValuesEqual(gemfire::CacheablePtr& val1, gemfire::CacheablePtr& val2)
+      bool LocalRegion<TKey, TValue>::AreValuesEqual(apache::geode::client::CacheablePtr& val1, apache::geode::client::CacheablePtr& val2)
       {
         if ( val1 == NULLPTR && val2 == NULLPTR )
         {
@@ -168,8 +168,8 @@ namespace GemStone
           {
             return false;
           }
-          gemfire::DataOutput out1;
-          gemfire::DataOutput out2;
+          apache::geode::client::DataOutput out1;
+          apache::geode::client::DataOutput out2;
           val1->toData(out1);
           val2->toData(out2);
           if ( out1.getBufferLength() != out2.getBufferLength() )
@@ -188,8 +188,8 @@ namespace GemStone
       generic<class TKey, class TValue> 
       bool LocalRegion<TKey, TValue>::Contains(KeyValuePair<TKey,TValue> keyValuePair) 
       { 
-        gemfire::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( keyValuePair.Key ) ); 
-        gemfire::CacheablePtr nativeptr(this->getRegionEntryValue(keyptr));
+        apache::geode::client::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( keyValuePair.Key ) ); 
+        apache::geode::client::CacheablePtr nativeptr(this->getRegionEntryValue(keyptr));
         //This means that key is not present.
         if (nativeptr == NULLPTR) {
           return false;
@@ -203,7 +203,7 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-          gemfire::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( key ) );          
+          apache::geode::client::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( key ) );          
 
           return NativePtr->containsKey( keyptr );
 
@@ -213,8 +213,8 @@ namespace GemStone
       generic<class TKey, class TValue>
       bool LocalRegion<TKey, TValue>::TryGetValue(TKey key, TValue %val)
       {        
-        gemfire::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( key ) );
-        gemfire::CacheablePtr nativeptr(this->getRegionEntryValue(keyptr));
+        apache::geode::client::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( key ) );
+        apache::geode::client::CacheablePtr nativeptr(this->getRegionEntryValue(keyptr));
         if (nativeptr == NULLPTR) {            
           val = TValue();
           return false;
@@ -230,14 +230,14 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-        gemfire::VectorOfCacheableKey vc;
+        apache::geode::client::VectorOfCacheableKey vc;
         NativePtr->keys( vc );
         //List<TKey>^ collectionlist = gcnew List<TKey>(vc.size());
         array<TKey>^ keyarr =
           gcnew array<TKey>( vc.size( ) );
         for( int32_t index = 0; index < vc.size( ); index++ )
         {            
-          gemfire::CacheableKeyPtr& nativeptr( vc[ index ] );
+          apache::geode::client::CacheableKeyPtr& nativeptr( vc[ index ] );
           keyarr[ index ] = Serializable::GetManagedValueGeneric<TKey>(nativeptr);
           //collectionlist[ index ] = Serializable::GetManagedValue<TKey>(nativeptr);
         }
@@ -252,14 +252,14 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-          gemfire::VectorOfCacheable vc;
+          apache::geode::client::VectorOfCacheable vc;
           NativePtr->values( vc );
           //List<TValue>^ collectionlist = gcnew List<TValue>(vc.size());
           array<TValue>^ valarr =
             gcnew array<TValue>( vc.size( ) );
           for( int32_t index = 0; index < vc.size( ); index++ )
           {
-            gemfire::CacheablePtr& nativeptr( vc[ index ] );            
+            apache::geode::client::CacheablePtr& nativeptr( vc[ index ] );            
             valarr[ index ] = Serializable::GetManagedValueGeneric<TValue>(nativeptr);
             //collectionlist[ index ] = Serializable::GetManagedValueGeneric<TValue>(nativeptr);
           }
@@ -274,8 +274,8 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-          gemfire::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( key ) );
-          gemfire::CacheablePtr valueptr( Serializable::GetUnmanagedValueGeneric<TValue>( value ) );
+          apache::geode::client::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( key ) );
+          apache::geode::client::CacheablePtr valueptr( Serializable::GetUnmanagedValueGeneric<TValue>( value ) );
           NativePtr->localCreate( keyptr, valueptr );
 
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
@@ -286,8 +286,8 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-          gemfire::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( keyValuePair.Key ) );
-          gemfire::CacheablePtr valueptr( Serializable::GetUnmanagedValueGeneric<TValue>( keyValuePair.Value ) );
+          apache::geode::client::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( keyValuePair.Key ) );
+          apache::geode::client::CacheablePtr valueptr( Serializable::GetUnmanagedValueGeneric<TValue>( keyValuePair.Value ) );
           NativePtr->localCreate( keyptr, valueptr );
 
        _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
@@ -298,9 +298,9 @@ namespace GemStone
       {
           _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-          gemfire::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( key ) );
-          gemfire::CacheablePtr valueptr( Serializable::GetUnmanagedValueGeneric<TValue>( value ) );          
-          gemfire::UserDataPtr callbackptr(
+          apache::geode::client::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( key ) );
+          apache::geode::client::CacheablePtr valueptr( Serializable::GetUnmanagedValueGeneric<TValue>( value ) );          
+          apache::geode::client::UserDataPtr callbackptr(
             Serializable::GetUnmanagedValueGeneric<Object^>( callbackArg ) );
           NativePtr->localCreate( keyptr, valueptr, callbackptr );
 
@@ -314,11 +314,11 @@ namespace GemStone
     
           try
           {
-            gemfire::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( key ) );          
+            apache::geode::client::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( key ) );          
             NativePtr->localDestroy( keyptr );
             return true;
           }
-          catch(gemfire::EntryNotFoundException /*ex*/)
+          catch(apache::geode::client::EntryNotFoundException /*ex*/)
           {
             return false;
           }
@@ -333,13 +333,13 @@ namespace GemStone
          _GF_MG_EXCEPTION_TRY2/* due to auto replace */
           try
           {
-            gemfire::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( key ) );                    
-            gemfire::UserDataPtr callbackptr(
+            apache::geode::client::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( key ) );                    
+            apache::geode::client::UserDataPtr callbackptr(
             Serializable::GetUnmanagedValueGeneric<Object^>( callbackArg ) );
             NativePtr->localDestroy( keyptr, callbackptr );
             return true;
           }
-          catch(gemfire::EntryNotFoundException /*ex*/)
+          catch(apache::geode::client::EntryNotFoundException /*ex*/)
           {
             return false;
           }
@@ -352,19 +352,19 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-          gemfire::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( keyValuePair.Key ) );
-          gemfire::CacheablePtr valueptr( Serializable::GetUnmanagedValueGeneric<TValue>( keyValuePair.Value ) );
+          apache::geode::client::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( keyValuePair.Key ) );
+          apache::geode::client::CacheablePtr valueptr( Serializable::GetUnmanagedValueGeneric<TValue>( keyValuePair.Value ) );
           return NativePtr->localRemove(keyptr, valueptr);
 
          _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
 
         //_GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-        //gemfire::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( keyValuePair.Key ) );
+        //apache::geode::client::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( keyValuePair.Key ) );
         //if (NativePtr->containsKey( keyptr )) {
-        //  gemfire::CacheablePtr nativeptr(this->getRegionEntryValue(keyptr));
+        //  apache::geode::client::CacheablePtr nativeptr(this->getRegionEntryValue(keyptr));
         //  TValue returnVal = Serializable::GetManagedValueGeneric<TValue>( nativeptr );
-        //  gemfire::CacheablePtr valueptr( Serializable::GetUnmanagedValueGeneric<TValue>( keyValuePair.Value ) );
+        //  apache::geode::client::CacheablePtr valueptr( Serializable::GetUnmanagedValueGeneric<TValue>( keyValuePair.Value ) );
         //  TValue actualVal = Serializable::GetManagedValueGeneric<TValue>( valueptr );
         //  if (actualVal->Equals(returnVal)) {
         //    NativePtr->localDestroy( keyptr );
@@ -385,9 +385,9 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-          gemfire::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( key ) );                   
-          gemfire::CacheablePtr valueptr ( Serializable::GetUnmanagedValueGeneric<TValue>( value ));                 
-          gemfire::UserDataPtr callbackptr( Serializable::GetUnmanagedValueGeneric<Object^>( callbackArg ) );          
+          apache::geode::client::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( key ) );                   
+          apache::geode::client::CacheablePtr valueptr ( Serializable::GetUnmanagedValueGeneric<TValue>( value ));                 
+          apache::geode::client::UserDataPtr callbackptr( Serializable::GetUnmanagedValueGeneric<Object^>( callbackArg ) );          
           return NativePtr->localRemove(keyptr, valueptr, callbackptr);
 
          _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
@@ -408,7 +408,7 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
                     
-          gemfire::UserDataPtr callbackptr(
+          apache::geode::client::UserDataPtr callbackptr(
             Serializable::GetUnmanagedValueGeneric<Object^>( callbackArg ) );
           NativePtr->localInvalidateRegion( callbackptr );
       
@@ -429,7 +429,7 @@ namespace GemStone
       void LocalRegion<TKey, TValue>::DestroyRegion(Object^ callbackArg)
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */          
-          gemfire::UserDataPtr callbackptr(
+          apache::geode::client::UserDataPtr callbackptr(
             Serializable::GetUnmanagedValueGeneric<Object^>( callbackArg ) );
           NativePtr->localDestroyRegion( callbackptr );
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
@@ -451,8 +451,8 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-          gemfire::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( key ) );          
-          gemfire::UserDataPtr callbackptr(
+          apache::geode::client::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( key ) );          
+          apache::geode::client::UserDataPtr callbackptr(
             Serializable::GetUnmanagedValueGeneric<Object^>( callbackArg ) );            
           NativePtr->localInvalidate( keyptr, callbackptr );
 
@@ -533,7 +533,7 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-          gemfire::RegionPtr& nativeptr( NativePtr->getParentRegion( ) );
+          apache::geode::client::RegionPtr& nativeptr( NativePtr->getParentRegion( ) );
 
          IRegion<TKey, TValue>^ region = Region<TKey, TValue>::Create( nativeptr.ptr( ) );
          if (region == nullptr) {
@@ -549,7 +549,7 @@ namespace GemStone
       { 
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-        gemfire::RegionAttributesPtr& nativeptr( NativePtr->getAttributes( ) );
+        apache::geode::client::RegionAttributesPtr& nativeptr( NativePtr->getAttributes( ) );
 
         return GemStone::GemFire::Cache::Generic::RegionAttributes<TKey, TValue>::Create(nativeptr.ptr());
 
@@ -561,7 +561,7 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-          gemfire::AttributesMutatorPtr& nativeptr(
+          apache::geode::client::AttributesMutatorPtr& nativeptr(
             NativePtr->getAttributesMutator( ) );
 
         return GemStone::GemFire::Cache::Generic::AttributesMutator<TKey, TValue>::Create( nativeptr.ptr( ) );
@@ -574,7 +574,7 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-        gemfire::CacheStatisticsPtr& nativeptr( NativePtr->getStatistics( ) );
+        apache::geode::client::CacheStatisticsPtr& nativeptr( NativePtr->getStatistics( ) );
         return GemStone::GemFire::Cache::Generic::CacheStatistics::Create( nativeptr.ptr( ) );
 
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
@@ -586,7 +586,7 @@ namespace GemStone
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
           ManagedString mg_path( path );
-          gemfire::RegionPtr& nativeptr(
+          apache::geode::client::RegionPtr& nativeptr(
             NativePtr->getSubregion( mg_path.CharPtr ) );
           IRegion<TKey, TValue>^ region = Region<TKey, TValue>::Create( nativeptr.ptr( ) );
           if (region == nullptr) {
@@ -605,10 +605,10 @@ namespace GemStone
 
           ManagedString mg_subregionName( subRegionName );
 				//TODO::split
-        /*  gemfire::RegionAttributesPtr p_attrs(
-            GetNativePtrFromSBWrap<gemfire::RegionAttributes>( attributes ) );*/
+        /*  apache::geode::client::RegionAttributesPtr p_attrs(
+            GetNativePtrFromSBWrap<apache::geode::client::RegionAttributes>( attributes ) );*/
 
-          gemfire::RegionPtr& nativeptr( NativePtr->createSubregion(
+          apache::geode::client::RegionPtr& nativeptr( NativePtr->createSubregion(
             mg_subregionName.CharPtr, /*p_attrs*/NULLPTR ) );
           return Region<TKey, TValue>::Create( nativeptr.ptr( ) )->GetLocalView();
 
@@ -621,14 +621,14 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-          gemfire::VectorOfRegion vsr;
+          apache::geode::client::VectorOfRegion vsr;
           NativePtr->subregions( recursive, vsr );
           array<IRegion<TKey, TValue>^>^ subRegions =
             gcnew array<IRegion<TKey, TValue>^>( vsr.size( ) );
 
           for( int32_t index = 0; index < vsr.size( ); index++ )
           {
-            gemfire::RegionPtr& nativeptr( vsr[ index ] );
+            apache::geode::client::RegionPtr& nativeptr( vsr[ index ] );
             subRegions[ index ] = Region<TKey, TValue>::Create( nativeptr.ptr( ) )->GetLocalView();
           }
           System::Collections::Generic::ICollection<IRegion<TKey, TValue>^>^ collection =
@@ -643,8 +643,8 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-          gemfire::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( key ) );
-          gemfire::RegionEntryPtr& nativeptr( NativePtr->getEntry( keyptr ) );
+          apache::geode::client::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( key ) );
+          apache::geode::client::RegionEntryPtr& nativeptr( NativePtr->getEntry( keyptr ) );
           return RegionEntry<TKey, TValue>::Create( nativeptr.ptr( ) );
 
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
@@ -655,13 +655,13 @@ namespace GemStone
       {
          _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-          gemfire::VectorOfRegionEntry vc;
+          apache::geode::client::VectorOfRegionEntry vc;
           NativePtr->entries( vc, recursive );          
           array<RegionEntry<TKey, TValue>^>^ entryarr = gcnew array<RegionEntry<TKey, TValue>^>( vc.size( ) );
 
           for( int32_t index = 0; index < vc.size( ); index++ )
           {
-            gemfire::RegionEntryPtr& nativeptr( vc[ index ] );
+            apache::geode::client::RegionEntryPtr& nativeptr( vc[ index ] );
             entryarr[ index ] = RegionEntry<TKey, TValue>::Create( nativeptr.ptr( ) );
           }
           System::Collections::Generic::ICollection<RegionEntry<TKey, TValue>^>^ collection =
@@ -678,13 +678,13 @@ namespace GemStone
       {        
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-          gemfire::RegionServicePtr& nativeptr( NativePtr->getRegionService( ) );
+          apache::geode::client::RegionServicePtr& nativeptr( NativePtr->getRegionService( ) );
 
-          gemfire::Cache* realCache = dynamic_cast<gemfire::Cache*>(nativeptr.ptr());
+          apache::geode::client::Cache* realCache = dynamic_cast<apache::geode::client::Cache*>(nativeptr.ptr());
 
           if(realCache != NULL)
           {
-						return GemStone::GemFire::Cache::Generic::Cache::Create( ((gemfire::CachePtr)nativeptr).ptr( ) );
+						return GemStone::GemFire::Cache::Generic::Cache::Create( ((apache::geode::client::CachePtr)nativeptr).ptr( ) );
           }
           else
           {
@@ -699,7 +699,7 @@ namespace GemStone
       {
          _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-           gemfire::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( key ) );
+           apache::geode::client::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TKey>( key ) );
            return NativePtr->containsValueForKey( keyptr );
 
          _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
@@ -721,7 +721,7 @@ namespace GemStone
       void LocalRegion<TKey, TValue>::Clear(Object^ callbackArg)
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
-          gemfire::UserDataPtr callbackptr(
+          apache::geode::client::UserDataPtr callbackptr(
               Serializable::GetUnmanagedValueGeneric<Object^>( callbackArg ) );          
           NativePtr->localClear(callbackptr );
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
@@ -743,7 +743,7 @@ namespace GemStone
 
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-        gemfire::VectorOfRegionEntry vc;
+        apache::geode::client::VectorOfRegionEntry vc;
         NativePtr->entries( vc, false );        
 
         if (toArray->Rank > 1 || (vc.size() > (toArray->Length - startIdx)))
@@ -753,7 +753,7 @@ namespace GemStone
 
         for( int32_t index = 0; index < vc.size( ); index++ )
         {
-          gemfire::RegionEntryPtr nativeptr =  vc[ index ];                       
+          apache::geode::client::RegionEntryPtr nativeptr =  vc[ index ];                       
           TKey key = Serializable::GetManagedValueGeneric<TKey> (nativeptr->getKey());
           TValue val = Serializable::GetManagedValueGeneric<TValue> (nativeptr->getValue());            
           toArray[ startIdx ] = KeyValuePair<TKey,TValue>(key, val);

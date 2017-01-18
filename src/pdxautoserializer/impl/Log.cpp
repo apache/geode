@@ -19,7 +19,9 @@
 #include <iostream>
 #include <stdexcept>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace pdx_auto_serializer {
 static std::ostream* g_outStream = &std::cout;
 static std::ostream* g_errStream = &std::cerr;
@@ -47,4 +49,6 @@ void Log::debug(const std::string& moduleName, const std::string& message) {
 #endif
 }
 }  // namespace pdx_auto_serializer
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

@@ -23,7 +23,9 @@
 #include "PoolFactory.hpp"
 #include "Region.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 typedef HashMapT<CacheableStringPtr, PoolPtr> HashMapOfPools;
 
@@ -89,6 +91,8 @@ class CPPCACHE_EXPORT PoolManager {
  private:
   PoolManager();
 };
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
-};      // Namespace gemfire
 #endif  //__GEMFIRE_POOL_MANAGER_HPP__

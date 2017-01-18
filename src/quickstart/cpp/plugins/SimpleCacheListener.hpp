@@ -28,7 +28,7 @@
 #include <gfcpp/CacheListener.hpp>
 
 // Use the "gemfire" namespace.
-using namespace gemfire;
+using namespace apache::geode::client;
 
 // The SimpleCacheListener class.
 class SimpleCacheListener : public CacheListener {

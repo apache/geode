@@ -30,7 +30,7 @@
 #include "LocatorListRequest.hpp"
 #include <set>
 #include <algorithm>
-using namespace gemfire;
+using namespace apache::geode::client;
 const int BUFF_SIZE = 3000;
 
 class ConnectionWrapper {

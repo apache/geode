@@ -25,7 +25,7 @@
 #include <CacheRegionHelper.hpp>
 #include <ace/OS.h>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 uint32_t numOfEnt;
 std::string sqlite_dir = "SqLiteRegionData";
@@ -488,9 +488,10 @@ BEGIN_TEST(OverFlowTest_SqLiteFull)
     try {
       doNput(regionPtr, 100);
       FAIL("Didn't get the expected exception");
-    } catch (gemfire::Exception ex) {  // expected sqlite full exception
-                                       // catching generic message as we dont
-                                       // have any specific sqlitefull exception
+    } catch (apache::geode::client::Exception
+                 ex) {  // expected sqlite full exception
+                        // catching generic message as we dont
+                        // have any specific sqlitefull exception
       char buffer[1024];
       sprintf(buffer, "Got expected exception %s: msg = %s", ex.getName(),
               ex.getMessage());

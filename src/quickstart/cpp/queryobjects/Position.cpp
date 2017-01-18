@@ -19,7 +19,7 @@
 #include <cwchar>
 #include <wchar.h>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace testobject;
 
 int32_t Position::cnt = 0;
@@ -62,7 +62,7 @@ void Position::init() {
   pid = 0;
 }
 
-void Position::toData(gemfire::DataOutput& output) const {
+void Position::toData(apache::geode::client::DataOutput& output) const {
   output.writeInt(avg20DaysVol);
   output.writeObject(bondRating);
   output.writeDouble(convRatio);
@@ -81,7 +81,8 @@ void Position::toData(gemfire::DataOutput& output) const {
   output.writeInt(pid);
 }
 
-gemfire::Serializable* Position::fromData(gemfire::DataInput& input) {
+apache::geode::client::Serializable* Position::fromData(
+    apache::geode::client::DataInput& input) {
   input.readInt(&avg20DaysVol);
   input.readObject(bondRating);
   input.readDouble(&convRatio);

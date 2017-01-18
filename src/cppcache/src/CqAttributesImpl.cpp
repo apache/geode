@@ -16,7 +16,7 @@
  */
 #include "CqAttributesImpl.hpp"
 #include <gfcpp/ExceptionTypes.hpp>
-using namespace gemfire;
+using namespace apache::geode::client;
 void CqAttributesImpl::getCqListeners(VectorOfCqListener& vl) {
   ACE_Guard<ACE_Recursive_Thread_Mutex> _guard(m_mutex);
   vl.clear();

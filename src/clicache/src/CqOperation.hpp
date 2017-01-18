@@ -46,28 +46,28 @@ namespace GemStone
         OP_TYPE_MARKER = 32
       };
 	public ref class CqOperation sealed
-        : public Internal::UMWrap<gemfire::CqOperation>
+        : public Internal::UMWrap<apache::geode::client::CqOperation>
       {
       public:
 
       /// <summary>
       /// conenience function for convertin from c++ 
-      /// gemfire::CqOperation::CqOperationType to
+      /// apache::geode::client::CqOperation::CqOperationType to
       /// CqOperationType here.
       /// </summary>
-	  inline static CqOperationType ConvertFromNative(gemfire::CqOperation::CqOperationType tp)
+	  inline static CqOperationType ConvertFromNative(apache::geode::client::CqOperation::CqOperationType tp)
 	  {
-		  if(tp==gemfire::CqOperation::OP_TYPE_CREATE)
+		  if(tp==apache::geode::client::CqOperation::OP_TYPE_CREATE)
 			  return CqOperationType::OP_TYPE_CREATE;
-  		  if(tp==gemfire::CqOperation::OP_TYPE_UPDATE)
+  		  if(tp==apache::geode::client::CqOperation::OP_TYPE_UPDATE)
 			  return CqOperationType::OP_TYPE_UPDATE;
-		  if(tp==gemfire::CqOperation::OP_TYPE_INVALIDATE)
+		  if(tp==apache::geode::client::CqOperation::OP_TYPE_INVALIDATE)
 			  return CqOperationType::OP_TYPE_INVALIDATE;
-		  if(tp==gemfire::CqOperation::OP_TYPE_REGION_CLEAR)
+		  if(tp==apache::geode::client::CqOperation::OP_TYPE_REGION_CLEAR)
 			  return CqOperationType::OP_TYPE_REGION_CLEAR;
-  		  if(tp==gemfire::CqOperation::OP_TYPE_DESTROY)
+  		  if(tp==apache::geode::client::CqOperation::OP_TYPE_DESTROY)
 			  return CqOperationType::OP_TYPE_DESTROY;
-  		  if(tp==gemfire::CqOperation::OP_TYPE_MARKER)
+  		  if(tp==apache::geode::client::CqOperation::OP_TYPE_MARKER)
 			  return CqOperationType::OP_TYPE_MARKER;
 		  return CqOperationType::OP_TYPE_INVALID;
 	  }
@@ -77,7 +77,7 @@ namespace GemStone
         /// Internal constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline CqOperation( gemfire::CqOperation* nativeptr )
+        inline CqOperation( apache::geode::client::CqOperation* nativeptr )
 		            : UMWrap( nativeptr, false ) { }
 	  };
     }

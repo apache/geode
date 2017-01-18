@@ -34,7 +34,9 @@
 #include <gfcpp/Properties.hpp>
 #include <stdlib.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class RegionConfig;
 typedef SharedPtr<RegionConfig> RegionConfigPtr;
@@ -57,6 +59,8 @@ class CPPCACHE_EXPORT RegionConfig : virtual public SharedBase {
   std::string m_concurrency;
   std::string m_caching;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // !defined(AFX_CACHEREGION_H__B8A44D1C_F9A4_49A8_A3A2_86CAE5E73C6F__INCLUDED_)

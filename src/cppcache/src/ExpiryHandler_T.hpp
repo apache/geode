@@ -26,7 +26,9 @@
 #include "ace/Event_Handler.h"
 #include <gfcpp/Log.hpp>
 #include "StackTrace.hpp"
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 /**
  * This class manages deletion of the handler so this class should only be
  * used for cases that are cancelled explicitly and never expire otherwise,
@@ -64,6 +66,7 @@ class CPPCACHE_EXPORT ExpiryHandler_T : public ACE_Event_Handler {
   /// Handle timeout events.
   TO_HANDLER to_handler_;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // !defined (EXPIRYHANDLER_T_HPP)

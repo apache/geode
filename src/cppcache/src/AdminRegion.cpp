@@ -20,7 +20,7 @@
 #include "ThinClientRegion.hpp"
 #include <statistics/StatisticsManager.hpp>
 #include "ThinClientPoolDM.hpp"
-using namespace gemfire;
+using namespace apache::geode::client;
 AdminRegion::AdminRegion(CacheImpl* cache, ThinClientBaseDM* distMan)
     : m_distMngr((ThinClientBaseDM*)0)
       /* adongre

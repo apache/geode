@@ -25,7 +25,9 @@
 /** @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * Encapsulate an undefined query result.
@@ -87,6 +89,8 @@ class CPPCACHE_EXPORT CacheableUndefined : public Cacheable {
   CacheableUndefined& operator=(const CacheableUndefined& other);
   CacheableUndefined(const CacheableUndefined& other);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // _GEMFIRE_CACHEABLEUNDEFINED_HPP_

@@ -35,8 +35,8 @@
 
 #include "fwklib/FwkExport.hpp"
 
-using namespace gemfire;
-using namespace gemfire::testframework;
+using namespace apache::geode::client;
+using namespace apache::geode::client::testframework;
 
 static UdpIpc *g_test = NULL;
 

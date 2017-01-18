@@ -53,13 +53,13 @@ namespace GemStone
       CqQuery<TKey, TResult>^ QueryService<TKey, TResult>::NewCq( String^ query, CqAttributes<TKey, TResult>^ cqAttr, bool isDurable )
       {
         ManagedString mg_queryStr( query );
-	gemfire::CqAttributesPtr attr(GetNativePtrFromSBWrapGeneric<gemfire::CqAttributes>(cqAttr));
+	apache::geode::client::CqAttributesPtr attr(GetNativePtrFromSBWrapGeneric<apache::geode::client::CqAttributes>(cqAttr));
         try
         {
           return CqQuery<TKey, TResult>::Create( NativePtr->newCq(
             mg_queryStr.CharPtr, attr, isDurable ).ptr( ));
         }
-        catch ( const gemfire::Exception& ex )
+        catch ( const apache::geode::client::Exception& ex )
         {
           throw GemFireException::Get( ex );
         }
@@ -70,13 +70,13 @@ namespace GemStone
       {
         ManagedString mg_queryStr( query );
         ManagedString mg_nameStr( name );
-	gemfire::CqAttributesPtr attr(GetNativePtrFromSBWrapGeneric<gemfire::CqAttributes>(cqAttr));
+	apache::geode::client::CqAttributesPtr attr(GetNativePtrFromSBWrapGeneric<apache::geode::client::CqAttributes>(cqAttr));
         try
         {
           return CqQuery<TKey, TResult>::Create( NativePtr->newCq(
             mg_nameStr.CharPtr, mg_queryStr.CharPtr, attr, isDurable ).ptr( ) );
         }
-        catch ( const gemfire::Exception& ex )
+        catch ( const apache::geode::client::Exception& ex )
         {
           throw GemFireException::Get( ex );
         }
@@ -89,7 +89,7 @@ namespace GemStone
         {
            NativePtr->closeCqs();
         }
-        catch ( const gemfire::Exception& ex )
+        catch ( const apache::geode::client::Exception& ex )
         {
           throw GemFireException::Get( ex );
         }
@@ -100,7 +100,7 @@ namespace GemStone
       {
         try
         {
-	   gemfire::VectorOfCqQuery vrr;
+	   apache::geode::client::VectorOfCqQuery vrr;
 	   NativePtr->getCqs( vrr );
 	   array<CqQuery<TKey, TResult>^>^ cqs = gcnew array<CqQuery<TKey, TResult>^>( vrr.size( ) );
 
@@ -110,7 +110,7 @@ namespace GemStone
            }
            return cqs;
         }
-        catch ( const gemfire::Exception& ex )
+        catch ( const apache::geode::client::Exception& ex )
         {
           throw GemFireException::Get( ex );
         }
@@ -125,7 +125,7 @@ namespace GemStone
           return CqQuery<TKey, TResult>::Create( NativePtr->getCq(
             mg_queryStr.CharPtr ).ptr( ) );
         }
-        catch ( const gemfire::Exception& ex )
+        catch ( const apache::geode::client::Exception& ex )
         {
           throw GemFireException::Get( ex );
         }
@@ -138,7 +138,7 @@ namespace GemStone
         {
           NativePtr->executeCqs();
         }
-        catch ( const gemfire::Exception& ex )
+        catch ( const apache::geode::client::Exception& ex )
         {
           throw GemFireException::Get( ex );
         }
@@ -151,7 +151,7 @@ namespace GemStone
         {
           NativePtr->stopCqs();
         }
-        catch ( const gemfire::Exception& ex )
+        catch ( const apache::geode::client::Exception& ex )
         {
           throw GemFireException::Get( ex );
         }
@@ -164,7 +164,7 @@ namespace GemStone
         {
           return CqServiceStatistics::Create( NativePtr->getCqServiceStatistics().ptr( ) );
         }
-        catch ( const gemfire::Exception& ex )
+        catch ( const apache::geode::client::Exception& ex )
         {
           throw GemFireException::Get( ex );
         }
@@ -175,7 +175,7 @@ namespace GemStone
       {
         try
         {
-          gemfire::CacheableArrayListPtr durableCqsArrayListPtr = NativePtr->getAllDurableCqsFromServer();
+          apache::geode::client::CacheableArrayListPtr durableCqsArrayListPtr = NativePtr->getAllDurableCqsFromServer();
           int length = durableCqsArrayListPtr != NULLPTR ? durableCqsArrayListPtr->length() : 0;
           System::Collections::Generic::List<String^>^ durableCqsList = gcnew System::Collections::Generic::List<String^>();
           if (length > 0)
@@ -187,7 +187,7 @@ namespace GemStone
           }
           return durableCqsList;
         }
-        catch ( const gemfire::Exception& ex )
+        catch ( const apache::geode::client::Exception& ex )
         {
           throw GemFireException::Get( ex );
         }

@@ -34,8 +34,8 @@ namespace std {
  * to enable using CacheableKeyPtr's in std::unordered_map/hash_map.
  */
 template <>
-struct hash<gemfire::CacheableKeyPtr> {
-  size_t operator()(const gemfire::CacheableKeyPtr& key) const {
+struct hash<apache::geode::client::CacheableKeyPtr> {
+  size_t operator()(const apache::geode::client::CacheableKeyPtr& key) const {
     return key->hashcode();
   }
 };
@@ -44,17 +44,20 @@ struct hash<gemfire::CacheableKeyPtr> {
  * to enable using CacheableKeyPtr's in std::unordered_map/hash_map.
  */
 template <>
-struct equal_to<gemfire::CacheableKeyPtr> {
-  size_t operator()(const gemfire::CacheableKeyPtr& key1,
-                    const gemfire::CacheableKeyPtr& key2) const {
+struct equal_to<apache::geode::client::CacheableKeyPtr> {
+  size_t operator()(const apache::geode::client::CacheableKeyPtr& key1,
+                    const apache::geode::client::CacheableKeyPtr& key2) const {
     return (*key1.ptr() == *key2.ptr());
   }
 };
 }  // namespace std
 
-typedef std::unordered_map<gemfire::CacheableKeyPtr, int> MapOfUpdateCounters;
+typedef std::unordered_map<apache::geode::client::CacheableKeyPtr, int>
+    MapOfUpdateCounters;
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class Region;
 typedef SharedPtr<Region> RegionPtr;
@@ -73,5 +76,7 @@ typedef ACE_Hash_Map_Manager_Ex<std::string, CqQueryPtr, ACE_Hash<std::string>,
  * other composite operations. ex.. MapOfRegionGuard guard( map->mutex() );
  */
 typedef ACE_Guard<ACE_Recursive_Thread_Mutex> MapOfRegionGuard;
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // define __GEMFIRE_IMPL_MAP_WITHLOCK_H__

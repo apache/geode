@@ -30,7 +30,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * @class QueryService QueryService.hpp
@@ -165,7 +167,8 @@ class CPPCACHE_EXPORT QueryService : public SharedBase {
    */
   virtual CacheableArrayListPtr getAllDurableCqsFromServer() = 0;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_QUERYSERVICE_H__

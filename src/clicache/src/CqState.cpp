@@ -57,30 +57,30 @@ namespace GemStone
 
       void CqState::SetState( CqStateType state )
       {
-		  gemfire::CqState::StateType st =gemfire::CqState::INVALID;
+		  apache::geode::client::CqState::StateType st =apache::geode::client::CqState::INVALID;
 		  if(state == CqStateType::STOPPED)
-			  st = gemfire::CqState::STOPPED;
+			  st = apache::geode::client::CqState::STOPPED;
 		  else if(state == CqStateType::RUNNING)
-			  st = gemfire::CqState::RUNNING;
+			  st = apache::geode::client::CqState::RUNNING;
 		  else if(state == CqStateType::CLOSED)
-			  st = gemfire::CqState::CLOSED;
+			  st = apache::geode::client::CqState::CLOSED;
 		  else if(state == CqStateType::CLOSING)
-			  st = gemfire::CqState::CLOSING;
+			  st = apache::geode::client::CqState::CLOSING;
 
 		  NativePtr->setState( st );
       }
 
       CqStateType CqState::GetState( )
       {
-		gemfire::CqState::StateType st =  NativePtr->getState( );
+		apache::geode::client::CqState::StateType st =  NativePtr->getState( );
         CqStateType state;
-		if(st==gemfire::CqState::STOPPED)
+		if(st==apache::geode::client::CqState::STOPPED)
 			state = CqStateType::STOPPED;
-		else if(st==gemfire::CqState::RUNNING)
+		else if(st==apache::geode::client::CqState::RUNNING)
 			state = CqStateType::RUNNING;
-		else if(st==gemfire::CqState::CLOSED)
+		else if(st==apache::geode::client::CqState::CLOSED)
 			state = CqStateType::CLOSED;
-		else if(st==gemfire::CqState::CLOSING)
+		else if(st==apache::geode::client::CqState::CLOSING)
 			state = CqStateType::CLOSING;
 		else
 			state = CqStateType::INVALID;

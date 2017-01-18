@@ -36,7 +36,9 @@
 #include <sys/prctl.h>
 #endif
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class SystemProperties;
 
 /**
@@ -132,6 +134,8 @@ class CPPCACHE_EXPORT DistributedSystemImpl : public SharedBase {
   static volatile bool m_isCliCallbackSet;
   static std::map<int, CliCallbackMethod> m_cliCallbackMap;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __IMPL_DISTRIBUTEDSYSTEM_H__

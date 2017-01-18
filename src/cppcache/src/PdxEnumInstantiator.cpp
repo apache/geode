@@ -23,7 +23,9 @@
 #include <gfcpp/CacheableString.hpp>
 #include <gfcpp/DataInput.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 PdxEnumInstantiator::PdxEnumInstantiator() {}
 
@@ -47,4 +49,6 @@ Serializable* PdxEnumInstantiator::fromData(DataInput& input) {
 CacheableStringPtr PdxEnumInstantiator::toString() const {
   return CacheableString::create("PdxEnumInstantiator");
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

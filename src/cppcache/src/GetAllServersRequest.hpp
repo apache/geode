@@ -24,7 +24,9 @@
 #include "GemfireTypeIdsImpl.hpp"
 #include <string>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class GetAllServersRequest : public Serializable {
   CacheableStringPtr m_serverGroup;
 
@@ -44,6 +46,8 @@ class GetAllServersRequest : public Serializable {
   virtual uint32_t objectSize() const { return m_serverGroup->length(); }
   virtual ~GetAllServersRequest() {}
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

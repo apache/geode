@@ -36,7 +36,9 @@ ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 class ACE_Task_Base;
 ACE_END_VERSIONED_NAMESPACE_DECL
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class TcrConnection;
 class TcrEndpoint;
 class TcrMessage;
@@ -202,7 +204,8 @@ class DistManagersLockGuard {
 
   ~DistManagersLockGuard() { m_tccm.m_distMngrsLock.release(); }
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __TCR_CONNECTIONMANAGER_HPP__

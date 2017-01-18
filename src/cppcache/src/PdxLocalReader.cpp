@@ -23,7 +23,9 @@
 #include "PdxLocalReader.hpp"
 #include "PdxTypeRegistry.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 PdxLocalReader::PdxLocalReader()
     : m_dataInput(NULL),
@@ -377,4 +379,6 @@ PdxUnreadFieldsPtr PdxLocalReader::readUnreadFields() {
   m_isDataNeedToPreserve = false;
   return m_pdxRemotePreserveData;
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

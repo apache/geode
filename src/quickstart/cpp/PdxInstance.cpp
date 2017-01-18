@@ -34,7 +34,7 @@
 #include <gfcpp/GeodeCppCache.hpp>
 
 // Use the "gemfire" namespace.
-using namespace gemfire;
+using namespace apache::geode::client;
 
 class Person {
  private:

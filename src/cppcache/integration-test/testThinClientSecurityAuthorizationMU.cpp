@@ -28,8 +28,8 @@
 
 #include "ThinClientSecurity.hpp"
 
-using namespace gemfire::testframework::security;
-using namespace gemfire;
+using namespace apache::geode::client::testframework::security;
+using namespace apache::geode::client;
 
 const char* locHostPort =
     CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
@@ -86,25 +86,25 @@ opCodeList::value_type tmpAArr[] = {OP_CREATE,       OP_UPDATE,
                                     OP_GET,          OP_QUERY,
                                     OP_REGISTER_CQ,  OP_EXECUTE_FUNCTION};
 
-#define HANDLE_NO_NOT_AUTHORIZED_EXCEPTION                 \
-  catch (const gemfire::NotAuthorizedException&) {         \
-    LOG("NotAuthorizedException Caught");                  \
-    FAIL("should not have caught NotAuthorizedException"); \
-  }                                                        \
-  catch (const gemfire::Exception& other) {                \
-    LOG("Got gemfire::Exception& other ");                 \
-    other.printStackTrace();                               \
-    FAIL(other.getMessage());                              \
+#define HANDLE_NO_NOT_AUTHORIZED_EXCEPTION                       \
+  catch (const apache::geode::client::NotAuthorizedException&) { \
+    LOG("NotAuthorizedException Caught");                        \
+    FAIL("should not have caught NotAuthorizedException");       \
+  }                                                              \
+  catch (const apache::geode::client::Exception& other) {        \
+    LOG("Got apache::geode::client::Exception& other ");         \
+    other.printStackTrace();                                     \
+    FAIL(other.getMessage());                                    \
   }
 
-#define HANDLE_NOT_AUTHORIZED_EXCEPTION            \
-  catch (const gemfire::NotAuthorizedException&) { \
-    LOG("NotAuthorizedException Caught");          \
-    LOG("Success");                                \
-  }                                                \
-  catch (const gemfire::Exception& other) {        \
-    other.printStackTrace();                       \
-    FAIL(other.getMessage());                      \
+#define HANDLE_NOT_AUTHORIZED_EXCEPTION                          \
+  catch (const apache::geode::client::NotAuthorizedException&) { \
+    LOG("NotAuthorizedException Caught");                        \
+    LOG("Success");                                              \
+  }                                                              \
+  catch (const apache::geode::client::Exception& other) {        \
+    other.printStackTrace();                                     \
+    FAIL(other.getMessage());                                    \
   }
 
 #define ADMIN_CLIENT s1p1
@@ -290,11 +290,11 @@ DUNIT_TASK_DEFINITION(ADMIN_CLIENT, StepOne)
       try {
         qs = pool->getQueryService();
         FAIL("Pool should not return queryservice in multiusermode");
-      } catch (const gemfire::UnsupportedOperationException&) {
+      } catch (const apache::geode::client::UnsupportedOperationException&) {
         LOG("UnsupportedOperationException Caught for pool.getQuerySerice in "
             "multiusermode");
         LOG("Success");
-      } catch (const gemfire::Exception& other) {
+      } catch (const apache::geode::client::Exception& other) {
         other.printStackTrace();
         FAIL(other.getMessage());
       }

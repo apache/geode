@@ -27,7 +27,9 @@
 /** @file
 */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /** HashMap of <code>TKEY</code> to <code>TVAL</code>. */
 template <typename TKEY, typename TVAL>
@@ -71,12 +73,12 @@ class HashMapT {
   };
 
   static int32_t hasher(const SharedBasePtr& p) {
-    return gemfire::hashFunction<TKEY>(staticCast<TKEY>(p));
+    return apache::geode::client::hashFunction<TKEY>(staticCast<TKEY>(p));
   }
 
   static bool equal_to(const SharedBasePtr& x, const SharedBasePtr& y) {
-    return gemfire::equalToFunction<TKEY>(staticCast<TKEY>(x),
-                                          staticCast<TKEY>(y));
+    return apache::geode::client::equalToFunction<TKEY>(staticCast<TKEY>(x),
+                                                        staticCast<TKEY>(y));
   }
 
   /** Returns the size of the hash map. */
@@ -213,6 +215,8 @@ class CPPCACHE_EXPORT HashMapOfException : public _HashMapOfException,
 
 typedef SharedPtr<HashMapOfCacheable> HashMapOfCacheablePtr;
 typedef SharedPtr<HashMapOfException> HashMapOfExceptionPtr;
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

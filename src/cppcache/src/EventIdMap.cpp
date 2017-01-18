@@ -16,7 +16,7 @@
  */
 #include "EventIdMap.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 EventIdMap::~EventIdMap() { clear(); }
 

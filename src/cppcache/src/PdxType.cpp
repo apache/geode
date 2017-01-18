@@ -30,7 +30,9 @@
 #include "PdxHelper.hpp"
 #include <ace/OS.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 const char* PdxType::m_javaPdxClass = "org.apache.geode.pdx.internal.PdxType";
 
@@ -626,4 +628,6 @@ bool PdxType::Equals(PdxTypePtr otherObj) {
 bool PdxType::operator<(const PdxType& other) const {
   return ACE_OS::strcmp(this->m_className, other.m_className) < 0;
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

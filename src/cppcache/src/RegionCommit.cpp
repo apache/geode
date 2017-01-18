@@ -23,7 +23,9 @@
 
 #include "RegionCommit.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 RegionCommit::RegionCommit() {
   // TODO Auto-generated constructor stub
@@ -72,4 +74,6 @@ void RegionCommit::fillEvents(Cache* cache,
     ops.push_back(*iter);
   }
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

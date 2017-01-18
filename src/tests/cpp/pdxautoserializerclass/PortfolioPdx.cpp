@@ -16,7 +16,7 @@
  */
 #include "PortfolioPdx.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace AutoPdxTests;
 
 char *PortfolioPdx::secIds[] = {(char *)"SUN",  (char *)"IBM",  (char *)"YHOO",

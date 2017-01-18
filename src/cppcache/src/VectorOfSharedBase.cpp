@@ -22,7 +22,9 @@
 #include <vector>
 #include <stdexcept>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 // Iterator methods
 
@@ -93,7 +95,7 @@ SharedBasePtr& VectorOfSharedBase::at(int32_t n) {
   try {
     return m_stdvector->at(n);
   } catch (const std::out_of_range& ex) {
-    throw gemfire::OutOfRangeException(ex.what());
+    throw apache::geode::client::OutOfRangeException(ex.what());
   }
 }
 
@@ -102,7 +104,7 @@ SharedBasePtr& VectorOfSharedBase::at(int32_t n) const {
   try {
     return m_stdvector->at(n);
   } catch (const std::out_of_range& ex) {
-    throw gemfire::OutOfRangeException(ex.what());
+    throw apache::geode::client::OutOfRangeException(ex.what());
   }
 }
 
@@ -204,4 +206,6 @@ void VectorOfSharedBase::erase(int32_t index) {
     m_stdvector->erase(m_stdvector->begin() + index);
   }
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

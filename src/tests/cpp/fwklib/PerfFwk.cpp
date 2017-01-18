@@ -19,9 +19,9 @@
 #include "ace/OS.h"
 #include <signal.h>
 
-using namespace gemfire;
-using namespace gemfire::testframework;
-using namespace gemfire::testframework::perf;
+using namespace apache::geode::client;
+using namespace apache::geode::client::testframework;
+using namespace apache::geode::client::testframework::perf;
 
 ACE_utsname* PerfSuite::utsname = NULL;
 
@@ -133,7 +133,7 @@ void PerfSuite::addRecord(uint32_t ops, uint32_t micros) {
 ///** create a file in cwd, named "<suite>_results.<host>" */
 // void PerfSuite::save( )
 //{
-//  gemfire::DataOutput output;
+//  apache::geode::client::DataOutput output;
 //  output.writeASCII( m_suiteName.c_str(), m_suiteName.length() );
 //
 //  char hname[100];

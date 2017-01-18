@@ -20,7 +20,9 @@
 #include "CacheableKey.hpp"
 #include "CacheableString.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
 * Since C++ enums cannot be directly passed as a parameter to PdxWriter's
@@ -134,6 +136,8 @@ class CPPCACHE_EXPORT CacheableEnum : public CacheableKey {
   void operator=(const CacheableEnum& other);
   CacheableEnum(const CacheableEnum& other);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // CACHEABLE_ENUM_HPP

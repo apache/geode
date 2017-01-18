@@ -18,7 +18,9 @@
 #include "../base_types.hpp"
 #include "Helper.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace pdx_auto_serializer {
 void Helper::splitString(const std::string& str, const std::string& delim,
                          StringVector& splitStr) {
@@ -91,4 +93,6 @@ void Helper::deleteASClasses(ASClassVector& classes) {
   classes.clear();
 }
 }  // namespace pdx_auto_serializer
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

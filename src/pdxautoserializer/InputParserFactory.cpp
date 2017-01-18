@@ -26,7 +26,9 @@
 #include "impl/DotNetParser.hpp"
 #endif
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace pdx_auto_serializer {
 InputParserFactory::InputParserFactory() {
   // Register the available parsers here.
@@ -59,4 +61,6 @@ StringVector InputParserFactory::getParsers() const {
 
 InputParserFactory::~InputParserFactory() { m_parserMap.clear(); }
 }  // namespace pdx_auto_serializer
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

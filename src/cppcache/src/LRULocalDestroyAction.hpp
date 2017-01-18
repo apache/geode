@@ -22,7 +22,9 @@
 #include "RegionInternal.hpp"
 #include "MapEntry.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * @brief LRUAction for localDestroy.
@@ -45,6 +47,8 @@ class CPPCACHE_EXPORT LRULocalDestroyAction : public virtual LRUAction {
   virtual LRUAction::Action getType() { return LRUAction::LOCAL_DESTROY; }
   friend class LRUAction;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  //__GEMFIRE_IMPL_LRULOCALDESTROYACTION_HPP__

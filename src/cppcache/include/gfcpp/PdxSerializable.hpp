@@ -20,7 +20,9 @@
 
 #include "CacheableKey.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 typedef PdxSerializable* (*PdxTypeFactoryMethod)();
 
@@ -103,6 +105,8 @@ class CPPCACHE_EXPORT PdxSerializable : public CacheableKey {
    */
   virtual const char* getClassName() const = 0;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif /* PDXSERIALIZABLE_HPP_ */

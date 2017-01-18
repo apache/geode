@@ -25,7 +25,9 @@
 
 #include <string>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace testframework {
 
 enum IpcMsg {
@@ -79,6 +81,8 @@ class IpcHandler {
 };
 
 }  // namespace testframework
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __IpcHandler_hpp__

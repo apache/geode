@@ -27,7 +27,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * @class CqAttributesMutatorImpl CqAttributesMutatorImpl.hpp
@@ -73,7 +75,8 @@ class CPPCACHE_EXPORT CqAttributesMutatorImpl : public CqAttributesMutator {
  private:
   CqAttributesPtr m_cqAttributes;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_CQ_ATTRIBUTES_MUTATOR_IMPL_H__

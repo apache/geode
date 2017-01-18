@@ -23,7 +23,9 @@
 #include <ace/Recursive_Thread_Mutex.h>
 #include <vector>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 ACE_Recursive_Thread_Mutex g_bigBufferLock;
 uint32_t DataOutput::m_highWaterMark = 50 * 1024 * 1024;
@@ -122,4 +124,6 @@ void DataOutput::writeObjectInternal(const Serializable* ptr, bool isDelta) {
 void DataOutput::acquireLock() { g_bigBufferLock.acquire(); }
 
 void DataOutput::releaseLock() { g_bigBufferLock.release(); }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

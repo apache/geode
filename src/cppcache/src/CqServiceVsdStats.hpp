@@ -24,7 +24,9 @@
 #include "SpinLock.hpp"
 #include <gfcpp/CqServiceStatistics.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 using namespace gemfire_statistics;
 
@@ -137,6 +139,8 @@ class CqServiceStatType {
 
   inline int32_t getNumCqsStoppedId() { return m_numCqsStoppedId; }
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __GEMFIRE_CQ_SERVICE_STATS_H__

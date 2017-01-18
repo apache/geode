@@ -19,7 +19,9 @@
 #include <cstring>
 #include <cerrno>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace pdx_auto_serializer {
 // OutputFormatStreamBuf method definitions
 
@@ -142,4 +144,6 @@ void OutputFormatter::close() {
   m_ofstream.close();
 }
 }  // namespace pdx_auto_serializer
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

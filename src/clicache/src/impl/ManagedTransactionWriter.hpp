@@ -33,60 +33,64 @@ namespace GemStone {
   }
 }
 
-namespace gemfire {
+namespace apache {
+  namespace geode {
+    namespace client {
 
-  /// <summary>
-  /// Wraps the managed <see cref="GemStone.GemFire.Cache.ITransactionWriter" />
-  /// object and implements the native <c>gemfire::TransactionWriter</c> interface.
-  /// </summary>
-  class ManagedTransactionWriterGeneric
-    : public gemfire::TransactionWriter
-  {
-  public:
+      /// <summary>
+      /// Wraps the managed <see cref="GemStone.GemFire.Cache.ITransactionWriter" />
+      /// object and implements the native <c>apache::geode::client::TransactionWriter</c> interface.
+      /// </summary>
+      class ManagedTransactionWriterGeneric
+        : public apache::geode::client::TransactionWriter
+      {
+      public:
 
-    /// <summary>
-    /// Constructor to initialize with the provided managed object.
-    /// </summary>
-    /// <param name="userptr">
-    /// The managed object.
-    /// </param>
-    inline ManagedTransactionWriterGeneric(Object^ userptr )
-      : m_userptr( userptr ) { }
+        /// <summary>
+        /// Constructor to initialize with the provided managed object.
+        /// </summary>
+        /// <param name="userptr">
+        /// The managed object.
+        /// </param>
+        inline ManagedTransactionWriterGeneric(Object^ userptr )
+          : m_userptr( userptr ) { }
 
-    static gemfire::TransactionWriter* create( const char* assemblyPath,
-      const char* factoryFunctionName );
+        static apache::geode::client::TransactionWriter* create( const char* assemblyPath,
+          const char* factoryFunctionName );
 
-    virtual ~ManagedTransactionWriterGeneric( ) { }
-    
-	  virtual void beforeCommit(gemfire::TransactionEventPtr& te);
+        virtual ~ManagedTransactionWriterGeneric( ) { }
 
-	  inline GemStone::GemFire::Cache::ITransactionWriter^ ptr( ) const
-    {
-      return m_managedptr;
-    }
+        virtual void beforeCommit(apache::geode::client::TransactionEventPtr& te);
 
-    inline void setptr( GemStone::GemFire::Cache::ITransactionWriter^ managedptr )
-    {
-      m_managedptr = managedptr;
-    }
+        inline GemStone::GemFire::Cache::ITransactionWriter^ ptr( ) const
+        {
+          return m_managedptr;
+        }
 
-    inline Object^ userptr( ) const
-    {
-      return m_userptr;
-    }
+        inline void setptr( GemStone::GemFire::Cache::ITransactionWriter^ managedptr )
+        {
+          m_managedptr = managedptr;
+        }
 
-  private:
+        inline Object^ userptr( ) const
+        {
+          return m_userptr;
+        }
 
-    /// <summary>
-    /// Using gcroot to hold the managed delegate pointer (since it cannot be stored directly).
-    /// Note: not using auto_gcroot since it will result in 'Dispose' of the ITransactionWriter
-    /// to be called which is not what is desired when this object is destroyed. Normally this
-    /// managed object may be created by the user and will be handled automatically by the GC.
-    /// </summary>
-    gcroot<GemStone::GemFire::Cache::ITransactionWriter^> m_managedptr;
+      private:
 
-    gcroot<Object^> m_userptr;
-  };
+        /// <summary>
+        /// Using gcroot to hold the managed delegate pointer (since it cannot be stored directly).
+        /// Note: not using auto_gcroot since it will result in 'Dispose' of the ITransactionWriter
+        /// to be called which is not what is desired when this object is destroyed. Normally this
+        /// managed object may be created by the user and will be handled automatically by the GC.
+        /// </summary>
+        gcroot<GemStone::GemFire::Cache::ITransactionWriter^> m_managedptr;
 
-}
+        gcroot<Object^> m_userptr;
+      };
+
+    }  // namespace client
+  }  // namespace geode
+}  // namespace apache
 #endif

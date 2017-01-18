@@ -24,7 +24,9 @@
 #include "PdxRemoteReader.hpp"
 #include "PdxTypes.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 PdxRemoteReader::~PdxRemoteReader() {
   // TODO Auto-generated destructor stub
@@ -1055,4 +1057,6 @@ void PdxRemoteReader::readCollection(const char* fieldName,
     }
   }
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

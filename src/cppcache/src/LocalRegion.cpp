@@ -34,7 +34,7 @@
 #include <vector>
 #include <gfcpp/PoolManager.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 LocalRegion::LocalRegion(const std::string& name, CacheImpl* cache,
                          RegionInternal* rPtr,
@@ -1034,7 +1034,9 @@ GfErrType LocalRegion::getAllNoThrow(const VectorOfCacheableKey& keys,
   return err;
 }
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 // encapsulates actions that need to be taken for a put() operation
 class PutActions {
  public:
@@ -1601,7 +1603,9 @@ class InvalidateActions {
  private:
   LocalRegion& m_region;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 template <typename TAction>
 GfErrType LocalRegion::updateNoThrow(const CacheableKeyPtr& key,

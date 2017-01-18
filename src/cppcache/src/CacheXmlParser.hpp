@@ -33,7 +33,9 @@
 #include <gfcpp/ExceptionTypes.hpp>
 #include <gfcpp/RegionShortcut.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 // Factory function typedefs to register the managed
 // cacheloader/writer/listener/resolver
@@ -148,6 +150,7 @@ class CPPCACHE_EXPORT CacheXmlParser : public CacheXml {
   static LibraryCacheWriterFn managedCacheWriterFn;
   static LibraryPersistenceManagerFn managedPersistenceManagerFn;
 };
-
-};      // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // ifndef __GEMFIRE_CACHEXMLPARSER_HPP__

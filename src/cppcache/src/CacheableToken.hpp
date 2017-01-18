@@ -20,7 +20,9 @@
 #include <gfcpp/gfcpp_globals.hpp>
 #include <gfcpp/Cacheable.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class CPPCACHE_EXPORT CacheableToken;
 typedef SharedPtr<CacheableToken> CacheableTokenPtr;
@@ -124,6 +126,8 @@ class CPPCACHE_EXPORT CacheableToken : public Cacheable {
   void operator=(const CacheableToken& other);
   CacheableToken(const CacheableToken& other);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

@@ -21,7 +21,9 @@
 #include "MapEntry.hpp"
 #include "VersionStamp.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 /**
  * @brief Hold region mapped entry value.
  * This subclass adds expiration times.
@@ -86,6 +88,8 @@ class CPPCACHE_EXPORT ExpEntryFactory : public EntryFactory {
   virtual void newMapEntry(const CacheableKeyPtr& key,
                            MapEntryImplPtr& result) const;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __GEMFIRE_IMPL_EXPMAPENTRY_H__

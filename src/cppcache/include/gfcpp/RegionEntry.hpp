@@ -26,7 +26,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class RegionInternal;
 
@@ -99,7 +101,8 @@ class CPPCACHE_EXPORT RegionEntry : public SharedBase {
   bool m_destroyed;
   friend class RegionInternal;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

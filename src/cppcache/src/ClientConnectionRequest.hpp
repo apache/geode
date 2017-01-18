@@ -22,7 +22,9 @@
 #include <set>
 #include "ServerLocation.hpp"
 #define _TEST_
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class ClientConnectionRequest : public ServerLocationRequest {
  public:
 #ifdef _TEST_
@@ -60,5 +62,7 @@ class ClientConnectionRequest : public ServerLocationRequest {
   const std::set<TcrEndpoint*>& m_excludeServergroup;
 #endif
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif

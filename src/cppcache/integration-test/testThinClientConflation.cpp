@@ -176,7 +176,7 @@ DUNIT_TASK_DEFINITION(CLIENT1, ValidateClient1Conflation)
   {
     // Client Already Initiated , Send Client Ready and wait
     getHelper()->cachePtr->readyForEvents();
-    gemfire::millisleep(5000);
+    apache::geode::client::millisleep(5000);
 
     mon1C1->validate(true);
     LOG("Client 1 region 1 verified for conflation = true");
@@ -191,7 +191,7 @@ DUNIT_TASK_DEFINITION(CLIENT2, ValidateClient2Conflation)
   {
     // Client Already Initiated , Send Client Ready and wait
     getHelper()->cachePtr->readyForEvents();
-    gemfire::millisleep(5000);
+    apache::geode::client::millisleep(5000);
 
     mon1C2->validate(false);
     LOG("Client 2 region 1 verified for conflation = false");
@@ -227,7 +227,7 @@ DUNIT_TASK_DEFINITION(CLIENT1, ValidateClient1Server)
   {
     // Client Already Initiated , Send Client Ready and wait
     getHelper()->cachePtr->readyForEvents();
-    gemfire::millisleep(5000);
+    apache::geode::client::millisleep(5000);
 
     mon1C1->validate(true);
     LOG("Client 1 region 1 verified for conflation = server");
@@ -242,7 +242,7 @@ DUNIT_TASK_DEFINITION(CLIENT2, ValidateClient2None)
   {
     // Client Already Initiated , Send Client Ready and wait
     getHelper()->cachePtr->readyForEvents();
-    gemfire::millisleep(5000);
+    apache::geode::client::millisleep(5000);
 
     mon1C2->validate(true);
     LOG("Client 2 region 1 verified for no conflation setting");

@@ -23,7 +23,7 @@
 #include <sstream>
 
 using namespace std;
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace testframework;
 
 bool UDPMessage::ping(ACE_SOCK_Dgram& io, ACE_INET_Addr& who) {

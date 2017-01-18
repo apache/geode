@@ -21,7 +21,7 @@
 #include <gfcpp/GemfireTypeIds.hpp>
 #include <gfcpp/CacheAttributes.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 CacheAttributes::CacheAttributes()
     : m_redundancyLevel(0), m_endpoints(NULL), m_cacheMode(false) {}
 

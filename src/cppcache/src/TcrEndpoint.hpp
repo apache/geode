@@ -29,7 +29,9 @@
 #include "GF_TASK_T.hpp"
 #include "SpinLock.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class ThinClientRegion;
 class TcrMessage;
 class ThinClientBaseDM;
@@ -258,5 +260,7 @@ class CPPCACHE_EXPORT TcrEndpoint {
  protected:
   static const char* NC_Notification;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // __TCR_ENDPOINT_HPP__

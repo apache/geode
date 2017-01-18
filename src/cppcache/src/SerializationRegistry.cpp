@@ -59,14 +59,17 @@
 
 #include "NonCopyable.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 /* adongre
  * CID 28729: Other violation (MISSING_COPY)
- * Class "gemfire::TheTypeMap" owns resources that are managed in its
+ * Class "apache::geode::client::TheTypeMap" owns resources that are managed in
+ * its
  * constructor and destructor but has no user-written copy constructor.
  *
  * CID 28715: Other violation (MISSING_ASSIGN)
- * Class "gemfire::TheTypeMap" owns resources that are managed
+ * Class "apache::geode::client::TheTypeMap" owns resources that are managed
  * in its constructor and destructor but has no user-written assignment
  * operator.
  *
@@ -555,4 +558,6 @@ PoolPtr SerializationRegistry::getPool() {
   }
   return pool;
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

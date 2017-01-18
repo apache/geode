@@ -25,7 +25,8 @@
 /*
 
 This file wraps the assembly spinlock routines, and related atomic update
-routines in the class gemfire::util::util_impl::Host. Some ace is included.
+routines in the class apache::geode::client::util::util_impl::Host. Some ace is
+included.
 
 */
 
@@ -47,7 +48,9 @@ routines in the class gemfire::util::util_impl::Host. Some ace is included.
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 typedef volatile uint32_t SpinLockField;
 
@@ -432,7 +435,9 @@ return true;
   }
 #endif  // !defined(_MACOSX)
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
 #pragma clang diagnostic pop

@@ -44,18 +44,21 @@ namespace gemfire_statistics {
 class PoolStatsSampler;
 }  // namespace gemfire_statistics
 using namespace gemfire_statistics;
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class CacheImpl;
 class FunctionExecution;
 
 /* adongre
  * CID 28731: Other violation (MISSING_COPY)
- * Class "gemfire::ThinClientPoolDM" owns resources that are managed in its
+ * Class "apache::geode::client::ThinClientPoolDM" owns resources that are
+ managed in its
  * constructor and destructor but has no user-written copy constructor.
  * FIX : Make the class no Copyablez
 
  * CID 28717: Other violation (MISSING_ASSIGN)
- * Class "gemfire::ThinClientPoolDM" owns resources that are
+ * Class "apache::geode::client::ThinClientPoolDM" owns resources that are
  * managed in its constructor and destructor but has no user-written assignment
  operator.
  * Fix : Make the class Non Assinable
@@ -501,11 +504,14 @@ class FunctionExecution : public PooledWork<GfErrType> {
         lost in loss record 184 of 218
         ==25848==    at 0x4007D75: operator new(unsigned int)
         (vg_replace_malloc.c:313)
-        ==25848==    by 0x439BD41: gemfire::FunctionExecution::execute()
+        ==25848==    by 0x439BD41:
+        apache::geode::client::FunctionExecution::execute()
         (ThinClientPoolDM.hpp:417)
-        ==25848==    by 0x439A5A1: gemfire::PooledWork<GfErrType>::call()
+        ==25848==    by 0x439A5A1:
+        apache::geode::client::PooledWork<GfErrType>::call()
         (ThreadPool.hpp:25)
-        ==25848==    by 0x43C335F: gemfire::ThreadPoolWorker::svc()
+        ==25848==    by 0x43C335F:
+        apache::geode::client::ThreadPoolWorker::svc()
         (ThreadPool.cpp:43)
         ==25848==    by 0x440521D: ACE_6_1_0::ACE_Task_Base::svc_run(void*) (in
         /export/pnq-gst-dev01a/users/adongre/cedar_dev_Nov12/build-artifacts/linux/product/lib/libgfcppcache.so)
@@ -531,11 +537,12 @@ class FunctionExecution : public PooledWork<GfErrType> {
        * ==13294== 48,342 (1,656 direct, 46,686 indirect) bytes in 46 blocks are
 definitely lost in loss record 241 of 244
 ==13294==    at 0x4007D75: operator new(unsigned int) (vg_replace_malloc.c:313)
-==13294==    by 0x439BE11: gemfire::FunctionExecution::execute()
+==13294==    by 0x439BE11: apache::geode::client::FunctionExecution::execute()
 (ThinClientPoolDM.hpp:417)
-==13294==    by 0x439A671: gemfire::PooledWork<GfErrType>::call()
+==13294==    by 0x439A671: apache::geode::client::PooledWork<GfErrType>::call()
 (ThreadPool.hpp:25)
-==13294==    by 0x43C33FF: gemfire::ThreadPoolWorker::svc() (ThreadPool.cpp:43)
+==13294==    by 0x43C33FF: apache::geode::client::ThreadPoolWorker::svc()
+(ThreadPool.cpp:43)
 ==13294==    by 0x44052BD: ACE_6_1_0::ACE_Task_Base::svc_run(void*) (in
 /export/pnq-gst-dev01a/users/adongre/cedar_dev_Nov12/build-artifacts/linux/product/lib/libgfcppcache.so)
 ==13294==    by 0x441E20A: ACE_6_1_0::ACE_Thread_Adapter::invoke_i() (in
@@ -568,11 +575,12 @@ definitely lost in loss record 241 of 244
      * ==13294== 48,342 (1,656 direct, 46,686 indirect) bytes in 46 blocks are
 definitely lost in loss record 241 of 244
 ==13294==    at 0x4007D75: operator new(unsigned int) (vg_replace_malloc.c:313)
-==13294==    by 0x439BE11: gemfire::FunctionExecution::execute()
+==13294==    by 0x439BE11: apache::geode::client::FunctionExecution::execute()
 (ThinClientPoolDM.hpp:417)
-==13294==    by 0x439A671: gemfire::PooledWork<GfErrType>::call()
+==13294==    by 0x439A671: apache::geode::client::PooledWork<GfErrType>::call()
 (ThreadPool.hpp:25)
-==13294==    by 0x43C33FF: gemfire::ThreadPoolWorker::svc() (ThreadPool.cpp:43)
+==13294==    by 0x43C33FF: apache::geode::client::ThreadPoolWorker::svc()
+(ThreadPool.cpp:43)
 ==13294==    by 0x44052BD: ACE_6_1_0::ACE_Task_Base::svc_run(void*) (in
 /export/pnq-gst-dev01a/users/adongre/cedar_dev_Nov12/build-artifacts/linux/product/lib/libgfcppcache.so)
 ==13294==    by 0x441E20A: ACE_6_1_0::ACE_Thread_Adapter::invoke_i() (in
@@ -662,7 +670,8 @@ class OnRegionFunctionExecution : public PooledWork<GfErrType> {
                                      m_isBGThread, m_serverLocation);
   }
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __THINCLIENT_POOL_DISTRIBUTION_MANAGER_HPP__

@@ -25,7 +25,9 @@
 #include "GemfireTypeIdsImpl.hpp"
 #include <ace/INET_Addr.h>
 #include <gfcpp/CacheableBuiltins.hpp>
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class CPPCACHE_EXPORT ServerLocation : public Serializable {
  public:
   ServerLocation(std::string serverName, int port)
@@ -170,5 +172,7 @@ class CPPCACHE_EXPORT ServerLocation : public Serializable {
   int m_port;
   std::string m_epString;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif

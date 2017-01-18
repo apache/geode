@@ -23,7 +23,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * @class NoopAuthInit Implementation NoopAuthInit.hpp
@@ -77,5 +79,7 @@ class NoopAuthInit : public AuthInitialize {
 
  private:
 };
-}  // namespace gemfire;
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  //__NOOPAUTHINIT__

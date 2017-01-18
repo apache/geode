@@ -26,7 +26,9 @@
 #include "ClientProxyMembershipID.hpp"
 #include "DiskVersionTag.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 FarSideEntryOp::FarSideEntryOp(RegionCommit* region)
     :  // UNUSED m_region(region),
@@ -228,4 +230,6 @@ EntryEventPtr FarSideEntryOp::getEntryEvent(Cache* cache)
                         false));
 }
 */
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

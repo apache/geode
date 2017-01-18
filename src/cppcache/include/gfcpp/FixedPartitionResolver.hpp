@@ -20,7 +20,9 @@
 #include "PartitionResolver.hpp"
 #include "CacheableBuiltins.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class EntryEvent;
 
@@ -84,5 +86,7 @@ class CPPCACHE_EXPORT FixedPartitionResolver : public PartitionResolver {
   */
   virtual const char* getPartitionName(const EntryEvent& opDetails) = 0;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif

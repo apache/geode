@@ -21,7 +21,9 @@
 #include "base_types.hpp"
 #include "CodeGenerator.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace pdx_auto_serializer {
 // Forward declaration.
 class InputParser;
@@ -172,7 +174,9 @@ class InputParser {
    */
   ASClassFlagMap m_classes;
 };
-}
-}
+}  // namespace pdx_auto_serializer
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // _GFAS_INPUTPARSER_HPP_

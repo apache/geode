@@ -29,7 +29,9 @@
 
 #include "ace/OS.h"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 PdxFieldType::PdxFieldType() : Serializable() {
   // m_fieldName = NULL;
@@ -124,7 +126,7 @@ int32_t PdxFieldType::getFixedTypeSize() const {
     }
     case PdxFieldTypes::SHORT:
     case PdxFieldTypes::CHAR:
-      // case gemfire::GemfireTypeIds::CacheableChar: //TODO
+      // case apache::geode::client::GemfireTypeIds::CacheableChar: //TODO
       { return PdxTypes::CHAR_SIZE; }
     case PdxFieldTypes::INT:
     case PdxFieldTypes::FLOAT:
@@ -162,4 +164,6 @@ CacheableStringPtr PdxFieldType::toString() const {
       this->m_sequenceId);
   return CacheableString::create(stringBuf);
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

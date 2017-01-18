@@ -26,7 +26,9 @@
 //#include <SystemProperties.hpp>
 //#include <../DistributedSystem.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 using namespace gemfire_statistics;
 
@@ -225,6 +227,8 @@ class RegionStatType {
 
   inline int32_t getClearsId() { return m_clearsId; }
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __GEMFIRE_REGIONSTATS_H__

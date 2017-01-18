@@ -27,7 +27,9 @@
 #include "GetAllServersRequest.hpp"
 #include "GetAllServersResponse.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class TcrEndpoint;
 class ThinClientPoolDM;
 class ThinClientLocatorHelper {
@@ -62,5 +64,7 @@ class ThinClientLocatorHelper {
   ThinClientLocatorHelper(const ThinClientLocatorHelper&);
   ThinClientLocatorHelper& operator=(const ThinClientLocatorHelper&);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif

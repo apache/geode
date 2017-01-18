@@ -34,7 +34,9 @@
 const char SecurityClientDhAlgo[] = "security-client-dhalgo";
 const char SecurityClientKsPath[] = "security-client-kspath";
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class DiffieHellman {
   static ACE_Recursive_Thread_Mutex s_mutex;
@@ -103,7 +105,8 @@ class DiffieHellman {
   static ACE_DLL m_dll;
 
 };  // class DiffieHellman
-
-};  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __DIFFIEHELLMAN__

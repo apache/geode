@@ -25,7 +25,7 @@
 #include "ExpiryTaskManager.hpp"
 #include "SuspendedTxExpiryHandler.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 SuspendedTxExpiryHandler::SuspendedTxExpiryHandler(
     CacheTransactionManagerImpl* cacheTxMgr, TransactionIdPtr tid,

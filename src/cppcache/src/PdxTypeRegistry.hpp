@@ -34,7 +34,9 @@
 #include "EnumInfo.hpp"
 #include "PreservedDataExpiryHandler.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 struct PdxTypeLessThan {
   bool operator()(PdxTypePtr const& n1, PdxTypePtr const& n2) const {
@@ -138,5 +140,7 @@ class CPPCACHE_EXPORT PdxTypeRegistry {
  private:
   static PdxTypeToTypeIdMap* pdxTypeToTypeIdMap;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif /* PDXTYPEREGISTRY_HPP_ */

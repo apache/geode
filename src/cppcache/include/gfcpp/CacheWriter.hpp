@@ -25,7 +25,9 @@
  *
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class EntryEvent;
 class RegionEvent;
@@ -176,7 +178,8 @@ class CPPCACHE_EXPORT CacheWriter : public SharedBase {
   CacheWriter(const CacheWriter& other);
   void operator=(const CacheWriter& other);
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

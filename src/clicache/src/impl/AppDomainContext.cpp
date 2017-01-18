@@ -21,7 +21,7 @@ namespace GemStone {
 namespace GemFire {
 namespace Cache {
 namespace Generic {
-gemfire::AppDomainContext* createAppDomainContext() {
+apache::geode::client::AppDomainContext* createAppDomainContext() {
   return new AppDomainContext();
 }
 }

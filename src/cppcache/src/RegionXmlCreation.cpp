@@ -19,7 +19,7 @@
 #include <CacheRegionHelper.hpp>
 #include "RegionXmlCreation.hpp"
 #include "CacheImpl.hpp"
-using namespace gemfire;
+using namespace apache::geode::client;
 extern bool Cache_CreatedFromCacheFactory;
 
 void RegionXmlCreation::addSubregion(RegionXmlCreation* regionPtr) {

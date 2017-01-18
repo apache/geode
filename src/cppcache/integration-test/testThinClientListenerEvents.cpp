@@ -21,19 +21,20 @@
 #define CLIENT1 s1p1
 #define SERVER1 s2p1
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace test;
 
 #include "locator_globals.hpp"
 #include "LocatorHelper.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 class SimpleCacheListener;
 
-typedef gemfire::SharedPtr<SimpleCacheListener> SimpleCacheListenerPtr;
+typedef apache::geode::client::SharedPtr<SimpleCacheListener>
+    SimpleCacheListenerPtr;
 
 // Use the "gemfire" namespace.
-using namespace gemfire;
+using namespace apache::geode::client;
 
 // The SimpleCacheListener class.
 class SimpleCacheListener : public CacheListener {

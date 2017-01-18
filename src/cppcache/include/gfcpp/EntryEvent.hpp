@@ -25,11 +25,13 @@
 /** @file
 */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /** Represents an entry event affecting an entry, including its identity and the
  * the circumstances of the event. */
-class CPPCACHE_EXPORT EntryEvent : public gemfire::SharedBase {
+class CPPCACHE_EXPORT EntryEvent : public apache::geode::client::SharedBase {
  protected:
   RegionPtr m_region;      /**< Region */
   CacheableKeyPtr m_key;   /**< Cacheable key */
@@ -84,6 +86,8 @@ class CPPCACHE_EXPORT EntryEvent : public gemfire::SharedBase {
   EntryEvent(const EntryEvent& other);
   void operator=(const EntryEvent& other);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

@@ -23,7 +23,7 @@
 
 // this is a test.
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 class TestData {
  public:

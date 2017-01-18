@@ -24,7 +24,9 @@
 #include <string>
 #include <map>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class ProxyCache;
 typedef SharedPtr<ProxyCache> ProxyCachePtr;
 class ThinClientPoolDM;
@@ -146,7 +148,8 @@ class GuardUserAttribures {
  private:
   ProxyCachePtr m_proxyCache;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_USERATTRIBUTES_H__

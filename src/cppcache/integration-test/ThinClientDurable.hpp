@@ -201,22 +201,22 @@ void feederUpdate(int value, int ignoreR2 = false) {
       continue;
     }
     createIntEntry(regionNames[regIdx], mixKeys[0], value);
-    gemfire::millisleep(10);
+    apache::geode::client::millisleep(10);
     createIntEntry(regionNames[regIdx], mixKeys[1], value);
-    gemfire::millisleep(10);
+    apache::geode::client::millisleep(10);
     createIntEntry(regionNames[regIdx], mixKeys[2], value);
-    gemfire::millisleep(10);
+    apache::geode::client::millisleep(10);
     createIntEntry(regionNames[regIdx], mixKeys[3], value);
-    gemfire::millisleep(10);
+    apache::geode::client::millisleep(10);
 
     destroyEntry(regionNames[regIdx], mixKeys[0]);
-    gemfire::millisleep(10);
+    apache::geode::client::millisleep(10);
     destroyEntry(regionNames[regIdx], mixKeys[1]);
-    gemfire::millisleep(10);
+    apache::geode::client::millisleep(10);
     destroyEntry(regionNames[regIdx], mixKeys[2]);
-    gemfire::millisleep(10);
+    apache::geode::client::millisleep(10);
     destroyEntry(regionNames[regIdx], mixKeys[3]);
-    gemfire::millisleep(10);
+    apache::geode::client::millisleep(10);
   }
 }
 
@@ -318,7 +318,7 @@ DUNIT_TASK_DEFINITION(FEEDER, FeederUpdate1)
     feederUpdate(1);
 
     //  Wait 5 seconds for events to be removed from ha queues.
-    gemfire::millisleep(5000);
+    apache::geode::client::millisleep(5000);
 
     LOG("FeederUpdate1 complete.");
   }

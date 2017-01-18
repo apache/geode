@@ -20,7 +20,9 @@
 #include <gfcpp/EntryEvent.hpp>
 #include <gfcpp/RegionEvent.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 CacheListener::CacheListener() {}
 
@@ -45,4 +47,6 @@ void CacheListener::afterRegionClear(const RegionEvent& event) {}
 void CacheListener::afterRegionLive(const RegionEvent& event) {}
 
 void CacheListener::afterRegionDisconnected(const RegionPtr& region) {}
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

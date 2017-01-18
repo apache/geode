@@ -31,7 +31,7 @@ namespace GemStone
      // generic<class TKey>
       int32_t CacheableKey::GetHashCode()
       {
-        return static_cast<gemfire::CacheableKey*>(NativePtr())->hashcode();
+        return static_cast<apache::geode::client::CacheableKey*>(NativePtr())->hashcode();
       }
 
      // generic<class TKey>
@@ -40,8 +40,8 @@ namespace GemStone
         if (other == nullptr || other->ClassId != ClassId) {
           return false;
         }
-        return static_cast<gemfire::CacheableKey*>(NativePtr())->operator==(
-          *static_cast<gemfire::CacheableKey*>(
+        return static_cast<apache::geode::client::CacheableKey*>(NativePtr())->operator==(
+          *static_cast<apache::geode::client::CacheableKey*>(
             ((Generic::CacheableKey^)other)->NativePtr()));
       }
 
@@ -52,8 +52,8 @@ namespace GemStone
           dynamic_cast<CacheableKey^>(obj);
 
         if (otherKey != nullptr) {
-          return static_cast<gemfire::CacheableKey*>(NativePtr())->operator==(
-            *static_cast<gemfire::CacheableKey*>(otherKey->NativePtr()));
+          return static_cast<apache::geode::client::CacheableKey*>(NativePtr())->operator==(
+            *static_cast<apache::geode::client::CacheableKey*>(otherKey->NativePtr()));
         }
         return false;
       }

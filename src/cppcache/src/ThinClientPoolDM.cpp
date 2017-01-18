@@ -32,7 +32,7 @@
 
 #include "NonCopyable.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace gemfire_statistics;
 
 ExpiryTaskManager* getCacheImplExpiryTaskManager();
@@ -888,29 +888,34 @@ void ThinClientPoolDM::destroy(bool keepAlive) {
     /**********************************************************************
       ==31849==    at 0x4007D75: operator new(unsigned int)
      (vg_replace_malloc.c:313)
-      ==31849==    by 0x423063E: gemfire::ThinClientPoolHADM::createEP(char
+      ==31849==    by 0x423063E:
+     apache::geode::client::ThinClientPoolHADM::createEP(char
      const*) (ThinClientPoolHADM.hpp:113)
-      ==31849==    by 0x4375CB7: gemfire::ThinClientPoolDM::addEP(char const*)
+      ==31849==    by 0x4375CB7:
+     apache::geode::client::ThinClientPoolDM::addEP(char const*)
      (ThinClientPoolDM.cpp:1893)
       ==31849==    by 0x437DC29:
-     gemfire::ThinClientPoolDM::addEP(gemfire::ServerLocation&)
+     apache::geode::client::ThinClientPoolDM::addEP(apache::geode::client::ServerLocation&)
      (ThinClientPoolDM.cpp:1880)
       ==31849==    by 0x43861D9:
-     gemfire::ThinClientRedundancyManager::getAllEndpoints(stlp_std::vector<gemfire::TcrEndpoint*,
-     stlp_std::allocator<gemfire::TcrEndpoint*> >&)
+     apache::geode::client::ThinClientRedundancyManager::getAllEndpoints(stlp_std::vector<apache::geode::client::TcrEndpoint*,
+     stlp_std::allocator<apache::geode::client::TcrEndpoint*> >&)
      (ThinClientRedundancyManager.cpp:912)
       ==31849==    by 0x4386D0E:
-     gemfire::ThinClientRedundancyManager::initialize(int)
+     apache::geode::client::ThinClientRedundancyManager::initialize(int)
      (ThinClientRedundancyManager.cpp:613)
       ==31849==    by 0x4382301:
-     gemfire::ThinClientPoolHADM::startBackgroundThreads()
+     apache::geode::client::ThinClientPoolHADM::startBackgroundThreads()
      (ThinClientPoolHADM.cpp:37)
-      ==31849==    by 0x422F11F: gemfire::PoolFactory::create(char const*)
+      ==31849==    by 0x422F11F: apache::geode::client::PoolFactory::create(char
+     const*)
      (PoolFactory.cpp:163)
       ==31849==    by 0x8066755: CacheHelper::createPooledRegion(char const*,
      bool, char const*, char const*, char const*, bool, bool, int, int, int,
-     int, int, gemfire::SharedPtr<gemfire::CacheListener> const&,
-     gemfire::ExpirationAction::Action) (in
+     int, int,
+     apache::geode::client::SharedPtr<apache::geode::client::CacheListener>
+     const&,
+     apache::geode::client::ExpirationAction::Action) (in
      /export/pnq-gst-dev01a/users/adongre/valgrind_702/nc/ThinClient702X_maint/build-artifacts/linux/tests/cppcache/testThinClientPutAll)
       ==31849==    by 0x805AD4D: createPooledRegion(char const*, bool, char
      const*, char const*, char const*, bool, bool) [clone .clone.2] (in
@@ -1820,7 +1825,8 @@ GfErrType ThinClientPoolDM::getConnectionToAnEndPoint(std::string epNameStr,
      * CID 28680: Dereference after null check (FORWARD_NULL)Comparing "conn" to
      * null implies that "conn" might be null.
      * Passing null variable "conn" to function
-     * "gemfire::TcrConnection::getEndpointObject() const", which dereferences
+     * "apache::geode::client::TcrConnection::getEndpointObject() const", which
+     * dereferences
      * it.
      */
     // if(conn != NULL || error == GF_NOERR)

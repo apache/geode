@@ -33,7 +33,7 @@
 #include "ServerLocation.hpp"
 #include <ace/INET_Addr.h>
 #include <set>
-using namespace gemfire;
+using namespace apache::geode::client;
 volatile bool TcrConnectionManager::isNetDown = false;
 volatile bool TcrConnectionManager::TEST_DURABLE_CLIENT_CRASH = false;
 
@@ -475,7 +475,7 @@ void TcrConnectionManager::netDown() {
   isNetDown = true;
 
   //  sleep for 15 seconds to allow ping and redundancy threads to pause.
-  gemfire::millisleep(15000);
+  apache::geode::client::millisleep(15000);
 
   {
     ACE_Guard<ACE_Recursive_Thread_Mutex> guard(m_endpoints.mutex());
@@ -498,7 +498,7 @@ void TcrConnectionManager::revive() {
 
   //  sleep for 15 seconds to allow redundancy thread to reestablish
   //  connections.
-  gemfire::millisleep(15000);
+  apache::geode::client::millisleep(15000);
 }
 
 int TcrConnectionManager::redundancy(volatile bool &isRunning) {

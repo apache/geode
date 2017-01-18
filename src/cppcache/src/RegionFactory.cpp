@@ -31,7 +31,9 @@
 
 extern ACE_Recursive_Thread_Mutex* g_disconnectLock;
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 RegionFactory::RegionFactory(RegionShortcut preDefinedRegion) {
   m_preDefinedRegion = preDefinedRegion;
@@ -231,4 +233,6 @@ RegionFactoryPtr RegionFactory::setCloningEnabled(bool isClonable) {
   RegionFactoryPtr rfPtr(this);
   return rfPtr;
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

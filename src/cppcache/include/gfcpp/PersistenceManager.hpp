@@ -31,7 +31,9 @@
 #define PAGE_SIZE "PageSize"
 #define PERSISTENCE_DIR "PersistenceDirectory"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 typedef PersistenceManagerPtr (*getPersistenceManagerInstance)(
     const RegionPtr&);
@@ -128,6 +130,7 @@ class CPPCACHE_EXPORT PersistenceManager : public SharedBase {
    */
   const RegionPtr m_regionPtr;
 };
-
-};      // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // ifndef __GEMFIRE_PERSISTENCEMANAGER_H__

@@ -19,7 +19,7 @@
 #include "BankAccount.hpp"
 #include "AccountHistory.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 /*
   This example registers types, creates the cache, creates a

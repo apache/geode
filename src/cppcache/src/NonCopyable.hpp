@@ -17,7 +17,9 @@
 #ifndef NON_COPYABLE_H_
 #define NON_COPYABLE_H_
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class CPPCACHE_EXPORT NonCopyable {
  protected:
   NonCopyable() {}
@@ -34,6 +36,8 @@ class CPPCACHE_EXPORT NonAssignable {
  private:
   const NonAssignable& operator=(const NonAssignable&);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

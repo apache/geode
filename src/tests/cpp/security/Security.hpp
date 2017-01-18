@@ -51,7 +51,9 @@
 
 #define LAT_MARK 0x55667788
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace testframework {
 namespace security {
 
@@ -112,7 +114,9 @@ class Security : public FrameworkTest {
 
 }  //   namespace security
 }  // namespace testframework
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 // ----------------------------------------------------------------------------
 
 #endif  // __SECURITY_HPP__

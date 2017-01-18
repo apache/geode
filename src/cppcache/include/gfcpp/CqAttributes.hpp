@@ -26,7 +26,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * @cacheserver
@@ -52,7 +54,8 @@ class CPPCACHE_EXPORT CqAttributes : virtual public SharedBase {
    */
   virtual void getCqListeners(VectorOfCqListener& vl) = 0;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_CQ_ATTRIBUTES_H__

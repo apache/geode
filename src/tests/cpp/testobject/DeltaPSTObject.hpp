@@ -42,7 +42,7 @@
 #define TESTOBJECT_EXPORT
 #endif
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace testframework;
 namespace testobject {
 class TESTOBJECT_EXPORT DeltaPSTObject : public Cacheable, public Delta {
@@ -56,8 +56,9 @@ class TESTOBJECT_EXPORT DeltaPSTObject : public Cacheable, public Delta {
   DeltaPSTObject() : timestamp(0), valueData(NULLPTR) {}
   DeltaPSTObject(int size, bool encodeKey, bool encodeTimestamp);
   virtual ~DeltaPSTObject() {}
-  void toData(gemfire::DataOutput& output) const;
-  gemfire::Serializable* fromData(gemfire::DataInput& input);
+  void toData(apache::geode::client::DataOutput& output) const;
+  apache::geode::client::Serializable* fromData(
+      apache::geode::client::DataInput& input);
   void fromDelta(DataInput& input);
   void toDelta(DataOutput& output) const;
   CacheableStringPtr toString() const;
@@ -89,6 +90,6 @@ class TESTOBJECT_EXPORT DeltaPSTObject : public Cacheable, public Delta {
 
   static Serializable* createDeserializable() { return new DeltaPSTObject(); }
 };
-typedef gemfire::SharedPtr<DeltaPSTObject> DeltaPSTObjectPtr;
+typedef apache::geode::client::SharedPtr<DeltaPSTObject> DeltaPSTObjectPtr;
 }  // namespace testobject
 #endif

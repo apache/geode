@@ -23,7 +23,9 @@
 
 #include "TXId.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 AtomicInc TXId::m_transactionId = 1;
 
@@ -32,4 +34,6 @@ TXId::TXId() : m_TXId(m_transactionId++) {}
 TXId::~TXId() {}
 
 int32_t TXId::getId() { return m_TXId; }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

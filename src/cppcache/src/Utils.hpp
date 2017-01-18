@@ -40,7 +40,9 @@ extern "C" {
 }
 #endif
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class CPPCACHE_EXPORT Utils {
   /**
    * utilities
@@ -219,7 +221,8 @@ class RandGen {
  public:
   int operator()(size_t max);
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_IMPL_UTILS_H__

@@ -28,7 +28,7 @@
 #include <gfcpp/CacheLoader.hpp>
 
 // Use the "gemfire" namespace.
-using namespace gemfire;
+using namespace apache::geode::client;
 
 // The SimpleCacheLoader class.
 class SimpleCacheLoader : public CacheLoader {

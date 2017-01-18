@@ -19,7 +19,9 @@
 #include <string>
 #include "ServerLocationRequest.hpp"
 #include "GemfireTypeIdsImpl.hpp"
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class DataOutput;
 class DataInput;
 class Serializable;
@@ -34,5 +36,7 @@ class LocatorListRequest : public ServerLocationRequest {
   virtual int8_t typeId() const;
   virtual uint32_t objectSize() const;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif

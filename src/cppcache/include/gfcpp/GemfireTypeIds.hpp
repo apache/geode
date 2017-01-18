@@ -17,7 +17,9 @@
 #ifndef _GEMFIRE_GEMFIRETYPEIDS_HPP_
 #define _GEMFIRE_GEMFIRETYPEIDS_HPP_
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class GemfireTypeIds {
  public:
@@ -76,6 +78,8 @@ class GemfireTypeIds {
     CacheableEnum = 94
   };
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

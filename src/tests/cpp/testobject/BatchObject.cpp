@@ -16,7 +16,7 @@
  */
 #include "BatchObject.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace testframework;
 using namespace testobject;
 
@@ -32,14 +32,15 @@ BatchObject::BatchObject(int32_t anIndex, int32_t batchSize, int32_t size) {
 }
 
 BatchObject::~BatchObject() {}
-void BatchObject::toData(gemfire::DataOutput& output) const {
+void BatchObject::toData(apache::geode::client::DataOutput& output) const {
   output.writeInt(static_cast<int32_t>(index));
   output.writeInt(static_cast<int64_t>(timestamp));
   output.writeInt(static_cast<int32_t>(batch));
   output.writeObject(byteArray);
 }
 
-gemfire::Serializable* BatchObject::fromData(gemfire::DataInput& input) {
+apache::geode::client::Serializable* BatchObject::fromData(
+    apache::geode::client::DataInput& input) {
   input.readInt(&index);
   input.readInt(reinterpret_cast<int64_t*>(&timestamp));
   input.readInt(&batch);

@@ -46,15 +46,15 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-          gemfire::CqResultsPtr& nativeptr =
+          apache::geode::client::CqResultsPtr& nativeptr =
             NativePtr->executeWithInitialResults(timeout);
           if (nativeptr.ptr() == NULL) return nullptr;
 
-          gemfire::ResultSet* resultptr = dynamic_cast<gemfire::ResultSet*>(
+          apache::geode::client::ResultSet* resultptr = dynamic_cast<apache::geode::client::ResultSet*>(
             nativeptr.ptr( ) );
           if ( resultptr == NULL )
           {
-            gemfire::StructSet* structptr = dynamic_cast<gemfire::StructSet*>(
+            apache::geode::client::StructSet* structptr = dynamic_cast<apache::geode::client::StructSet*>(
               nativeptr.ptr( ) );
             if ( structptr == NULL )
             {
@@ -121,23 +121,23 @@ namespace GemStone
       generic<class TKey, class TResult>
       CqStateType CqQuery<TKey, TResult>::GetState( )
       {
-        gemfire::CqState::StateType st =  NativePtr->getState( );
+        apache::geode::client::CqState::StateType st =  NativePtr->getState( );
         CqStateType state;
         switch (st)
         {
-          case gemfire::CqState::STOPPED: {
+          case apache::geode::client::CqState::STOPPED: {
             state = CqStateType::STOPPED;
             break;
           }
-          case gemfire::CqState::RUNNING: {
+          case apache::geode::client::CqState::RUNNING: {
             state = CqStateType::RUNNING;
             break;
           }
-          case gemfire::CqState::CLOSED: {
+          case apache::geode::client::CqState::CLOSED: {
             state = CqStateType::CLOSED;
             break;
           }
-          case gemfire::CqState::CLOSING: {
+          case apache::geode::client::CqState::CLOSING: {
             state = CqStateType::CLOSING;
             break;
           }

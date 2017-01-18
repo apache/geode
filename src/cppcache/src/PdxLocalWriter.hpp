@@ -31,7 +31,9 @@
 #include "PdxRemotePreservedData.hpp"
 #include <gfcpp/CacheableObjectArray.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class PdxLocalWriter : public PdxWriter {
  protected:
@@ -337,5 +339,7 @@ class PdxLocalWriter : public PdxWriter {
   inline int32_t getStartPositionOffset() { return m_startPositionOffset; }
 };
 typedef SharedPtr<PdxLocalWriter> PdxLocalWriterPtr;
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif /* PDXLOCALWRITER_HPP_ */

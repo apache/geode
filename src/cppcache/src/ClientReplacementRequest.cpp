@@ -19,7 +19,7 @@
 #include <gfcpp/DataOutput.hpp>
 #include <gfcpp/DataInput.hpp>
 #include "GemfireTypeIdsImpl.hpp"
-using namespace gemfire;
+using namespace apache::geode::client;
 void ClientReplacementRequest::toData(DataOutput& output) const {
   ClientConnectionRequest::toData(output);
   this->m_serverLocation.toData(output);

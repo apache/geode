@@ -27,7 +27,9 @@
 #include <PdxHelper.hpp>
 #include <gfcpp/CacheableKeys.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 PdxSerializable::PdxSerializable() {}
 
 PdxSerializable::~PdxSerializable() {}
@@ -57,6 +59,8 @@ bool PdxSerializable::operator==(const CacheableKey& other) const {
 
 uint32_t PdxSerializable::hashcode() const {
   uint64_t hash = static_cast<uint64_t>((intptr_t)this);
-  return gemfire::serializer::hashcode(hash);
+  return apache::geode::client::serializer::hashcode(hash);
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

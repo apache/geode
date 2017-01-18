@@ -19,7 +19,9 @@
 
 #include "ThinClientBaseDM.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class ThinClientDistributionManager : public ThinClientBaseDM {
  public:
   ThinClientDistributionManager(TcrConnectionManager& connManager,
@@ -70,7 +72,8 @@ class ThinClientDistributionManager : public ThinClientBaseDM {
   std::vector<TcrEndpoint*> m_endpoints;
   ACE_Recursive_Thread_Mutex m_endpointsLock;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __THINCLIENT_DISTRIBUTION_MANAGER_HPP__

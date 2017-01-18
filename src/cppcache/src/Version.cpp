@@ -35,6 +35,6 @@
 
 #define VERSION_ORDINAL_NOT_SUPPORTED 59  // for GFE dunit testing
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 int8_t Version::m_ordinal = VERSION_ORDINAL_81;

@@ -23,7 +23,9 @@
 #include <ace/Condition_Recursive_Thread_Mutex.h>
 #include <ace/Guard_T.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 template <class T>
 class CPPCACHE_EXPORT Queue {
@@ -159,7 +161,8 @@ class CPPCACHE_EXPORT Queue {
   const uint32_t m_maxSize;
   bool m_closed;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __GEMFIRE_QUEUE_HPP_

@@ -41,7 +41,7 @@
 #include "InternalCacheTransactionManager2PCImpl.hpp"
 #include "PdxTypeRegistry.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 ExpiryTaskManager* CacheImpl::expiryTaskManager = NULL;
 CacheImpl* CacheImpl::s_instance = NULL;

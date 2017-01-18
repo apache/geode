@@ -25,7 +25,7 @@
 #define CLIENT1 s1p1
 #define SERVER1 s2p1
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace test;
 
 TallyLoaderPtr reg1Loader1;

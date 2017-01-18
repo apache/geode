@@ -38,7 +38,9 @@
 #endif
 #endif
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class StackFrame {
  public:
@@ -136,6 +138,8 @@ class StackFrame {
     return symbol;
   }
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif /* _GEMFIRE_STACKFRAME_HPP_ */

@@ -33,7 +33,7 @@ namespace GemStone
     namespace Cache { namespace Generic
     {
       /// <summary>
-      /// This class wraps the native C++ <c>gemfire::Serializable</c> objects
+      /// This class wraps the native C++ <c>apache::geode::client::Serializable</c> objects
       /// as managed <see cref="../../IGFSerializable" /> objects.
       /// </summary>
       public ref class CacheableKey
@@ -43,20 +43,20 @@ namespace GemStone
         /// <summary>
         /// Return the hashcode for this key.
         /// It gets the hash code by calling the <c>hashcode()</c> function
-        /// of the underlying <c>gemfire::CacheableKey</c> object.
+        /// of the underlying <c>apache::geode::client::CacheableKey</c> object.
         /// </summary>
         virtual int32_t GetHashCode() override;
 
         /// <summary>
         /// Return true if this key matches other object. It invokes the '=='
-        /// operator of the underlying <c>gemfire::CacheableKey</c> object.
+        /// operator of the underlying <c>apache::geode::client::CacheableKey</c> object.
         /// </summary>
         virtual bool Equals(ICacheableKey^ other);
 
         /// <summary>
         /// Return true if this key matches other object.
         /// It invokes the '==' operator if the underlying object is a
-        /// <c>gemfire::CacheableKey</c>, else returns
+        /// <c>apache::geode::client::CacheableKey</c>, else returns
         /// <c>System.Object.Equals()</c>
         /// </summary>
         virtual bool Equals(Object^ obj) override;
@@ -128,7 +128,7 @@ namespace GemStone
         /// Internal constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline CacheableKey(gemfire::Serializable* nativeptr)
+        inline CacheableKey(apache::geode::client::Serializable* nativeptr)
           : Generic::Serializable(nativeptr) { }
       };
     }

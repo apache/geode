@@ -47,7 +47,9 @@ const char KEYSTORE_PASSWORD1[] = "security-keystorepass";
 
 const char SIGNATURE_DATA1[] = "security-signature";
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * @class PKCSAuthInit Implementation PKCSAuthInit.hpp
@@ -98,5 +100,8 @@ class PKCSAuthInitInternal : public AuthInitialize {
  private:
   bool m_stringCredentials;
 };
-}  // namespace gemfire;
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
+
 #endif  //_GEMFIRE__PKCSAUTHINIT__HPP

@@ -25,12 +25,12 @@
 
 #include "locator_globals.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace test;
 
 class MyListener;
 
-typedef gemfire::SharedPtr<MyListener> MyListenerPtr;
+typedef apache::geode::client::SharedPtr<MyListener> MyListenerPtr;
 
 class MyListener : public CacheListener {
   uint8_t m_gotit[5];

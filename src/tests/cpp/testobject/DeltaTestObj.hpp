@@ -30,7 +30,7 @@
 #define TESTOBJECT_EXPORT
 #endif
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace testframework;
 namespace testobject {
 class TESTOBJECT_EXPORT DeltaTestObj : public DeltaTestImpl {
@@ -92,6 +92,6 @@ class TESTOBJECT_EXPORT DeltaTestObj : public DeltaTestImpl {
   }
 };
 
-typedef gemfire::SharedPtr<DeltaTestObj> DeltaTestObjPtr;
+typedef apache::geode::client::SharedPtr<DeltaTestObj> DeltaTestObjPtr;
 }
 #endif

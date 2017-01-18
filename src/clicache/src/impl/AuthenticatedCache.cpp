@@ -56,7 +56,7 @@ namespace GemStone
         _GF_MG_EXCEPTION_TRY2
 
           ManagedString mg_path( path );
-          gemfire::RegionPtr& nativeptr(
+          apache::geode::client::RegionPtr& nativeptr(
             NativePtr->getRegion( mg_path.CharPtr ) );
 
           return Generic::Region<TKey, TValue>::Create( nativeptr.ptr( ) );
@@ -77,14 +77,14 @@ namespace GemStone
       generic<class TKey, class TValue>
       array<IRegion<TKey, TValue>^>^ AuthenticatedCache::RootRegions( )
       {
-        gemfire::VectorOfRegion vrr;
+        apache::geode::client::VectorOfRegion vrr;
         NativePtr->rootRegions( vrr );
         array<IRegion<TKey, TValue>^>^ rootRegions =
           gcnew array<IRegion<TKey, TValue>^>( vrr.size( ) );
 
         for( int32_t index = 0; index < vrr.size( ); index++ )
         {
-          gemfire::RegionPtr& nativeptr( vrr[ index ] );
+          apache::geode::client::RegionPtr& nativeptr( vrr[ index ] );
           rootRegions[ index ] = Generic::Region<TKey, TValue>::Create( nativeptr.ptr( ) );
         }
         return rootRegions;

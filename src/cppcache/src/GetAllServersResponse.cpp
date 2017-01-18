@@ -16,7 +16,7 @@
  */
 #include "GetAllServersResponse.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 void GetAllServersResponse::toData(DataOutput& output) const {
   int32_t length = static_cast<int32_t>(m_servers.size());

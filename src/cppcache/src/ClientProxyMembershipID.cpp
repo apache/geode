@@ -30,7 +30,7 @@
 #define VMKIND 13
 #define ROLEARRLENGTH 0
 static int synch_counter = 2;
-using namespace gemfire;
+using namespace apache::geode::client;
 
 namespace {
 static class RandomInitializer {

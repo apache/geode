@@ -25,7 +25,9 @@
 #include "PoolXmlCreation.hpp"
 #include <gfcpp/PoolFactory.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class Cache;
 
 /**
@@ -79,5 +81,7 @@ class CPPCACHE_EXPORT PoolXmlCreation {
    */
   PoolPtr create();
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // #ifndef  _GEMFIRE_POOLXMLCREATION_HPP_

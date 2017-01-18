@@ -39,7 +39,9 @@
 
 // ----------------------------------------------------------------------------
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace testframework {
 
 // ----------------------------------------------------------------------------
@@ -89,7 +91,7 @@ class FwkStrCvt {
       m_sText = szText;
     } else {
       m_sText.clear();
-}
+    }
   };
   /** @brief convert from float value */
   FwkStrCvt(const float fValue) {
@@ -98,7 +100,7 @@ class FwkStrCvt {
       m_sText = szText;
     } else {
       m_sText.clear();
-}
+    }
   };
   /** @brief convert from uint32_t value */
   FwkStrCvt(const uint32_t uiValue) {
@@ -107,7 +109,7 @@ class FwkStrCvt {
       m_sText = szText;
     } else {
       m_sText.clear();
-}
+    }
   };
   /** @brief convert from int32_t value */
   FwkStrCvt(const int32_t iValue) {
@@ -116,7 +118,7 @@ class FwkStrCvt {
       m_sText = szText;
     } else {
       m_sText.clear();
-}
+    }
   };
   /** @brief convert from bool value */
   FwkStrCvt(const bool bValue) { m_sText = (bValue) ? "true" : "false"; };
@@ -128,7 +130,7 @@ class FwkStrCvt {
       m_sText = szText;
     } else {
       m_sText.clear();
-}
+    }
   }
 
   /** @brief convert from int64_t value */
@@ -138,20 +140,24 @@ class FwkStrCvt {
       m_sText = szText;
     } else {
       m_sText.clear();
-}
+    }
   }
 
   /** @brief gets double value */
   double toDouble() { return ACE_OS::strtod(m_sText.c_str(), 0); };
 
   /** @brief gets float value */
-  float toFloat() { return static_cast<float>(ACE_OS::strtod(m_sText.c_str(), 0)); };
+  float toFloat() {
+    return static_cast<float>(ACE_OS::strtod(m_sText.c_str(), 0));
+  };
 
   /** @brief gets int32_t value */
   int32_t toInt() { return ACE_OS::atoi(m_sText.c_str()); };
 
   /** @brief gets uint32_t value */
-  uint32_t toUint() { return static_cast<uint32_t>(ACE_OS::atoi(m_sText.c_str())); };
+  uint32_t toUint() {
+    return static_cast<uint32_t>(ACE_OS::atoi(m_sText.c_str()));
+  };
 
   /** @brief gets int32_t value */
   // TODO: : why this returns in32_t? if so why different from toInt()
@@ -338,6 +344,8 @@ class FwkStrCvt {
 // ----------------------------------------------------------------------------
 
 }  // namespace  testframework
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __FWK_STR_CVT_HPP__

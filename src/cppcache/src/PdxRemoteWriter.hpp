@@ -26,7 +26,9 @@
 
 #include "PdxLocalWriter.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class PdxRemoteWriter : public PdxLocalWriter {
  private:
@@ -233,5 +235,7 @@ class PdxRemoteWriter : public PdxLocalWriter {
                                               int* elementLength);
 };
 typedef SharedPtr<PdxRemoteWriter> PdxRemoteWriterPtr;
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif /* PDXREMOTEWRITER_HPP_ */

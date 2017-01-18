@@ -25,7 +25,7 @@
 #include "EventId.hpp"
 #include "ThinClientPoolDM.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 RemoteQuery::RemoteQuery(const char* querystr,
                          const RemoteQueryServicePtr& queryService,

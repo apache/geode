@@ -31,7 +31,9 @@
 #include "DistributedSystemImpl.hpp"
 #include "NonCopyable.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class ClienMetadata;
 
@@ -83,11 +85,13 @@ class PRbuckets {
 
 /* adongre
  * CID 28726: Other violation (MISSING_COPY)
- * Class "gemfire::ClientMetadataService" owns resources that are managed
+ * Class "apache::geode::client::ClientMetadataService" owns resources that are
+ * managed
  * in its constructor and destructor but has no user-written copy constructor.
  *
  * CID 28712: Other violation (MISSING_ASSIGN)
- * Class "gemfire::ClientMetadataService" owns resources that are managed
+ * Class "apache::geode::client::ClientMetadataService" owns resources that are
+ * managed
  * in its constructor and destructor but has no user-written assignment
  * operator.
  *
@@ -199,6 +203,8 @@ class ClientMetadataService : public ACE_Task_Base,
   uint32_t m_bucketWaitTimeout;
   static const char* NC_CMDSvcThread;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

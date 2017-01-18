@@ -26,7 +26,9 @@
 #include "ExceptionTypes.hpp"
 #include "Serializable.hpp"
 #include "CacheableBuiltins.hpp"
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class SelectResultsIterator;
 
@@ -78,7 +80,8 @@ class CPPCACHE_EXPORT SelectResults : public SharedBase {
   /** Get an iterator pointing to the end of vector. */
   virtual Iterator end() const = 0;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_SELECTRESULTS_H__

@@ -17,7 +17,7 @@
 
 #include "PortfolioPdxAuto.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace testobject;
 
 const char* /*PortfolioPdx::*/ secIds[] = {

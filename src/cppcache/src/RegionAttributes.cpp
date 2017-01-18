@@ -27,7 +27,7 @@
 #include <gfcpp/DataInput.hpp>
 #include <gfcpp/Properties.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 RegionAttributes::RegionAttributes()
     : Serializable(),
       m_regionTimeToLiveExpirationAction(ExpirationAction::INVALIDATE),

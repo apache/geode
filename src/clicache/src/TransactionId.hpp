@@ -35,11 +35,11 @@ namespace GemStone
         /// This class encapsulates Id of a transaction.
         /// </summary>
         public ref class TransactionId sealed
-          : public Internal::SBWrap<gemfire::TransactionId>
+          : public Internal::SBWrap<apache::geode::client::TransactionId>
         {
         internal:
 
-          inline static TransactionId^ Create( gemfire::TransactionId* nativeptr )
+          inline static TransactionId^ Create( apache::geode::client::TransactionId* nativeptr )
           {
             return ( nativeptr != nullptr ?
               gcnew TransactionId( nativeptr ) : nullptr );
@@ -51,7 +51,7 @@ namespace GemStone
           /// Private constructor to wrap a native object pointer
           /// </summary>
           /// <param name="nativeptr">The native object pointer</param>
-          inline TransactionId( gemfire::TransactionId* nativeptr )
+          inline TransactionId( apache::geode::client::TransactionId* nativeptr )
             : SBWrap( nativeptr ) { }
         };
       }

@@ -38,7 +38,7 @@
 #include <DistributedSystemImpl.hpp>
 #include <CacheImpl.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 namespace unitTests {
 

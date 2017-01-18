@@ -49,8 +49,8 @@ using namespace testData;
 
 //#include "ThinClientSecurity.hpp"
 
-using namespace gemfire::testframework::security;
-using namespace gemfire;
+using namespace apache::geode::client::testframework::security;
+using namespace apache::geode::client;
 
 const char* locHostPort =
     CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);

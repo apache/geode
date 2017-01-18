@@ -21,7 +21,9 @@
 #include <ace/DLL.h>
 #include <ace/INET_Addr.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class SslSockStream {
  private:
@@ -84,6 +86,8 @@ class SslSockStream {
   int close();
 
 };  // class SslSockStream
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __SslSockStream_hpp__

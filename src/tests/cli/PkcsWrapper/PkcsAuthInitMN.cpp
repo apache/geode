@@ -43,12 +43,12 @@ PkcsAuthInit::GetCredentials(
   GemStone::GemFire::Cache::Generic::Properties<String^, String^> ^props, System::String ^server)
 {
   GemStone::GemFire::Cache::Generic::ManagedString mg_server( server );
-  gemfire::PropertiesPtr propsPtr = NULLPTR;
+  apache::geode::client::PropertiesPtr propsPtr = NULLPTR;
   if (props != nullptr) {
-    propsPtr = (gemfire::Properties*)props->NativeIntPtr;
+    propsPtr = (apache::geode::client::Properties*)props->NativeIntPtr;
   }
-  gemfire::PKCSAuthInitInternal* nativeptr = new gemfire::PKCSAuthInitInternal(true); 
-  gemfire::PropertiesPtr& newPropsPtr = nativeptr->getCredentials(propsPtr, mg_server.CharPtr);     
+  apache::geode::client::PKCSAuthInitInternal* nativeptr = new apache::geode::client::PKCSAuthInitInternal(true); 
+  apache::geode::client::PropertiesPtr& newPropsPtr = nativeptr->getCredentials(propsPtr, mg_server.CharPtr);     
   return GemStone::GemFire::Cache::Generic::Properties<String^, Object^>::
     CreateFromVoidPtr<String^, Object^>(newPropsPtr.ptr());
 }

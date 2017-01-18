@@ -20,7 +20,9 @@
 #include <ace/RW_Thread_Mutex.h>
 #include "Condition.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class TimedTryWriteGuard {
  public:
   TimedTryWriteGuard(ACE_RW_Thread_Mutex& lock, uint32_t usec);
@@ -83,6 +85,8 @@ class TryWriteGuard {
   ACE_RW_Thread_Mutex& lock_;
   bool isAcquired_;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

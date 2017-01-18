@@ -17,7 +17,7 @@
 
 #include "GetAllServersRequest.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 void GetAllServersRequest::toData(DataOutput& output) const {
   output.writeObject(m_serverGroup);

@@ -112,9 +112,9 @@ class Record {
 
   Record& operator=(const Record& other);
 
-  void write(gemfire::DataOutput& output);
+  void write(apache::geode::client::DataOutput& output);
 
-  void read(gemfire::DataInput& input);
+  void read(apache::geode::client::DataInput& input);
 
   int elapsed();
   int perSec();

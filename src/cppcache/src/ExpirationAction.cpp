@@ -20,7 +20,7 @@
 #include <string.h>
 #include <ace/OS.h>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 char* ExpirationAction::names[] = {(char*)"INVALIDATE",
                                    (char*)"LOCAL_INVALIDATE", (char*)"DESTROY",

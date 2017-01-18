@@ -34,7 +34,7 @@
 #include <gfcpp/StructSet.hpp>
 #include <gfcpp/SelectResultsIterator.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace test;
 using namespace testobject;
 

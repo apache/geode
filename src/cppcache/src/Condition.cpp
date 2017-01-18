@@ -17,7 +17,9 @@
 
 #include "Condition.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * Create a Condition protected by the mutex provided.
@@ -42,4 +44,6 @@ bool Condition::waitUntil(ACE_Time_Value* absoluteStopTime) {
   m_signaled = false;
   return result;
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

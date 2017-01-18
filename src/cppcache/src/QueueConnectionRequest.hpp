@@ -21,7 +21,9 @@
 #include "ClientProxyMembershipID.hpp"
 #include <set>
 #include <string>
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class QueueConnectionRequest : public ServerLocationRequest {
  public:
   QueueConnectionRequest(const ClientProxyMembershipID& memId,
@@ -55,5 +57,7 @@ class QueueConnectionRequest : public ServerLocationRequest {
   const bool m_findDurable;
   std::string m_serverGp;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif

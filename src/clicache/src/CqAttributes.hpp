@@ -38,7 +38,7 @@ namespace GemStone
       /// </summary>
       generic<class TKey, class TResult>
       public ref class CqAttributes sealed
-        : public Internal::SBWrap<gemfire::CqAttributes>
+        : public Internal::SBWrap<apache::geode::client::CqAttributes>
       {
       public:
 
@@ -57,7 +57,7 @@ namespace GemStone
         /// <returns>
         /// The managed wrapper object; null if the native pointer is null.
         /// </returns>
-        inline static CqAttributes<TKey, TResult>^ Create( gemfire::CqAttributes* nativeptr )
+        inline static CqAttributes<TKey, TResult>^ Create( apache::geode::client::CqAttributes* nativeptr )
         {
           if (nativeptr == nullptr)
           {
@@ -73,7 +73,7 @@ namespace GemStone
         /// Private constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline CqAttributes( gemfire::CqAttributes* nativeptr )
+        inline CqAttributes( apache::geode::client::CqAttributes* nativeptr )
           : SBWrap( nativeptr ) { }
       };
 

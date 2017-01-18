@@ -25,7 +25,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class Region;
 class QueryService;
@@ -112,6 +114,7 @@ class CPPCACHE_EXPORT RegionService : public SharedBase {
   virtual PdxInstanceFactoryPtr createPdxInstanceFactory(
       const char* className) = 0;
 };
-
-};      // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // ifndef __GEMFIRE_RegionService_H__

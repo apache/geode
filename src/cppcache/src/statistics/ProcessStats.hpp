@@ -20,7 +20,7 @@
 
 #include <gfcpp/gfcpp_globals.hpp>
 #include <gfcpp/statistics/Statistics.hpp>
-using namespace gemfire;
+using namespace apache::geode::client;
 
 /** @file
 */

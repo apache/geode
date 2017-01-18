@@ -41,7 +41,7 @@
 #define TESTOBJECT_EXPORT
 #endif
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace testframework;
 namespace testobject {
 class TESTOBJECT_EXPORT EqStruct : public TimestampedObject {
@@ -105,8 +105,9 @@ class TESTOBJECT_EXPORT EqStruct : public TimestampedObject {
   EqStruct() {}
   EqStruct(int index);
   virtual ~EqStruct();
-  virtual void toData(gemfire::DataOutput& output) const;
-  virtual gemfire::Serializable* fromData(gemfire::DataInput& input);
+  virtual void toData(apache::geode::client::DataOutput& output) const;
+  virtual apache::geode::client::Serializable* fromData(
+      apache::geode::client::DataInput& input);
   virtual int32_t classId() const { return 101; }
   CacheableStringPtr toString() const;
 
@@ -141,11 +142,11 @@ class TESTOBJECT_EXPORT EqStruct : public TimestampedObject {
     timestamp = tusec * 1000;
   }
 
-  static gemfire::Serializable* createDeserializable() {
+  static apache::geode::client::Serializable* createDeserializable() {
     return new EqStruct();
   }
 };
 
-typedef gemfire::SharedPtr<EqStruct> EqStructPtr;
+typedef apache::geode::client::SharedPtr<EqStruct> EqStructPtr;
 }  // namespace testobject
 #endif

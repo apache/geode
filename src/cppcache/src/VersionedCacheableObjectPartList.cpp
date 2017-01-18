@@ -22,7 +22,9 @@
 #include "CacheableToken.hpp"
 #include "DiskStoreId.hpp"
 #include "DiskVersionTag.hpp"
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 const uint8_t VersionedCacheableObjectPartList::FLAG_NULL_TAG = 0;
 const uint8_t VersionedCacheableObjectPartList::FLAG_FULL_TAG = 1;
@@ -81,7 +83,8 @@ void VersionedCacheableObjectPartList::readObjectPart(int32_t index,
 
     /* adongre
      * CID 29377: Resource leak (RESOURCE_LEAK)Calling allocation function
-     * "gemfire::DataInput::readBytes(unsigned char **, int *)" on "bytes".
+     * "apache::geode::client::DataInput::readBytes(unsigned char **, int *)" on
+     * "bytes".
      */
     GF_SAFE_DELETE_ARRAY(bytes);
 
@@ -323,4 +326,6 @@ int8_t VersionedCacheableObjectPartList::DSFID() const {
 }
 
 uint32_t VersionedCacheableObjectPartList::objectSize() const { return 0; }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

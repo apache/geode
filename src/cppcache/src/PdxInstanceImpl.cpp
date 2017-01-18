@@ -45,7 +45,9 @@
     throw IllegalStateException(excpStr);                               \
   }
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 int8_t PdxInstanceImpl::m_BooleanDefaultBytes[] = {0};
 int8_t PdxInstanceImpl::m_ByteDefaultBytes[] = {0};
@@ -57,9 +59,9 @@ int8_t PdxInstanceImpl::m_FloatDefaultBytes[] = {0, 0, 0, 0};
 int8_t PdxInstanceImpl::m_DoubleDefaultBytes[] = {0, 0, 0, 0, 0, 0, 0, 0};
 int8_t PdxInstanceImpl::m_DateDefaultBytes[] = {-1, -1, -1, -1, -1, -1, -1, -1};
 int8_t PdxInstanceImpl::m_StringDefaultBytes[] = {
-    gemfire::GemfireTypeIds::CacheableNullString};
+    apache::geode::client::GemfireTypeIds::CacheableNullString};
 int8_t PdxInstanceImpl::m_ObjectDefaultBytes[] = {
-    gemfire::GemfireTypeIds::NullObj};
+    apache::geode::client::GemfireTypeIds::NullObj};
 int8_t PdxInstanceImpl::m_NULLARRAYDefaultBytes[] = {-1};
 PdxFieldTypePtr PdxInstanceImpl::m_DefaultPdxFieldType(
     new PdxFieldType("default", "default", static_cast<uint8_t>(-1),
@@ -76,8 +78,9 @@ bool sortFunc(PdxFieldTypePtr field1, PdxFieldTypePtr field2) {
 
 PdxInstanceImpl::~PdxInstanceImpl() { GF_SAFE_DELETE_ARRAY(m_buffer); }
 
-PdxInstanceImpl::PdxInstanceImpl(gemfire::FieldVsValues fieldVsValue,
-                                 gemfire::PdxTypePtr pdxType) {
+PdxInstanceImpl::PdxInstanceImpl(
+    apache::geode::client::FieldVsValues fieldVsValue,
+    apache::geode::client::PdxTypePtr pdxType) {
   m_pdxType = pdxType;
   m_updatedFields = fieldVsValue;
   m_buffer = NULL;
@@ -86,7 +89,8 @@ PdxInstanceImpl::PdxInstanceImpl(gemfire::FieldVsValues fieldVsValue,
 
   m_pdxType->InitializeType();  // to generate static position map
 
-  // gemfire::DataOutput* output = gemfire::DataOutput::getDataOutput();
+  // apache::geode::client::DataOutput* output =
+  // apache::geode::client::DataOutput::getDataOutput();
   DataOutput output;
   PdxHelper::serializePdx(output, *this);
 }
@@ -1749,7 +1753,8 @@ void PdxInstanceImpl::toData(PdxWriterPtr writer) /*const*/ {
   int position = 0;  // ignore typeid and length
   int nextFieldPosition = 0;
   if (m_buffer != NULL) {
-    uint8_t* copy = gemfire::DataInput::getBufferCopy(m_buffer, m_bufferLength);
+    uint8_t* copy = apache::geode::client::DataInput::getBufferCopy(
+        m_buffer, m_bufferLength);
     DataInput dataInput(copy, m_bufferLength);  // this will delete buffer
     for (size_t i = 0; i < pdxFieldList->size(); i++) {
       PdxFieldTypePtr currPf = pdxFieldList->at(i);
@@ -2792,4 +2797,6 @@ uint32_t PdxInstanceImpl::objectSize() const {
   }
   return size;
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

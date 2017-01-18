@@ -22,7 +22,9 @@
 #include "CacheableBuiltins.hpp"
 #include "PdxFieldTypes.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
 * PdxInstance provides run time access to the fields of a PDX without
@@ -607,5 +609,7 @@ class CPPCACHE_EXPORT PdxInstance : public PdxSerializable {
   PdxInstance(const PdxInstance& other);
   void operator=(const PdxInstance& other);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif /* __GEMFIRE_PDXINSTANCE_HPP_ */

@@ -22,7 +22,7 @@
 using test::cout;
 using test::endl;
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 #define ROOT_NAME "testRegionMap"
 

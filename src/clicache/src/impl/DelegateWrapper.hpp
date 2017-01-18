@@ -36,7 +36,7 @@ namespace GemStone
       /// Template class to wrap a managed <see cref="TypeFactoryMethod" />
       /// delegate that returns an <see cref="IGFSerializable" /> object. It contains
       /// a method that converts the managed object gotten by invoking the
-      /// delegate to the native <c>gemfire::Serializable</c> object
+      /// delegate to the native <c>apache::geode::client::Serializable</c> object
       /// (using the provided wrapper class constructor).
       /// </summary>
       /// <remarks>
@@ -45,14 +45,14 @@ namespace GemStone
       /// In the managed world a user would register a managed type by providing
       /// a factory delegate returning an object of that type. However, the
       /// native implementation requires a factory function that returns an
-      /// object implementing <c>gemfire::Serializable</c>. Normally this would not
+      /// object implementing <c>apache::geode::client::Serializable</c>. Normally this would not
       /// be possible since we require to dynamically generate a new function
       /// for a given delegate.
       ///
       /// Fortunately in the managed world the delegates contain an implicit
       /// 'this' pointer. Thus we can have a universal delegate that contains
       /// the given managed delegate (in the 'this' pointer) and returns the
-      /// native <c>gemfire::Serializable</c> object. Additionally marshalling
+      /// native <c>apache::geode::client::Serializable</c> object. Additionally marshalling
       /// services provide <c>Marshal.GetFunctionPointerForDelegate</c> which gives
       /// a function pointer for a delegate which completes the conversion.
       /// </remarks>
@@ -67,14 +67,14 @@ namespace GemStone
           : m_delegate( typeDelegate ) { }
 
         /// <summary>
-        /// Returns the native <c>gemfire::Serializable</c> object by invoking the
+        /// Returns the native <c>apache::geode::client::Serializable</c> object by invoking the
         /// managed delegate provided in the constructor.
         /// </summary>
         /// <returns>
-        /// Native <c>gemfire::Serializable</c> object after invoking the managed
+        /// Native <c>apache::geode::client::Serializable</c> object after invoking the managed
         /// delegate and wrapping inside a <c>ManagedCacheableKey</c> object.
         /// </returns>
-        gemfire::Serializable* NativeDelegateGeneric( )
+        apache::geode::client::Serializable* NativeDelegateGeneric( )
         {
           IGFSerializable^ tempObj = m_delegate( );
           IGFDelta^ tempDelta =
@@ -82,14 +82,14 @@ namespace GemStone
           if( tempDelta != nullptr )
           {
             if(!SafeConvertClassGeneric::isAppDomainEnabled)
-              return new gemfire::ManagedCacheableDeltaGeneric( tempDelta );
+              return new apache::geode::client::ManagedCacheableDeltaGeneric( tempDelta );
             else
-              return new gemfire::ManagedCacheableDeltaBytesGeneric( tempDelta, false );
+              return new apache::geode::client::ManagedCacheableDeltaBytesGeneric( tempDelta, false );
           }
           else if(!SafeConvertClassGeneric::isAppDomainEnabled)
-            return new gemfire::ManagedCacheableKeyGeneric( tempObj);
+            return new apache::geode::client::ManagedCacheableKeyGeneric( tempObj);
           else
-            return new gemfire::ManagedCacheableKeyBytesGeneric( tempObj, false);
+            return new apache::geode::client::ManagedCacheableKeyBytesGeneric( tempObj, false);
         }
 
 

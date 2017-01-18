@@ -23,7 +23,7 @@
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 int32_t HostAsm::m_SpinCount = 0;
 

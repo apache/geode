@@ -34,7 +34,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 // class CacheTransactionManagerImpl;
 /**
  * @class PreservedDataExpiryHandler
@@ -66,6 +68,8 @@ class CPPCACHE_EXPORT PreservedDataExpiryHandler : public ACE_Event_Handler {
   // UNUSED uint32_t m_duration;
   PdxSerializablePtr m_pdxObjectPtr;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif /* __PRESERVEDDATAEXPIRYHANDLER_HPP__*/

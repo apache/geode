@@ -20,7 +20,7 @@
 #include <gfcpp/SharedBase.hpp>
 #include <AutoDelete.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 namespace {
 class TestSharedBase : public SharedBase {
@@ -39,7 +39,7 @@ class TestSharedBase : public SharedBase {
 TEST(AutoDeleteTest, DestructorDoesDeleteByDefault) {
   bool destructed = false;
   TestSharedBase* ptr = new TestSharedBase(destructed);
-  { gemfire::DeleteObject<TestSharedBase> obj(ptr); }
+  { apache::geode::client::DeleteObject<TestSharedBase> obj(ptr); }
   EXPECT_EQ(true, destructed);
 }
 
@@ -47,7 +47,7 @@ TEST(AutoDeleteTest, DestructorDoesNotDeleteWhenAsked) {
   bool destructed = false;
   TestSharedBase* ptr = new TestSharedBase(destructed);
   {
-    gemfire::DeleteObject<TestSharedBase> obj(ptr);
+    apache::geode::client::DeleteObject<TestSharedBase> obj(ptr);
     obj.noDelete();
   }
   EXPECT_EQ(false, destructed);

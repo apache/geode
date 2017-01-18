@@ -23,7 +23,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * @class UserPasswordAuthInit Implementation UserPasswordAuthInit.hpp
@@ -77,5 +79,7 @@ class UserPasswordAuthInit : public AuthInitialize {
 
  private:
 };
-};
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  //__USERPASSWORDAUTHINIT__

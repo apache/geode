@@ -29,11 +29,13 @@
 #include <gfcpp/DataOutput.hpp>
 #include "AtomicInc.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 _GF_PTR_DEF_(TXId, TXIdPtr);
 
-class TXId : public gemfire::TransactionId {
+class TXId : public apache::geode::client::TransactionId {
  public:
   TXId();
   virtual ~TXId();
@@ -46,6 +48,8 @@ class TXId : public gemfire::TransactionId {
   TXId& operator=(const TXId&);
   TXId(const TXId&);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif /* TXID_H_ */

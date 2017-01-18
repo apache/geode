@@ -24,7 +24,9 @@
 
 #include <string>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace testframework {
 
 class FrameworkTest  // Base class all test classes written for xml testing
@@ -50,7 +52,7 @@ class FrameworkTest  // Base class all test classes written for xml testing
   void setNewAndDelete() {
     char* envsetting = ACE_OS::getenv("BUG481");
     if (envsetting != NULL && strlen(envsetting) > 0) {
-      gemfire::setNewAndDelete(&operator new, & operator delete);
+      apache::geode::client::setNewAndDelete(&operator new, & operator delete);
       FWKINFO("setNewAndDelete() was called");
     }
     m_doneSetNewAndDelete = true;
@@ -273,5 +275,7 @@ class FrameworkTest  // Base class all test classes written for xml testing
 };
 
 }  // namespace testframework
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // __FrameworkTest_hpp__

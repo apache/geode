@@ -20,7 +20,9 @@
 
 #include "base_types.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace pdx_auto_serializer {
 /**
  * Abstract class that defines the interface of the auto-serializer
@@ -165,7 +167,9 @@ class CodeGenerator {
 
   // End pure virtual methods
 };
-}
-}
+}  // namespace pdx_auto_serializer
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // _GFAS_CODEGENERATOR_HPP_

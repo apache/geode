@@ -17,7 +17,7 @@
 #include "EvictionThread.hpp"
 #include "EvictionController.hpp"
 #include "DistributedSystemImpl.hpp"
-using namespace gemfire;
+using namespace apache::geode::client;
 
 const char* EvictionThread::NC_Evic_Thread = "NC Evic Thread";
 EvictionThread::EvictionThread(EvictionController* parent)

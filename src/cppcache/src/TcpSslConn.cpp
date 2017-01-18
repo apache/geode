@@ -20,7 +20,7 @@
 #include <gfcpp/DistributedSystem.hpp>
 #include "../../cryptoimpl/GFSsl.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 GFSsl* TcpSslConn::getSSLImpl(ACE_SOCKET sock, const char* pubkeyfile,
                               const char* privkeyfile) {

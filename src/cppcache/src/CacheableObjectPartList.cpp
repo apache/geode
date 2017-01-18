@@ -21,7 +21,9 @@
 #include "ThinClientRegion.hpp"
 #include "CacheableToken.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 void CacheableObjectPartList::toData(DataOutput& output) const {
   // don't really care about toData() and should never get invoked
@@ -132,4 +134,6 @@ int8_t CacheableObjectPartList::DSFID() const {
 }
 
 uint32_t CacheableObjectPartList::objectSize() const { return 0; }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

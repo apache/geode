@@ -29,21 +29,25 @@
 #define TESTOBJECT_EXPORT
 #endif
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace testframework;
 
 namespace testobject {
 
-class TESTOBJECT_EXPORT TimestampedObject : public gemfire::Serializable {
+class TESTOBJECT_EXPORT TimestampedObject
+    : public apache::geode::client::Serializable {
  public:
   virtual uint64_t getTimestamp() { return 0; }
   virtual void resetTimestamp() {}
-  virtual Serializable* fromData(gemfire::DataInput& input) { return this; }
-  virtual void toData(gemfire::DataOutput& output) const {}
+  virtual Serializable* fromData(apache::geode::client::DataInput& input) {
+    return this;
+  }
+  virtual void toData(apache::geode::client::DataOutput& output) const {}
   virtual int32_t classId() const { return 0; }
   virtual uint32_t objectSize() const { return 0; }
   virtual ~TimestampedObject() {}
 };
-typedef gemfire::SharedPtr<TimestampedObject> TimestampedObjectPtr;
+typedef apache::geode::client::SharedPtr<TimestampedObject>
+    TimestampedObjectPtr;
 }  // namespace testobject
 #endif  // __TimestampedObjectHPP__

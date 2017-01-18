@@ -29,7 +29,9 @@
 #include "CacheableKeys.hpp"
 #include "CacheableString.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /** sprintf implementation. */
 extern int gf_sprintf(char* buffer, const char* fmt, ...);
@@ -45,7 +47,7 @@ class CacheableKeyType : public CacheableKey {
   TObj m_value;
 
   inline CacheableKeyType()
-      : m_value(gemfire::serializer::zeroObject<TObj>()) {}
+      : m_value(apache::geode::client::serializer::zeroObject<TObj>()) {}
 
   inline CacheableKeyType(const TObj value) : m_value(value) {}
 
@@ -57,12 +59,12 @@ class CacheableKeyType : public CacheableKey {
 
   /** Serialize this object to given <code>DataOutput</code>. */
   virtual void toData(DataOutput& output) const {
-    gemfire::serializer::writeObject(output, m_value);
+    apache::geode::client::serializer::writeObject(output, m_value);
   }
 
   /** Deserialize this object from given <code>DataInput</code>. */
   virtual Serializable* fromData(DataInput& input) {
-    gemfire::serializer::readObject(input, m_value);
+    apache::geode::client::serializer::readObject(input, m_value);
     return this;
   }
 
@@ -93,7 +95,7 @@ class CacheableKeyType : public CacheableKey {
 
   /** Return the hashcode for this key. */
   virtual uint32_t hashcode() const {
-    return gemfire::serializer::hashcode(m_value);
+    return apache::geode::client::serializer::hashcode(m_value);
   }
 
   /** Return true if this key matches other. */
@@ -103,12 +105,13 @@ class CacheableKeyType : public CacheableKey {
     }
     const CacheableKeyType& otherValue =
         static_cast<const CacheableKeyType&>(other);
-    return gemfire::serializer::equals(m_value, otherValue.m_value);
+    return apache::geode::client::serializer::equals(m_value,
+                                                     otherValue.m_value);
   }
 
   /** Return true if this key matches other key value. */
   inline bool operator==(const TObj other) const {
-    return gemfire::serializer::equals(m_value, other);
+    return apache::geode::client::serializer::equals(m_value, other);
   }
 
   /**
@@ -223,13 +226,13 @@ class CacheableArrayType : public Cacheable {
 
   /** Serialize this object to the given <code>DataOutput</code>. */
   virtual void toData(DataOutput& output) const {
-    gemfire::serializer::writeObject(output, m_value, m_length);
+    apache::geode::client::serializer::writeObject(output, m_value, m_length);
   }
 
   /** Deserialize this object from the given <code>DataInput</code>. */
   virtual Serializable* fromData(DataInput& input) {
     GF_SAFE_DELETE_ARRAY(m_value);
-    gemfire::serializer::readObject(input, m_value, m_length);
+    apache::geode::client::serializer::readObject(input, m_value, m_length);
     return this;
   }
 
@@ -260,7 +263,7 @@ class CacheableArrayType : public Cacheable {
   virtual uint32_t objectSize() const {
     return static_cast<uint32_t>(
         sizeof(CacheableArrayType) +
-        gemfire::serializer::objectSize(m_value, m_length));
+        apache::geode::client::serializer::objectSize(m_value, m_length));
   }
 };
 
@@ -323,12 +326,12 @@ class CacheableContainerType : public Cacheable, public TBase {
 
   /** Serialize this object to the given <code>DataOutput</code>. */
   virtual void toData(DataOutput& output) const {
-    gemfire::serializer::writeObject(output, *this);
+    apache::geode::client::serializer::writeObject(output, *this);
   }
 
   /** Deserialize this object from the given <code>DataInput</code>. */
   virtual Serializable* fromData(DataInput& input) {
-    gemfire::serializer::readObject(input, *this);
+    apache::geode::client::serializer::readObject(input, *this);
     return this;
   }
 
@@ -357,8 +360,9 @@ class CacheableContainerType : public Cacheable, public TBase {
    * cache memory utilization.
    */
   virtual uint32_t objectSize() const {
-    return static_cast<uint32_t>(sizeof(CacheableContainerType) +
-                                 gemfire::serializer::objectSize(*this));
+    return static_cast<uint32_t>(
+        sizeof(CacheableContainerType) +
+        apache::geode::client::serializer::objectSize(*this));
   }
 };
 
@@ -674,6 +678,8 @@ _GF_CACHEABLE_CONTAINER_TYPE_DEF_(_HashSetOfCacheableKey,
  * iteration semantics of java <code>LinkedHashSet</code>.
  */
 _GF_CACHEABLE_CONTAINER_TYPE_(_HashSetOfCacheableKey, CacheableLinkedHashSet);
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // _GEMFIRE_CACHEABLE_BUILTINS_HPP_

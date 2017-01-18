@@ -26,7 +26,9 @@
 
 #include "DistributedSystemImpl.hpp"
 #include <ace/Task.h>
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 const char NC_thread[] = "NC thread";
 template <class T>
 class CPPCACHE_EXPORT GF_TASK_T : public ACE_Task_Base {
@@ -75,6 +77,7 @@ class CPPCACHE_EXPORT GF_TASK_T : public ACE_Task_Base {
   volatile bool m_run;
   const char* m_threadName;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // __GF_TASK_T_HPP__

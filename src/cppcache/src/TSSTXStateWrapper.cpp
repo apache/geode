@@ -24,7 +24,9 @@
 #include "TSSTXStateWrapper.hpp"
 #include "TXState.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 ACE_TSS<TSSTXStateWrapper> TSSTXStateWrapper::s_gemfireTSSTXState;
 
 TSSTXStateWrapper::TSSTXStateWrapper() { m_txState = NULL; }
@@ -35,4 +37,6 @@ TSSTXStateWrapper::~TSSTXStateWrapper() {
     m_txState = NULL;
   }
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

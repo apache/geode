@@ -114,18 +114,18 @@ namespace GemStone
         /// Private constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline GemStone::GemFire::Cache::Generic::Struct/*<TResult>*/( ::gemfire::Serializable* nativeptr )
+        inline GemStone::GemFire::Cache::Generic::Struct/*<TResult>*/( ::apache::geode::client::Serializable* nativeptr )
           : GemStone::GemFire::Cache::Generic::Serializable( nativeptr ) { }
 
         inline GemStone::GemFire::Cache::Generic::Struct/*<TResult>*/(  )
-          : GemStone::GemFire::Cache::Generic::Serializable( ::gemfire::Struct::createDeserializable()) { }
+          : GemStone::GemFire::Cache::Generic::Serializable( ::apache::geode::client::Struct::createDeserializable()) { }
 
       internal:
 
         /// <summary>
         /// Factory function to register wrapper
         /// </summary>
-        inline static GemStone::GemFire::Cache::Generic::IGFSerializable^ /*Struct^*/ /*<TResult>*/ Create( ::gemfire::Serializable* obj )
+        inline static GemStone::GemFire::Cache::Generic::IGFSerializable^ /*Struct^*/ /*<TResult>*/ Create( ::apache::geode::client::Serializable* obj )
         {
           return ( obj != nullptr ?
             gcnew GemStone::GemFire::Cache::Generic::Struct/*<TResult>*/( obj ) : nullptr );

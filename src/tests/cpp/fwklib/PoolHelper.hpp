@@ -30,7 +30,9 @@
 #include <string>
 #include <map>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace testframework {
 
 // ----------------------------------------------------------------------------
@@ -139,7 +141,9 @@ class PoolHelper {
 };
 
 }  // namespace testframework
-}  // namespace gemfire
+}
+}
+}
 
 // ----------------------------------------------------------------------------
 

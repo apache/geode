@@ -52,7 +52,7 @@ namespace GemStone
       /// This interface provides for the configuration and creation of instances of Region.
       /// </summary>
       public ref class RegionFactory sealed
-				: public Internal::SBWrap<gemfire::RegionFactory>
+				: public Internal::SBWrap<apache::geode::client::RegionFactory>
       {
       public:
         /// <summary>
@@ -429,7 +429,7 @@ namespace GemStone
       /// <returns>
       /// The managed wrapper object; null if the native pointer is null.
       /// </returns>
-      inline static RegionFactory^ Create( gemfire::RegionFactory* nativeptr )
+      inline static RegionFactory^ Create( apache::geode::client::RegionFactory* nativeptr )
       {
         return ( nativeptr != nullptr ?
           gcnew RegionFactory( nativeptr ) : nullptr );
@@ -441,8 +441,8 @@ namespace GemStone
         /// Private constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-      inline RegionFactory( gemfire::RegionFactory* nativeptr )
-				: Internal::SBWrap<gemfire::RegionFactory>( nativeptr ) { }
+      inline RegionFactory( apache::geode::client::RegionFactory* nativeptr )
+				: Internal::SBWrap<apache::geode::client::RegionFactory>( nativeptr ) { }
       };
       } // end namespace Generic
     }

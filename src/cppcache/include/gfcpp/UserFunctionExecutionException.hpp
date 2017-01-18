@@ -20,7 +20,9 @@
 #include "Serializable.hpp"
 #include "CacheableString.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class UserFunctionExecutionException;
 typedef SharedPtr<UserFunctionExecutionException>
     UserFunctionExecutionExceptionPtr;
@@ -113,5 +115,7 @@ class UserFunctionExecutionException : public Serializable {
 
   CacheableStringPtr m_message;  // error message
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif

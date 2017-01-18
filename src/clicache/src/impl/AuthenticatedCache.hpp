@@ -61,7 +61,7 @@ namespace GemStone
       /// </para>
       /// </remarks>
       public ref class AuthenticatedCache 
-        : public IRegionService, Internal::SBWrap<gemfire::RegionService>
+        : public IRegionService, Internal::SBWrap<apache::geode::client::RegionService>
       {
       public:
 
@@ -147,7 +147,7 @@ namespace GemStone
         /// <returns>
         /// The managed wrapper object; null if the native pointer is null.
         /// </returns>
-        inline static AuthenticatedCache^ Create( gemfire::RegionService* nativeptr )
+        inline static AuthenticatedCache^ Create( apache::geode::client::RegionService* nativeptr )
         {
           return ( nativeptr != nullptr ?
             gcnew AuthenticatedCache( nativeptr ) : nullptr );
@@ -159,7 +159,7 @@ namespace GemStone
         /// Private constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline AuthenticatedCache( gemfire::RegionService* nativeptr )
+        inline AuthenticatedCache( apache::geode::client::RegionService* nativeptr )
           : SBWrap( nativeptr ) { }
       };
       } // end namespace Generic

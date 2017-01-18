@@ -29,7 +29,9 @@
 #include <gfcpp/CacheableObjectArray.hpp>
 #include <gfcpp/CacheableDate.hpp>
 #include "PdxRemotePreservedData.hpp"
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class PdxLocalReader : public PdxReader {
  protected:
@@ -216,5 +218,7 @@ class PdxLocalReader : public PdxReader {
   virtual PdxUnreadFieldsPtr readUnreadFields();
 };
 typedef SharedPtr<PdxLocalReader> PdxLocalReaderPtr;
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif /* PDXLOCALREADER_HPP_ */

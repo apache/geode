@@ -27,11 +27,13 @@
 #include <gfcpp/InternalCacheTransactionManager2PC.hpp>
 #include "CacheTransactionManagerImpl.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class InternalCacheTransactionManager2PCImpl
-    : public gemfire::CacheTransactionManagerImpl,
-      public gemfire::InternalCacheTransactionManager2PC {
+    : public apache::geode::client::CacheTransactionManagerImpl,
+      public apache::geode::client::InternalCacheTransactionManager2PC {
  public:
   InternalCacheTransactionManager2PCImpl(Cache* cache);
   virtual ~InternalCacheTransactionManager2PCImpl();
@@ -48,6 +50,8 @@ class InternalCacheTransactionManager2PCImpl
   InternalCacheTransactionManager2PCImpl(
       const InternalCacheTransactionManager2PCImpl& other);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif /* INTERNALCACHETRANSACTIONMANAGER2PCIMPL_H_ */

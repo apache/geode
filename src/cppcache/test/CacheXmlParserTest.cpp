@@ -19,7 +19,7 @@
 
 #include <CacheXmlParser.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 std::string xsd_prefix = R"(<?xml version='1.0' encoding='UTF-8'?>
 <client-cache

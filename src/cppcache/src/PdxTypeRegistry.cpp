@@ -24,7 +24,9 @@
 #include "PdxTypeRegistry.hpp"
 #include "SerializationRegistry.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 TypeIdVsPdxType* PdxTypeRegistry::typeIdToPdxType = NULL;
 
@@ -66,7 +68,8 @@ void PdxTypeRegistry::init() {
   intToEnum = CacheableHashMap::create();
   pdxTypeToTypeIdMap = new PdxTypeToTypeIdMap();
   /*}catch(const std::bad_alloc&){
-  throw gemfire::OutOfMemoryException( "Out of Memory while executing new in
+  throw apache::geode::client::OutOfMemoryException( "Out of Memory while
+  executing new in
   PdxTypeRegistry::init()");
   }*/
 }
@@ -299,4 +302,6 @@ EnumInfoPtr PdxTypeRegistry::getEnum(int32_t enumVal) {
   intToEnum = tmp;
   return ret;
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

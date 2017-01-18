@@ -33,7 +33,9 @@
 * @file
 */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class ThinClientBaseDM;
 
@@ -614,7 +616,8 @@ class ChunkedDurableCQListResponse : public TcrChunkedResult {
 };
 
 typedef SharedPtr<ChunkedDurableCQListResponse> ChunkedDurableCQListResponsePtr;
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_THINCLIENTREGION_H__

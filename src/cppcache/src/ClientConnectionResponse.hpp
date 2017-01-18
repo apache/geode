@@ -19,7 +19,9 @@
 #include "ServerLocationResponse.hpp"
 #include "ServerLocation.hpp"
 #include <gfcpp/SharedPtr.hpp>
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class ClientConnectionResponse : public ServerLocationResponse {
  public:
   ClientConnectionResponse()
@@ -43,5 +45,7 @@ class ClientConnectionResponse : public ServerLocationResponse {
   ServerLocation m_server;
 };
 typedef SharedPtr<ClientConnectionResponse> ClientConnectionResponsePtr;
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif

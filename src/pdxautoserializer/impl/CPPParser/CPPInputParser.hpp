@@ -22,7 +22,9 @@
 #include "CPPLexer.hpp"
 #include "CPPParser.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace pdx_auto_serializer {
 class CPPHeaderParser;
 
@@ -179,7 +181,9 @@ class CPPInputParser : public InputParser {
    */
   CPPInputParser();
 };
-}
-}
+}  // namespace pdx_auto_serializer
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // _GFAS_CPPINPUTPARSER_HPP_

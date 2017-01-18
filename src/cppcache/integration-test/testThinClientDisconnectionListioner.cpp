@@ -31,7 +31,7 @@ static int numberOfLocators = 1;
 static int isDisconnected = false;
 const char* locatorsG =
     CacheHelper::getLocatorHostPort(isLocator, isLocalServer, numberOfLocators);
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace test;
 class DisconnectCacheListioner : public CacheListener {
   void afterRegionDisconnected(const RegionPtr& region) {

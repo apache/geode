@@ -31,7 +31,9 @@
 #include <ace/OS.h>
 #include <utility>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class CPPCACHE_EXPORT MapEntry;
 typedef SharedPtr<MapEntry> MapEntryPtr;
 class CPPCACHE_EXPORT MapEntryImpl;
@@ -279,7 +281,8 @@ class CPPCACHE_EXPORT EntryFactory {
  protected:
   bool m_concurrencyChecksEnabled;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __GEMFIRE_IMPL_MAPENTRY_H__

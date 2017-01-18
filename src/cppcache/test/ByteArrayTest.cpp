@@ -17,7 +17,7 @@
 
 #include "ByteArrayFixture.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 TEST(ByteArrayTest, TestNoArgConstructor) {
   const ByteArray ba;

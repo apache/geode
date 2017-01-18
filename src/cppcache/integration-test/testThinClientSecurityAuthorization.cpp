@@ -26,8 +26,8 @@
 
 #include "ThinClientSecurity.hpp"
 
-using namespace gemfire::testframework::security;
-using namespace gemfire;
+using namespace apache::geode::client::testframework::security;
+using namespace apache::geode::client;
 
 const char* locHostPort =
     CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
@@ -83,25 +83,25 @@ opCodeList::value_type tmpAArr[] = {OP_CREATE,       OP_UPDATE,
                                     OP_GET,          OP_QUERY,
                                     OP_REGISTER_CQ,  OP_EXECUTE_FUNCTION};
 
-#define HANDLE_NO_NOT_AUTHORIZED_EXCEPTION                 \
-  catch (const gemfire::NotAuthorizedException&) {         \
-    LOG("NotAuthorizedException Caught");                  \
-    FAIL("should not have caught NotAuthorizedException"); \
-  }                                                        \
-  catch (const gemfire::Exception& other) {                \
-    LOG("Got gemfire::Exception& other ");                 \
-    other.printStackTrace();                               \
-    FAIL(other.getMessage());                              \
+#define HANDLE_NO_NOT_AUTHORIZED_EXCEPTION                       \
+  catch (const apache::geode::client::NotAuthorizedException&) { \
+    LOG("NotAuthorizedException Caught");                        \
+    FAIL("should not have caught NotAuthorizedException");       \
+  }                                                              \
+  catch (const apache::geode::client::Exception& other) {        \
+    LOG("Got apache::geode::client::Exception& other ");         \
+    other.printStackTrace();                                     \
+    FAIL(other.getMessage());                                    \
   }
 
-#define HANDLE_NOT_AUTHORIZED_EXCEPTION            \
-  catch (const gemfire::NotAuthorizedException&) { \
-    LOG("NotAuthorizedException Caught");          \
-    LOG("Success");                                \
-  }                                                \
-  catch (const gemfire::Exception& other) {        \
-    other.printStackTrace();                       \
-    FAIL(other.getMessage());                      \
+#define HANDLE_NOT_AUTHORIZED_EXCEPTION                          \
+  catch (const apache::geode::client::NotAuthorizedException&) { \
+    LOG("NotAuthorizedException Caught");                        \
+    LOG("Success");                                              \
+  }                                                              \
+  catch (const apache::geode::client::Exception& other) {        \
+    other.printStackTrace();                                     \
+    FAIL(other.getMessage());                                    \
   }
 
 #define ADMIN_CLIENT s1p1
@@ -362,7 +362,8 @@ DUNIT_TASK_DEFINITION(WRITER_CLIENT, StepTwo)
     try {
       RegionPtr regPtr = getHelper()->getRegion(regionNamesAuth[0]);
       LOG("containsKeyOnServer");
-      regPtr->containsKeyOnServer(gemfire::CacheableKey::create(keys[2]));
+      regPtr->containsKeyOnServer(
+          apache::geode::client::CacheableKey::create(keys[2]));
       FAIL("containsKeyOnServer should hav failed for writer");
     }
     HANDLE_NOT_AUTHORIZED_EXCEPTION
@@ -484,7 +485,8 @@ DUNIT_TASK_DEFINITION(READER_CLIENT, StepThree)
            "Key should not have been found in the region");
     try {
       LOG("containsKeyOnServer");
-      rptr->containsKeyOnServer(gemfire::CacheableKey::create(keys[2]));
+      rptr->containsKeyOnServer(
+          apache::geode::client::CacheableKey::create(keys[2]));
     }
     HANDLE_NO_NOT_AUTHORIZED_EXCEPTION
 

@@ -42,7 +42,9 @@ static std::string CLIENTCOUNT("ClientCount");
 
 // ----------------------------------------------------------------------------
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace testframework {
 /** @class FwkBBClient
   * @brief Framework BB client
@@ -181,6 +183,8 @@ class FwkBBClient {
 // ----------------------------------------------------------------------------
 
 }  // namespace  testframework
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __FWK_BB_CLIENT_HPP__

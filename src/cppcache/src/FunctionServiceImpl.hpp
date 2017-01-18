@@ -26,7 +26,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 /**
  * @class FunctionService FunctionService.hpp
  * entry point for function execution
@@ -58,5 +60,7 @@ class CPPCACHE_EXPORT FunctionServiceImpl : public FunctionService {
   ProxyCachePtr m_proxyCache;
   friend class ProxyCache;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  //__GEMFIRE_FUNCTION_SERVICEIMPL_H__

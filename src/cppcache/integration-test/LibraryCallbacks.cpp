@@ -45,17 +45,17 @@ void millisleep(uint32_t x) {
 
 extern "C" {
 
-_T_DLL_EXPORT gemfire::CacheListener* createCacheListener() {
+_T_DLL_EXPORT apache::geode::client::CacheListener* createCacheListener() {
   TallyListener* tl = new TallyListener();
   tl->beQuiet(true);
   return tl;
 }
 
-_T_DLL_EXPORT gemfire::CacheLoader* createCacheLoader() {
+_T_DLL_EXPORT apache::geode::client::CacheLoader* createCacheLoader() {
   return new TallyLoader();
 }
 
-_T_DLL_EXPORT gemfire::CacheWriter* createCacheWriter() {
+_T_DLL_EXPORT apache::geode::client::CacheWriter* createCacheWriter() {
   return new TallyWriter();
 }
 }

@@ -32,7 +32,7 @@
 #define TESTOBJECT_EXPORT
 #endif
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 #define GFIGNORE(X) X
 #define GFID
@@ -144,7 +144,7 @@ class GFIGNORE(TESTOBJECT_EXPORT) Child : public Parent,
     if (m_a == pap->m_a && m_b == pap->m_b && m_c == pap->m_c &&
         m_d == pap->m_d && m_e == pap->m_e && m_f == pap->m_f) {
       return true;
-}
+    }
 
     return false;
   }
@@ -218,7 +218,7 @@ class GFIGNORE(TESTOBJECT_EXPORT) CharTypes : public PdxSerializable {
         return false;
       } else {
         i++;
-}
+      }
     }
 
     return true;

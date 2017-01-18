@@ -25,7 +25,7 @@
 #include <gfcpp/DistributedSystem.hpp>
 #include <gfcpp/SystemProperties.hpp>
 #include "DistributedSystemImpl.hpp"
-using namespace gemfire;
+using namespace apache::geode::client;
 
 ThreadPoolWorker::ThreadPoolWorker(IThreadPool* manager)
     : manager_(manager), threadId_(0), queue_(msg_queue()), shutdown_(0) {}

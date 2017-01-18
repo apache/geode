@@ -37,7 +37,9 @@
 
 #include "NonCopyable.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 typedef std::map<std::string, PdxFieldTypePtr> NameVsPdxType;
 class PdxType;
@@ -45,12 +47,12 @@ typedef SharedPtr<PdxType> PdxTypePtr;
 /* adongre
  * Coverity - II
  * CID 29178: Other violation (MISSING_COPY)
- * Class "gemfire::PdxType" owns resources that are managed
+ * Class "apache::geode::client::PdxType" owns resources that are managed
  * in its constructor and destructor but has no user-written copy constructor.
  * Fix : Make the class Non Copyable
  *
  * CID 29173: Other violation (MISSING_ASSIGN)
- * Class "gemfire::PdxType" owns resources that are managed in its
+ * Class "apache::geode::client::PdxType" owns resources that are managed in its
  * constructor and destructor but has no user-written assignment operator.
  * Fix : Make the class Non Assignable
  */
@@ -219,5 +221,7 @@ class PdxType : public Serializable,
   // This is for PdxType as key in std map.
   bool operator<(const PdxType& other) const;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif /* PDXTYPE_HPP_ */

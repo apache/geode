@@ -26,7 +26,9 @@
 
 #include <gfcpp/Serializable.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class PdxInstantiator : public Serializable {
  private:
@@ -49,5 +51,7 @@ class PdxInstantiator : public Serializable {
 
   CacheableStringPtr toString() const;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif /* _GEMFIRE_PDXINSTANTIATOR_HPP_ */

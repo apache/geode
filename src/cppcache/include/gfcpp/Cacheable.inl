@@ -23,7 +23,9 @@
 
 #include "Cacheable.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 template< class PRIM >
 inline CacheablePtr Cacheable::create( const PRIM value )
@@ -43,6 +45,8 @@ inline CacheablePtr createValue( const TVALUE* value )
   return createValueArr( value );
 }
 
-} //namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif //ifndef __GEMFIRE_CACHEABLE_I__

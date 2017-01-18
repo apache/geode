@@ -23,7 +23,7 @@
 #include "ReadWriteLock.hpp"
 #include <string>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 const char* EvictionController::NC_EC_Thread = "NC EC Thread";
 EvictionController::EvictionController(size_t maxHeapSize,
@@ -105,7 +105,7 @@ void EvictionController::processHeapInfo(int64_t& readInfo,
     if (evictionPercentage > 100) evictionPercentage = 100;
     orderEvictions(evictionPercentage);
     // Sleep for 10 seconds to allow the evictions to catch up
-    //   gemfire::millisleep(10);  //taken this out for now
+    //   apache::geode::client::millisleep(10);  //taken this out for now
   }
 }
 

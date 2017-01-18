@@ -31,7 +31,7 @@
 #include <gfcpp/Query.hpp>
 #include <gfcpp/QueryService.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace test;
 using namespace testData;
 
@@ -589,7 +589,7 @@ DUNIT_TASK_DEFINITION(CLIENT1, DoQuerySSError)
                           i);
           LOG(failmsg);
           FAIL(failmsg);
-        } catch (gemfire::QueryException& ex) {
+        } catch (apache::geode::client::QueryException& ex) {
           // ok, expecting an exception, do nothing
           fprintf(stdout, "Got expected exception: %s", ex.getMessage());
         } catch (...) {

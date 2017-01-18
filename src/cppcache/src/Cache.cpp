@@ -29,7 +29,7 @@
 #include <gfcpp/PoolManager.hpp>
 #include <PdxInstanceFactoryImpl.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 extern bool Cache_CreatedFromCacheFactory;
 extern ACE_Recursive_Thread_Mutex* g_disconnectLock;
@@ -82,8 +82,8 @@ void Cache::close(bool keepalive) {
       Cache_CreatedFromCacheFactory = false;
       DistributedSystem::disconnect();
     }
-  } catch (const gemfire::NotConnectedException&) {
-  } catch (const gemfire::Exception&) {
+  } catch (const apache::geode::client::NotConnectedException&) {
+  } catch (const apache::geode::client::Exception&) {
   } catch (...) {
   }
 }

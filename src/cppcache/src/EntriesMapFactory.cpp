@@ -24,7 +24,7 @@
 //#include <gfcpp/ExpirationAction.hpp>
 #include <gfcpp/SystemProperties.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 /**
  * @brief Return a ConcurrentEntriesMap if no LRU, otherwise return a

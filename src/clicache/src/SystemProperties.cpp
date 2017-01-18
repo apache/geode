@@ -33,8 +33,8 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2
 
-          SetPtr(new gemfire::SystemProperties(gemfire::PropertiesPtr(
-            GetNativePtr<gemfire::Properties>(properties))), true);
+          SetPtr(new apache::geode::client::SystemProperties(apache::geode::client::PropertiesPtr(
+            GetNativePtr<apache::geode::client::Properties>(properties))), true);
 
         _GF_MG_EXCEPTION_CATCH_ALL2
       }
@@ -45,9 +45,9 @@ namespace GemStone
         _GF_MG_EXCEPTION_TRY2
 
           ManagedString mg_configFile( configFile );
-          gemfire::PropertiesPtr propertiesptr(
-            GetNativePtr<gemfire::Properties>( properties ) );
-          SetPtr( new gemfire::SystemProperties( propertiesptr,
+          apache::geode::client::PropertiesPtr propertiesptr(
+            GetNativePtr<apache::geode::client::Properties>( properties ) );
+          SetPtr( new apache::geode::client::SystemProperties( propertiesptr,
             mg_configFile.CharPtr ), true );
 
         _GF_MG_EXCEPTION_CATCH_ALL2

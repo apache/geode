@@ -40,11 +40,12 @@
 #define TESTOBJECT_EXPORT
 #endif
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace testframework;
 namespace testobject {
 class DeltaFastAssetAccount;
-typedef gemfire::SharedPtr<DeltaFastAssetAccount> DeltaFastAssetAccountPtr;
+typedef apache::geode::client::SharedPtr<DeltaFastAssetAccount>
+    DeltaFastAssetAccountPtr;
 class TESTOBJECT_EXPORT DeltaFastAssetAccount : public Cacheable, public Delta {
  private:
   bool encodeTimestamp;
@@ -72,10 +73,11 @@ class TESTOBJECT_EXPORT DeltaFastAssetAccount : public Cacheable, public Delta {
                         int asstSize = 0, bool getbfrUpdate = false);
 
   virtual ~DeltaFastAssetAccount() {}
-  void toData(gemfire::DataOutput& output) const;
-  gemfire::Serializable* fromData(gemfire::DataInput& input);
-  void toDelta(gemfire::DataOutput& output) const;
-  void fromDelta(gemfire::DataInput& input);
+  void toData(apache::geode::client::DataOutput& output) const;
+  apache::geode::client::Serializable* fromData(
+      apache::geode::client::DataInput& input);
+  void toDelta(apache::geode::client::DataOutput& output) const;
+  void fromDelta(apache::geode::client::DataInput& input);
 
   CacheableStringPtr toString() const {
     char buf[102500];
@@ -141,7 +143,7 @@ class TESTOBJECT_EXPORT DeltaFastAssetAccount : public Cacheable, public Delta {
     return clonePtr;
   }
 
-  static gemfire::Serializable* createDeserializable() {
+  static apache::geode::client::Serializable* createDeserializable() {
     return new DeltaFastAssetAccount();
   }
 };

@@ -32,44 +32,44 @@ namespace GemStone
     {
       Object^ Struct::default::get( size_t index )
       {
-       /*   return SafeUMSerializableConvertGeneric(static_cast<gemfire::Struct*>(
+       /*   return SafeUMSerializableConvertGeneric(static_cast<apache::geode::client::Struct*>(
             NativePtr())->operator[](static_cast<int32_t>(index)).ptr());*/
-          return (Serializable::GetManagedValueGeneric<Object^>(static_cast<gemfire::Struct*>(
+          return (Serializable::GetManagedValueGeneric<Object^>(static_cast<apache::geode::client::Struct*>(
             NativePtr())->operator[](static_cast<int32_t>(index))));
       }
 
       Object^ Struct::default::get( String^ fieldName )
       {
         ManagedString mg_fieldName( fieldName );
-        /*return SafeUMSerializableConvertGeneric(static_cast<gemfire::Struct*>(
+        /*return SafeUMSerializableConvertGeneric(static_cast<apache::geode::client::Struct*>(
             NativePtr())->operator[](mg_fieldName.CharPtr).ptr());*/
 
-        return (Serializable::GetManagedValueGeneric</*TResult*/Object^>(static_cast<gemfire::Struct*>(
+        return (Serializable::GetManagedValueGeneric</*TResult*/Object^>(static_cast<apache::geode::client::Struct*>(
             NativePtr())->operator[](mg_fieldName.CharPtr)));
       }
 
       StructSet<Object^>^ Struct::Set::get( )
       {
-        return StructSet</*TResult*/Object^>::Create(static_cast<gemfire::Struct*>(
+        return StructSet</*TResult*/Object^>::Create(static_cast<apache::geode::client::Struct*>(
           NativePtr())->getStructSet().ptr());
       }
 
       
       bool Struct/*<TResult>*/::HasNext( )
       {
-        return static_cast<gemfire::Struct*>(NativePtr())->hasNext();
+        return static_cast<apache::geode::client::Struct*>(NativePtr())->hasNext();
       }
 
       size_t Struct/*<TResult>*/::Length::get( )
       {
-        return static_cast<gemfire::Struct*>(NativePtr())->length();
+        return static_cast<apache::geode::client::Struct*>(NativePtr())->length();
       }
 
       Object^ Struct/*<TResult>*/::Next( )
       {
-        /*return SafeUMSerializableConvertGeneric(static_cast<gemfire::Struct*>(
+        /*return SafeUMSerializableConvertGeneric(static_cast<apache::geode::client::Struct*>(
           NativePtr())->next().ptr());*/
-        return (Serializable::GetManagedValueGeneric</*TResult*/Object^>(static_cast<gemfire::Struct*>(
+        return (Serializable::GetManagedValueGeneric</*TResult*/Object^>(static_cast<apache::geode::client::Struct*>(
           NativePtr())->next()));
       }
 

@@ -26,18 +26,22 @@
 #include <ace/Time_Value.h>
 #include <ace/Guard_T.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 CPPCACHE_EXPORT void* testSpinLockCreate();
 CPPCACHE_EXPORT void testSpinLockAcquire(void* lock);
 CPPCACHE_EXPORT void testSpinLockRelease(void* lock);
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 DUNIT_TASK(s1p1, Basic)
   {
-    void* lock = gemfire::testSpinLockCreate();
-    gemfire::testSpinLockAcquire(lock);
-    gemfire::testSpinLockRelease(lock);
+    void* lock = apache::geode::client::testSpinLockCreate();
+    apache::geode::client::testSpinLockAcquire(lock);
+    apache::geode::client::testSpinLockRelease(lock);
   }
 END_TASK(Basic)
 
@@ -53,11 +57,11 @@ class ThreadA : public ACE_Task_Base {
   ThreadA() : ACE_Task_Base() {}
 
   int svc() {
-    gemfire::testSpinLockAcquire(lock);
+    apache::geode::client::testSpinLockAcquire(lock);
     LOG("ThreadA: Acquired lock x.");
     triggerM->release();
     triggerA->acquire();
-    gemfire::testSpinLockRelease(lock);
+    apache::geode::client::testSpinLockRelease(lock);
     LOG("ThreadA: Released lock.");
     return 0;
   }
@@ -69,11 +73,11 @@ class ThreadB : public ACE_Task_Base {
 
   int svc() {
     triggerB->acquire();
-    gemfire::testSpinLockAcquire(lock);
+    apache::geode::client::testSpinLockAcquire(lock);
     btime = new ACE_Time_Value(ACE_OS::gettimeofday());
     LOG("ThreadB: Acquired lock.");
     triggerM->release();
-    gemfire::testSpinLockRelease(lock);  // for cleanly ness.
+    apache::geode::client::testSpinLockRelease(lock);  // for cleanly ness.
     return 0;
   }
 };
@@ -84,7 +88,7 @@ DUNIT_TASK(s1p1, TwoThreads)
     triggerB = new perf::Semaphore(0);
     triggerM = new perf::Semaphore(0);
 
-    lock = gemfire::testSpinLockCreate();
+    lock = apache::geode::client::testSpinLockCreate();
 
     ThreadA* threadA = new ThreadA();
     ThreadB* threadB = new ThreadB();
@@ -130,7 +134,7 @@ DUNIT_TASK(s1p1, Cond)
 
     ACE_Recursive_Thread_Mutex mutex;
     ACE_Guard<ACE_Recursive_Thread_Mutex> guard(mutex);
-    gemfire::Condition cond(mutex);
+    apache::geode::client::Condition cond(mutex);
     LOG("About to wait on Condition with past time.");
     if (cond.waitUntil(&stopAt) != false) {
       FAIL("Should have timed out immediately.");

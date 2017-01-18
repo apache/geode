@@ -39,15 +39,19 @@ namespace GemStone
 }
 }
 
-namespace gemfire
+namespace apache
 {
+  namespace geode
+  {
+    namespace client
+    {
 
   /// <summary>
   /// Wraps the managed <see cref="GemStone.GemFire.Cache.IGFSerializable" />
-  /// object and implements the native <c>gemfire::CacheableKey</c> interface.
+  /// object and implements the native <c>apache::geode::client::CacheableKey</c> interface.
   /// </summary>
   class PdxManagedCacheableKeyBytes
-    : public gemfire::CacheableKey, public Delta
+    : public apache::geode::client::CacheableKey, public Delta
   {
   public:
 
@@ -76,7 +80,7 @@ namespace gemfire
       {
         if(storeBytes)//if value is from app 
         {
-          gemfire::DataOutput dataOut;
+          apache::geode::client::DataOutput dataOut;
           GemStone::GemFire::Cache::Generic::DataOutput mg_output( &dataOut, true);
 					 GemStone::GemFire::Cache::Generic::Internal::PdxHelper::SerializePdx(%mg_output, managedptr);
         //  managedptr->ToData( %mg_output );
@@ -107,21 +111,21 @@ namespace gemfire
     /// <summary>
     /// serialize this object
     /// </summary>
-    virtual void toData( gemfire::DataOutput& output ) const;
+    virtual void toData( apache::geode::client::DataOutput& output ) const;
 
     /// <summary>
     /// deserialize this object, typical implementation should return
     /// the 'this' pointer.
     /// </summary>
-    virtual gemfire::Serializable* fromData( gemfire::DataInput& input );
+    virtual apache::geode::client::Serializable* fromData( apache::geode::client::DataInput& input );
     
-    virtual void toDelta( gemfire::DataOutput& output) const;
+    virtual void toDelta( apache::geode::client::DataOutput& output) const;
 
-    virtual void fromDelta( gemfire::DataInput& input );
+    virtual void fromDelta( apache::geode::client::DataInput& input );
 
     virtual bool hasDelta();
 
-    virtual gemfire::DeltaPtr clone();
+    virtual apache::geode::client::DeltaPtr clone();
 
     /// <summary>
     /// return the size of this object in bytes
@@ -156,12 +160,12 @@ namespace gemfire
     /// Display this object as 'string', which depends on the implementation in
     /// the managed class
     /// </summary>
-    virtual gemfire::CacheableStringPtr toString( ) const;
+    virtual apache::geode::client::CacheableStringPtr toString( ) const;
 
     /// <summary>
     /// return true if this key matches other CacheableKey
     /// </summary>
-    virtual bool operator == ( const gemfire::CacheableKey& other ) const;
+    virtual bool operator == ( const apache::geode::client::CacheableKey& other ) const;
     /// <summary>
     /// return true if this key matches other ManagedCacheableKeyBytes
     /// </summary>
@@ -225,4 +229,7 @@ namespace gemfire
     PdxManagedCacheableKeyBytes& operator = ( const PdxManagedCacheableKeyBytes& );
   };
 
-}
+    }  // namespace client
+  }  // namespace geode
+}  // namespace apache
+

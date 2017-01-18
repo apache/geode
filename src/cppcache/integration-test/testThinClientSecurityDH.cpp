@@ -53,7 +53,7 @@ portion in this test.
 #define CORRECT_CREDENTIALS 'C'
 #define INCORRECT_CREDENTIALS 'I'
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace test;
 
 const char* locHostPort =
@@ -151,7 +151,7 @@ void initClientAuth(char credentialsType, const char* dhAlgo) {
 void InitIncorrectClients(const char* dhAlgo) {
   try {
     initClientAuth(INCORRECT_CREDENTIALS, dhAlgo);
-  } catch (const gemfire::Exception& other) {
+  } catch (const apache::geode::client::Exception& other) {
     other.printStackTrace();
     LOG(other.getMessage());
   }
@@ -159,10 +159,10 @@ void InitIncorrectClients(const char* dhAlgo) {
   try {
     createRegionForSecurity(regionNamesAuth[0], USE_ACK, true);
     FAIL("Should have thrown AuthenticationFailedException.");
-  } catch (const gemfire::AuthenticationFailedException& other) {
+  } catch (const apache::geode::client::AuthenticationFailedException& other) {
     other.printStackTrace();
     LOG(other.getMessage());
-  } catch (const gemfire::Exception& other) {
+  } catch (const apache::geode::client::Exception& other) {
     other.printStackTrace();
     LOG(other.getMessage());
     FAIL("Only AuthenticationFailedException is expected");
@@ -173,7 +173,7 @@ void InitIncorrectClients(const char* dhAlgo) {
 void InitCorrectClients(const char* dhAlgo) {
   try {
     initClientAuth(CORRECT_CREDENTIALS, dhAlgo);
-  } catch (const gemfire::Exception& other) {
+  } catch (const apache::geode::client::Exception& other) {
     other.printStackTrace();
     LOG(other.getMessage());
   }
@@ -181,7 +181,7 @@ void InitCorrectClients(const char* dhAlgo) {
     createRegionForSecurity(regionNamesAuth[0], USE_ACK, true);
     createEntry(regionNamesAuth[0], keys[0], vals[0]);
     updateEntry(regionNamesAuth[0], keys[0], nvals[0]);
-  } catch (const gemfire::Exception& other) {
+  } catch (const apache::geode::client::Exception& other) {
     other.printStackTrace();
     FAIL(other.getMessage());
   }
@@ -204,7 +204,7 @@ void DoNetSearch() {
     } else {
       LOG("checkPtr is NULL");
     }
-  } catch (const gemfire::Exception& other) {
+  } catch (const apache::geode::client::Exception& other) {
     other.printStackTrace();
     FAIL(other.getMessage());
   }

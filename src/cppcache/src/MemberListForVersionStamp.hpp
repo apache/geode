@@ -24,7 +24,9 @@
 #include "ReadWriteLock.hpp"
 #include <unordered_map>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 struct DistributedMemberWithIntIdentifier {
  public:
   DistributedMemberWithIntIdentifier(
@@ -53,6 +55,8 @@ class MemberListForVersionStamp : public SharedBase {
 };
 
 typedef SharedPtr<MemberListForVersionStamp> MemberListForVersionStampPtr;
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __MemberListForVersionStamp_HPP__

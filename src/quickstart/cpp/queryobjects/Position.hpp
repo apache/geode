@@ -35,11 +35,11 @@
 #define TESTOBJECT_EXPORT
 #endif
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 namespace testobject {
 
-class TESTOBJECT_EXPORT Position : public gemfire::Serializable {
+class TESTOBJECT_EXPORT Position : public apache::geode::client::Serializable {
  private:
   int64_t avg20DaysVol;
   CacheableStringPtr bondRating;
@@ -65,8 +65,9 @@ class TESTOBJECT_EXPORT Position : public gemfire::Serializable {
   Position();
   Position(const char* id, int32_t out);
   virtual ~Position();
-  virtual void toData(gemfire::DataOutput& output) const;
-  virtual gemfire::Serializable* fromData(gemfire::DataInput& input);
+  virtual void toData(apache::geode::client::DataOutput& output) const;
+  virtual apache::geode::client::Serializable* fromData(
+      apache::geode::client::DataInput& input);
   virtual int32_t classId() const { return 0x02; }
   CacheableStringPtr toString() const;
 
@@ -85,7 +86,7 @@ class TESTOBJECT_EXPORT Position : public gemfire::Serializable {
   CacheableStringPtr getSecId() { return secId; }
   int32_t getId() { return pid; }
   int32_t getSharesOutstanding() { return sharesOutstanding; }
-  static gemfire::Serializable* createDeserializable() {
+  static apache::geode::client::Serializable* createDeserializable() {
     return new Position();
   }
 
@@ -93,6 +94,6 @@ class TESTOBJECT_EXPORT Position : public gemfire::Serializable {
   void init();
 };
 
-typedef gemfire::SharedPtr<Position> PositionPtr;
+typedef apache::geode::client::SharedPtr<Position> PositionPtr;
 }
 #endif

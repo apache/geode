@@ -19,7 +19,9 @@
 
 #include <gfcpp/gfcpp_globals.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class CPPCACHE_EXPORT CacheXml {
  public:
@@ -208,6 +210,7 @@ class CPPCACHE_EXPORT CacheXml {
  public:
   CacheXml();
 };
-
-};      // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // ifndef __GEMFIRE_CACHEXML_HPP__

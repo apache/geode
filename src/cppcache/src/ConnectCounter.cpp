@@ -17,9 +17,13 @@
 
 #include "ConnectCounter.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 ConnectCounter::ConnectCounter() {}
 
 ConnectCounter::~ConnectCounter() {}
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

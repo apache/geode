@@ -25,7 +25,7 @@
 #include <gfcpp/GeodeCppCache.hpp>
 #include "Position.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 namespace testobject {
 
@@ -72,7 +72,8 @@ class TESTOBJECT_EXPORT Portfolio : public Serializable {
     objectSize += getObjectSize(positions);
     objectSize += getObjectSize(type);
     objectSize +=
-        (status == NULL ? 0 : sizeof(char) * static_cast<uint32_t>(strlen(status)));
+        (status == NULL ? 0
+                        : sizeof(char) * static_cast<uint32_t>(strlen(status)));
     objectSize += getObjectSize(names);
     objectSize += sizeof(uint8_t) * newValSize;
     objectSize += getObjectSize(creationDate);

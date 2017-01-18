@@ -19,7 +19,9 @@
 
 #include "CredentialGenerator.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace testframework {
 namespace security {
 
@@ -54,6 +56,8 @@ class NoopCredentialGenerator : public CredentialGenerator {
 
 }  // namespace security
 }  // namespace testframework
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

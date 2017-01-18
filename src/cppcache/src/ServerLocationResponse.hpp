@@ -18,7 +18,9 @@
 #define __SERVER_LOCATION__RESPONSE__
 #include <gfcpp/Serializable.hpp>
 #include "GemfireTypeIdsImpl.hpp"
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class ServerLocationResponse : public Serializable {
  public:
   ServerLocationResponse() : Serializable() {}
@@ -34,5 +36,7 @@ class ServerLocationResponse : public Serializable {
       const = 0;  // Has to be implemented by concrete class
   virtual ~ServerLocationResponse() {}  // Virtual destructor
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif

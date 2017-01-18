@@ -29,7 +29,9 @@
 
 #include <string>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace testframework {
 
 #ifdef WIN32
@@ -176,6 +178,8 @@ class TaskClient : public ACE_Task_Base {
 };  // TaskClient
 
 }  // namespace testframework
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __TaskClient_hpp__

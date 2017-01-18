@@ -38,7 +38,7 @@ namespace GemStone
         /// UserFunctionExecutionException class is used to encapsulate gemfire sendException in case of Function execution. 
         /// </summary>
         public ref class UserFunctionExecutionException sealed
-          : public Internal::SBWrap<gemfire::UserFunctionExecutionException>, public IGFSerializable
+          : public Internal::SBWrap<apache::geode::client::UserFunctionExecutionException>, public IGFSerializable
         {
         public:
           // IGFSerializable members
@@ -124,7 +124,7 @@ namespace GemStone
           /// Private constructor to wrap a native object pointer.
           /// </summary>
           /// <param name="nativeptr">The native object pointer</param>
-          inline UserFunctionExecutionException( gemfire::UserFunctionExecutionException* nativeptr )
+          inline UserFunctionExecutionException( apache::geode::client::UserFunctionExecutionException* nativeptr )
             : SBWrap( nativeptr ) { }
         };
 

@@ -21,7 +21,7 @@
 #include <gfcpp/GeodeCppCache.hpp>
 #include <CacheRegionHelper.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 ExpirationAction::Action action = ExpirationAction::DESTROY;
 

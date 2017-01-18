@@ -39,7 +39,7 @@
 #include <ClientHealthStats.hpp>
 #include <ClientProxyMembershipID.hpp>
 using namespace gemfire_statistics;
-using namespace gemfire;
+using namespace apache::geode::client;
 
 namespace gemfire_stats_globals {
 std::string g_statFile;

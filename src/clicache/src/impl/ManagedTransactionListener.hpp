@@ -24,66 +24,70 @@
 
 
 
-namespace gemfire {
+namespace apache {
+  namespace geode {
+    namespace client {
 
-  /// <summary>
-  /// Wraps the managed <see cref="GemStone.GemFire.Cache.ITransactionListener" />
-  /// object and implements the native <c>gemfire::TransactionListener</c> interface.
-  /// </summary>
-  class ManagedTransactionListenerGeneric
-    : public gemfire::TransactionListener
-  {
-  public:
+      /// <summary>
+      /// Wraps the managed <see cref="GemStone.GemFire.Cache.ITransactionListener" />
+      /// object and implements the native <c>apache::geode::client::TransactionListener</c> interface.
+      /// </summary>
+      class ManagedTransactionListenerGeneric
+        : public apache::geode::client::TransactionListener
+      {
+      public:
 
-    /// <summary>
-    /// Constructor to initialize with the provided managed object.
-    /// </summary>
-    /// <param name="userptr">
-    /// The managed object.
-    /// </param>
-    inline ManagedTransactionListenerGeneric(Object^ userptr )
-      : m_userptr( userptr ) { }
+        /// <summary>
+        /// Constructor to initialize with the provided managed object.
+        /// </summary>
+        /// <param name="userptr">
+        /// The managed object.
+        /// </param>
+        inline ManagedTransactionListenerGeneric(Object^ userptr )
+          : m_userptr( userptr ) { }
 
-    static gemfire::TransactionListener* create( const char* assemblyPath,
-      const char* factoryFunctionName );
+        static apache::geode::client::TransactionListener* create( const char* assemblyPath,
+          const char* factoryFunctionName );
 
-    virtual ~ManagedTransactionListenerGeneric( ) { }
-    
-	  virtual void afterCommit(gemfire::TransactionEventPtr& te);
+        virtual ~ManagedTransactionListenerGeneric( ) { }
 
-	  virtual void afterFailedCommit(gemfire::TransactionEventPtr& te);
+        virtual void afterCommit(apache::geode::client::TransactionEventPtr& te);
 
-	  virtual void afterRollback(gemfire::TransactionEventPtr& te);
+        virtual void afterFailedCommit(apache::geode::client::TransactionEventPtr& te);
 
-	  virtual void close();
+        virtual void afterRollback(apache::geode::client::TransactionEventPtr& te);
 
-    inline GemStone::GemFire::Cache::ITransactionListener^ ptr( ) const
-    {
-      return m_managedptr;
-    }
+        virtual void close();
 
-    inline void setptr( GemStone::GemFire::Cache::ITransactionListener^ managedptr )
-    {
-      m_managedptr = managedptr;
-    }
+        inline GemStone::GemFire::Cache::ITransactionListener^ ptr( ) const
+        {
+          return m_managedptr;
+        }
 
-    inline Object^ userptr( ) const
-    {
-      return m_userptr;
-    }
+        inline void setptr( GemStone::GemFire::Cache::ITransactionListener^ managedptr )
+        {
+          m_managedptr = managedptr;
+        }
 
-  private:
+        inline Object^ userptr( ) const
+        {
+          return m_userptr;
+        }
 
-    /// <summary>
-    /// Using gcroot to hold the managed delegate pointer (since it cannot be stored directly).
-    /// Note: not using auto_gcroot since it will result in 'Dispose' of the ITransactionListener
-    /// to be called which is not what is desired when this object is destroyed. Normally this
-    /// managed object may be created by the user and will be handled automatically by the GC.
-    /// </summary>
-    gcroot<GemStone::GemFire::Cache::ITransactionListener^> m_managedptr;
+      private:
 
-    gcroot<Object^> m_userptr;
-  };
+        /// <summary>
+        /// Using gcroot to hold the managed delegate pointer (since it cannot be stored directly).
+        /// Note: not using auto_gcroot since it will result in 'Dispose' of the ITransactionListener
+        /// to be called which is not what is desired when this object is destroyed. Normally this
+        /// managed object may be created by the user and will be handled automatically by the GC.
+        /// </summary>
+        gcroot<GemStone::GemFire::Cache::ITransactionListener^> m_managedptr;
 
-}
+        gcroot<Object^> m_userptr;
+      };
+
+    }  // namespace client
+  }  // namespace geode
+}  // namespace apache
 #endif

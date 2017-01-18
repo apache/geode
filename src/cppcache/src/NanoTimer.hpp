@@ -20,7 +20,9 @@
 
 #include <gfcpp/gfcpp_globals.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class CPPCACHE_EXPORT NanoTimer {
  public:
@@ -28,6 +30,8 @@ class CPPCACHE_EXPORT NanoTimer {
 
   static void sleep(uint32_t nanos);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

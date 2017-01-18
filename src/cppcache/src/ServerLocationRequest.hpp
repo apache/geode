@@ -17,7 +17,9 @@
 #ifndef __SERVER_LOCATION_REQUEST__
 #define __SERVER_LOCATION_REQUEST__
 #include <gfcpp/Serializable.hpp>
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class ServerLocationRequest : public Serializable {
  public:
   ServerLocationRequest() : Serializable() {}
@@ -29,5 +31,7 @@ class ServerLocationRequest : public Serializable {
   virtual uint32_t objectSize() const = 0;
   virtual ~ServerLocationRequest() {}
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif

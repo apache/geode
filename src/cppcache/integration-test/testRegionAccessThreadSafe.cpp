@@ -20,7 +20,7 @@
 #include <ace/Task.h>
 #include <ace/Recursive_Thread_Mutex.h>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 class GetRegionThread : public ACE_Task_Base {
  public:

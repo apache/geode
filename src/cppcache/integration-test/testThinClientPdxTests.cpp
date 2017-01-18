@@ -51,7 +51,7 @@ END_MAIN*/
 #include "CachePerfStats.hpp"
 #include <LocalRegion.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace test;
 using namespace testData;
 using namespace PdxTests;

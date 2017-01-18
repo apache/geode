@@ -20,7 +20,9 @@
 #include <gfcpp/EntryEvent.hpp>
 #include <gfcpp/RegionEvent.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 CacheWriter::CacheWriter() {}
 
@@ -36,4 +38,6 @@ bool CacheWriter::beforeDestroy(const EntryEvent& event) { return true; }
 
 bool CacheWriter::beforeRegionDestroy(const RegionEvent& event) { return true; }
 bool CacheWriter::beforeRegionClear(const RegionEvent& event) { return true; }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

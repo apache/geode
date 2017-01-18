@@ -1,5 +1,5 @@
 #include "gfcppBanner.hpp"
-using namespace gemfire;
+using namespace apache::geode::client;
 std::string gfcppBanner::getBanner() {
   std::string str =
       "------------------------------------------------------------------------"

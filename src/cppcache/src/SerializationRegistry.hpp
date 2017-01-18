@@ -46,7 +46,9 @@ class ACE_Export ACE_Hash<int64_t> {
 ACE_END_VERSIONED_NAMESPACE_DECL
 #endif
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 typedef ACE_Hash_Map_Manager<int64_t, TypeFactoryMethod, ACE_Null_Mutex>
     IdToFactoryMap;
@@ -150,6 +152,8 @@ class CPPCACHE_EXPORT SerializationRegistry {
   static IdToFactoryMap* s_typeMap;
   static PdxSerializerPtr m_pdxSerializer;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

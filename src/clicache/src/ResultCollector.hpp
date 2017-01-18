@@ -42,7 +42,7 @@ namespace GemStone
       /// </summary>
      generic<class TResult>
       public ref class ResultCollector
-        : public Internal::SBWrap<gemfire::ResultCollector>, public IResultCollector<TResult>
+        : public Internal::SBWrap<apache::geode::client::ResultCollector>, public IResultCollector<TResult>
       {
       public:
 
@@ -85,7 +85,7 @@ namespace GemStone
         /// Internal constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline ResultCollector( gemfire::ResultCollector* nativeptr ):
+        inline ResultCollector( apache::geode::client::ResultCollector* nativeptr ):
         SBWrap( nativeptr ){ }
 
         /// <summary>
@@ -95,7 +95,7 @@ namespace GemStone
         /// Note the order of preserveSB() and releaseSB(). This handles the
         /// corner case when <c>m_nativeptr</c> is same as <c>nativeptr</c>.
         /// </remarks>
-        inline void AssignSPGeneric( gemfire::ResultCollector* nativeptr )
+        inline void AssignSPGeneric( apache::geode::client::ResultCollector* nativeptr )
         {
           AssignPtr( nativeptr );
         }
@@ -103,7 +103,7 @@ namespace GemStone
         /// <summary>
         /// Used to assign the native CqListener pointer to a new object.
         /// </summary>
-        inline void SetSPGeneric( gemfire::ResultCollector* nativeptr )
+        inline void SetSPGeneric( apache::geode::client::ResultCollector* nativeptr )
         {
           if ( nativeptr != nullptr ) {
             nativeptr->preserveSB( );

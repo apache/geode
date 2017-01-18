@@ -37,11 +37,15 @@
 #include "VersionedCacheableObjectPartList.hpp"
 //#include "PutAllPartialResult.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 void setTSSExceptionMessage(const char* exMsg);
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 class PutAllWork : public PooledWork<GfErrType>,
                    private NonCopyable,
@@ -1327,19 +1331,23 @@ GfErrType ThinClientRegion::singleHopPutAllNoThrow_remote(
     ==24194==    at 0x4007D75: operator new(unsigned int)
     (vg_replace_malloc.c:313)
     ==24194==    by 0x43B5C5F:
-    gemfire::ThinClientRegion::singleHopPutAllNoThrow_remote(gemfire::ThinClientPoolDM*,
-    gemfire::HashMapOfCacheable const&,
-    gemfire::SharedPtr<gemfire::VersionedCacheableObjectPartList>&, unsigned
+    apache::geode::client::ThinClientRegion::singleHopPutAllNoThrow_remote(apache::geode::client::ThinClientPoolDM*,
+    apache::geode::client::HashMapOfCacheable const&,
+    apache::geode::client::SharedPtr<apache::geode::client::VersionedCacheableObjectPartList>&,
+    unsigned
     int) (ThinClientRegion.cpp:1180)
     ==24194==    by 0x43B8B65:
-    gemfire::ThinClientRegion::putAllNoThrow_remote(gemfire::HashMapOfCacheable
-    const&, gemfire::SharedPtr<gemfire::VersionedCacheableObjectPartList>&,
+    apache::geode::client::ThinClientRegion::putAllNoThrow_remote(apache::geode::client::HashMapOfCacheable
+    const&,
+    apache::geode::client::SharedPtr<apache::geode::client::VersionedCacheableObjectPartList>&,
     unsigned int) (ThinClientRegion.cpp:1500)
     ==24194==    by 0x42E55F5:
-    gemfire::LocalRegion::putAllNoThrow(gemfire::HashMapOfCacheable const&,
+    apache::geode::client::LocalRegion::putAllNoThrow(apache::geode::client::HashMapOfCacheable
+    const&,
     unsigned int) (LocalRegion.cpp:1956)
     ==24194==    by 0x42DC797:
-    gemfire::LocalRegion::putAll(gemfire::HashMapOfCacheable const&, unsigned
+    apache::geode::client::LocalRegion::putAll(apache::geode::client::HashMapOfCacheable
+    const&, unsigned
     int) (LocalRegion.cpp:366)
     ==24194==    by 0x806FF8D: Task_StepEight::doTask() (in
     /export/pnq-gst-dev01a/users/adongre/cedar_dev_Nov12/build-artifacts/linux/tests/cppcache/testThinClientPutAll)
@@ -1363,19 +1371,23 @@ GfErrType ThinClientRegion::singleHopPutAllNoThrow_remote(
   ==24194==    at 0x4007D75: operator new(unsigned int)
   (vg_replace_malloc.c:313)
   ==24194==    by 0x43B5C5F:
-  gemfire::ThinClientRegion::singleHopPutAllNoThrow_remote(gemfire::ThinClientPoolDM*,
-  gemfire::HashMapOfCacheable const&,
-  gemfire::SharedPtr<gemfire::VersionedCacheableObjectPartList>&, unsigned int)
+  apache::geode::client::ThinClientRegion::singleHopPutAllNoThrow_remote(apache::geode::client::ThinClientPoolDM*,
+  apache::geode::client::HashMapOfCacheable const&,
+  apache::geode::client::SharedPtr<apache::geode::client::VersionedCacheableObjectPartList>&,
+  unsigned int)
   (ThinClientRegion.cpp:1180)
   ==24194==    by 0x43B8B65:
-  gemfire::ThinClientRegion::putAllNoThrow_remote(gemfire::HashMapOfCacheable
-  const&, gemfire::SharedPtr<gemfire::VersionedCacheableObjectPartList>&,
+  apache::geode::client::ThinClientRegion::putAllNoThrow_remote(apache::geode::client::HashMapOfCacheable
+  const&,
+  apache::geode::client::SharedPtr<apache::geode::client::VersionedCacheableObjectPartList>&,
   unsigned int) (ThinClientRegion.cpp:1500)
   ==24194==    by 0x42E55F5:
-  gemfire::LocalRegion::putAllNoThrow(gemfire::HashMapOfCacheable const&,
+  apache::geode::client::LocalRegion::putAllNoThrow(apache::geode::client::HashMapOfCacheable
+  const&,
   unsigned int) (LocalRegion.cpp:1956)
   ==24194==    by 0x42DC797:
-  gemfire::LocalRegion::putAll(gemfire::HashMapOfCacheable const&, unsigned int)
+  apache::geode::client::LocalRegion::putAll(apache::geode::client::HashMapOfCacheable
+  const&, unsigned int)
   (LocalRegion.cpp:366)
   ==24194==    by 0x806FF8D: Task_StepEight::doTask() (in
   /export/pnq-gst-dev01a/users/adongre/cedar_dev_Nov12/build-artifacts/linux/tests/cppcache/testThinClientPutAll)

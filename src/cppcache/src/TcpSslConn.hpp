@@ -21,7 +21,9 @@
 #include <ace/DLL.h>
 #include "../../cryptoimpl/GFSsl.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class TcpSslConn : public TcpConn {
  private:
@@ -79,6 +81,8 @@ class TcpSslConn : public TcpConn {
 
   uint16 getPort();
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __TcpSslConn_hpp__

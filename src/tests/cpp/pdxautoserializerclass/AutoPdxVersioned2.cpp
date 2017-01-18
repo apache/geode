@@ -17,7 +17,7 @@
 
 #include "AutoPdxVersioned2.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace AutoPdxTests;
 
 // TEST_EXPORT Serializable * createAutoPdxVersioned2(const char* key) {

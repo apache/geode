@@ -26,7 +26,9 @@
 
 #include "TXState.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class TransactionSuspender {
  public:
@@ -36,6 +38,8 @@ class TransactionSuspender {
  private:
   TXState* m_TXState;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif /* TRANSACTIONSUSPENDER_HPP_ */

@@ -21,7 +21,9 @@
 #include "fwklib/FwkLog.hpp"
 #include <ace/Time_Value.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace testframework {
 
 class TimeLimit {
@@ -43,6 +45,8 @@ class TimeLimit {
 };
 
 }  // namespace testframework
-}  // namespace gemfire
+}
+}
+}
 
 #endif  // __TimeLimit_hpp__

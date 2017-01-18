@@ -33,7 +33,9 @@
 #include "DiskPolicyType.hpp"
 #include "PersistenceManager.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class CacheImpl;
 
 /**
@@ -391,7 +393,8 @@ class CPPCACHE_EXPORT RegionAttributes : public Serializable {
  private:
   const RegionAttributes& operator=(const RegionAttributes&);
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_REGIONATTRIBUTES_H__

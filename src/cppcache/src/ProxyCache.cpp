@@ -34,7 +34,7 @@
 #include "ThinClientPoolDM.hpp"
 #include "PdxInstanceFactoryImpl.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 /**
  * Indicates if this cache has been closed.

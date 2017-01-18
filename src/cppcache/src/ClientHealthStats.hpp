@@ -22,7 +22,9 @@
 #include <gfcpp/Log.hpp>
 #include <gfcpp/CacheableDate.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class ClientHealthStats : public Serializable {
  public:
@@ -83,6 +85,7 @@ class ClientHealthStats : public Serializable {
   int m_cpus;
   CacheableDatePtr m_updateTime;  // Last updateTime
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // _CLIENT_HEALTH_STATS_HPP_INCLUDED_

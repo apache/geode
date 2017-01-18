@@ -27,7 +27,9 @@
 #include "PdxLocalWriter.hpp"
 //#include <map>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class PdxWriterWithTypeCollector : public PdxLocalWriter {
  private:
@@ -226,5 +228,7 @@ class PdxWriterWithTypeCollector : public PdxLocalWriter {
   virtual PdxWriterPtr writeUnreadFields(PdxUnreadFieldsPtr unread);
 };
 typedef SharedPtr<PdxWriterWithTypeCollector> PdxWriterWithTypeCollectorPtr;
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif /* PDXWRITERWITHTYPECOLLECTOR_HPP_ */

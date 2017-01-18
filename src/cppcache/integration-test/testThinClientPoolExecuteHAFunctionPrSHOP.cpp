@@ -280,7 +280,7 @@ DUNIT_TASK_DEFINITION(CLIENT1, Client1OnServerHATest)
       }
 
       // UNUSED bool getResult = true;
-      PoolPtr pool = gemfire::PoolManager::find("__TEST_POOL1__");
+      PoolPtr pool = apache::geode::client::PoolManager::find("__TEST_POOL1__");
       ExecutionPtr exc = FunctionService::onServer(pool);
       ASSERT(exc != NULLPTR, "onServer Returned NULL");
 

@@ -18,7 +18,7 @@
 #include <ace/Recursive_Thread_Mutex.h>
 #include <ace/Guard_T.h>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 // TODO: make this a member of TcrConnectionManager.
 HashMapOfPools* connectionPools = NULL; /*new HashMapOfPools( )*/

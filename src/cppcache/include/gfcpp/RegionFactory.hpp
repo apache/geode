@@ -24,7 +24,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class CacheImpl;
 class CPPCACHE_EXPORT RegionFactory : public SharedBase {
  public:
@@ -248,7 +250,7 @@ class CPPCACHE_EXPORT RegionFactory : public SharedBase {
   RegionFactoryPtr setTombstoneTimeout(uint32_t tombstoneTimeoutInMSec);
 
  private:
-  RegionFactory(gemfire::RegionShortcut preDefinedRegion);
+  RegionFactory(apache::geode::client::RegionShortcut preDefinedRegion);
 
   RegionShortcut m_preDefinedRegion;
 
@@ -259,6 +261,8 @@ class CPPCACHE_EXPORT RegionFactory : public SharedBase {
   ~RegionFactory();
   friend class CacheImpl;
 };
-};  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_REGIONFACTORY_H__

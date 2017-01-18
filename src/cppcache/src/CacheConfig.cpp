@@ -28,7 +28,9 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -132,4 +134,6 @@ bool CacheConfig::parseAttributes(const char* name, xmlNode* node) {
 }
 
 RegionConfigMapT& CacheConfig::getRegionList() { return m_regionList; }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

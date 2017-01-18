@@ -26,7 +26,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class CacheImpl;
 class PoolAttributes;
@@ -527,5 +529,7 @@ class CPPCACHE_EXPORT PoolFactory : public SharedBase {
   friend class CacheFactory;
   friend class CacheXmlCreation;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // ifndef __GEMFIRE_POOL_FACTORY_HPP__

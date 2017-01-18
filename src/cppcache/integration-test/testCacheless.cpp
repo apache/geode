@@ -23,7 +23,7 @@
 #include "ThinClientHelper.hpp"
 #include "TallyListener.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 CacheListenerPtr nullListenerPtr;
 

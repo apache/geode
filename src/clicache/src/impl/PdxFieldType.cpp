@@ -168,7 +168,7 @@ namespace GemStone
   
            case PdxTypes::SHORT:
            case PdxTypes::CHAR:
-            //case gemfire::GemfireTypeIds::CacheableChar: //TODO
+            //case apache::geode::client::GemfireTypeIds::CacheableChar: //TODO
               return GemFireClassIds::CHAR_SIZE;
   
            case PdxTypes::INT:

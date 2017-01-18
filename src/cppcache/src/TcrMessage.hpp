@@ -41,7 +41,9 @@
 #include <map>
 #include <vector>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class TcrMessage;
 class ThinClientRegion;
 class ThinClientBaseDM;
@@ -567,11 +569,12 @@ class CPPCACHE_EXPORT TcrMessage {
   void skipParts(DataInput& input, int32_t numParts = 1);
   void readStringPart(DataInput& input, uint32_t* len, char** str);
   void readCqsPart(DataInput& input);
-  void readHashMapForGCVersions(gemfire::DataInput& input,
+  void readHashMapForGCVersions(apache::geode::client::DataInput& input,
                                 CacheableHashMapPtr& value);
-  void readHashSetForGCVersions(gemfire::DataInput& input,
+  void readHashSetForGCVersions(apache::geode::client::DataInput& input,
                                 CacheableHashSetPtr& value);
-  DSMemberForVersionStampPtr readDSMember(gemfire::DataInput& input);
+  DSMemberForVersionStampPtr readDSMember(
+      apache::geode::client::DataInput& input);
   DataOutput* m_request;
   int32_t m_msgType;
   int32_t m_msgLength;
@@ -1217,6 +1220,8 @@ class TcrMessageHelper {
     return partType;
   }
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __TCR_MESSAGE_HPP__

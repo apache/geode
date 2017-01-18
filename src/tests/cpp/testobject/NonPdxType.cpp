@@ -23,7 +23,7 @@
 
 #include "NonPdxType.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace PdxTests;
 
 template <typename T1, typename T2>

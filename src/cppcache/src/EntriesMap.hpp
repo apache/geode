@@ -25,7 +25,9 @@
 #include "MapSegment.hpp"
 #include <gfcpp/RegionEntry.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 #define SYNCHRONIZE_SEGMENT_FOR_KEY(keyPtr) \
   SegmentMutexGuard _segment_guard(((EntriesMap*)m_entries)->segmentFor(keyPtr))
@@ -169,7 +171,8 @@ class CPPCACHE_EXPORT EntriesMap {
   inline const EntryFactory* getEntryFactory() const { return m_entryFactory; }
 
 };  // class EntriesMap
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __GEMFIRE_IMPL_ENTRIESMAP_H__

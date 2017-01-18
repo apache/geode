@@ -32,7 +32,7 @@ END_TEST(NotOnWindows)
 #include <LRUList.cpp>
 #include <gfcpp/GeodeCppCache.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace test;
 
 class MyNode : public SharedBase, public LRUEntryProperties {

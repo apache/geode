@@ -16,7 +16,9 @@
  */
 #include "PutAllPartialResult.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 PutAllPartialResult::PutAllPartialResult(
     int totalMapSize, ACE_Recursive_Thread_Mutex& responseLock) {
@@ -61,4 +63,6 @@ PutAllPartialResult::getSucceededKeysAndVersions() {
 bool PutAllPartialResult::hasSucceededKeys() {
   return this->m_succeededKeys->size() > 0;
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

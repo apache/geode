@@ -32,7 +32,9 @@ extern "C" {
 }
 #endif
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace pdx_auto_serializer {
 /**
  * Class containing some static utility methods.
@@ -179,7 +181,9 @@ class Helper {
     return typeName;
   }
 };
-}
-}
+}  // namespace pdx_auto_serializer
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // _GFAS_HELPER_HPP_

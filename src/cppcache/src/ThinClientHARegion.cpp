@@ -22,7 +22,9 @@
 #include "ReadWriteLock.hpp"
 #include <gfcpp/PoolManager.hpp>
 #include "ThinClientPoolHADM.hpp"
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 ThinClientHARegion::ThinClientHARegion(const std::string& name,
                                        CacheImpl* cache, RegionInternal* rPtr,
@@ -141,7 +143,9 @@ void ThinClientHARegion::destroyDM(bool keepEndpoints) {
     ThinClientRegion::destroyDM(keepEndpoints);
   }
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 void ThinClientHARegion::addDisMessToQueue() {
   if (m_poolDM) {

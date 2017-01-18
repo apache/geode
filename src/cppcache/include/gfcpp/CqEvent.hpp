@@ -29,7 +29,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * @class CqEvent CqEvent.hpp
@@ -99,6 +101,8 @@ class CPPCACHE_EXPORT CqEvent {
   CqEvent(const CqEvent&);
   void operator=(const CqEvent&);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  //#ifndef __GEMFIRE_CQ_EVENT_H__

@@ -20,7 +20,7 @@
 
 #include <string>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 void SPEHelper::throwNullPointerException(const char* ptrtype) {
   throw NullPointerException(Utils::demangleTypeName(ptrtype)->asChar(), NULL,

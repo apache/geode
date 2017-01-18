@@ -20,7 +20,9 @@
 #include "MapSegment.hpp"
 #include "CacheImpl.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 /**
  * @brief LRUAction for testing map outside of a region....
  */
@@ -46,9 +48,11 @@ class CPPCACHE_EXPORT TestMapAction : public virtual LRUAction {
   virtual LRUAction::Action getType() { return LRUAction::LOCAL_DESTROY; }
   friend class LRUAction;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 LRUEntriesMap::LRUEntriesMap(EntryFactory* entryFactory, RegionInternal* region,
                              const LRUAction::Action& lruAction,

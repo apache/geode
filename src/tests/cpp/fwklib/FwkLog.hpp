@@ -42,7 +42,9 @@
 
 // ----------------------------------------------------------------------------
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace testframework {
 
 const char* strnrchr(const char* str, const char tok, int32_t cnt);
@@ -117,6 +119,8 @@ const char* getNodeName();
   }
 
 }  // namespace  testframework
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __FWK_LOG_HPP__

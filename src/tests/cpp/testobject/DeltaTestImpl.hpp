@@ -42,7 +42,7 @@
 #define TESTOBJECT_EXPORT
 #endif
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 namespace testobject {
 class DeltaTestImpl;
