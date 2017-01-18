@@ -68,6 +68,6 @@ class CPPCACHE_EXPORT Condition {
   /** Must be called with the mutex held. */
   inline void reset() { m_signaled = false; }
 };
-}
+}  // namespace gemfire
 
 #endif

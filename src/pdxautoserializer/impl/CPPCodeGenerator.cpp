@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 #include "../base_types.hpp"
 #include "CPPCodeGenerator.hpp"
 #include "Log.hpp"

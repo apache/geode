@@ -113,5 +113,5 @@ class UserFunctionExecutionException : public Serializable {
 
   CacheableStringPtr m_message;  // error message
 };
-}
+}  // namespace gemfire
 #endif

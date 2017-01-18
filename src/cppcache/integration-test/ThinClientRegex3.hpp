@@ -35,7 +35,6 @@ using namespace test;
 CacheHelper* cacheHelper = NULL;
 bool isLocalServer = false;
 
-
 static bool isLocator = false;
 static int numberOfLocators = 0;
 const char* locatorsG =
@@ -63,17 +62,19 @@ void _verifyEntry(const char* name, const char* key, const char* val,
                   bool noKey, bool isCreated = false) {
   // Verify key and value exist in this region, in this process.
   const char* value = (val == 0) ? "" : val;
-  char* buf = (char*)malloc(1024 + strlen(key) + strlen(value));
+  char* buf =
+      reinterpret_cast<char*>(malloc(1024 + strlen(key) + strlen(value)));
   ASSERT(buf, "Unable to malloc buffer for logging.");
   if (!isCreated) {
-    if (noKey)
+    if (noKey) {
       sprintf(buf, "Verify key %s does not exist in region %s", key, name);
-    else if (val == 0)
+    } else if (val == 0) {
       sprintf(buf, "Verify value for key %s does not exist in region %s", key,
               name);
-    else
+    } else {
       sprintf(buf, "Verify value for key %s is: %s in region %s", key, value,
               name);
+    }
     LOG(buf);
   }
   free(buf);
@@ -103,24 +104,27 @@ void _verifyEntry(const char* name, const char* key, const char* val,
 
   for (int i = MAX; i >= 0; i--) {
     if (isCreated) {
-      if (!regPtr->containsKey(keyPtr))
+      if (!regPtr->containsKey(keyPtr)) {
         containsKeyCnt++;
-      else
+      } else {
         break;
+      }
       ASSERT(containsKeyCnt < MAX, "Key has not been created in region.");
     } else {
       if (noKey) {
-        if (regPtr->containsKey(keyPtr))
+        if (regPtr->containsKey(keyPtr)) {
           containsKeyCnt++;
-        else
+        } else {
           break;
+        }
         ASSERT(containsKeyCnt < MAX, "Key found in region.");
       }
       if (val == NULL) {
-        if (regPtr->containsValueForKey(keyPtr))
+        if (regPtr->containsValueForKey(keyPtr)) {
           containsValueCnt++;
-        else
+        } else {
           break;
+        }
         ASSERT(containsValueCnt < MAX, "Value found in region.");
       }
 
@@ -216,7 +220,9 @@ void createEntry(const char* name, const char* key, const char* value = NULL) {
   fflush(stdout);
   // Create entry, verify entry is correct
   CacheableKeyPtr keyPtr = createKey(key);
-  if (value == NULL) value = "";
+  if (value == NULL) {
+    value = "";
+  }
   CacheableStringPtr valPtr = CacheableString::create(value);
 
   RegionPtr regPtr = getHelper()->getRegion(name);
@@ -307,10 +313,9 @@ const bool NO_ACK = false;
 DUNIT_TASK_DEFINITION(CLIENT1, CreateClient1Regions)
   {
     initClient(true);
-    createPooledRegion(regionNames[0], USE_ACK,  locatorsG, "__TESTPOOL1_",
+    createPooledRegion(regionNames[0], USE_ACK, locatorsG, "__TESTPOOL1_",
                        true);
-    createPooledRegion(regionNames[1], NO_ACK,  locatorsG, "__TESTPOOL1_",
-                       true);
+    createPooledRegion(regionNames[1], NO_ACK, locatorsG, "__TESTPOOL1_", true);
     LOG("CreateClient1Regions complete.");
   }
 END_TASK_DEFINITION
@@ -318,10 +323,9 @@ END_TASK_DEFINITION
 DUNIT_TASK_DEFINITION(CLIENT2, CreateClient2Regions)
   {
     initClient(true);
-    createPooledRegion(regionNames[0], USE_ACK,  locatorsG, "__TESTPOOL1_",
+    createPooledRegion(regionNames[0], USE_ACK, locatorsG, "__TESTPOOL1_",
                        true);
-    createPooledRegion(regionNames[1], NO_ACK,  locatorsG, "__TESTPOOL1_",
-                       true);
+    createPooledRegion(regionNames[1], NO_ACK, locatorsG, "__TESTPOOL1_", true);
     LOG("CreateClient2Regions complete.");
   }
 END_TASK_DEFINITION

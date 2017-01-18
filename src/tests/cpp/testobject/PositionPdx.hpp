@@ -99,5 +99,5 @@ class TESTOBJECT_EXPORT PositionPdx : public gemfire::PdxSerializable {
 };
 
 typedef gemfire::SharedPtr<PositionPdx> PositionPdxPtr;
-}
+}  // namespace testobject
 #endif

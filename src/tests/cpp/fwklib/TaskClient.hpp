@@ -175,7 +175,7 @@ class TaskClient : public ACE_Task_Base {
 
 };  // TaskClient
 
-}  // testframework
-}  // gemfire
+}  // namespace testframework
+}  // namespace gemfire
 
 #endif  // __TaskClient_hpp__

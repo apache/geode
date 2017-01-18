@@ -44,9 +44,8 @@ CacheListenerPtr cptr(new DisconnectCacheListioner());
 DUNIT_TASK_DEFINITION(CLIENT1, SetupClient1_Pool_Locator)
   {
     initClient(true);
-    createPooledRegion(regionNames[0], false /*ack mode*/,
-                       locatorsG, "__TEST_POOL1__",
-                       true /*client notification*/, cptr);
+    createPooledRegion(regionNames[0], false /*ack mode*/, locatorsG,
+                       "__TEST_POOL1__", true /*client notification*/, cptr);
   }
 END_TASK_DEFINITION
 

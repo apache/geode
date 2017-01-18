@@ -17,7 +17,5 @@
 
 #include "ThinClientCallbackArg.hpp"
 DUNIT_MAIN
-  {
-    runCallbackArg();
-  }
+  { runCallbackArg(); }
 END_MAIN

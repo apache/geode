@@ -18,7 +18,6 @@
  * limitations under the License.
  */
 
-
 #include "PdxSerializer.hpp"
 #include "PdxSerializable.hpp"
 

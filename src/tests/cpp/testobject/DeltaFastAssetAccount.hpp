@@ -145,5 +145,5 @@ class TESTOBJECT_EXPORT DeltaFastAssetAccount : public Cacheable, public Delta {
     return new DeltaFastAssetAccount();
   }
 };
-}
+}  // namespace testobject
 #endif

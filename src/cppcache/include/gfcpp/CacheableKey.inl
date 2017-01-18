@@ -44,6 +44,6 @@ inline CacheableKeyPtr createKey( const TKEY* value )
   return createKeyArr( value );
 }
 
-}
+}  // namespace gemfire
 
 #endif

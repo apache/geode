@@ -53,6 +53,6 @@ class MemberListForVersionStamp : public SharedBase {
 };
 
 typedef SharedPtr<MemberListForVersionStamp> MemberListForVersionStampPtr;
-}
+}  // namespace gemfire
 
 #endif  // __MemberListForVersionStamp_HPP__

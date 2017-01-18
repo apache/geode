@@ -45,7 +45,7 @@ namespace FwkSecurity {
 std::string REGIONSBB("Regions");
 std::string CLIENTSBB("ClientsBb");
 std::string READYCLIENTS("ReadyClients");
-}
+}  // namespace FwkSecurity
 
 using namespace FwkSecurity;
 using namespace gemfire;

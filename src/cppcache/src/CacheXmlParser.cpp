@@ -31,7 +31,7 @@ using namespace gemfire;
 
 namespace gemfire_impl {
 void* getFactoryFunc(const char* lib, const char* funcName);
-}
+}  // namespace gemfire_impl
 
 using namespace gemfire_impl;
 

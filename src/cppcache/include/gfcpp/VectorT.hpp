@@ -250,6 +250,6 @@ class CPPCACHE_EXPORT VectorOfCacheableKey : public _VectorOfCacheableKey,
 
 typedef SharedPtr<VectorOfCacheable> VectorOfCacheablePtr;
 typedef SharedPtr<VectorOfCacheableKey> VectorOfCacheableKeyPtr;
-}
+}  // namespace gemfire
 
 #endif

@@ -116,6 +116,6 @@ class FarSideEntryOp : public gemfire::SharedBase {
   bool isInvalidate(int8_t op);
   void skipFilterRoutingInfo(DataInput& input);
 };
-}
+}  // namespace gemfire
 
 #endif /* FARSIDEENTRYOP_HPP_ */

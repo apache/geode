@@ -87,32 +87,36 @@ class FwkStrCvt {
     char szText[50];
     if (ACE_OS::snprintf(szText, sizeof(szText) - 1, "%lf", dValue)) {
       m_sText = szText;
-    } else
+    } else {
       m_sText.clear();
+}
   };
   /** @brief convert from float value */
   FwkStrCvt(const float fValue) {
     char szText[50];
     if (ACE_OS::snprintf(szText, sizeof(szText) - 1, "%f", fValue)) {
       m_sText = szText;
-    } else
+    } else {
       m_sText.clear();
+}
   };
   /** @brief convert from uint32_t value */
   FwkStrCvt(const uint32_t uiValue) {
     char szText[50];
     if (ACE_OS::snprintf(szText, sizeof(szText) - 1, "%u", uiValue)) {
       m_sText = szText;
-    } else
+    } else {
       m_sText.clear();
+}
   };
   /** @brief convert from int32_t value */
   FwkStrCvt(const int32_t iValue) {
     char szText[50];
     if (ACE_OS::snprintf(szText, sizeof(szText) - 1, "%d", iValue)) {
       m_sText = szText;
-    } else
+    } else {
       m_sText.clear();
+}
   };
   /** @brief convert from bool value */
   FwkStrCvt(const bool bValue) { m_sText = (bValue) ? "true" : "false"; };
@@ -122,8 +126,9 @@ class FwkStrCvt {
     char szText[100];
     if (ACE_OS::snprintf(szText, sizeof(szText) - 1, UInt64_FMT, uiValue)) {
       m_sText = szText;
-    } else
+    } else {
       m_sText.clear();
+}
   }
 
   /** @brief convert from int64_t value */
@@ -131,21 +136,22 @@ class FwkStrCvt {
     char szText[100];
     if (ACE_OS::snprintf(szText, sizeof(szText) - 1, Int64_FMT, iValue)) {
       m_sText = szText;
-    } else
+    } else {
       m_sText.clear();
+}
   }
 
   /** @brief gets double value */
   double toDouble() { return ACE_OS::strtod(m_sText.c_str(), 0); };
 
   /** @brief gets float value */
-  float toFloat() { return (float)ACE_OS::strtod(m_sText.c_str(), 0); };
+  float toFloat() { return static_cast<float>(ACE_OS::strtod(m_sText.c_str(), 0)); };
 
   /** @brief gets int32_t value */
   int32_t toInt() { return ACE_OS::atoi(m_sText.c_str()); };
 
   /** @brief gets uint32_t value */
-  uint32_t toUint() { return (uint32_t)ACE_OS::atoi(m_sText.c_str()); };
+  uint32_t toUint() { return static_cast<uint32_t>(ACE_OS::atoi(m_sText.c_str())); };
 
   /** @brief gets int32_t value */
   // TODO: : why this returns in32_t? if so why different from toInt()
@@ -187,7 +193,7 @@ class FwkStrCvt {
   /** @brief gets float value */
   static float toFloat(const char* value) {
     if (value == NULL) return 0.0;
-    return (float)ACE_OS::strtod(value, 0);
+    return static_cast<float>(ACE_OS::strtod(value, 0));
   };
 
   /** @brief gets float value */
@@ -229,7 +235,7 @@ class FwkStrCvt {
   /** @brief gets uint32_t value */
   static uint32_t toUInt32(const char* value) {
     if (value == NULL) return 0;
-    return (uint32_t)ACE_OS::atoi(value);
+    return static_cast<uint32_t>(ACE_OS::atoi(value));
   };
 
   /** @brief gets uint32_t value */
@@ -237,7 +243,7 @@ class FwkStrCvt {
     if (value.empty()) {
       return 0;
     }
-    return (uint32_t)ACE_OS::atoi(value.c_str());
+    return static_cast<uint32_t>(ACE_OS::atoi(value.c_str()));
   };
 
   /** @brief gets uint64_t value */
@@ -332,6 +338,6 @@ class FwkStrCvt {
 // ----------------------------------------------------------------------------
 
 }  // namespace  testframework
-}  // namepace gemfire
+}  // namespace gemfire
 
 #endif  // __FWK_STR_CVT_HPP__

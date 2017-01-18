@@ -60,6 +60,6 @@ class CPPCACHE_EXPORT EvictionThread : public ACE_Task_Base {
 
   static const char* NC_Evic_Thread;
 };
-}
+}  // namespace gemfire
 
 #endif  //_EVICTIONTHREAD_H__

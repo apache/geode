@@ -39,7 +39,7 @@ static const uint32_t REGULAR_EXPRESSION =
 
 namespace {
 uint32_t g_headerLen = 17;
-}
+}  // namespace
 
 // AtomicInc TcrMessage::m_transactionId = 0;
 TcrMessagePing* TcrMessage::m_pingMsg = NULL;

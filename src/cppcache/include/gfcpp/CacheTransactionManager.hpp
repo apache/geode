@@ -193,6 +193,6 @@ class CPPCACHE_EXPORT CacheTransactionManager : public gemfire::SharedBase {
   CacheTransactionManager();
   virtual ~CacheTransactionManager();
 };
-}
+}  // namespace gemfire
 
 #endif /* CACHETRANSACTIONMANAGER_H_ */

@@ -27,12 +27,14 @@ using namespace test;
 
 bool isLocalServer = true;
 static bool isLocator = false;
-const char* locatorsG = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locatorsG =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 #include "LocatorHelper.hpp"
 DUNIT_TASK_DEFINITION(SERVER1, StartServer)
   {
-    if (isLocalServer)
+    if (isLocalServer) {
       CacheHelper::initServer(1, "cacheserver_notify_subscription.xml");
+    }
     LOG("SERVER started");
   }
 END_TASK_DEFINITION

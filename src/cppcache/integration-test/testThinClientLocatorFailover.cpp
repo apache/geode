@@ -20,7 +20,8 @@
 bool isLocalServer = false;
 bool isLocator = false;
 
-const char* locatorsG = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 3);
+const char* locatorsG =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 3);
 #define CLIENT1 s1p1
 #define CLIENT2 s1p2
 #define LOCATORS s2p1
@@ -47,7 +48,7 @@ DUNIT_TASK(CLIENT1, SetupClient1_All)
   {
     // starting client 1
     initClient(true);
-    createPooledRegion(regionNames[0], USE_ACK,  locatorsG, "Pool1");
+    createPooledRegion(regionNames[0], USE_ACK, locatorsG, "Pool1");
     LOG("SetupClient1 complete.");
   }
 END_TASK(SetupClient1_All)
@@ -56,7 +57,7 @@ DUNIT_TASK(CLIENT2, SetupClient2_All)
   {
     // starting client 2
     initClient(true);
-    createPooledRegion(regionNames[0], USE_ACK,  locatorsG, "Pool2");
+    createPooledRegion(regionNames[0], USE_ACK, locatorsG, "Pool2");
     LOG("SetupClient2 complete.");
   }
 END_TASK(SetupClient2_All)

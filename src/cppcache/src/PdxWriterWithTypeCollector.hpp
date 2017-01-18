@@ -226,5 +226,5 @@ class PdxWriterWithTypeCollector : public PdxLocalWriter {
   virtual PdxWriterPtr writeUnreadFields(PdxUnreadFieldsPtr unread);
 };
 typedef SharedPtr<PdxWriterWithTypeCollector> PdxWriterWithTypeCollectorPtr;
-}
+}  // namespace gemfire
 #endif /* PDXWRITERWITHTYPECOLLECTOR_HPP_ */

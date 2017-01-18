@@ -72,5 +72,5 @@ class CPPCACHE_EXPORT ProcessStats {
    */
   virtual ~ProcessStats();
 };
-};
+}  // namespace gemfire_statistics
 #endif  // _GEMFIRE_STATISTICS_PROCESSSTATS_HPP_

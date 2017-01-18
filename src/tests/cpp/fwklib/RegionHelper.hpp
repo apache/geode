@@ -235,12 +235,13 @@ class RegionHelper {
     // false;
     bool withPool = (NULL != atts->getPoolName()) ? true : false;
     std::string poolName;
-    if (withPool)
+    if (withPool) {
       poolName = atts->getPoolName();
-    else
+    } else {
       poolName = "";
 
-    region = regionFac->create(regionName.c_str());
+    
+}region = regionFac->create(regionName.c_str());
     FWKINFO("Region created with name = " << regionName + " and pool name= "
                                           << poolName);
     FWKINFO(" Region Created with following attributes :"

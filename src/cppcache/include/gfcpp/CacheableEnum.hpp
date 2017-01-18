@@ -64,7 +64,7 @@ class CPPCACHE_EXPORT CacheableEnum : public CacheableKey {
   /** @return the size of the object in bytes */
   virtual uint32_t objectSize() const {
     uint32_t size = sizeof(CacheableEnum);
-    size += (uint32_t)sizeof(int32_t);
+    size += static_cast<uint32_t>(sizeof(int32_t));
     size += m_enumClassName->objectSize();
     size += m_enumName->objectSize();
     return size;
@@ -84,7 +84,7 @@ class CPPCACHE_EXPORT CacheableEnum : public CacheableKey {
   */
   virtual int8_t typeId() const {
     // return 0;
-    return (int8_t)GemfireTypeIds::CacheableEnum;
+    return static_cast<int8_t>(GemfireTypeIds::CacheableEnum);
   }
 
   /**
@@ -134,6 +134,6 @@ class CPPCACHE_EXPORT CacheableEnum : public CacheableKey {
   void operator=(const CacheableEnum& other);
   CacheableEnum(const CacheableEnum& other);
 };
-}
+}  // namespace gemfire
 
 #endif  // CACHEABLE_ENUM_HPP

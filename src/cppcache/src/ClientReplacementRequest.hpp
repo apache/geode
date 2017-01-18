@@ -38,5 +38,5 @@ class ClientReplacementRequest : public ClientConnectionRequest {
  private:
   const ServerLocation m_serverLocation;
 };
-}
+}  // namespace gemfire
 #endif

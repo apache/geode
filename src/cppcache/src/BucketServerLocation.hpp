@@ -38,7 +38,7 @@ class BucketServerLocation : public ServerLocation {
         m_isPrimary(false),
         m_version(0),
         m_serverGroups(NULLPTR),
-        m_numServerGroups((int8_t)0) {}
+        m_numServerGroups(static_cast<int8_t>(0)) {}
 
   BucketServerLocation(std::string host)
       : ServerLocation(host),
@@ -46,7 +46,7 @@ class BucketServerLocation : public ServerLocation {
         m_isPrimary(false),
         m_version(0),
         m_serverGroups(NULLPTR),
-        m_numServerGroups((int8_t)0) {}
+        m_numServerGroups(static_cast<int8_t>(0)) {}
 
   BucketServerLocation(int bucketId, int port, std::string host, bool isPrimary,
                        int8 version)
@@ -55,7 +55,7 @@ class BucketServerLocation : public ServerLocation {
         m_isPrimary(isPrimary),
         m_version(version),
         m_serverGroups(NULLPTR),
-        m_numServerGroups((int8_t)0) {}
+        m_numServerGroups(static_cast<int8_t>(0)) {}
 
   BucketServerLocation(int bucketId, int port, std::string host, bool isPrimary,
                        int8 version, std::vector<std::string> serverGroups)
@@ -63,7 +63,7 @@ class BucketServerLocation : public ServerLocation {
         m_bucketId(bucketId),
         m_isPrimary(isPrimary),
         m_version(version) {
-    int32_t size = (int32_t)serverGroups.size();
+    int32_t size = static_cast<int32_t>(serverGroups.size());
     CacheableStringPtr* ptrArr = NULL;
     if (size > 0) {
       ptrArr = new CacheableStringPtr[size];
@@ -78,10 +78,10 @@ class BucketServerLocation : public ServerLocation {
         // TODO:  should fail here since m_numServerGroups is int8_t?
       }
       m_serverGroups = CacheableStringArray::createNoCopy(ptrArr, size);
-      m_numServerGroups = (int8_t)size;
+      m_numServerGroups = static_cast<int8_t>(size);
     } else {
       m_serverGroups = NULLPTR;
-      m_numServerGroups = (int8_t)0;
+      m_numServerGroups = static_cast<int8_t>(0);
     }
   }
 
@@ -96,7 +96,7 @@ class BucketServerLocation : public ServerLocation {
     output.writeInt(m_bucketId);
     output.writeBoolean(m_isPrimary);
     output.write(m_version);
-    output.write((int8_t)m_numServerGroups);
+    output.write(static_cast<int8_t>(m_numServerGroups));
     if (m_numServerGroups > 0) {
       for (int i = 0; i < m_numServerGroups; i++) {
         output.writeNativeString(m_serverGroups[i]->asChar());
@@ -107,9 +107,9 @@ class BucketServerLocation : public ServerLocation {
   BucketServerLocation* fromData(gemfire::DataInput& input) {
     ServerLocation::fromData(input);
     input.readInt((int32_t*)&m_bucketId);
-    input.readBoolean((bool*)&m_isPrimary);
-    input.read((int8_t*)&m_version);
-    input.read(((int8_t*)&m_numServerGroups));
+    input.readBoolean(&m_isPrimary);
+    input.read(&m_version);
+    input.read((&m_numServerGroups));
     CacheableStringPtr* serverGroups = NULL;
     if (m_numServerGroups > 0) {
       serverGroups = new CacheableStringPtr[m_numServerGroups];
@@ -133,7 +133,7 @@ class BucketServerLocation : public ServerLocation {
   }
 
   int8_t DSFID() const {
-    return (int8_t)GemfireTypeIdsImpl::FixedIDByte;  // Never used
+    return static_cast<int8_t>(GemfireTypeIdsImpl::FixedIDByte);  // Never used
   }
 
   int32_t classId() const {
@@ -168,6 +168,6 @@ class BucketServerLocation : public ServerLocation {
 
   inline CacheableStringArrayPtr getServerGroups() { return m_serverGroups; }
 };
-}
+}  // namespace gemfire
 
 #endif

@@ -52,7 +52,8 @@ using namespace testData;
 using namespace gemfire::testframework::security;
 using namespace gemfire;
 
-const char* locHostPort = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locHostPort =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 CredentialGeneratorPtr credentialGeneratorHandler;
 #define CLIENT1 s1p1
 #define SERVER1 s2p1
@@ -522,12 +523,11 @@ DUNIT_TASK_DEFINITION(SERVER1, CloseServer2)
 END_TASK_DEFINITION
 
 void doThinClientCq() {
-
-//  CALL_TASK(CreateLocator);
-//  CALL_TASK(CreateServer1_Locator);
-//
-//  CALL_TASK(StepOne_PoolLocator);
-//  CALL_TASK(StepOne2_PoolLocator);
+  //  CALL_TASK(CreateLocator);
+  //  CALL_TASK(CreateServer1_Locator);
+  //
+  //  CALL_TASK(StepOne_PoolLocator);
+  //  CALL_TASK(StepOne2_PoolLocator);
 
   CALL_TASK(StepTwo);
   CALL_TASK(StepThree);
@@ -541,12 +541,12 @@ void doThinClientCq() {
   CALL_TASK(CloseCache2);
   CALL_TASK(CloseServer2);
 
-//  CALL_TASK(CloseLocator);
+  //  CALL_TASK(CloseLocator);
 }
 
 DUNIT_MAIN
   {
     throw "not supported, needs locators";
-    //doThinClientCq();
+    // doThinClientCq();
   }
 END_MAIN

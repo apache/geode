@@ -160,6 +160,6 @@ class CPPCACHE_EXPORT Queue {
   bool m_closed;
 };
 
-}  // end namespace
+}  // namespace gemfire
 
 #endif  // __GEMFIRE_QUEUE_HPP_

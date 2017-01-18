@@ -333,7 +333,9 @@ NamingContext* globals();
 class TestException {
  public:
   TestException(const char* msg, int lineno, const char* filename)
-      : m_message((char*)msg), m_lineno(lineno), m_filename((char*)filename) {}
+      : m_message(const_cast<char*>(msg)),
+        m_lineno(lineno),
+        m_filename(const_cast<char*>(filename)) {}
 
   void print() {
     fprintf(stdout, "#### TestException: %s in %s at line %d\n",

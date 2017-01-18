@@ -58,6 +58,6 @@ class StackTrace : public SharedBase {
   void addFrame(const char* line, int i);
 };
 #endif
-}
+}  // namespace gemfire
 
 #endif

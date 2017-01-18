@@ -48,7 +48,7 @@ class CPPCACHE_EXPORT NullProcessStats : public ProcessStats {
   void close();
 };
 // Class NullProcessStats
-}
+}  // namespace gemfire_statistics
 // NameSpace
 
 #endif  //_GEMFIRE_STATISTICS_NULLPROCESSSTATS_HPP_

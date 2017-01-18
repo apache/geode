@@ -43,7 +43,8 @@ bool isLocalServer = false;
 bool isLocator = false;
 
 const char* poolNames[] = {"Pool1", "Pool2", "Pool3"};
-const char* locHostPort = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locHostPort =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 static bool m_isPdx = false;
 const char* qRegionNames[] = {"Portfolios", "Positions", "Portfolios2",
                               "Portfolios3"};

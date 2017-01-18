@@ -100,8 +100,9 @@ void verifyAllValues() {
 DUNIT_TASK_DEFINITION(SERVER1, StartServer1)
   {
     LOG("starting SERVER1...");
-    if (isLocalServer1)
+    if (isLocalServer1) {
       CacheHelper::initServer(1, "cacheserver_concurrency_enabled1.xml");
+    }
     LOG("SERVER1 started");
   }
 END_TASK_DEFINITION
@@ -110,8 +111,9 @@ END_TASK_DEFINITION
 DUNIT_TASK_DEFINITION(SERVER2, StartServer2)
   {
     LOG("starting SERVER2...");
-    if (isLocalServer1)
+    if (isLocalServer1) {
       CacheHelper::initServer(2, "cacheserver_concurrency_enabled2.xml");
+    }
     LOG("SERVER2 started");
   }
 END_TASK_DEFINITION

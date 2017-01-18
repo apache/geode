@@ -17,7 +17,6 @@
  * limitations under the License.
  */
 
-
 #include "SharedPtr.hpp"
 #include "Cacheable.hpp"
 #include <string>
@@ -100,5 +99,5 @@ class CPPCACHE_EXPORT PartitionResolver : public SharedBase {
   PartitionResolver(const PartitionResolver& other);
   void operator=(const PartitionResolver& other);
 };
-}
+}  // namespace gemfire
 #endif

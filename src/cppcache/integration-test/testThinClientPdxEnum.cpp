@@ -37,12 +37,12 @@ using namespace testobject;
 
 bool isLocalServer = false;
 
-
 #define CLIENT1 s1p1
 #define SERVER1 s2p1
 static bool isLocator = false;
 
-const char* locatorsG = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locatorsG =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 
 DUNIT_TASK_DEFINITION(CLIENT1, SetupClientPoolLoc)
   {

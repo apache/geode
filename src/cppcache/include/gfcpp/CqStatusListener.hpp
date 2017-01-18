@@ -17,7 +17,6 @@
  * limitations under the License.
  */
 
-
 #include "CqListener.hpp"
 
 namespace gemfire {

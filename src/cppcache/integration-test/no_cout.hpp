@@ -73,4 +73,4 @@ extern NOCout::FLAGS endl;
 extern NOCout::FLAGS flush;
 extern NOCout::FLAGS hex;
 extern NOCout::FLAGS dec;
-}
+}  // namespace test

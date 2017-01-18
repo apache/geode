@@ -49,7 +49,8 @@ bool isLocalServer = false;
 const char* endPoints = CacheHelper::getTcrEndpoints(isLocalServer, 3);
 
 static bool isLocator = false;
-const char* locatorsG = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locatorsG =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 
 std::string convertHostToCanonicalForm(const char* endpoints) {
   if (endpoints == NULL) return NULL;

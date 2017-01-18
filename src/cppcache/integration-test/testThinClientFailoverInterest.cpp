@@ -17,7 +17,5 @@
 
 #include "ThinClientFailoverInterest.hpp"
 DUNIT_MAIN
-  {
-    runThinClientFailoverInterest();
-  }
+  { runThinClientFailoverInterest(); }
 END_MAIN

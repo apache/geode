@@ -241,6 +241,6 @@ class PoolStatType {
   int32_t getQueryExecutionId() { return m_queryExecutionsId; }
   int32_t getQueryExecutionTimeId() { return m_queryExecutionTimeId; }
 };
-}
+}  // namespace gemfire
 
 #endif  // __GEMFIRE_POOLSTATS_H__

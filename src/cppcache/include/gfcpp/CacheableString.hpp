@@ -193,7 +193,7 @@ class CPPCACHE_EXPORT CacheableString : public CacheableKey {
           "CacheableString::asChar: the string is a "
           "wide character string; use asWChar() to obtain it.");
     }
-    return (const char*)m_str;
+    return reinterpret_cast<const char*>(m_str);
   }
 
   /**
@@ -211,7 +211,7 @@ class CPPCACHE_EXPORT CacheableString : public CacheableKey {
           "CacheableString::asWChar: the string is "
           "not a wide character string; use asChar() to obtain it.");
     }
-    return (const wchar_t*)m_str;
+    return reinterpret_cast<const wchar_t*>(m_str);
   }
 
   /** Return the length of the contained string. */
@@ -228,7 +228,7 @@ class CPPCACHE_EXPORT CacheableString : public CacheableKey {
    * summary representation. This is historical. It is preferred that the
    * user call logString or asChar/asWChar, depending on the need.
    */
-  const char* toString() { return (const char*)m_str; }
+  const char* toString() { return reinterpret_cast<const char*>(m_str); }
 
   virtual CacheableStringPtr toString() const {
     return CacheableStringPtr(this);
@@ -299,6 +299,6 @@ inline CacheablePtr createValueArr(const wchar_t* value) {
   return (value != NULL ? CacheablePtr(CacheableString::create(value).ptr())
                         : NULLPTR);
 }
-}
+}  // namespace gemfire
 
 #endif

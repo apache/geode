@@ -93,6 +93,6 @@ class TombstoneList : public SharedBase {
 };
 typedef SharedPtr<TombstoneList> TombstoneListPtr;
 
-}  // end namespace
+}  // namespace gemfire
 
 #endif  // !defined (__GEMFIRE_IMPL_TOMBSTONELIST_H__)

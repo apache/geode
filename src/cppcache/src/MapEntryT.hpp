@@ -284,6 +284,6 @@ template <typename TBase, int UPDATE_COUNT>
 inline int MapEntryST<TBase, 0, UPDATE_COUNT>::incUpdateCount(TBase* loc) {
   return UPDATE_COUNT;
 }
-}
+}  // namespace gemfire
 
 #endif  // __GEMFIRE_IMPL_MAPENTRY_T_HPP__

@@ -55,7 +55,7 @@ class DiskStoreId : public DSMemberForVersionStamp {
   virtual int32_t classId() const { return 0; }
 
   virtual int8_t typeId() const {
-    return (int8_t)GemfireTypeIdsImpl::DiskStoreId;
+    return static_cast<int8_t>(GemfireTypeIdsImpl::DiskStoreId);
   }
 
   virtual int16_t compareTo(DSMemberForVersionStampPtr tagID) {
@@ -63,12 +63,13 @@ class DiskStoreId : public DSMemberForVersionStamp {
     if (result == 0) {
       result = m_leastSig - ((DiskStoreId*)tagID.ptr())->m_leastSig;
     }
-    if (result < 0)
+    if (result < 0) {
       return -1;
-    else if (result > 0)
+    } else if (result > 0) {
       return 1;
-    else
+    } else {
       return 0;
+    }
   }
   static Serializable* createDeserializable() { return new DiskStoreId(); }
   std::string getHashKey();
@@ -76,8 +77,10 @@ class DiskStoreId : public DSMemberForVersionStamp {
   virtual uint32_t hashcode() const {
     static uint32_t prime = 31;
     uint32_t result = 1;
-    result = prime * result + (uint32_t)(m_leastSig ^ (m_leastSig >> 32));
-    result = prime * result + (uint32_t)(m_mostSig ^ (m_mostSig >> 32));
+    result =
+        prime * result + static_cast<uint32_t>(m_leastSig ^ (m_leastSig >> 32));
+    result =
+        prime * result + static_cast<uint32_t>(m_mostSig ^ (m_mostSig >> 32));
     return result;
   }
 
@@ -90,10 +93,11 @@ class DiskStoreId : public DSMemberForVersionStamp {
 
     DSMemberForVersionStampPtr callerPtr = NULLPTR;
     callerPtr = DSMemberForVersionStampPtr(this);
-    if (callerPtr->compareTo(otherObjPtr) == 0)
+    if (callerPtr->compareTo(otherObjPtr) == 0) {
       return true;
-    else
+    } else {
       return false;
+    }
   }
 
  private:
@@ -101,6 +105,6 @@ class DiskStoreId : public DSMemberForVersionStamp {
   int64_t m_mostSig;
   int64_t m_leastSig;
 };
-}
+}  // namespace gemfire
 
 #endif  // __DiskStoreId_HPP__

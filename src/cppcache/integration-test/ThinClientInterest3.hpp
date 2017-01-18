@@ -30,7 +30,8 @@ using namespace test;
 bool isLocalServer = true;
 const char *endPoint = CacheHelper::getTcrEndpoints(isLocalServer, 1);
 static bool isLocator = false;
-const char *locatorsG = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char *locatorsG =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 #include "LocatorHelper.hpp"
 TallyListenerPtr reg1Listener1;
 TallyWriterPtr reg1Writer1;
@@ -78,8 +79,9 @@ void validateEventCount(int line) {
 
 DUNIT_TASK_DEFINITION(SERVER1, StartServer)
   {
-    if (isLocalServer)
+    if (isLocalServer) {
       CacheHelper::initServer(1, "cacheserver_notify_subscription.xml");
+    }
     LOG("SERVER started");
   }
 END_TASK_DEFINITION
@@ -87,9 +89,8 @@ END_TASK_DEFINITION
 DUNIT_TASK_DEFINITION(CLIENT1, SetupClient1_Pool_Locator)
   {
     initClient(true);
-    createPooledRegion(regionNames[0], false /*ack mode*/,
-                       locatorsG, "__TEST_POOL1__",
-                       true /*client notification*/);
+    createPooledRegion(regionNames[0], false /*ack mode*/, locatorsG,
+                       "__TEST_POOL1__", true /*client notification*/);
     reg1Listener1 = new TallyListener();
     reg1Writer1 = new TallyWriter();
     setCacheListener(regionNames[0], reg1Listener1);

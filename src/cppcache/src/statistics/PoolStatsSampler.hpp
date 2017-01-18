@@ -23,7 +23,7 @@ class CacheImpl;
 class ThinClientBaseDM;
 class AdminRegion;
 class ThinClientPoolDM;
-}
+}  // namespace gemfire
 using namespace gemfire;
 namespace gemfire_statistics {
 class StatisticsManager;
@@ -50,5 +50,5 @@ class CPPCACHE_EXPORT PoolStatsSampler : public ACE_Task_Base {
   ACE_Recursive_Thread_Mutex m_lock;
   static const char* NC_PSS_Thread;
 };
-}
+}  // namespace gemfire_statistics
 #endif

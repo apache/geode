@@ -36,6 +36,6 @@ class TransactionSuspender {
  private:
   TXState* m_TXState;
 };
-}
+}  // namespace gemfire
 
 #endif /* TRANSACTIONSUSPENDER_HPP_ */

@@ -66,7 +66,8 @@ bool isLocator = false;
 bool isLocalServer = false;
 
 const char* poolNames[] = {"Pool1", "Pool2", "Pool3"};
-const char* locHostPort = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locHostPort =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 bool isPoolConfig = false;  // To track if pool case is running
 // const char * qRegionNames[] = { "Portfolios", "Positions", "Portfolios2",
 // "Portfolios3" };
@@ -3947,9 +3948,7 @@ void disableWeakHashMapC2BMR2() { CALL_TASK(SetWeakHashMapToFalseC2BMR2) }
 
 DUNIT_MAIN
   {
-    {
-      runPdxLongRunningClientTest();
-    }
+    { runPdxLongRunningClientTest(); }
     // NON PDX UnitTest for Ticket#866 on NC OR SR#13306117704. Set client name
     // via native client API
     testBug866();
@@ -3960,16 +3959,13 @@ DUNIT_MAIN
     runPdxPutGetTest();
 
     // PdxDistOps-PdxTests::PdxType PUT/GET Test across clients
-    {
-      runPdxDistOps();
-    }
+    { runPdxDistOps(); }
 
     // BasicMergeOps
     {
       enableWeakHashMapC1BM();
       enableWeakHashMapC2BM();
       runBasicMergeOps();
-
     }
 
     // BasicMergeOps2
@@ -4001,9 +3997,7 @@ DUNIT_MAIN
     }
 
     // JavaInteroperableOps
-    {
-      runJavaInteroperableOps();
-    }
+    { runJavaInteroperableOps(); }
 
     // PDXReaderWriterInvalidUsage
     {
@@ -4017,9 +4011,7 @@ DUNIT_MAIN
     }
 
     // NestedPdxOps
-    {
-      runNestedPdxOps();
-    }
+    { runNestedPdxOps(); }
 
     // MixedVersionNestedPdxOps
     { runNestedPdxOpsWithVersioning(); }
@@ -4036,18 +4028,12 @@ DUNIT_MAIN
     }
 
     // PdxMetadataCheckTest
-    {
-      runPdxMetadataCheckTest();
-    }
+    { runPdxMetadataCheckTest(); }
 
     // PdxBankTest
-    {
-      runPdxBankTest();
-    }
+    { runPdxBankTest(); }
 
     // Polymorphic-multilevel inheritance
-    {
-      testPolymorphicUseCase();
-    }
+    { testPolymorphicUseCase(); }
   }
 END_MAIN

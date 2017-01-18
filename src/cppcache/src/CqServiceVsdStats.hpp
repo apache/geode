@@ -137,6 +137,6 @@ class CqServiceStatType {
 
   inline int32_t getNumCqsStoppedId() { return m_numCqsStoppedId; }
 };
-}
+}  // namespace gemfire
 
 #endif  // __GEMFIRE_CQ_SERVICE_STATS_H__

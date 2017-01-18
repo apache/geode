@@ -90,7 +90,7 @@ class FrameworkTest  // Base class all test classes written for xml testing
   QueryServicePtr checkQueryService();
 
   void setTask(const char* taskId) {
-    m_task = (FwkTask*)(m_coll->getTaskById(taskId));
+    m_task = const_cast<FwkTask*>(m_coll->getTaskById(taskId));
   }
 
   const std::string getTaskId() {
@@ -146,7 +146,7 @@ class FrameworkTest  // Base class all test classes written for xml testing
   std::vector<std::string> getRoundRobinEP() const;
 
   void resetValue(const char* name) const {
-    FwkData* data = (FwkData*)getData(name);
+    FwkData* data = const_cast<FwkData*>(getData(name));
     if (data != NULL) data->reset();
   }
 
@@ -272,6 +272,6 @@ class FrameworkTest  // Base class all test classes written for xml testing
   }
 };
 
-}  // testframework
-}  // gemfire
+}  // namespace testframework
+}  // namespace gemfire
 #endif  // __FrameworkTest_hpp__

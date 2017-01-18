@@ -195,9 +195,8 @@ void createRegion(const char* name, bool ackMode,
   LOG("createRegion() entered.");
   fprintf(stdout, "Creating region --  %s  ackMode is %d\n", name, ackMode);
   fflush(stdout);
-  RegionPtr regPtr =
-      getHelper()->createRegion(name, ackMode, cachingEnable, NULLPTR,
-                                clientNotificationEnabled);
+  RegionPtr regPtr = getHelper()->createRegion(
+      name, ackMode, cachingEnable, NULLPTR, clientNotificationEnabled);
   ASSERT(regPtr != NULLPTR, "Failed to create region.");
   LOG("Region created.");
 }
@@ -209,9 +208,9 @@ void createPooledRegion(const char* name, bool ackMode, const char* locators,
   LOG("createRegion_Pool() entered.");
   fprintf(stdout, "Creating region --  %s  ackMode is %d\n", name, ackMode);
   fflush(stdout);
-  RegionPtr regPtr = getHelper()->createPooledRegion(
-      name, ackMode, locators, poolname, cachingEnable,
-      clientNotificationEnabled);
+  RegionPtr regPtr =
+      getHelper()->createPooledRegion(name, ackMode, locators, poolname,
+                                      cachingEnable, clientNotificationEnabled);
   ASSERT(regPtr != NULLPTR, "Failed to create region.");
   LOG("Pooled Region created.");
 }
@@ -420,9 +419,8 @@ END_TASK_DEFINITION
 DUNIT_TASK_DEFINITION(CLIENT1, StepOne_Pooled_Locator)
   {
     initClient(true);
-    createPooledRegion(regionNames[0], USE_ACK,  locatorsG,
-                       "__TESTPOOL1_");
-    createPooledRegion(regionNames[1], NO_ACK,  locatorsG, "__TESTPOOL1_");
+    createPooledRegion(regionNames[0], USE_ACK, locatorsG, "__TESTPOOL1_");
+    createPooledRegion(regionNames[1], NO_ACK, locatorsG, "__TESTPOOL1_");
     LOG("StepOne_Pooled complete.");
   }
 END_TASK_DEFINITION
@@ -430,8 +428,7 @@ END_TASK_DEFINITION
 DUNIT_TASK_DEFINITION(CLIENT1, StepSeven_Pooled_Locator)
   {
     initClient(true);
-    createPooledRegion(regionNames[2], USE_ACK,  locatorsG,
-                       "__TESTPOOL1_");
+    createPooledRegion(regionNames[2], USE_ACK, locatorsG, "__TESTPOOL1_");
     LOG("StepSeven_Pooled_Locator complete.");
   }
 END_TASK_DEFINITION
@@ -439,9 +436,8 @@ END_TASK_DEFINITION
 DUNIT_TASK_DEFINITION(CLIENT2, StepTwo_Pooled_Locator)
   {
     initClient(true);
-    createPooledRegion(regionNames[0], USE_ACK,  locatorsG,
-                       "__TESTPOOL1_");
-    createPooledRegion(regionNames[1], NO_ACK,  locatorsG, "__TESTPOOL1_");
+    createPooledRegion(regionNames[0], USE_ACK, locatorsG, "__TESTPOOL1_");
+    createPooledRegion(regionNames[1], NO_ACK, locatorsG, "__TESTPOOL1_");
     LOG("StepTwo complete.");
   }
 END_TASK_DEFINITION

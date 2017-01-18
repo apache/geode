@@ -17,7 +17,7 @@
 
 namespace gemfire {
 class Region;
-};
+}  // namespace gemfire
 
 #include <gfcpp/Cache.hpp>
 #include <gfcpp/ExpirationAttributes.hpp>

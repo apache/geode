@@ -238,6 +238,6 @@ class AtomicStatisticsImpl : public Statistics, private NonCopyable {
 
 };  // class
 
-};  // namespace
+}  // namespace gemfire_statistics
 
 #endif  //  _GEMFIRE_STATISTICS_ATOMICSTATISTICSIMPL_HPP_

@@ -94,6 +94,6 @@ class TXState {
     TXState* m_txState;
   };
 };
-}
+}  // namespace gemfire
 
 #endif /* TXSTATE_HPP_ */

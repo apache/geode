@@ -112,5 +112,5 @@ class PdxRemotePreservedData : public PdxUnreadFields {
     return 0;
   }
 };
-}
+}  // namespace gemfire
 #endif

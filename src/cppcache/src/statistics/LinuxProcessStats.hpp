@@ -73,6 +73,6 @@ class CPPCACHE_EXPORT LinuxProcessStats : public ProcessStats {
 
 };  // Class LinuxProcessStats
 
-};  // Namespace
+}  // namespace gemfire_statistics
 
 #endif  //_GEMFIRE_STATISTICS_LINUXPROCESSSTATS_HPP_

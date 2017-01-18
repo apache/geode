@@ -34,5 +34,5 @@ class LocatorListRequest : public ServerLocationRequest {
   virtual int8_t typeId() const;
   virtual uint32_t objectSize() const;
 };
-}
+}  // namespace gemfire
 #endif

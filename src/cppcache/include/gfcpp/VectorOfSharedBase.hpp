@@ -163,6 +163,6 @@ class CPPCACHE_EXPORT VectorOfSharedBase {
   */
   void erase(int32_t index);
 };
-}
+}  // namespace gemfire
 
 #endif

@@ -51,5 +51,5 @@ class ThinClientStickyManager {
   std::set<TcrConnection**> m_stickyConnList;
   ACE_Recursive_Thread_Mutex m_stickyLock;
 };
-}
+}  // namespace gemfire
 #endif

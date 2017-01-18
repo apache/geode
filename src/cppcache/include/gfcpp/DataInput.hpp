@@ -174,7 +174,7 @@ class CPPCACHE_EXPORT DataInput {
   inline void readInt(uint16_t* value) {
     checkBufferSize(2);
     uint16_t tmp = *(m_buf++);
-    tmp = (uint16_t)((tmp << 8) | *(m_buf++));
+    tmp = static_cast<uint16_t>((tmp << 8) | *(m_buf++));
     *value = tmp;
   }
 
@@ -235,7 +235,7 @@ class CPPCACHE_EXPORT DataInput {
    */
   inline void readInt(int16_t* value) {
     checkBufferSize(2);
-    readInt((uint16_t*)value);
+    readInt(reinterpret_cast<uint16_t*>(value));
   }
 
   /**
@@ -246,7 +246,7 @@ class CPPCACHE_EXPORT DataInput {
    */
   inline void readInt(int32_t* value) {
     checkBufferSize(4);
-    readInt((uint32_t*)value);
+    readInt(reinterpret_cast<uint32_t*>(value));
   }
 
   /**
@@ -257,7 +257,7 @@ class CPPCACHE_EXPORT DataInput {
    */
   inline void readInt(int64_t* value) {
     checkBufferSize(8);
-    readInt((uint64_t*)value);
+    readInt(reinterpret_cast<uint64_t*>(value));
   }
 
   /**
@@ -304,7 +304,7 @@ class CPPCACHE_EXPORT DataInput {
     while (shift < 64) {
       int8_t b;
       read(&b);
-      result |= (int64_t)(b & 0x7F) << shift;
+      result |= static_cast<int64_t>(b & 0x7F) << shift;
       if ((b & 0x80) == 0) {
         *value = result;
         return;
@@ -325,7 +325,7 @@ class CPPCACHE_EXPORT DataInput {
       float f;
       uint32_t u;
     } v;
-    readInt((uint32_t*)&v.u);
+    readInt(&v.u);
     *value = v.f;
   }
 
@@ -341,7 +341,7 @@ class CPPCACHE_EXPORT DataInput {
       double d;
       uint64_t ll;
     } v;
-    readInt((uint64_t*)&v.ll);
+    readInt(&v.ll);
     *value = v.d;
   }
 
@@ -384,7 +384,7 @@ class CPPCACHE_EXPORT DataInput {
     char* str;
     GF_NEW(str, char[length + 1]);
     *value = str;
-    readBytesOnly((int8_t*)str, length);
+    readBytesOnly(reinterpret_cast<int8_t*>(str), length);
     str[length] = '\0';
   }
 
@@ -411,7 +411,7 @@ class CPPCACHE_EXPORT DataInput {
     char* str;
     GF_NEW(str, char[length + 1]);
     *value = str;
-    readBytesOnly((int8_t*)str, length);
+    readBytesOnly(reinterpret_cast<int8_t*>(str), length);
     str[length] = '\0';
   }
 
@@ -435,7 +435,8 @@ class CPPCACHE_EXPORT DataInput {
     uint16_t length;
     readInt(&length);
     checkBufferSize(length);
-    uint16_t decodedLen = (uint16_t)getDecodedLength(m_buf, length);
+    uint16_t decodedLen =
+        static_cast<uint16_t>(getDecodedLength(m_buf, length));
     if (len != NULL) {
       *len = decodedLen;
     }
@@ -520,7 +521,8 @@ class CPPCACHE_EXPORT DataInput {
     uint16_t length;
     readInt(&length);
     checkBufferSize(length);
-    uint16_t decodedLen = (uint16_t)getDecodedLength(m_buf, length);
+    uint16_t decodedLen =
+        static_cast<uint16_t>(getDecodedLength(m_buf, length));
     if (len != NULL) {
       *len = decodedLen;
     }
@@ -561,7 +563,8 @@ class CPPCACHE_EXPORT DataInput {
       read(&hibyte);
       uint8_t lobyte;
       read(&lobyte);
-      *str = (((uint16_t)hibyte) << 8) | (uint16_t)lobyte;
+      *str = ((static_cast<uint16_t>(hibyte)) << 8) |
+             static_cast<uint16_t>(lobyte);
       str++;
     }
     *str = L'\0';  // null terminate for c-string.
@@ -663,7 +666,7 @@ class CPPCACHE_EXPORT DataInput {
   inline void readObject(wchar_t* value) {
     uint16_t temp = 0;
     readInt(&temp);
-    *value = (wchar_t)temp;
+    *value = static_cast<wchar_t>(temp);
   }
 
   inline void readObject(bool* value) { readBoolean(value); }
@@ -745,13 +748,15 @@ class CPPCACHE_EXPORT DataInput {
       readUTFHuge(value);
     }
     */
-    if (typeId == (int8_t)GemfireTypeIds::CacheableASCIIString ||
-        typeId == (int8_t)GemfireTypeIds::CacheableString) {
+    if (typeId == static_cast<int8_t>(GemfireTypeIds::CacheableASCIIString) ||
+        typeId == static_cast<int8_t>(GemfireTypeIds::CacheableString)) {
       // readUTF( value);
       readASCII(value);
       // m_len = shortLen;
-    } else if (typeId == (int8_t)GemfireTypeIds::CacheableASCIIStringHuge ||
-               typeId == (int8_t)GemfireTypeIds::CacheableStringHuge) {
+    } else if (typeId == static_cast<int8_t>(
+                             GemfireTypeIds::CacheableASCIIStringHuge) ||
+               typeId ==
+                   static_cast<int8_t>(GemfireTypeIds::CacheableStringHuge)) {
       // readUTFHuge( value);
       readASCIIHuge(value);
     } else {
@@ -770,11 +775,13 @@ class CPPCACHE_EXPORT DataInput {
       return;
     }
 
-    if (typeId == (int8_t)GemfireTypeIds::CacheableASCIIString ||
-        typeId == (int8_t)GemfireTypeIds::CacheableString) {
+    if (typeId == static_cast<int8_t>(GemfireTypeIds::CacheableASCIIString) ||
+        typeId == static_cast<int8_t>(GemfireTypeIds::CacheableString)) {
       readUTF(value);
-    } else if (typeId == (int8_t)GemfireTypeIds::CacheableASCIIStringHuge ||
-               typeId == (int8_t)GemfireTypeIds::CacheableStringHuge) {
+    } else if (typeId == static_cast<int8_t>(
+                             GemfireTypeIds::CacheableASCIIStringHuge) ||
+               typeId ==
+                   static_cast<int8_t>(GemfireTypeIds::CacheableStringHuge)) {
       readUTFHuge(value);
     } else {
       throw IllegalArgumentException(
@@ -978,7 +985,7 @@ class CPPCACHE_EXPORT DataInput {
   inline void readPdxChar(char* value) {
     int16_t val = 0;
     readInt(&val);
-    *value = (char)val;
+    *value = static_cast<char>(val);
   }
 
   inline void _checkBufferSize(int32_t size, int32_t line) {
@@ -997,11 +1004,12 @@ class CPPCACHE_EXPORT DataInput {
     if (bt & 0x80) {
       if (bt & 0x20) {
         // three bytes.
-        *str = (char)(((bt & 0x0f) << 12) | (((*m_buf++) & 0x3f) << 6));
-        *str |= (char)((*m_buf++) & 0x3f);
+        *str =
+            static_cast<char>(((bt & 0x0f) << 12) | (((*m_buf++) & 0x3f) << 6));
+        *str |= static_cast<char>((*m_buf++) & 0x3f);
       } else {
         // two bytes.
-        *str = (char)(((bt & 0x1f) << 6) | ((*m_buf++) & 0x3f));
+        *str = static_cast<char>(((bt & 0x1f) << 6) | ((*m_buf++) & 0x3f));
       }
     } else {
       // single byte...
@@ -1060,6 +1068,6 @@ class CPPCACHE_EXPORT DataInput {
   DataInput(const DataInput&);
   DataInput& operator=(const DataInput&);
 };
-}
+}  // namespace gemfire
 
 #endif  // __GEMFIRE_DATAINPUT_H__

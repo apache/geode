@@ -49,5 +49,5 @@ isTransaction = false );
   // ThinClientStickyManager* m_manager;
 };
 typedef SharedPtr<ThinClientPoolStickyHADM> ThinClientPoolStickyHADMPtr;
-}
+}  // namespace gemfire
 #endif

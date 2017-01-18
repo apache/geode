@@ -113,5 +113,5 @@ class CPPCACHE_EXPORT EvictionController : public ACE_Task_Base,
   EvictionThread* evictionThreadPtr;
   static const char* NC_EC_Thread;
 };
-}
+}  // namespace gemfire
 #endif  //_EVICTIONCONTROLLER_H__

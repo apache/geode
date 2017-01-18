@@ -111,6 +111,6 @@ class CPPCACHE_EXPORT IntQueue {
   ACE_Recursive_Thread_Mutex m_mutex;
   ACE_Condition<ACE_Recursive_Thread_Mutex> m_cond;
 };
-}  // end namespace
+}  // namespace gemfire
 
 #endif  // !defined (IMPL_INTQUEUE_INCLUDED)

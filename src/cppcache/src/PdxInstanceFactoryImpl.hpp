@@ -18,7 +18,6 @@
  * limitations under the License.
  */
 
-
 #include <gfcpp/PdxInstanceFactory.hpp>
 #include <gfcpp/CacheableBuiltins.hpp>
 #include <map>
@@ -450,6 +449,6 @@ class CPPCACHE_EXPORT PdxInstanceFactoryImpl : public PdxInstanceFactory {
 
   void isFieldAdded(const char* fieldName);
 };
-}
+}  // namespace gemfire
 
 #endif /* __PDXINSTANCE_FACTORY_IMPL_HPP_ */

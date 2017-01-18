@@ -306,7 +306,7 @@ END_TASK_DEFINITION
 
 DUNIT_TASK_DEFINITION(CLIENT1, InitClient1_R1)
   {
-      initClient();
+    initClient();
     LOG("Initialized client with redundancy level 1.");
     initClientAndRegion(1);
   }
@@ -322,7 +322,7 @@ END_TASK_DEFINITION
 
 DUNIT_TASK_DEFINITION(CLIENT1, InitClient1_R3)
   {
-      initClient();
+    initClient();
     initClientAndRegion(3);
     LOG("Initialized client with redundancy level 3.");
   }
@@ -330,7 +330,7 @@ END_TASK_DEFINITION
 
 DUNIT_TASK_DEFINITION(CLIENT2, InitClient2_R3)
   {
-      initClient();
+    initClient();
     initClientAndRegion(3);
     LOG("Initialized client with redundancy level 3.");
   }
@@ -647,7 +647,5 @@ void runRegexFailOver() {
 }
 
 DUNIT_MAIN
-  {
-    runRegexFailOver();
-  }
+  { runRegexFailOver(); }
 END_MAIN

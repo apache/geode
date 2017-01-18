@@ -352,6 +352,6 @@ class CPPCACHE_EXPORT CachePerfStats {
   int32_t m_pdxDeserializationsId;
   int32_t m_pdxDeserializedBytesId;
 };
-}
+}  // namespace gemfire
 
 #endif  // __GEMFIRE_CACHEPERFSTATS_H__

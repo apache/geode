@@ -43,5 +43,5 @@ class LocatorListResponse : public ServerLocationResponse {
   static Serializable* create();
 };
 typedef SharedPtr<LocatorListResponse> LocatorListResponsePtr;
-}
+}  // namespace gemfire
 #endif

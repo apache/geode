@@ -18,7 +18,6 @@
  * limitations under the License.
  */
 
-
 #include "PdxInstance.hpp"
 #include "gfcpp_globals.hpp"
 #include "gf_types.hpp"
@@ -466,6 +465,6 @@ class CPPCACHE_EXPORT PdxInstanceFactory : public SharedBase {
   */
   virtual PdxInstanceFactoryPtr markIdentityField(const char* fieldName) = 0;
 };
-}
+}  // namespace gemfire
 
 #endif /* __PDXINSTANCE_FACTORY_HPP_ */

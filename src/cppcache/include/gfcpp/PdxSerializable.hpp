@@ -18,7 +18,6 @@
  * limitations under the License.
  */
 
-
 #include "CacheableKey.hpp"
 
 namespace gemfire {
@@ -104,6 +103,6 @@ class CPPCACHE_EXPORT PdxSerializable : public CacheableKey {
    */
   virtual const char* getClassName() const = 0;
 };
-}
+}  // namespace gemfire
 
 #endif /* PDXSERIALIZABLE_HPP_ */

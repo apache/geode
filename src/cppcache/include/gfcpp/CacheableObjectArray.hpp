@@ -95,6 +95,6 @@ class CPPCACHE_EXPORT CacheableObjectArray : public Cacheable,
   CacheableObjectArray& operator=(const CacheableObjectArray& other);
   CacheableObjectArray(const CacheableObjectArray& other);
 };
-}
+}  // namespace gemfire
 
 #endif  // _GEMFIRE_CACHEABLEOBJECTARRAY_HPP_

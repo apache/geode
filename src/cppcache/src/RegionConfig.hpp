@@ -57,6 +57,6 @@ class CPPCACHE_EXPORT RegionConfig : virtual public SharedBase {
   std::string m_concurrency;
   std::string m_caching;
 };
-};
+}  // namespace gemfire
 
 #endif  // !defined(AFX_CACHEREGION_H__B8A44D1C_F9A4_49A8_A3A2_86CAE5E73C6F__INCLUDED_)

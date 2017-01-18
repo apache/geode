@@ -45,6 +45,6 @@ class CPPCACHE_EXPORT LRULocalDestroyAction : public virtual LRUAction {
   virtual LRUAction::Action getType() { return LRUAction::LOCAL_DESTROY; }
   friend class LRUAction;
 };
-};
+}  // namespace gemfire
 
 #endif  //__GEMFIRE_IMPL_LRULOCALDESTROYACTION_HPP__

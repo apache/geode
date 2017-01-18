@@ -67,5 +67,5 @@ class TssConnectionWrapper {
   void releaseSHConnections(PoolPtr p);
   TcrConnection* getAnyConnection(const char* poolname);
 };
-}
+}  // namespace gemfire
 #endif

@@ -78,6 +78,6 @@ class CPPCACHE_EXPORT AtomicInc {
     return m_value;
   }
 };
-}
+}  // namespace gemfire
 
 #endif

@@ -29,7 +29,8 @@
 using namespace gemfire::testframework::security;
 using namespace gemfire;
 
-const char* locHostPort = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locHostPort =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 CredentialGeneratorPtr credentialGeneratorHandler;
 
 std::string getXmlPath() {

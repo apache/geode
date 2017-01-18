@@ -23,7 +23,7 @@
 namespace
 {
   volatile bool g_nativeTypeDestroyed = false;
-}
+}  // namespace
 
 NativeType::NativeType()
 {

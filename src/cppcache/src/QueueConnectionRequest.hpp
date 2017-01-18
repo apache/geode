@@ -55,5 +55,5 @@ class QueueConnectionRequest : public ServerLocationRequest {
   const bool m_findDurable;
   std::string m_serverGp;
 };
-}
+}  // namespace gemfire
 #endif

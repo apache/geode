@@ -79,5 +79,5 @@ class CPPCACHE_EXPORT PoolXmlCreation {
    */
   PoolPtr create();
 };
-};
+}  // namespace gemfire
 #endif  // #ifndef  _GEMFIRE_POOLXMLCREATION_HPP_

@@ -28,7 +28,7 @@ void millisleep(uint32_t x) {
   timeV.msec(static_cast<long>(x));
   ACE_OS::sleep(timeV);
 }
-}
+}  // namespace test
 
 #define SLEEP(x) test::millisleep(x);
 #define LOG LOGDEBUG

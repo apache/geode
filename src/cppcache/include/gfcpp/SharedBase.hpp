@@ -78,7 +78,7 @@ class CPPCACHE_EXPORT NullSharedBase : public SharedBase {
 
   friend class SharedBase;  // just to get rid of warning with gcc3.x
 };
-}
+}  // namespace gemfire
 
 #define NULLPTR gemfire::NullSharedBase::s_instancePtr
 

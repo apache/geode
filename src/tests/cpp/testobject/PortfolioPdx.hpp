@@ -104,5 +104,5 @@ class TESTOBJECT_EXPORT PortfolioPdx : public PdxSerializable {
 };
 
 typedef SharedPtr<PortfolioPdx> PortfolioPdxPtr;
-}
+}  // namespace testobject
 #endif

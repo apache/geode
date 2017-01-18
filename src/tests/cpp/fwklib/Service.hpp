@@ -84,9 +84,9 @@ class Service : public ACE_Task_Base {
 
   int32_t runThreaded(ServiceTask* task, uint32_t threads);
 
-  inline uint32_t getBusyCount() { return (uint32_t)m_busy.value(); }
+  inline uint32_t getBusyCount() { return static_cast<uint32_t>(m_busy.value()); }
   inline uint32_t getIdleCount() {
-    return m_ThreadCount - (uint32_t)m_busy.value();
+    return m_ThreadCount - static_cast<uint32_t>(m_busy.value());
   }
 
   inline void stopThreads() {
@@ -155,6 +155,6 @@ class IPCMessage {
   virtual void clear() { m_msg.clear(); }
 };
 
-}  // testframework
-}  // gemfire
+}  // namespace testframework
+}  // namespace gemfire
 #endif  // __Service_hpp__

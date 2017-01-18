@@ -66,7 +66,9 @@ class ClientProxyMembershipID : public DSMemberForVersionStamp {
     return GemfireTypeIdsImpl::InternalDistributedMember;
   }
   uint32_t objectSize() const { return 0; }
-  int8_t DSFID() const { return (int8_t)GemfireTypeIdsImpl::FixedIDByte; }
+  int8_t DSFID() const {
+    return static_cast<int8_t>(GemfireTypeIdsImpl::FixedIDByte);
+  }
   void initObjectVars(const char* hostname, uint8_t* hostAddr,
                       uint32_t hostAddrLen, bool hostAddrLocalMem,
                       uint32_t hostPort, const char* durableClientId,
@@ -105,10 +107,11 @@ class ClientProxyMembershipID : public DSMemberForVersionStamp {
 
     DSMemberForVersionStampPtr callerPtr = NULLPTR;
     callerPtr = DSMemberForVersionStampPtr(this);
-    if (callerPtr->compareTo(obj) == 0)
+    if (callerPtr->compareTo(obj) == 0) {
       return true;
-    else
+    } else {
       return false;
+    }
   }
 
   Serializable* readEssentialData(DataInput& input);
@@ -136,6 +139,6 @@ class ClientProxyMembershipID : public DSMemberForVersionStamp {
   void readVersion(int flags, DataInput& input);
   void writeVersion(int16_t ordinal, DataOutput& output);
 };
-}
+}  // namespace gemfire
 
 #endif  // __CLIENTPROXYMEMBERSHIPID_HPP__

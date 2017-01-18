@@ -46,14 +46,14 @@ class TESTOBJECT_EXPORT ArrayOfByte {
       DataOutput dos;
       try {
         int32_t index = 1234;
-        dos.writeInt((int32_t)index);
+        dos.writeInt(index);
         if (encodeTimestamp) {
           ACE_Time_Value startTime;
           startTime = ACE_OS::gettimeofday();
           ACE_UINT64 tusec = 0;
           startTime.to_usec(tusec);
           int64_t timestamp = tusec * 1000;
-          dos.writeInt((int64_t)timestamp);
+          dos.writeInt(timestamp);
         }
       } catch (Exception &e) {
         FWKEXCEPTION("Unable to write to stream " << e.getMessage());
@@ -64,7 +64,7 @@ class TESTOBJECT_EXPORT ArrayOfByte {
       int32 rsiz = (bufSize <= 20) ? bufSize : 20;
       GsRandom::getAlphanumericString(rsiz, buf);
       memcpy(buf, dos.getBuffer(), dos.getBufferLength());
-      return CacheableBytes::createNoCopy((uint8_t *)buf, bufSize);
+      return CacheableBytes::createNoCopy(reinterpret_cast<uint8_t *>(buf), bufSize);
     } else if (encodeTimestamp) {
       FWKEXCEPTION("Should not happen");
     } else {
@@ -79,9 +79,9 @@ class TESTOBJECT_EXPORT ArrayOfByte {
     DataInput di(bytes->value(), bytes->length());
     try {
       int32_t index;
-      di.readInt((int32_t *)&index);
+      di.readInt(&index);
       int64_t timestamp;
-      di.readInt((int64_t *)&timestamp);
+      di.readInt(&timestamp);
       if (timestamp == 0) {
         FWKEXCEPTION("Object is not configured to encode timestamp");
       }
@@ -95,9 +95,9 @@ class TESTOBJECT_EXPORT ArrayOfByte {
     DataInput di(bytes->value(), bytes->length());
     int32_t index;
     try {
-      di.readInt((int32_t *)&index);
+      di.readInt(&index);
       int64_t timestamp;
-      di.readInt((int64_t *)&timestamp);
+      di.readInt(&timestamp);
       if (timestamp == 0) {
         return;
       }
@@ -112,12 +112,12 @@ class TESTOBJECT_EXPORT ArrayOfByte {
       ACE_UINT64 tusec = 0;
       startTime.to_usec(tusec);
       int64_t timestamp = tusec * 1000;
-      dos.writeInt((int64_t)timestamp);
+      dos.writeInt(timestamp);
     } catch (Exception &e) {
       FWKEXCEPTION("Unable to write to stream " << e.getMessage());
     }
   }
 };
-}
+}  // namespace testobject
 
 #endif

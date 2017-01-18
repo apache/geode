@@ -90,24 +90,26 @@ class QueryHelper {
 
   bool isExpectedRowsConstantRS(int queryindex) {
     for (int i = (sizeof(constantExpectedRowsRS) / sizeof(int)) - 1; i > -1;
-         i--)
+         i--) {
       if (constantExpectedRowsRS[i] == queryindex) {
         printf("index %d is having constant rows \n",
                constantExpectedRowsRS[i]);
         return true;
       }
+    }
 
     return false;
   }
 
   bool isExpectedRowsConstantPQRS(int queryindex) {
     for (int i = (sizeof(constantExpectedRowsPQRS) / sizeof(int)) - 1; i > -1;
-         i--)
+         i--) {
       if (constantExpectedRowsPQRS[i] == queryindex) {
         printf("index %d is having constant rows \n",
                constantExpectedRowsPQRS[i]);
         return true;
       }
+    }
 
     return false;
   }
@@ -323,8 +325,9 @@ bool QueryHelper::verifyRS(SelectResultsPtr& resultSet, int expectedRows) {
 bool QueryHelper::verifySS(SelectResultsPtr& structSet, int expectedRows,
                            int expectedFields) {
   if (!instanceOf<StructSetPtr>(structSet)) {
-    if (expectedRows == 0 && expectedFields == 0)
+    if (expectedRows == 0 && expectedFields == 0) {
       return true;  // quite possible we got a null set back.
+    }
     printf("we have structSet itself NULL \n");
     return false;
   }

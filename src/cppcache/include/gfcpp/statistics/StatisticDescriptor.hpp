@@ -83,6 +83,6 @@ class CPPCACHE_EXPORT StatisticDescriptor {
 
 };  // class
 
-};  // namespace
+}  // namespace gemfire_statistics
 
 #endif  // _GEMFIRE_STATISTICS_STATISTICDESCRIPTOR_HPP_

@@ -70,6 +70,6 @@ template <typename TKEY>
 inline bool equalToFunction(const TKEY& x, const TKEY& y) {
   return (*x.ptr() == *y.ptr());
 }
-}
+}  // namespace gemfire
 
 #endif

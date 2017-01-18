@@ -27,7 +27,8 @@ using namespace test;
 
 bool isLocalServer = true;
 static bool isLocator = false;
-const char* locatorsG = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locatorsG =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 #include "LocatorHelper.hpp"
 
 DUNIT_TASK_DEFINITION(CLIENT1, SetupClient1_Pool_Locator)

@@ -104,12 +104,14 @@ namespace dunit {
 void log(std::string s, int lineno, const char* filename, int id);
 void sleep(int millis);
 void setupCRTOutput();  // disable windows popups.
-};
+}  // namespace dunit
 
 class TestException {
  public:
   TestException(const char* msg, int lineno, const char* filename)
-      : m_message((char*)msg), m_lineno(lineno), m_filename((char*)filename) {}
+      : m_message(const_cast<char*>(msg)),
+        m_lineno(lineno),
+        m_filename(const_cast<char*>(filename)) {}
 
   void print() {
     char buf[256];

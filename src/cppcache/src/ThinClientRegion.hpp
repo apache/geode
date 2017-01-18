@@ -18,7 +18,6 @@
  * limitations under the License.
  */
 
-
 #include "LocalRegion.hpp"
 #include "TcrMessage.hpp"
 #include "TcrEndpoint.hpp"

@@ -48,5 +48,5 @@ class ThinClientPoolStickyDM : public ThinClientPoolDM {
   // virtual void cleanStickyConnections(volatile bool& isRunning);
 };
 typedef SharedPtr<ThinClientPoolStickyDM> ThinClientPoolStickyDMPtr;
-}
+}  // namespace gemfire
 #endif

@@ -79,6 +79,6 @@ class TXEntryState : public gemfire::SharedBase {
 };
 
 _GF_PTR_DEF_(TXEntryState, TXEntryStatePtr);
-}
+}  // namespace gemfire
 
 #endif /* TXENTRYSTATE_HPP_ */

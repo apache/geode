@@ -49,15 +49,17 @@
       // Spawn the new process; prepare() hook is called first.
       ACE_Process_Options options;
       pid_t pid = this->spawn(options);
-      if (pid == -1)
+      if (pid == -1) {
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("%p\n"), ACE_TEXT("spawn")), -1);
+      }
       return pid;
     }
 
     virtual int doWait(void) {
       // Wait forever for my child to exit.
-      if (this->wait() == -1)
+      if (this->wait() == -1) {
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("%p\n"), ACE_TEXT("wait")), -1);
+      }
 
       // Dump whatever happened.
       this->dumpRun();
@@ -68,16 +70,17 @@
    protected:
     // Listing 3 code/ch10
     virtual int dumpRun(void) {
-      if (ACE_OS::lseek(this->outputfd_, 0, SEEK_SET) == -1)
+      if (ACE_OS::lseek(this->outputfd_, 0, SEEK_SET) == -1) {
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("%p\n"), ACE_TEXT("lseek")), -1);
+      }
 
       char buf[1024];
       int length = 0;
 
       // Read the contents of the error stream written
       // by the child and print it out.
-      while ((length = (int)ACE_OS::read(this->outputfd_, buf,
-                                         sizeof(buf) - 1)) > 0) {
+      while ((length = static_cast<int>(
+                  ACE_OS::read(this->outputfd_, buf, sizeof(buf) - 1))) > 0) {
         buf[length] = 0;
         ACE_DEBUG((LM_DEBUG, ACE_TEXT("%C\n"), buf));
       }
@@ -92,8 +95,9 @@
     virtual int prepare(ACE_Process_Options &options) {
       options.command_line("%s", this->programName_);
       if (this->setStdHandles(options) == -1 ||
-          this->setEnvVariable(options) == -1)
+          this->setEnvVariable(options) == -1) {
         return -1;
+      }
       return 0;
     }
 

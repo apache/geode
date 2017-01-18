@@ -138,5 +138,5 @@ class CPPCACHE_EXPORT PdxTypeRegistry {
  private:
   static PdxTypeToTypeIdMap* pdxTypeToTypeIdMap;
 };
-}
+}  // namespace gemfire
 #endif /* PDXTYPEREGISTRY_HPP_ */

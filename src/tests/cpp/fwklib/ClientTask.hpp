@@ -151,7 +151,7 @@ class ThreadedTask : public ClientTask {
   void doCleanup(ACE_thread_t id) { id = 0; }
 };
 
-}  // testframework
-}  // gemfire
+}  // namespace testframework
+}  // namespace gemfire
 
 #endif  // __ClientTask_hpp__

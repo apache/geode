@@ -241,6 +241,6 @@ class Thread : public ACE_Task_Base {
 //  NamingServiceThread( uint32_t port ) : m_port( port ) {}
 // virtual int svc() { };//namingService(); }
 //};
-}
+}  // namespace perf
 
 #endif

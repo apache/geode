@@ -31,6 +31,6 @@ class InternalDataView {
   InternalDataView();
   virtual ~InternalDataView();
 };
-}
+}  // namespace gemfire
 
 #endif /* INTERNALDATAVIEW_HPP_ */

@@ -32,4 +32,4 @@ TXRegionState::TXRegionState() {
 TXRegionState::~TXRegionState() {
   // TODO Auto-generated destructor stub
 }
-}
+}  // namespace gemfire

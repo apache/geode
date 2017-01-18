@@ -49,5 +49,5 @@ class CPPCACHE_EXPORT StatSamplerStats {
   void setInitialValues();
   ~StatSamplerStats();
 };
-};
+}  // namespace gemfire_statistics
 #endif  //_GEMFIRE_STATISTICS_STATISTICSSAMPLERSTATISTICS_HPP_

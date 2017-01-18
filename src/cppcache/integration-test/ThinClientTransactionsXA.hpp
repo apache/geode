@@ -85,16 +85,18 @@ void _verifyEntry(const char* name, const char* key, const char* val,
                   bool noKey) {
   // Verify key and value exist in this region, in this process.
   const char* value = (val == 0) ? "" : val;
-  char* buf = (char*)malloc(1024 + strlen(key) + strlen(value));
+  char* buf =
+      reinterpret_cast<char*>(malloc(1024 + strlen(key) + strlen(value)));
   ASSERT(buf, "Unable to malloc buffer for logging.");
-  if (noKey)
+  if (noKey) {
     sprintf(buf, "Verify key %s does not exist in region %s", key, name);
-  else if (val == 0)
+  } else if (val == 0) {
     sprintf(buf, "Verify value for key %s does not exist in region %s", key,
             name);
-  else
+  } else {
     sprintf(buf, "Verify value for key %s is: %s in region %s", key, value,
             name);
+  }
   LOG(buf);
   free(buf);
 
@@ -120,17 +122,19 @@ void _verifyEntry(const char* name, const char* key, const char* val,
 
   for (int i = MAX; i >= 0; i--) {
     if (noKey) {
-      if (regPtr->containsKey(keyPtr))
+      if (regPtr->containsKey(keyPtr)) {
         containsKeyCnt++;
-      else
+      } else {
         break;
+      }
       ASSERT(containsKeyCnt < MAX, "Key found in region.");
     }
     if (val == NULL) {
-      if (regPtr->containsValueForKey(keyPtr))
+      if (regPtr->containsValueForKey(keyPtr)) {
         containsValueCnt++;
-      else
+      } else {
         break;
+      }
       ASSERT(containsValueCnt < MAX, "Value found in region.");
     }
 
@@ -882,7 +886,7 @@ END_TASK_DEFINITION
 DUNIT_TASK_DEFINITION(CLIENT1, CreateNonexistentServerRegion_Pooled_Locator)
   {
     initClient(true);
-    createPooledRegion("non-region", USE_ACK,  locatorsG, "__TESTPOOL1_");
+    createPooledRegion("non-region", USE_ACK, locatorsG, "__TESTPOOL1_");
     try {
       createEntry("non-region", keys[0], vals[0]);
       FAIL(
@@ -900,8 +904,7 @@ DUNIT_TASK_DEFINITION(CLIENT1,
                       CreateNonexistentServerRegion_Pooled_Locator_Sticky)
   {
     initClient(true);
-    createPooledRegionSticky("non-region", USE_ACK,  locatorsG,
-                             "__TESTPOOL1_");
+    createPooledRegionSticky("non-region", USE_ACK, locatorsG, "__TESTPOOL1_");
     try {
       createEntry("non-region", keys[0], vals[0]);
       FAIL(
@@ -917,19 +920,17 @@ END_TASK_DEFINITION
 
 DUNIT_TASK_DEFINITION(CLIENT1, StepOne_Pooled_Locator)
   {
-    createPooledRegion(regionNames[0], USE_ACK,  locatorsG,
-                       "__TESTPOOL1_");
-    createPooledRegion(regionNames[1], NO_ACK,  locatorsG, "__TESTPOOL1_");
+    createPooledRegion(regionNames[0], USE_ACK, locatorsG, "__TESTPOOL1_");
+    createPooledRegion(regionNames[1], NO_ACK, locatorsG, "__TESTPOOL1_");
     LOG("StepOne_Pooled complete.");
   }
 END_TASK_DEFINITION
 
 DUNIT_TASK_DEFINITION(CLIENT1, StepOne_Pooled_Locator_Sticky)
   {
-    createPooledRegionSticky(regionNames[0], USE_ACK,  locatorsG,
+    createPooledRegionSticky(regionNames[0], USE_ACK, locatorsG,
                              "__TESTPOOL1_");
-    createPooledRegionSticky(regionNames[1], NO_ACK,  locatorsG,
-                             "__TESTPOOL1_");
+    createPooledRegionSticky(regionNames[1], NO_ACK, locatorsG, "__TESTPOOL1_");
     LOG("StepOne_Pooled_Locator_Sticky complete.");
   }
 END_TASK_DEFINITION
@@ -937,9 +938,8 @@ END_TASK_DEFINITION
 DUNIT_TASK_DEFINITION(CLIENT2, StepTwo_Pooled_Locator)
   {
     initClient(true);
-    createPooledRegion(regionNames[0], USE_ACK,  locatorsG,
-                       "__TESTPOOL1_");
-    createPooledRegion(regionNames[1], NO_ACK,  locatorsG, "__TESTPOOL1_");
+    createPooledRegion(regionNames[0], USE_ACK, locatorsG, "__TESTPOOL1_");
+    createPooledRegion(regionNames[1], NO_ACK, locatorsG, "__TESTPOOL1_");
     LOG("StepTwo complete.");
   }
 END_TASK_DEFINITION
@@ -947,10 +947,9 @@ END_TASK_DEFINITION
 DUNIT_TASK_DEFINITION(CLIENT2, StepTwo_Pooled_Locator_Sticky)
   {
     initClient(true);
-    createPooledRegionSticky(regionNames[0], USE_ACK,  locatorsG,
+    createPooledRegionSticky(regionNames[0], USE_ACK, locatorsG,
                              "__TESTPOOL1_");
-    createPooledRegionSticky(regionNames[1], NO_ACK,  locatorsG,
-                             "__TESTPOOL1_");
+    createPooledRegionSticky(regionNames[1], NO_ACK, locatorsG, "__TESTPOOL1_");
     LOG("StepTwo complete.");
   }
 END_TASK_DEFINITION

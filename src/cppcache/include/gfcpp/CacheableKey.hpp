@@ -74,6 +74,6 @@ inline CacheableKeyPtr createKey(const SharedPtr<TKEY>& value);
 
 template <typename TKEY>
 inline CacheableKeyPtr createKey(const TKEY* value);
-}
+}  // namespace gemfire
 
 #endif

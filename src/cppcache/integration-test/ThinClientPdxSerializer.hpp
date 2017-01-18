@@ -47,7 +47,8 @@ bool isLocator = false;
 bool isLocalServer = false;
 
 const char* poolNames[] = {"Pool1", "Pool2", "Pool3"};
-const char* locHostPort = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locHostPort =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 bool isPoolConfig = false;  // To track if pool case is running
 static bool m_useWeakHashMap ATTR_UNUSED = false;
 
@@ -97,8 +98,9 @@ END_TASK_DEFINITION
 DUNIT_TASK_DEFINITION(SERVER1, CreateServerWithLocator)
   {
     LOG("Starting SERVER1...");
-    if (isLocalServer)
+    if (isLocalServer) {
       CacheHelper::initServer(1, "cacheserverPdx.xml", locHostPort);
+    }
     LOG("SERVER1 started");
   }
 END_TASK_DEFINITION
@@ -106,8 +108,9 @@ END_TASK_DEFINITION
 DUNIT_TASK_DEFINITION(SERVER1, CreateServerWithLocator1)
   {
     LOG("Starting SERVER1...");
-    if (isLocalServer)
+    if (isLocalServer) {
       CacheHelper::initServer(1, "cacheserver.xml", locHostPort);
+    }
     LOG("SERVER1 started");
   }
 END_TASK_DEFINITION
@@ -115,8 +118,9 @@ END_TASK_DEFINITION
 DUNIT_TASK_DEFINITION(SERVER1, CreateServerWithLocator2)
   {
     LOG("Starting SERVER1...");
-    if (isLocalServer)
+    if (isLocalServer) {
       CacheHelper::initServer(1, "cacheserverForPdx.xml", locHostPort);
+    }
     LOG("SERVER1 started");
   }
 END_TASK_DEFINITION
@@ -124,8 +128,9 @@ END_TASK_DEFINITION
 DUNIT_TASK_DEFINITION(SERVER1, CreateServerWithLocator3)
   {
     LOG("Starting SERVER1...");
-    if (isLocalServer)
+    if (isLocalServer) {
       CacheHelper::initServer(1, "cacheserverPdxSerializer.xml", locHostPort);
+    }
     LOG("SERVER1 started");
   }
 END_TASK_DEFINITION

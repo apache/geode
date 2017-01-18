@@ -375,7 +375,7 @@ class Attributes {
   }
 
   void setConcurrencyLevel(std::string val) {
-    m_factory.setConcurrencyLevel((uint8_t)FwkStrCvt::toInt32(val));
+    m_factory.setConcurrencyLevel(static_cast<uint8_t>(FwkStrCvt::toInt32(val)));
   }
 
   void setLruEntriesLimit(std::string val) {
@@ -696,7 +696,7 @@ class DataList {
   const std::string& getNextListItem(TlsMapIter iter) const {
     int32_t idx = (*iter).second;
 
-    if (++idx >= (int32_t)m_values.size()) {
+    if (++idx >= static_cast<int32_t>(m_values.size())) {
       idx = -1;
     }
     m_map[(*iter).first] = idx;
@@ -1128,7 +1128,7 @@ class FwkTask : public FwkObject {
   }
 
   void resetValue(const char* name) const {
-    FwkData* data = (FwkData*)getData(name);
+    FwkData* data = const_cast<FwkData*>(getData(name));
     if (data != NULL) data->reset();
   }
 
@@ -1289,12 +1289,12 @@ class FwkTest : public FwkObject {
   }
 
   const FwkTask* getTaskById(std::string& id) {
-    FwkTask* task = (FwkTask*)m_taskSet.getFirst();
+    FwkTask* task = const_cast<FwkTask*>(m_taskSet.getFirst());
     while (task != NULL) {
       if (task->getTaskId() == id) {
         return task;
       }
-      task = (FwkTask*)m_taskSet.getNext(task);
+      task = const_cast<FwkTask*>(m_taskSet.getNext(task));
     }
     return task;
   }
@@ -1431,14 +1431,14 @@ class TestDriver {
 
   void addClientSet(FwkClientSet* clientSet) {
     m_clientSets.push_back(clientSet);
-    FwkClient* client = (FwkClient*)clientSet->getFirst();
+    FwkClient* client = const_cast<FwkClient*>(clientSet->getFirst());
     std::string grp = clientSet->getHostGroup();
     bool remaining = clientSet->getRemaining();
     while (client != NULL) {
       client->setHostGroup(grp);
       client->setRemaining(remaining);
       m_clients.add(client);
-      client = (FwkClient*)clientSet->getNext(client);
+      client = const_cast<FwkClient*>(clientSet->getNext(client));
     }
   }
 
@@ -1449,7 +1449,7 @@ class TestDriver {
     const FwkTask* task = test->getFirst();
     int32_t cnt = 1;
     while (task != NULL) {
-      ((FwkTask*)task)->setKey(cnt++);
+      (const_cast<FwkTask*>(task))->setKey(cnt++);
       m_tasks.add(task);
       task = test->getNext(task);
     }
@@ -1610,6 +1610,6 @@ class TestDriver {
 // ----------------------------------------------------------------------------
 
 }  // namespace testframework
-}  // namepace gemfire
+}  // namespace gemfire
 
 #endif  // __FWK_OBJECTS_HPP__

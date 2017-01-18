@@ -86,6 +86,6 @@ class CPPCACHE_EXPORT ExpEntryFactory : public EntryFactory {
   virtual void newMapEntry(const CacheableKeyPtr& key,
                            MapEntryImplPtr& result) const;
 };
-}
+}  // namespace gemfire
 
 #endif  // __GEMFIRE_IMPL_EXPMAPENTRY_H__

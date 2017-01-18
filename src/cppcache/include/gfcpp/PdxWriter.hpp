@@ -18,7 +18,6 @@
  * limitations under the License.
  */
 
-
 #include "gfcpp_globals.hpp"
 #include "gf_types.hpp"
 #include "CacheableBuiltins.hpp"
@@ -441,5 +440,5 @@ class CPPCACHE_EXPORT PdxWriter : public SharedBase {
    */
   virtual PdxWriterPtr writeUnreadFields(PdxUnreadFieldsPtr unread) = 0;
 };
-}
+}  // namespace gemfire
 #endif /* PDXWRITER_HPP_ */

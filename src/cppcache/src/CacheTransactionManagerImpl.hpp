@@ -63,7 +63,7 @@ class CacheTransactionManagerImpl
   //    virtual void removeListener(TransactionListenerPtr aListener);
 
   inline static int32_t hasher(const SharedBasePtr& p) {
-    return (int32_t) reinterpret_cast<intptr_t>(p.ptr());
+    return static_cast<int32_t>(reinterpret_cast<intptr_t>(p.ptr()));
   }
 
   inline static bool equal_to(const SharedBasePtr& x, const SharedBasePtr& y) {
@@ -102,6 +102,6 @@ class CacheTransactionManagerImpl
 
   friend class TXCleaner;
 };
-}
+}  // namespace gemfire
 
 #endif /* CACHETRANSACTIONMANAGERIMPL_H_ */

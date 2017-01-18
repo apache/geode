@@ -38,7 +38,8 @@ CacheHelper* cacheHelper = NULL;
 bool isLocalServer = false;
 
 static bool isLocator = false;
-const char* locatorsG = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locatorsG =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 #include "LocatorHelper.hpp"
 static int clientWithRedundancy = 0;
 void initClient(int redundancyLevel) {
@@ -224,17 +225,15 @@ void createRegion(const char* name, bool ackMode,
   LOG("Region created.");
 }
 
-void createPooledRegion(const char* name, bool ackMode,
-                        const char* locators, const char* poolname,
-                        int reduendency = 1,
+void createPooledRegion(const char* name, bool ackMode, const char* locators,
+                        const char* poolname, int reduendency = 1,
                         bool clientNotificationEnabled = false,
                         bool cachingEnable = true) {
   LOG("createRegion_Pool() entered.");
   fprintf(stdout, "Creating region --  %s  ackMode is %d\n", name, ackMode);
   fflush(stdout);
-  PoolPtr poolPtr =
-      getHelper()->createPool(poolname, locators, NULL, reduendency,
-                              clientNotificationEnabled);
+  PoolPtr poolPtr = getHelper()->createPool(
+      poolname, locators, NULL, reduendency, clientNotificationEnabled);
   RegionPtr regPtr = getHelper()->createRegionAndAttachPool(
       name, ackMode, poolname, cachingEnable);
   ASSERT(regPtr != NULLPTR, "Failed to create region.");

@@ -258,5 +258,5 @@ class CPPCACHE_EXPORT TcrEndpoint {
  protected:
   static const char* NC_Notification;
 };
-}
+}  // namespace gemfire
 #endif  // __TCR_ENDPOINT_HPP__

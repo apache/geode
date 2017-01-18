@@ -28,6 +28,6 @@ namespace gemfire {
 
 typedef Serializable UserData;
 typedef SharedPtr<UserData> UserDataPtr;
-}
+}  // namespace gemfire
 
 #endif  // ifndef __GEMFIRE_USERDATA_H__

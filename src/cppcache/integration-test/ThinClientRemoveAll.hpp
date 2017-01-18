@@ -86,9 +86,8 @@ void createRegion(const char* name, bool ackMode, const char* endpoints,
   LOG("createRegion() entered.");
   fprintf(stdout, "Creating region --  %s  ackMode is %d\n", name, ackMode);
   fflush(stdout);
-  RegionPtr regPtr =
-      getHelper()->createRegion(name, ackMode, isCacheEnabled, NULLPTR,
-                                clientNotificationEnabled);
+  RegionPtr regPtr = getHelper()->createRegion(
+      name, ackMode, isCacheEnabled, NULLPTR, clientNotificationEnabled);
   ASSERT(regPtr != NULLPTR, "Failed to create region.");
   LOG("Region created.");
 }
@@ -99,9 +98,8 @@ void createRegionLocal(const char* name, bool ackMode, const char* endpoints,
   LOG("createRegion() entered.");
   fprintf(stdout, "Creating region --  %s  ackMode is %d\n", name, ackMode);
   fflush(stdout);
-  RegionPtr regPtr =
-      getHelper()->createRegion(name, ackMode, isCacheEnabled, NULLPTR,
-                                clientNotificationEnabled, true);
+  RegionPtr regPtr = getHelper()->createRegion(
+      name, ackMode, isCacheEnabled, NULLPTR, clientNotificationEnabled, true);
   ASSERT(regPtr != NULLPTR, "Failed to create region.");
   LOG("Region created.");
 }
