@@ -109,6 +109,10 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
         .toPath().resolve("geode-assembly").resolve("build").resolve("install")
         .resolve("apache-geode").toString();
 
+    System.out.println("Current dir is " + new File(".").getCanonicalPath());
+    System.out.println("Setting gemfire.home to " + geodeInstallDir);
+
+
     VM locatorVM = getHost(0).getVM(index);
     int locatorPort = locatorVM.invoke(() -> {
       System.setProperty("user.dir", workingDir.getCanonicalPath());
