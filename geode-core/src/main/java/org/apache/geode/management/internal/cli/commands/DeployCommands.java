@@ -96,53 +96,40 @@ public final class DeployCommands extends AbstractCommandsSupport {
       String[] jarNames = CliUtil.bytesToNames(shellBytesData);
       byte[][] jarBytes = CliUtil.bytesToData(shellBytesData);
 
-      boolean accumulatedData = false;
-
       Set<DistributedMember> targetMembers;
-      try {
-        targetMembers = CliUtil.findAllMatchingMembers(groups, null);
-      } catch (CommandResultException e) {
-        return e.getResult();
-      }
 
-      // this deploys the jars to all the matching servers
-      ResultCollector<?, ?> resultCollector = CliUtil.executeFunction(this.deployFunction,
-          new Object[] {jarNames, jarBytes}, targetMembers);
+      targetMembers = CliUtil.findMembers(groups, null);
 
-      List<CliFunctionResult> results =
-          CliFunctionResult.cleanResults((List<?>) resultCollector.getResult());
+      if (targetMembers.size() > 0) {
+        // this deploys the jars to all the matching servers
+        ResultCollector<?, ?> resultCollector = CliUtil.executeFunction(this.deployFunction,
+            new Object[] {jarNames, jarBytes}, targetMembers);
 
-      for (CliFunctionResult result : results) {
-        if (result.getThrowable() != null) {
-          tabularData.accumulate("Member", result.getMemberIdOrName());
-          tabularData.accumulate("Deployed JAR", "");
-          tabularData.accumulate("Deployed JAR Location",
-              "ERROR: " + result.getThrowable().getClass().getName() + ": "
-                  + result.getThrowable().getMessage());
-          accumulatedData = true;
-          tabularData.setStatus(Status.ERROR);
-        } else {
-          String[] strings = (String[]) result.getSerializables();
-          for (int i = 0; i < strings.length; i += 2) {
+        List<CliFunctionResult> results =
+            CliFunctionResult.cleanResults((List<?>) resultCollector.getResult());
+
+        for (CliFunctionResult result : results) {
+          if (result.getThrowable() != null) {
             tabularData.accumulate("Member", result.getMemberIdOrName());
-            tabularData.accumulate("Deployed JAR", strings[i]);
-            tabularData.accumulate("Deployed JAR Location", strings[i + 1]);
-            accumulatedData = true;
+            tabularData.accumulate("Deployed JAR", "");
+            tabularData.accumulate("Deployed JAR Location",
+                "ERROR: " + result.getThrowable().getClass().getName() + ": "
+                    + result.getThrowable().getMessage());
+            tabularData.setStatus(Status.ERROR);
+          } else {
+            String[] strings = (String[]) result.getSerializables();
+            for (int i = 0; i < strings.length; i += 2) {
+              tabularData.accumulate("Member", result.getMemberIdOrName());
+              tabularData.accumulate("Deployed JAR", strings[i]);
+              tabularData.accumulate("Deployed JAR Location", strings[i + 1]);
+            }
           }
         }
       }
 
-      if (!accumulatedData) {
-        // This really should never happen since if a JAR file is already deployed a result is
-        // returned indicating that.
-        return ResultBuilder.createInfoResult("Unable to deploy JAR file(s)");
-      }
-
       Result result = ResultBuilder.buildResult(tabularData);
-      if (tabularData.getStatus().equals(Status.OK)) {
-        persistClusterConfiguration(result,
-            () -> getSharedConfiguration().addJarsToThisLocator(jarNames, jarBytes, groups));
-      }
+      persistClusterConfiguration(result,
+          () -> getSharedConfiguration().addJarsToThisLocator(jarNames, jarBytes, groups));
       return result;
     } catch (NotAuthorizedException e) {
       // for NotAuthorizedException, will catch this later in the code
@@ -181,7 +168,7 @@ public final class DeployCommands extends AbstractCommandsSupport {
 
       Set<DistributedMember> targetMembers;
       try {
-        targetMembers = CliUtil.findAllMatchingMembers(groups, null);
+        targetMembers = CliUtil.findMembersOrThrow(groups, null);
       } catch (CommandResultException crex) {
         return crex.getResult();
       }
@@ -249,7 +236,7 @@ public final class DeployCommands extends AbstractCommandsSupport {
 
       Set<DistributedMember> targetMembers;
       try {
-        targetMembers = CliUtil.findAllMatchingMembers(group, null);
+        targetMembers = CliUtil.findMembersOrThrow(group, null);
       } catch (CommandResultException crex) {
         return crex.getResult();
       }

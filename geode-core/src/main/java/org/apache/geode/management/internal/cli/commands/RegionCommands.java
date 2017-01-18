@@ -89,7 +89,7 @@ public class RegionCommands implements CommandMarker {
 
       Set<DistributedMember> targetMembers;
       try {
-        targetMembers = CliUtil.findAllMatchingMembers(group, memberNameOrId);
+        targetMembers = CliUtil.findMembersOrThrow(group, memberNameOrId);
       } catch (CommandResultException crex) {
         return crex.getResult();
       }

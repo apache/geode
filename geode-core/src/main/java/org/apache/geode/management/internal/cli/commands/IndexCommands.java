@@ -236,7 +236,7 @@ public class IndexCommands extends AbstractCommandsSupport {
       IndexInfo indexInfo = new IndexInfo(indexName, indexedExpression, regionPath, idxType);
 
       final Set<DistributedMember> targetMembers =
-          CliUtil.findAllMatchingMembers(group, memberNameOrID);
+          CliUtil.findMembersOrThrow(group, memberNameOrID);
       final ResultCollector<?, ?> rc =
           CliUtil.executeFunction(createIndexFunction, indexInfo, targetMembers);
 
@@ -365,7 +365,7 @@ public class IndexCommands extends AbstractCommandsSupport {
     Set<DistributedMember> targetMembers = null;
 
     try {
-      targetMembers = CliUtil.findAllMatchingMembers(group, memberNameOrID);
+      targetMembers = CliUtil.findMembersOrThrow(group, memberNameOrID);
     } catch (CommandResultException e) {
       return e.getResult();
     }
@@ -556,7 +556,7 @@ public class IndexCommands extends AbstractCommandsSupport {
       final Cache cache = CacheFactory.getAnyInstance();
 
       final Set<DistributedMember> targetMembers =
-          CliUtil.findAllMatchingMembers(group, memberNameOrID);
+          CliUtil.findMembersOrThrow(group, memberNameOrID);
       final ResultCollector<?, ?> rc =
           CliUtil.executeFunction(createDefinedIndexesFunction, indexDefinitions, targetMembers);
 

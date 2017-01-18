@@ -436,7 +436,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
         throw new IllegalArgumentException("Region not found.");
       }
     } else {
-      targetMembers = CliUtil.findAllMatchingMembers(groups, null);
+      targetMembers = CliUtil.findMembersOrThrow(groups, null);
     }
     return CliUtil.executeFunction(function, indexInfo, targetMembers);
   }

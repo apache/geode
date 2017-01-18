@@ -147,7 +147,7 @@ public class WanCommands extends AbstractCommandsSupport {
           gatewayEventFilters, gatewayTransportFilter);
 
       Set<DistributedMember> membersToCreateGatewaySenderOn =
-          CliUtil.findAllMatchingMembers(onGroups, onMember == null ? null : onMember.split(","));
+          CliUtil.findMembersOrThrow(onGroups, onMember == null ? null : onMember.split(","));
 
       ResultCollector<?, ?> resultCollector =
           CliUtil.executeFunction(GatewaySenderCreateFunction.INSTANCE, gatewaySenderFunctionArgs,
@@ -209,7 +209,7 @@ public class WanCommands extends AbstractCommandsSupport {
           (SystemManagementService) ManagementService.getExistingManagementService(cache);
 
       TabularResultData resultData = ResultBuilder.createTabularResultData();
-      Set<DistributedMember> dsMembers = CliUtil.findAllMatchingMembers(onGroup, onMember);
+      Set<DistributedMember> dsMembers = CliUtil.findMembersOrThrow(onGroup, onMember);
 
       ExecutorService execService = Executors.newCachedThreadPool(new ThreadFactory() {
         AtomicInteger threadNum = new AtomicInteger();
@@ -346,7 +346,7 @@ public class WanCommands extends AbstractCommandsSupport {
       TabularResultData resultData = ResultBuilder.createTabularResultData();
       Set<DistributedMember> dsMembers = null;
 
-      dsMembers = CliUtil.findAllMatchingMembers(onGroup, onMember);
+      dsMembers = CliUtil.findMembersOrThrow(onGroup, onMember);
       for (DistributedMember member : dsMembers) {
         if (cache.getDistributedSystem().getDistributedMember().getId().equals(member.getId())) {
           bean = service.getLocalGatewaySenderMXBean(senderId);
@@ -477,7 +477,7 @@ public class WanCommands extends AbstractCommandsSupport {
       // return ResultBuilder
       // .createUserErrorResult(CliStrings.GATEWAY_MSG_MEMBERS_NOT_FOUND);
       // }
-      dsMembers = CliUtil.findAllMatchingMembers(onGroup, onMember);
+      dsMembers = CliUtil.findMembersOrThrow(onGroup, onMember);
       for (DistributedMember member : dsMembers) {
         if (cache.getDistributedSystem().getDistributedMember().getId().equals(member.getId())) {
           bean = service.getLocalGatewaySenderMXBean(senderId);
@@ -549,7 +549,7 @@ public class WanCommands extends AbstractCommandsSupport {
 
 
       TabularResultData resultData = ResultBuilder.createTabularResultData();
-      Set<DistributedMember> dsMembers = CliUtil.findAllMatchingMembers(onGroup, onMember);
+      Set<DistributedMember> dsMembers = CliUtil.findMembersOrThrow(onGroup, onMember);
 
       for (DistributedMember member : dsMembers) {
         if (cache.getDistributedSystem().getDistributedMember().getId().equals(member.getId())) {
@@ -632,7 +632,7 @@ public class WanCommands extends AbstractCommandsSupport {
               socketBufferSize, maximumTimeBetweenPings, gatewayTransportFilters);
 
       Set<DistributedMember> membersToCreateGatewayReceiverOn =
-          CliUtil.findAllMatchingMembers(onGroups, onMember == null ? null : onMember.split(","));
+          CliUtil.findMembersOrThrow(onGroups, onMember == null ? null : onMember.split(","));
 
       ResultCollector<?, ?> resultCollector =
           CliUtil.executeFunction(GatewayReceiverCreateFunction.INSTANCE,
@@ -753,7 +753,7 @@ public class WanCommands extends AbstractCommandsSupport {
       GatewayReceiverMXBean receieverBean = null;
 
       TabularResultData resultData = ResultBuilder.createTabularResultData();
-      Set<DistributedMember> dsMembers = CliUtil.findAllMatchingMembers(onGroup, onMember);
+      Set<DistributedMember> dsMembers = CliUtil.findMembersOrThrow(onGroup, onMember);
 
       for (DistributedMember member : dsMembers) {
         ObjectName gatewayReceiverObjectName = MBeanJMXAdapter.getGatewayReceiverMBeanName(member);
@@ -820,7 +820,7 @@ public class WanCommands extends AbstractCommandsSupport {
 
 
       TabularResultData resultData = ResultBuilder.createTabularResultData();
-      Set<DistributedMember> dsMembers = CliUtil.findAllMatchingMembers(onGroup, onMember);
+      Set<DistributedMember> dsMembers = CliUtil.findMembersOrThrow(onGroup, onMember);
 
       for (DistributedMember member : dsMembers) {
         ObjectName gatewayReceiverObjectName = MBeanJMXAdapter.getGatewayReceiverMBeanName(member);
@@ -887,7 +887,7 @@ public class WanCommands extends AbstractCommandsSupport {
       // return ResultBuilder
       // .createUserErrorResult(CliStrings.GATEWAY_MSG_MEMBERS_NOT_FOUND);
       // }
-      dsMembers = CliUtil.findAllMatchingMembers(onGroup, onMember);
+      dsMembers = CliUtil.findMembersOrThrow(onGroup, onMember);
 
       Map<String, Map<String, GatewaySenderMXBean>> gatewaySenderBeans =
           new TreeMap<String, Map<String, GatewaySenderMXBean>>();
@@ -986,7 +986,7 @@ public class WanCommands extends AbstractCommandsSupport {
               .addTable(CliStrings.TABLE_GATEWAY_SENDER);
 
       Set<DistributedMember> dsMembers = null;
-      dsMembers = CliUtil.findAllMatchingMembers(onGroup, onMember);
+      dsMembers = CliUtil.findMembersOrThrow(onGroup, onMember);
       for (DistributedMember member : dsMembers) {
         if (cache.getDistributedSystem().getDistributedMember().getId().equals(member.getId())) {
           bean = service.getLocalGatewaySenderMXBean(senderId);
@@ -1041,7 +1041,7 @@ public class WanCommands extends AbstractCommandsSupport {
           crd.addSection(CliStrings.SECTION_GATEWAY_RECEIVER_NOT_AVAILABLE)
               .addTable(CliStrings.TABLE_GATEWAY_RECEIVER);
 
-      Set<DistributedMember> dsMembers = CliUtil.findAllMatchingMembers(onGroup, onMember);
+      Set<DistributedMember> dsMembers = CliUtil.findMembersOrThrow(onGroup, onMember);
 
       for (DistributedMember member : dsMembers) {
         ObjectName gatewayReceiverObjectName = MBeanJMXAdapter.getGatewayReceiverMBeanName(member);
@@ -1089,7 +1089,7 @@ public class WanCommands extends AbstractCommandsSupport {
           new GatewaySenderDestroyFunctionArgs(id);
 
       Set<DistributedMember> membersToDestroyGatewaySenderOn =
-          CliUtil.findAllMatchingMembers(onGroups, onMember == null ? null : onMember.split(","));
+          CliUtil.findMembersOrThrow(onGroups, onMember == null ? null : onMember.split(","));
 
       ResultCollector<?, ?> resultCollector =
           CliUtil.executeFunction(GatewaySenderDestroyFunction.INSTANCE,

@@ -1055,7 +1055,7 @@ public class MiscellaneousCommands implements CommandMarker {
           && (memberNameOrId == null || memberNameOrId.isEmpty())) {
         targetMembers = CliUtil.getAllMembers(cache);
       } else {
-        targetMembers = CliUtil.findAllMatchingMembers(group, memberNameOrId);
+        targetMembers = CliUtil.findMembersOrThrow(group, memberNameOrId);
       }
 
       ResultCollector<?, ?> rc =

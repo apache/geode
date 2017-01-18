@@ -14,19 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheClosedException;
@@ -57,11 +45,21 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-
-import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 
 /****
  * @since GemFire 7.0
@@ -212,7 +210,7 @@ public class ConfigCommands extends AbstractCommandsSupport {
 
     Set<DistributedMember> targetMembers;
     try {
-      targetMembers = CliUtil.findAllMatchingMembers(group, member);
+      targetMembers = CliUtil.findMembersOrThrow(group, member);
     } catch (CommandResultException crex) {
       return crex.getResult();
     }
@@ -307,7 +305,7 @@ public class ConfigCommands extends AbstractCommandsSupport {
 
     try {
 
-      targetMembers = CliUtil.findAllMatchingMembers(group, memberNameOrId);
+      targetMembers = CliUtil.findMembersOrThrow(group, memberNameOrId);
 
       if (archiveDiskSpaceLimit != null) {
         runTimeDistributionConfigAttributes.put(

@@ -577,7 +577,7 @@ public class FunctionCommands implements CommandMarker {
 
     Set<DistributedMember> targetMembers;
     try {
-      targetMembers = CliUtil.findAllMatchingMembers(groups, members);
+      targetMembers = CliUtil.findMembersOrThrow(groups, members);
     } catch (CommandResultException crex) {
       return crex.getResult();
     }

@@ -14,14 +14,14 @@
  */
 package org.apache.geode.management.internal.cli;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
-
-import java.util.Properties;
-import java.util.Set;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -49,6 +49,11 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
+import java.util.Set;
 
 @Category(DistributedTest.class)
 public class CliUtilDUnitTest extends JUnit4CacheTestCase {
@@ -246,7 +251,7 @@ public class CliUtilDUnitTest extends JUnit4CacheTestCase {
 
     final VM vm1 = Host.getHost(0).getVM(0);
 
-    LogWriterUtils.getLogWriter().info("testFor - findAllMatchingMembers");
+    LogWriterUtils.getLogWriter().info("testFor - findMembersOrThrow");
     vm1.invoke(new SerializableRunnable() {
       @Override
       public void run() {
@@ -291,14 +296,14 @@ public class CliUtilDUnitTest extends JUnit4CacheTestCase {
 
   public void verifyFindAllMatchingMembers() {
     try {
-      Set<DistributedMember> set = CliUtil.findAllMatchingMembers(GROUP1, null);
+      Set<DistributedMember> set = CliUtil.findMembersOrThrow(GROUP1, null);
       assertNotNull(set);
       assertEquals(2, set.size());
       assertEquals(true, containsMember(set, MEMBER_1_GROUP1));
       assertEquals(true, containsMember(set, MEMBER_2_GROUP1));
 
 
-      set = CliUtil.findAllMatchingMembers("group1,group2", null);
+      set = CliUtil.findMembersOrThrow("group1,group2", null);
       assertNotNull(set);
       assertEquals(4, set.size());
       assertEquals(true, containsMember(set, MEMBER_1_GROUP1));
@@ -307,13 +312,13 @@ public class CliUtilDUnitTest extends JUnit4CacheTestCase {
       assertEquals(true, containsMember(set, MEMBER_2_GROUP2));
 
 
-      set = CliUtil.findAllMatchingMembers(null, MEMBER_1_GROUP1);
+      set = CliUtil.findMembersOrThrow(null, MEMBER_1_GROUP1);
       assertNotNull(set);
       assertEquals(1, set.size());
       assertEquals(true, containsMember(set, MEMBER_1_GROUP1));
 
 
-      set = CliUtil.findAllMatchingMembers(null, "member1_group1,member2_group2");
+      set = CliUtil.findMembersOrThrow(null, "member1_group1,member2_group2");
       assertNotNull(set);
       assertEquals(2, set.size());
       assertEquals(true, containsMember(set, MEMBER_1_GROUP1));
@@ -351,7 +356,7 @@ public class CliUtilDUnitTest extends JUnit4CacheTestCase {
       @SuppressWarnings("rawtypes")
       Region region1 = CacheFactory.getAnyInstance().getRegion(COMMON_REGION);
       region1.clear();
-      set = CliUtil.findAllMatchingMembers(GROUP1, null);
+      set = CliUtil.findMembersOrThrow(GROUP1, null);
       assertEquals(2, set.size());
       ResultCollector collector = CliUtil.executeFunction(function, "executeOnGroup", set);
       collector.getResult();

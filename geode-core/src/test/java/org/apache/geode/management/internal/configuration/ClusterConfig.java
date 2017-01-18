@@ -156,7 +156,7 @@ public class ClusterConfig implements Serializable {
       for (String jar : this.getJarNames()) {
         JarClassLoader jarClassLoader = findJarClassLoader(jar);
         assertThat(jarClassLoader).isNotNull();
-        assertThat(jarClassLoader.loadClass(nameOfClassContainedInJar(jar))).isNotNull();
+        assertThat(Class.forName(nameOfClassContainedInJar(jar), true, jarClassLoader)).isNotNull();
       }
     });
   }

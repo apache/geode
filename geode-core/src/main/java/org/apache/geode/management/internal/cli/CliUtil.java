@@ -14,35 +14,6 @@
  */
 package org.apache.geode.management.internal.cli;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.Serializable;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.Set;
-import java.util.Map.Entry;
-import java.util.zip.DataFormatException;
-import java.util.zip.Deflater;
-import java.util.zip.Inflater;
-
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
@@ -66,6 +37,34 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResultException;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.Serializable;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.zip.DataFormatException;
+import java.util.zip.Deflater;
+import java.util.zip.Inflater;
 
 /**
  * This class contains utility methods used by classes used to build the Command Line Interface
@@ -281,61 +280,65 @@ public class CliUtil {
 
 
 
-  public static Set<DistributedMember> findAllMatchingMembers(final String groups,
-      final String members) throws CommandResultException {
+  public static Set<DistributedMember> findMembersOrThrow(final String groups, final String members)
+      throws CommandResultException {
 
-    String[] groupsArray = (groups == null ? null : groups.split(","));
-    String[] membersArray = (members == null ? null : members.split(","));
+    String[] groupsArray = (groups == null ? new String[] {} : groups.split(","));
+    String[] membersArray = (members == null ? new String[] {} : members.split(","));
 
-    return findAllMatchingMembers(groupsArray, membersArray);
+    return findMembersOrThrow(groupsArray, membersArray);
   }
 
-  public static Set<DistributedMember> findAllMatchingMembers(final String[] groups,
+  public static Set<DistributedMember> findMembersOrThrow(final String[] groups,
       final String[] members) throws CommandResultException {
-    Set<DistributedMember> matchingMembers = new HashSet<DistributedMember>();
+
+    Set<DistributedMember> matchingMembers = findMembers(groups, members);
+    if (matchingMembers.isEmpty()) {
+      throw new CommandResultException(
+          ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE));
+    }
+
+    return matchingMembers;
+  }
+
+  public static Set<DistributedMember> findMembers(String[] groups, String[] members) {
+    if (groups == null) {
+      groups = new String[] {};
+    }
+
+    if (members == null) {
+      members = new String[] {};
+    }
+
     Cache cache = CacheFactory.getAnyInstance();
 
-    if ((members != null && members.length > 0) && (groups != null && groups.length > 0)) {
-      throw new CommandResultException(
-          ResultBuilder.createUserErrorResult(CliStrings.PROVIDE_EITHER_MEMBER_OR_GROUP_MESSAGE));
+    if ((members.length > 0) && (groups.length > 0)) {
+      throw new IllegalArgumentException(CliStrings.PROVIDE_EITHER_MEMBER_OR_GROUP_MESSAGE);
     }
 
-    if (members != null && members.length > 0) {
-      for (String memberNameOrId : members) {
-        DistributedMember member = getDistributedMemberByNameOrId(memberNameOrId);
-        if (member != null) {
+    Set<DistributedMember> allNormalMembers = getAllNormalMembers(cache);
+    if (members.length == 0 && groups.length == 0) {
+      return allNormalMembers;
+    }
+
+    Set<DistributedMember> matchingMembers = new HashSet<DistributedMember>();
+    // it will either go into this loop or the following loop, not both.
+    for (String memberNameOrId : members) {
+      for (DistributedMember member : allNormalMembers) {
+        if (memberNameOrId.equalsIgnoreCase(member.getId())
+            || memberNameOrId.equals(member.getName())) {
           matchingMembers.add(member);
-        } else {
-          throw new CommandResultException(ResultBuilder.createUserErrorResult(
-              CliStrings.format(CliStrings.MEMBER_NOT_FOUND_ERROR_MESSAGE, memberNameOrId)));
         }
-      }
-    } else if (groups != null && groups.length > 0) {
-      Set<DistributedMember> allNormalMembers = getAllNormalMembers(cache);
-      for (String group : groups) {
-        Set<DistributedMember> groupMembers = new HashSet<DistributedMember>();
-        for (DistributedMember member : allNormalMembers) {
-          if (member.getGroups().contains(group)) {
-            groupMembers.add(member);
-          }
-        }
-
-        if (!groupMembers.isEmpty()) {
-          matchingMembers.addAll(groupMembers);
-
-        } else {
-          throw new CommandResultException(ResultBuilder.createUserErrorResult(
-              CliStrings.format(CliStrings.NO_MEMBERS_IN_GROUP_ERROR_MESSAGE, group)));
-        }
-      }
-    } else {
-      matchingMembers.addAll(getAllNormalMembers(cache));
-      if (matchingMembers.isEmpty()) {
-        throw new CommandResultException(
-            ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE));
       }
     }
 
+    for (String group : groups) {
+      for (DistributedMember member : allNormalMembers) {
+        if (member.getGroups().contains(group)) {
+          matchingMembers.add(member);
+        }
+      }
+    }
     return matchingMembers;
   }
 

@@ -61,8 +61,15 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigBaseTest {
     gfshConnector.connect();
     assertThat(gfshConnector.isConnected()).isTrue();
 
-    CommandResult result = gfshConnector.executeCommand("deploy --jar=" + clusterJarPath);
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    gfshConnector.executeAndVerifyCommand("deploy --jar=" + clusterJarPath);
+    ConfigGroup cluster = new ConfigGroup("cluster").jars("cluster.jar");
+    ClusterConfig expectedClusterConfig = new ClusterConfig(cluster);
+
+    expectedClusterConfig.verify(locator);
+
+    // start a server and verify that the server gets the jar
+    Server server1 = lsRule.startServerVM(1, locator.getPort());
+    expectedClusterConfig.verify(server1);
   }
 
   @Test

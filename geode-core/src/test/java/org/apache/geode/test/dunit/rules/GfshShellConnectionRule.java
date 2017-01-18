@@ -130,7 +130,9 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
 
   public CommandResult executeCommand(String command) throws Exception {
     gfsh.executeCommand(command);
-    return (CommandResult) gfsh.getResult();
+    CommandResult result = (CommandResult) gfsh.getResult();
+    System.out.println("command result: " + result.getContent().toString());
+    return result;
   }
 
   public CommandResult executeAndVerifyCommand(String command) throws Exception {

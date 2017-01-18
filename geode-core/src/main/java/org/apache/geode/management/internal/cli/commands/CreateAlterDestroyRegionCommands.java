@@ -582,7 +582,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
 
       Set<DistributedMember> targetMembers;
       try {
-        targetMembers = CliUtil.findAllMatchingMembers(groups, null);
+        targetMembers = CliUtil.findMembersOrThrow(groups, null);
       } catch (CommandResultException crex) {
         return crex.getResult();
       }

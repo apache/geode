@@ -84,7 +84,7 @@ public class DurableClientCommands extends AbstractCommandsSupport {
       boolean noResults = true;
       Set<DistributedMember> targetMembers;
       try {
-        targetMembers = CliUtil.findAllMatchingMembers(group, memberNameOrId);
+        targetMembers = CliUtil.findMembersOrThrow(group, memberNameOrId);
       } catch (CommandResultException e) {
         return e.getResult();
       }
@@ -162,7 +162,7 @@ public class DurableClientCommands extends AbstractCommandsSupport {
     try {
       Set<DistributedMember> targetMembers;
       try {
-        targetMembers = CliUtil.findAllMatchingMembers(group, memberNameOrId);
+        targetMembers = CliUtil.findMembersOrThrow(group, memberNameOrId);
       } catch (CommandResultException e) {
         return e.getResult();
       }
@@ -209,7 +209,7 @@ public class DurableClientCommands extends AbstractCommandsSupport {
     try {
       Set<DistributedMember> targetMembers;
       try {
-        targetMembers = CliUtil.findAllMatchingMembers(group, memberNameOrId);
+        targetMembers = CliUtil.findMembersOrThrow(group, memberNameOrId);
       } catch (CommandResultException e) {
         return e.getResult();
       }
@@ -249,7 +249,7 @@ public class DurableClientCommands extends AbstractCommandsSupport {
     try {
       Set<DistributedMember> targetMembers;
       try {
-        targetMembers = CliUtil.findAllMatchingMembers(group, memberNameOrId);
+        targetMembers = CliUtil.findMembersOrThrow(group, memberNameOrId);
       } catch (CommandResultException e) {
         return e.getResult();
       }
