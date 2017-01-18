@@ -1,22 +1,55 @@
 # Building
+
+## Building on UNIX
     $ cd <clone>
     $ mkdir build
     $ cd build
-    $ cmake -DGEODE_ROOT=/path/to/geode \
-        -DCMAKE_INSTALL_PREFIX=/path/to/install/destination \
-        ../src
-    $ cmake --build . -- -j 8 # on UNIX
-    - OR -
-    $ cmake --build . -- /m # on Windows
+    $ cmake ../src
+    $ cmake --build . -- -j 8
 
-# Platforms Known To Build
-* [Mac OS X](#mac-os-x)
-* [Windows](#windows)
-* [Linux](#linux)
-* [Solaris](#solaris)
+### [Mac OS X System Requirements](#mac-os-x)
+### [Linux System Requirements](#linux)
+### [Solaris System Requirements](#solaris)
+
+## Building on Windows
+    $ cd <clone>
+    $ mkdir build
+    $ cd build
+    $ cmake ../src
+    $ cmake --build . -- /m
+
+### [Windows System Requirements](#windows)
+
+## Generator
+CMake uses a "generator" to produce configuration files for use by a variety of build tools, e.g., UNIX makefiles, Visual Studio projects. By default a system-specific generator is used by CMake during configuration. (Please see [the CMake documentation](https://cmake.org/documentation/) for further information.) However, in many cases there is a better choice.
+	
+### Mac OS X Generator
+The recommended generator on Mac OS X is `Xcode`:
+
+	$ cmake -G "Xcode" ../src
+
+### Windows Generator
+The recommended generator on Windows is `Visual Studio 12 2013 Win64`:
+
+	$ cmake -G "Visual Studio 12 2013 Win64" ../src
+
+## Finding Geode
+Building requires access to an installation of Geode. By default the value of `GEODE_ROOT` or `GEODE` is used during CMake configuration if either of those shell variables is exported. To explicitly specify the location in which Geode is installed, add `-DGEODE_ROOT=/path/to/geode` to the _initial_ `cmake` execution command before `../src`.
+
+## Installing
+By default a system-specific location is used by CMake as the destination of the `install` target, e.g., `/usr/local` on UNIX system. To explicitly specify the location in which the Native Client will be installed, add `-DCMAKE_INSTALL_PREFIX=/path/to/installation/destination` to the _initial_ `cmake` execution command before `../src`.
+
+Due to limitations in CMake, the documentation must be built as a separate step before installation:
+
+    $ cd <clone>
+    $ cd build
+    $ cmake --build . --target docs
+    $ cmake --build . --target install
 
 # System Requirements
+
 ## All Platforms
+
 ### Required Tools
 * [CMake 4.3](https://cmake.org/) or newer
 * C++11 compiler *(see platform specific requirements)*
