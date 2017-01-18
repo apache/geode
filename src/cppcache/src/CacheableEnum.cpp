@@ -20,7 +20,9 @@
 #include <GemfireTypeIdsImpl.hpp>
 #include <EnumInfo.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 CacheableEnum::~CacheableEnum() {}
 
@@ -37,7 +39,7 @@ CacheableEnum::CacheableEnum(const char* enumClassName, const char* enumName,
   m_enumName = CacheableString::create(enumName);
 }
 
-void CacheableEnum::toData(gemfire::DataOutput& output) const {
+void CacheableEnum::toData(apache::geode::client::DataOutput& output) const {
   int enumVal = PdxHelper::getEnumValue(m_enumClassName->asChar(),
                                         m_enumName->asChar(), m_ordinal);
   output.write(static_cast<int8_t>(GemfireTypeIds::CacheableEnum));
@@ -45,7 +47,7 @@ void CacheableEnum::toData(gemfire::DataOutput& output) const {
   output.writeArrayLen(enumVal & 0xFFFFFF);
 }
 
-Serializable* CacheableEnum::fromData(gemfire::DataInput& input) {
+Serializable* CacheableEnum::fromData(apache::geode::client::DataInput& input) {
   int8_t dsId;
   input.read(&dsId);
   int32_t arrLen;
@@ -100,4 +102,6 @@ bool CacheableEnum::operator==(const CacheableKey& other) const {
   }
   return true;
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

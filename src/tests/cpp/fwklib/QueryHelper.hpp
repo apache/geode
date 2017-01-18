@@ -40,7 +40,7 @@
 #define ROOT_SCOPE LOCAL
 #endif
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace PdxTests;
 using namespace AutoPdxTests;
 
@@ -723,7 +723,7 @@ class QueryHelper {
                          << " is having constant rows ");
         return true;
       }
-}
+    }
 
     return false;
   }
@@ -749,7 +749,7 @@ class QueryHelper {
                          << " is having constant rows ");
         return true;
       }
-}
+    }
 
     return false;
   }
@@ -762,7 +762,7 @@ class QueryHelper {
                constantExpectedRowsPQRS[i]);
         return true;
       }
-}
+    }
 
     return false;
   }
@@ -909,11 +909,12 @@ void QueryHelper::destroyPortfolioOrPositionData(RegionPtr& rptr, int setSize,
             strcmp(dataType, "AutoPortfolioPdx") == 0) {
           ACE_OS::sprintf(portname, "port%d-%d", set, current);
         } else if (strcmp(dataType, "Position") == 0 ||
-                 strcmp(dataType, "PositionPdx") == 0 ||
-                 strcmp(dataType, "AutoPositionPdx") == 0) {
+                   strcmp(dataType, "PositionPdx") == 0 ||
+                   strcmp(dataType, "AutoPositionPdx") == 0) {
           ACE_OS::sprintf(portname, "pos%d-%d", set, current);
         } else {
-          throw gemfire::IllegalArgumentException("Unknown object type");
+          throw apache::geode::client::IllegalArgumentException(
+              "Unknown object type");
         }
 
         keyport = CacheableKey::create(portname);
@@ -938,7 +939,7 @@ void QueryHelper::invalidatePortfolioOrPositionData(RegionPtr& rptr,
           ACE_OS::sprintf(portname, "port%d-%d", set, current);
         } else if (strcmp(dataType, "Position") == 0) {
           ACE_OS::sprintf(portname, "pos%d-%d", set, current);
-}
+        }
 
         CacheableKeyPtr keyport = CacheableKey::create(portname);
         rptr->invalidate(keyport);
@@ -1097,7 +1098,7 @@ bool QueryHelper::verifySS(SelectResultsPtr& structSet, int expectedRows,
   if (!instanceOf<StructSetPtr>(structSet)) {
     if (expectedRows == 0 && expectedFields == 0) {
       return true;  // quite possible we got a null set back.
-}
+    }
     FWKINFO("we have structSet itself NULL");
     return false;
   }

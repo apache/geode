@@ -21,7 +21,9 @@
 #include "Serializable.hpp"
 #include "PdxReader.hpp"
 #include "PdxWriter.hpp"
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * Function pointer type which takes a void pointer to an instance of a user
@@ -81,6 +83,8 @@ class CPPCACHE_EXPORT PdxSerializer : public SharedBase {
     return NULL;
   };
 };
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
-} /* namespace gemfire */
 #endif /* PDXSERIALIZER_HPP_ */

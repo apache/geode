@@ -20,7 +20,7 @@
 #include "CacheImpl.hpp"
 #include "PoolAttributes.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 void CacheXmlCreation::addRootRegion(RegionXmlCreation* root) {
   rootRegions.push_back(root);

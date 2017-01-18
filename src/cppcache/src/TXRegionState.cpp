@@ -23,7 +23,9 @@
 
 #include "TXRegionState.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 TXRegionState::TXRegionState() {
   // TODO Auto-generated constructor stub
@@ -32,4 +34,6 @@ TXRegionState::TXRegionState() {
 TXRegionState::~TXRegionState() {
   // TODO Auto-generated destructor stub
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

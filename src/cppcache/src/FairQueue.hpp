@@ -25,7 +25,9 @@
 #include <ace/Time_Value.h>
 #include <ace/Guard_T.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 template <class T, class MUTEX = ACE_Thread_Mutex>
 class FairQueue {
@@ -167,7 +169,8 @@ class FairQueue {
 
   virtual void deleteAction() {}
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef _GEMFIRE_FAIRQUEUE_HPP_

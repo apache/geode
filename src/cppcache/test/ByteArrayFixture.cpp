@@ -19,9 +19,9 @@
 
 ::testing::AssertionResult ByteArrayFixture::assertByteArrayEqual(
     const char* expectedStr, const char* bytesStr, const char* expected,
-    const gemfire::ByteArray& bytes) {
+    const apache::geode::client::ByteArray& bytes) {
   // One would normally just use std::regex but gcc 4.4.7 is lacking.
-  const std::string actual(gemfire::ByteArray::toString(bytes));
+  const std::string actual(apache::geode::client::ByteArray::toString(bytes));
   std::string::size_type actualPos = 0;
   const std::string pattern(expected);
   std::string::size_type patternPos = 0;

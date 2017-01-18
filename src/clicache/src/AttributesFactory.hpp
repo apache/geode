@@ -158,7 +158,7 @@ namespace GemStone
       /// <seealso cref="Region.CreateSubRegion" />
       generic<class TKey, class TValue>
       public ref class AttributesFactory sealed
-        : public Internal::UMWrap<gemfire::AttributesFactory>
+        : public Internal::UMWrap<apache::geode::client::AttributesFactory>
       {
       public:
 
@@ -167,7 +167,7 @@ namespace GemStone
         /// a <c>RegionAttributes</c> with default settings.
         /// </summary>
         inline AttributesFactory<TKey, TValue>( )
-          : UMWrap( new gemfire::AttributesFactory( ), true ) { }
+          : UMWrap( new apache::geode::client::AttributesFactory( ), true ) { }
 
         /// <summary>
         /// Creates a new instance of <c>AttributesFactory</c> ready to create

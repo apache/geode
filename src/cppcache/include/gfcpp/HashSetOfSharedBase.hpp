@@ -28,7 +28,9 @@
 /** @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 #ifdef BUILD_CPPCACHE
 typedef std::unordered_set<SharedBasePtr, HashSB, EqualToSB> HSofSBP;
@@ -142,6 +144,8 @@ class CPPCACHE_EXPORT HashSetOfSharedBase {
   /** Destructor, sets all SharedPtr elements to NULLPTR. */
   ~HashSetOfSharedBase();
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

@@ -20,7 +20,9 @@
 #include <ace/Process.h>
 #include <ace/SPIPE_Addr.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class CPPCACHE_EXPORT ACEDummy {
  public:
@@ -32,4 +34,6 @@ void ACEDummy::useUnusedAceFeatures() {
   ACE_Process proc;
   ACE_SPIPE_Addr addr;
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

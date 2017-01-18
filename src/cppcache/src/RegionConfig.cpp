@@ -28,7 +28,9 @@
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 RegionConfig::RegionConfig(const std::string& s, const std::string& c)
     : m_capacity(c) {}
@@ -60,4 +62,6 @@ bool RegionConfig::getCaching() {
     return true;
   }
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

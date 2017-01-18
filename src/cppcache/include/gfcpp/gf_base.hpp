@@ -198,7 +198,8 @@ typedef uint64_t uint64; /**< unsigned 64 bit integer */
  * C++ statistics API classes.
  */
 
-/**@namespace gemfire::TypeHelper This namespace contains type traits helper
+/**@namespace apache::geode::client::TypeHelper This namespace contains type
+ * traits helper
  * structs/classes to determine type information at compile time
  * using typename. Useful for templates in particular.
  */
@@ -311,9 +312,13 @@ typedef enum {
 typedef void *(*pNew)(size_t);
 typedef void (*pDelete)(void *);
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 extern void setDefaultNewAndDelete();
-}
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 void *operator new(size_t size);
 void operator delete(void *p);
@@ -328,7 +333,7 @@ void operator delete[](void *p);
     try {                                                               \
       v = new stmt;                                                     \
     } catch (const std::bad_alloc &) {                                  \
-      throw gemfire::OutOfMemoryException(                              \
+      throw apache::geode::client::OutOfMemoryException(                \
           "Out of Memory while executing \"" #v " = new " #stmt ";\""); \
     }                                                                   \
   }

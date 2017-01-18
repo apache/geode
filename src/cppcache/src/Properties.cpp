@@ -25,29 +25,31 @@
 #include "ace/Versioned_Namespace.h"
 #include <ace/OS_NS_stdio.h>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 
 template <>
-class ACE_Hash<gemfire::CacheableKeyPtr> {
+class ACE_Hash<apache::geode::client::CacheableKeyPtr> {
  public:
-  u_long operator()(const gemfire::CacheableKeyPtr& key) {
+  u_long operator()(const apache::geode::client::CacheableKeyPtr& key) {
     return key->hashcode();
   }
 };
 
 template <>
-class ACE_Equal_To<gemfire::CacheableKeyPtr> {
+class ACE_Equal_To<apache::geode::client::CacheableKeyPtr> {
  public:
-  int operator()(const gemfire::CacheableKeyPtr& lhs,
-                 const gemfire::CacheableKeyPtr& rhs) const {
+  int operator()(const apache::geode::client::CacheableKeyPtr& lhs,
+                 const apache::geode::client::CacheableKeyPtr& rhs) const {
     return (*lhs.ptr() == *rhs.ptr());
   }
 };
 ACE_END_VERSIONED_NAMESPACE_DECL
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 typedef ACE_Hash_Map_Manager_Ex<
     CacheableKeyPtr, CacheablePtr, ACE_Hash<CacheableKeyPtr>,
@@ -332,4 +334,6 @@ Serializable* Properties::fromData(DataInput& input) {
   }
   return this;
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

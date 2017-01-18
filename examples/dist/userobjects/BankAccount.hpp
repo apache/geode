@@ -23,13 +23,13 @@
 
 
 class BankAccount;
-typedef gemfire::SharedPtr< BankAccount > BankAccountPtr;
+typedef apache::geode::client::SharedPtr< BankAccount > BankAccountPtr;
 
 /**
  * Defines a custom type that can be used as a key in
  * a gemfire region.
  */
-class BankAccount : public gemfire::CacheableKey
+class BankAccount : public apache::geode::client::CacheableKey
 {
   private:
 
@@ -43,17 +43,17 @@ class BankAccount : public gemfire::CacheableKey
    /**
    *@brief serialize this object
    **/
-  virtual void toData( gemfire::DataOutput& output ) const;
+  virtual void toData( apache::geode::client::DataOutput& output ) const;
 
   /**
    *@brief deserialize this object
    **/
-  virtual gemfire::Serializable* fromData( gemfire::DataInput& input );
+  virtual apache::geode::client::Serializable* fromData( apache::geode::client::DataInput& input );
   
   /**
    * @brief creation function for strings.
    */
-  static gemfire::Serializable* createDeserializable( );
+  static apache::geode::client::Serializable* createDeserializable( );
 
   /**
    *@brief return the classId of the instance being serialized.
@@ -63,7 +63,7 @@ class BankAccount : public gemfire::CacheableKey
   virtual int32_t classId( ) const;
 
   /** return true if this key matches other. */
-  virtual bool operator==( const gemfire::CacheableKey& other ) const;
+  virtual bool operator==( const apache::geode::client::CacheableKey& other ) const;
 
   /** return the hashcode for this key. */
   virtual uint32_t hashcode( ) const;
@@ -74,9 +74,11 @@ class BankAccount : public gemfire::CacheableKey
   virtual uint32_t objectSize() const;   
 };
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
-/** overload of gemfire::createKey to pass CacheableInt32Ptr */
+/** overload of apache::geode::client::createKey to pass CacheableInt32Ptr */
 inline CacheableKeyPtr createKey( const BankAccountPtr& value )
 {
   return value;

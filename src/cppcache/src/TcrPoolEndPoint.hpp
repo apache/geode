@@ -18,7 +18,9 @@
 #define __TCR_POOL_ENDPOINT__
 #include "TcrEndpoint.hpp"
 #include "PoolStatistics.hpp"
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class ThinClientPoolDM;
 class TcrPoolEndPoint : public TcrEndpoint {
  public:
@@ -55,5 +57,7 @@ class TcrPoolEndPoint : public TcrEndpoint {
  private:
   ThinClientPoolDM* m_dm;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif

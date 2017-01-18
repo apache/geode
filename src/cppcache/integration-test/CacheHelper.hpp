@@ -38,7 +38,7 @@
 #define ROOT_SCOPE LOCAL
 #endif
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 class CacheHelper {
  public:

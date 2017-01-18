@@ -35,7 +35,7 @@ namespace GemStone
           namespace NewAPI
           {
           public ref class PkcsAuthInit sealed
-          : public Internal::SBWrap<gemfire::PKCSAuthInitInternal>,
+          : public Internal::SBWrap<apache::geode::client::PKCSAuthInitInternal>,
             public GemStone::GemFire::Cache::Generic::IAuthInitialize/*<String^, Object^>*/
         {
         public:
@@ -52,7 +52,7 @@ namespace GemStone
           virtual void Close();
 
         internal:            
-          PkcsAuthInit( gemfire::PKCSAuthInitInternal* nativeptr )
+          PkcsAuthInit( apache::geode::client::PKCSAuthInitInternal* nativeptr )
             : SBWrap( nativeptr ) { }
         };
         } // end namespace NewAPI

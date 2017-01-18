@@ -29,7 +29,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class FunctionServiceImpl;
 
@@ -128,6 +130,7 @@ class CPPCACHE_EXPORT ProxyCache : public RegionService {
   friend class FunctionService;
   friend class GuardUserAttribures;
 };
-
-};      // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // ifndef __GEMFIRE_PROXYCACHE_H__

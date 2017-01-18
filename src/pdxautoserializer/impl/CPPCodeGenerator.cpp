@@ -21,12 +21,14 @@
 #include "Helper.hpp"
 #include <iostream>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace pdx_auto_serializer {
 int CPPCodeGenerator::s_classId = -1;
 
 std::string CPPCodeGenerator::s_GFSerializerNamespace =
-    "gemfire::PdxAutoSerializable";
+    "apache::geode::client::PdxAutoSerializable";
 std::string CPPCodeGenerator::s_TempVarPrefix = "var_";
 
 /** The option name for classId. */
@@ -189,14 +191,16 @@ void CPPCodeGenerator::finishTryBlock(const Method::Type type) {
   switch (type) {
     case Method::TODATA: {
       *m_cppFormatter << "}\n";
-      *m_cppFormatter << "catch(gemfire::IllegalStateException exception)\n";
+      *m_cppFormatter
+          << "catch(apache::geode::client::IllegalStateException exception)\n";
       *m_cppFormatter << "{\n";
       *m_cppFormatter << "}\n";
       break;
     }
     case Method::FROMDATA: {
       *m_cppFormatter << "}\n";
-      *m_cppFormatter << "catch(gemfire::IllegalStateException exception)\n";
+      *m_cppFormatter
+          << "catch(apache::geode::client::IllegalStateException exception)\n";
       *m_cppFormatter << "{\n";
       *m_cppFormatter << "}\n";
       break;
@@ -216,14 +220,14 @@ void CPPCodeGenerator::startMethod(const Method::Type type,
 
   switch (type) {
     case Method::TODATA: {
-      varVec.push_back("gemfire::PdxWriterPtr __var");
+      varVec.push_back("apache::geode::client::PdxWriterPtr __var");
 
       genFunctionHeader("toData", className, "void", varVec, true, false,
                         m_cppFormatter, methodPrefix);
       break;
     }
     case Method::FROMDATA: {
-      varVec.push_back("gemfire::PdxReaderPtr __var ");
+      varVec.push_back("apache::geode::client::PdxReaderPtr __var ");
 
       genFunctionHeader("fromData", className, "void", varVec, true, false,
                         m_cppFormatter, methodPrefix);
@@ -346,8 +350,8 @@ void CPPCodeGenerator::genCreateDeserializable(
   StringVector varVec;
   std::string className = getTypeString(m_classInfo);
   genFunctionHeader("createDeserializable", className,
-                    "gemfire::PdxSerializable*", varVec, true, false,
-                    m_cppFormatter, methodPrefix);
+                    "apache::geode::client::PdxSerializable*", varVec, true,
+                    false, m_cppFormatter, methodPrefix);
   *m_cppFormatter << "return new " << className << "()"
                   << ";\n";
   genFunctionFooter(m_cppFormatter);
@@ -530,4 +534,6 @@ CPPCodeGenerator::~CPPCodeGenerator() {
   }
 }
 }  // namespace pdx_auto_serializer
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

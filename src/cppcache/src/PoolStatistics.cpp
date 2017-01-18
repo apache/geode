@@ -25,7 +25,9 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 using namespace gemfire_statistics;
 
@@ -292,5 +294,6 @@ PoolStats::~PoolStats() {
     m_poolStats = NULL;
   }
 }
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

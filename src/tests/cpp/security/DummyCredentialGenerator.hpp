@@ -20,7 +20,9 @@
 #include "CredentialGenerator.hpp"
 #include "XmlAuthzCredentialGenerator.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace testframework {
 namespace security {
 
@@ -46,7 +48,7 @@ class DummyCredentialGenerator : public CredentialGenerator {
     } else {
       additionalArgs = std::string(" --J=-Dgemfire.security-authz-xml-uri=") +
                        std::string(workingDir) + std::string("authz-dummy.xml");
-}
+    }
 
     return additionalArgs;
   }
@@ -96,6 +98,8 @@ class DummyCredentialGenerator : public CredentialGenerator {
 
 }  // namespace security
 }  // namespace testframework
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

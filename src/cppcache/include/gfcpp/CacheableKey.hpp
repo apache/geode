@@ -25,7 +25,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /** Represents a cacheable key */
 class CPPCACHE_EXPORT CacheableKey : public Cacheable {
@@ -57,8 +59,9 @@ class CPPCACHE_EXPORT CacheableKey : public Cacheable {
    * Factory method that creates the key type that matches the type of value.
    *
    * For customer defined derivations of CacheableKey, the method
-   * gemfire::createKey may be overloaded. For pointer types (e.g. char*)
-   * the method gemfire::createKeyArr may be overloaded.
+   * apache::geode::client::createKey may be overloaded. For pointer types (e.g.
+   * char*)
+   * the method apache::geode::client::createKeyArr may be overloaded.
    */
   template <class PRIM>
   inline static CacheableKeyPtr create(const PRIM value);
@@ -74,6 +77,8 @@ inline CacheableKeyPtr createKey(const SharedPtr<TKEY>& value);
 
 template <typename TKEY>
 inline CacheableKeyPtr createKey(const TKEY* value);
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

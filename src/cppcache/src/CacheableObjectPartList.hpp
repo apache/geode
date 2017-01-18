@@ -32,7 +32,9 @@
 /** @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class ThinClientRegion;
 
 /**
@@ -138,6 +140,8 @@ class CacheableObjectPartList : public Cacheable {
 };
 
 typedef SharedPtr<CacheableObjectPartList> CacheableObjectPartListPtr;
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // _GEMFIRE_CACHEABLEOBJECTPARTLIST_HPP_

@@ -19,7 +19,7 @@
 #include <gfcpp/DataOutput.hpp>
 #include "GemfireTypeIdsImpl.hpp"
 #include <gfcpp/CacheableString.hpp>
-using namespace gemfire;
+using namespace apache::geode::client;
 LocatorListRequest::LocatorListRequest(const std::string& servergroup)
     : m_servergroup(servergroup) {}
 

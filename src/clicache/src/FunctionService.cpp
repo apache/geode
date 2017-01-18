@@ -39,9 +39,9 @@ namespace GemStone
           
           IRegion<TKey, TValue>^ regImpl = safe_cast<IRegion<TKey, TValue>^>( rg);
 
-        gemfire::RegionPtr regionptr(GetNativePtrFromSBWrapGeneric((Generic::Region<TKey, TValue>^)regImpl));
+        apache::geode::client::RegionPtr regionptr(GetNativePtrFromSBWrapGeneric((Generic::Region<TKey, TValue>^)regImpl));
 
-          gemfire::ExecutionPtr& nativeptr( gemfire::FunctionService::onRegion(
+          apache::geode::client::ExecutionPtr& nativeptr( apache::geode::client::FunctionService::onRegion(
             regionptr ) );
           return Execution<TResult>::Create( nativeptr.ptr( ), nullptr );
 
@@ -53,9 +53,9 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-          gemfire::PoolPtr poolptr(GetNativePtrFromSBWrapGeneric<gemfire::Pool>( pl ) );
+          apache::geode::client::PoolPtr poolptr(GetNativePtrFromSBWrapGeneric<apache::geode::client::Pool>( pl ) );
 
-          gemfire::ExecutionPtr& nativeptr( gemfire::FunctionService::onServer(
+          apache::geode::client::ExecutionPtr& nativeptr( apache::geode::client::FunctionService::onServer(
             poolptr ) );
           return Execution<TResult>::Create( nativeptr.ptr( ) , nullptr);
 
@@ -67,8 +67,8 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-          gemfire::PoolPtr poolptr(GetNativePtrFromSBWrapGeneric<gemfire::Pool>( pl ) );
-          gemfire::ExecutionPtr& nativeptr( gemfire::FunctionService::onServers(
+          apache::geode::client::PoolPtr poolptr(GetNativePtrFromSBWrapGeneric<apache::geode::client::Pool>( pl ) );
+          apache::geode::client::ExecutionPtr& nativeptr( apache::geode::client::FunctionService::onServers(
             poolptr ) );
           return Execution<TResult>::Create( nativeptr.ptr( ) , nullptr);
 
@@ -85,9 +85,9 @@ namespace GemStone
 
         if(realCache != nullptr)
         {
-            gemfire::RegionServicePtr cacheptr(GetNativePtr<gemfire::RegionService>( realCache ) );
+            apache::geode::client::RegionServicePtr cacheptr(GetNativePtr<apache::geode::client::RegionService>( realCache ) );
 
-            gemfire::ExecutionPtr& nativeptr( gemfire::FunctionService::onServer(
+            apache::geode::client::ExecutionPtr& nativeptr( apache::geode::client::FunctionService::onServer(
               cacheptr ) );
             return Execution<TResult>::Create( nativeptr.ptr( ), nullptr );
         }
@@ -95,9 +95,9 @@ namespace GemStone
         {
           GemStone::GemFire::Cache::Generic::AuthenticatedCache^ authCache =
             dynamic_cast<GemStone::GemFire::Cache::Generic::AuthenticatedCache^>(cache);
-          gemfire::RegionServicePtr cacheptr(GetNativePtr<gemfire::RegionService>( authCache ) );
+          apache::geode::client::RegionServicePtr cacheptr(GetNativePtr<apache::geode::client::RegionService>( authCache ) );
 
-            gemfire::ExecutionPtr& nativeptr( gemfire::FunctionService::onServer(
+            apache::geode::client::ExecutionPtr& nativeptr( apache::geode::client::FunctionService::onServer(
               cacheptr ) );
             return Execution<TResult>::Create( nativeptr.ptr( ), nullptr );
         }
@@ -116,9 +116,9 @@ namespace GemStone
 
           if(realCache != nullptr)
           {
-            gemfire::RegionServicePtr cacheptr(GetNativePtr<gemfire::RegionService>( realCache ) );
+            apache::geode::client::RegionServicePtr cacheptr(GetNativePtr<apache::geode::client::RegionService>( realCache ) );
 
-            gemfire::ExecutionPtr& nativeptr( gemfire::FunctionService::onServers(
+            apache::geode::client::ExecutionPtr& nativeptr( apache::geode::client::FunctionService::onServers(
               cacheptr ) );
             return Execution<TResult>::Create( nativeptr.ptr( ), nullptr );
           }
@@ -126,9 +126,9 @@ namespace GemStone
           {
             GemStone::GemFire::Cache::Generic::AuthenticatedCache^ authCache =
               dynamic_cast<GemStone::GemFire::Cache::Generic::AuthenticatedCache^>(cache);
-            gemfire::RegionServicePtr cacheptr(GetNativePtr<gemfire::RegionService>( authCache ) );
+            apache::geode::client::RegionServicePtr cacheptr(GetNativePtr<apache::geode::client::RegionService>( authCache ) );
 
-            gemfire::ExecutionPtr& nativeptr( gemfire::FunctionService::onServers(
+            apache::geode::client::ExecutionPtr& nativeptr( apache::geode::client::FunctionService::onServers(
               cacheptr ) );
             return Execution<TResult>::Create( nativeptr.ptr( ) , nullptr);
           }

@@ -23,7 +23,9 @@
 #include <map>
 #include "PdxType.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 typedef std::map<std::string, CacheablePtr> FieldVsValues;
 
@@ -449,6 +451,8 @@ class CPPCACHE_EXPORT PdxInstanceFactoryImpl : public PdxInstanceFactory {
 
   void isFieldAdded(const char* fieldName);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif /* __PDXINSTANCE_FACTORY_IMPL_HPP_ */

@@ -38,7 +38,7 @@ namespace GemStone
       /// CacheTransactionManager encapsulates the transactions for a cache
       /// </summary>
       public ref class CacheTransactionManager sealed
-        : Internal::SBWrap<gemfire::InternalCacheTransactionManager2PC>
+        : Internal::SBWrap<apache::geode::client::InternalCacheTransactionManager2PC>
       {
       public:
         /// <summary>
@@ -248,7 +248,7 @@ namespace GemStone
 
       internal:
 
-        inline static CacheTransactionManager^ Create( gemfire::InternalCacheTransactionManager2PC* nativeptr )
+        inline static CacheTransactionManager^ Create( apache::geode::client::InternalCacheTransactionManager2PC* nativeptr )
         {
           return ( nativeptr != nullptr ?
             gcnew CacheTransactionManager( nativeptr ) : nullptr );
@@ -261,7 +261,7 @@ namespace GemStone
         /// Private constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline CacheTransactionManager( gemfire::InternalCacheTransactionManager2PC* nativeptr )
+        inline CacheTransactionManager( apache::geode::client::InternalCacheTransactionManager2PC* nativeptr )
           : SBWrap( nativeptr ) { }
       };
 

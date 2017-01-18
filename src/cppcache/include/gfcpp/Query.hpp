@@ -26,7 +26,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * @class Query Query.hpp
@@ -112,7 +114,8 @@ class CPPCACHE_EXPORT Query : public SharedBase {
    */
   virtual bool isCompiled() = 0;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_QUERY_H__

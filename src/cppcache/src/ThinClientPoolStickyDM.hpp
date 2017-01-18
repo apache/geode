@@ -18,7 +18,9 @@
 #define __THINCLIENT_POOL_STICKY_DM__
 #include "ThinClientPoolDM.hpp"
 #include "ThinClientStickyManager.hpp"
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class ThinClientPoolStickyDM : public ThinClientPoolDM {
  public:
   ThinClientPoolStickyDM(const char* name, PoolAttributesPtr poolAttrs,
@@ -48,5 +50,7 @@ class ThinClientPoolStickyDM : public ThinClientPoolDM {
   // virtual void cleanStickyConnections(volatile bool& isRunning);
 };
 typedef SharedPtr<ThinClientPoolStickyDM> ThinClientPoolStickyDMPtr;
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif

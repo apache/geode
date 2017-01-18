@@ -16,7 +16,7 @@
  */
 #include <gfcpp/ExpirationAttributes.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 ExpirationAttributes::ExpirationAttributes()
     : m_action(ExpirationAction::INVALIDATE), m_timeout(0) {}

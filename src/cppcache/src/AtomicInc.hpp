@@ -21,7 +21,9 @@
 
 #include "HostAsm.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * @brief Atomic type wrapper for thread safe arithmetic limited to addition.
@@ -78,6 +80,8 @@ class CPPCACHE_EXPORT AtomicInc {
     return m_value;
   }
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

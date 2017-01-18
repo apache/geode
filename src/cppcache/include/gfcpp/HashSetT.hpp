@@ -25,7 +25,9 @@
 /** @file
 */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /** HashSet of <code>TKEY</code>. */
 template <typename TKEY>
@@ -70,12 +72,12 @@ class HashSetT {
   };
 
   inline static int32_t hasher(const SharedBasePtr& p) {
-    return gemfire::hashFunction<TKEY>(staticCast<TKEY>(p));
+    return apache::geode::client::hashFunction<TKEY>(staticCast<TKEY>(p));
   }
 
   inline static bool equal_to(const SharedBasePtr& x, const SharedBasePtr& y) {
-    return gemfire::equalToFunction<TKEY>(staticCast<TKEY>(x),
-                                          staticCast<TKEY>(y));
+    return apache::geode::client::equalToFunction<TKEY>(staticCast<TKEY>(x),
+                                                        staticCast<TKEY>(y));
   }
 
   /** Returns the size of the hash set. */
@@ -169,6 +171,8 @@ class CPPCACHE_EXPORT HashSetOfCacheableKey : public _HashSetOfCacheableKey,
 };
 
 typedef SharedPtr<HashSetOfCacheableKey> HashSetOfCacheableKeyPtr;
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

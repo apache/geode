@@ -26,7 +26,7 @@
 
 #define ERR_MAX 10
 
-using namespace gemfire::testframework;
+using namespace apache::geode::client::testframework;
 
 static int hashcode(char* str) {
   if (str == NULL) {

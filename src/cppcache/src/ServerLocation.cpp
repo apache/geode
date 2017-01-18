@@ -18,7 +18,9 @@
 #include "ServerLocation.hpp"
 #include <ace/OS_NS_stdio.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 void ServerLocation::makeEpString() {
   if (m_serverName != NULLPTR) {
     char epstring[1024] = {0};
@@ -26,4 +28,6 @@ void ServerLocation::makeEpString() {
     m_epString = epstring;
   }
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

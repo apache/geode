@@ -27,7 +27,7 @@
 #include <dlfcn.h>
 #endif
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 namespace gemfire_impl {
 void* getFactoryFunc(const char* lib, const char* funcName);
@@ -910,11 +910,13 @@ void CacheXmlParser::startRegionAttributes(const xmlChar** atts) {
         i++;
         char* diskPolicy = (char*)atts[i];
         if (strcmp(OVERFLOWS, diskPolicy) == 0) {
-          attrsFactory->setDiskPolicy(gemfire::DiskPolicyType::OVERFLOWS);
+          attrsFactory->setDiskPolicy(
+              apache::geode::client::DiskPolicyType::OVERFLOWS);
         } else if (strcmp(PERSIST, diskPolicy) == 0) {
           throw IllegalStateException(" persistence feature is not supported");
         } else if (strcmp(NONE, diskPolicy) == 0) {
-          attrsFactory->setDiskPolicy(gemfire::DiskPolicyType::NONE);
+          attrsFactory->setDiskPolicy(
+              apache::geode::client::DiskPolicyType::NONE);
         } else {
           char* name = (char*)atts[i];
           std::string temp(name);

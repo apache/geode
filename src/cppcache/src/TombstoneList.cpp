@@ -19,7 +19,7 @@
 #include "MapSegment.hpp"
 #include <unordered_map>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 #define SIZEOF_PTR (sizeof(void*))
 #define SIZEOF_SHAREDPTR (SIZEOF_PTR + 4)

@@ -30,7 +30,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * @class CqQuery CqQuery.hpp
@@ -172,7 +174,8 @@ class CPPCACHE_EXPORT CqQuery : public SharedBase {
    */
   virtual bool isDurable() = 0;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_CQ_QUERY_H__

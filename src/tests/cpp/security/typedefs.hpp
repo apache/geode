@@ -25,7 +25,9 @@ _Pragma("GCC system_header")
 #include <string>
 #include <algorithm>
 
-    namespace gemfire {
+    namespace apache {
+  namespace geode {
+  namespace client {
   namespace testframework {
   namespace security {
 
@@ -123,6 +125,8 @@ _Pragma("GCC system_header")
 
   }  // namespace security
   }  // namespace testframework
-}  // namespace gemfire
+  }  // namespace client
+  }  // namespace geode
+}  // namespace apache
 
 #endif /*__TYPEDEFS_HPP_*/

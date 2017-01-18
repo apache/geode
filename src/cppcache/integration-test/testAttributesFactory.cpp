@@ -21,7 +21,7 @@
 #include <gfcpp/GemfireCppCache.hpp>
 #include <CacheRegionHelper.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 BEGIN_TEST(ATTRIBUTE_FACTORY)
   {

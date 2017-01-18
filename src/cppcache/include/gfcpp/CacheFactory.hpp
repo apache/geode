@@ -29,7 +29,9 @@
 
 #define DEFAULT_POOL_NAME "default_gemfireClientPool"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class CppCacheLibrary;
 /**
@@ -493,6 +495,8 @@ class CPPCACHE_EXPORT CacheFactory : public SharedBase {
   friend class RegionXmlCreation;
   friend class CacheXmlCreation;
 };
-};  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_CACHEFACTORY_H__

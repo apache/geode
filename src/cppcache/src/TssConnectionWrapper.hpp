@@ -22,7 +22,9 @@
 #include <string>
 #include "TcrEndpoint.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class TcrConnection;
 typedef std::map<std::string, TcrConnection*> EpNameVsConnection;
 
@@ -67,5 +69,7 @@ class TssConnectionWrapper {
   void releaseSHConnections(PoolPtr p);
   TcrConnection* getAnyConnection(const char* poolname);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif

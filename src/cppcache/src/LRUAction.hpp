@@ -25,7 +25,9 @@
 #include "RegionInternal.hpp"
 #include "Utils.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * @brief abstract behavior for different eviction actions.
@@ -173,6 +175,8 @@ class CPPCACHE_EXPORT LRUOverFlowToDiskAction : public virtual LRUAction {
 
   friend class LRUAction;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __GEMFIRE_IMPL_LRUACTION_H__

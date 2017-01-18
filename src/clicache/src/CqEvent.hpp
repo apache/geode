@@ -44,7 +44,7 @@ namespace GemStone
       /// </summary>
       generic<class TKey, class TResult>
       public ref class CqEvent sealed
-        : public Internal::UMWrap<gemfire::CqEvent>
+        : public Internal::UMWrap<apache::geode::client::CqEvent>
       {
       public:
 
@@ -85,8 +85,8 @@ namespace GemStone
         /// Private constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline CqEvent( const gemfire::CqEvent* nativeptr )
-          : UMWrap( const_cast<gemfire::CqEvent*>( nativeptr ), false ) { }
+        inline CqEvent( const apache::geode::client::CqEvent* nativeptr )
+          : UMWrap( const_cast<apache::geode::client::CqEvent*>( nativeptr ), false ) { }
       };
 
     }

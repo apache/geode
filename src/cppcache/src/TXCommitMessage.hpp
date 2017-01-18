@@ -30,10 +30,12 @@
 #include "RegionCommit.hpp"
 #include <gfcpp/VectorOfSharedBase.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 _GF_PTR_DEF_(TXCommitMessage, TXCommitMessagePtr);
 
-class TXCommitMessage : public gemfire::Cacheable {
+class TXCommitMessage : public apache::geode::client::Cacheable {
  public:
   TXCommitMessage();
   virtual ~TXCommitMessage();
@@ -53,5 +55,7 @@ class TXCommitMessage : public gemfire::Cacheable {
 
   VectorOfSharedBase m_regions;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif /* TXCOMMITMESSAGE_HPP_ */

@@ -22,7 +22,7 @@
 #include <PdxLocalWriter.hpp>
 #include <PdxTypeRegistry.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 class MyPdxClass : public PdxSerializable {
  public:

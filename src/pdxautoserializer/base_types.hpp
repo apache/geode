@@ -25,7 +25,9 @@
 #include <cassert>
 #include <stdexcept>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace pdx_auto_serializer {
 /** Shorthand for vector of strings. */
 typedef std::vector<std::string> StringVector;
@@ -180,10 +182,12 @@ class TypeModifier {
  * Structure to hold information for a type.
  */
 struct TypeInfo {
-  /** The {@link gemfire::pdx_auto_serializer::TypeKind} of the type. */
+  /** The {@link apache::geode::client::pdx_auto_serializer::TypeKind} of the
+   * type. */
   int m_kind;
 
-  /** The {@link gemfire::pdx_auto_serializer::TypeModifier} for the type. */
+  /** The {@link apache::geode::client::pdx_auto_serializer::TypeModifier} for
+   * the type. */
   int m_modifier;
 
   /**
@@ -242,7 +246,9 @@ typedef std::vector<VariableInfo> VariableVector;
  * <code>VariableInfo</code>.
  */
 typedef std::vector<VariableInfo>::const_iterator VariableVectorIterator;
-}
-}
+}  // namespace pdx_auto_serializer
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // _GFAS_BASETYPES_HPP_

@@ -43,12 +43,12 @@
 #define GFARRAYSIZE(X)
 #define GFARRAYELEMSIZE(X)
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 namespace AutoPdxTests {
 
 class GFIGNORE(TESTOBJECT_EXPORT) PositionPdx
-    : public gemfire::PdxSerializable {
+    : public apache::geode::client::PdxSerializable {
  private:
   GFID int64_t avg20DaysVol;
   GFID char* bondRating;
@@ -102,6 +102,6 @@ class GFIGNORE(TESTOBJECT_EXPORT) PositionPdx
   void init();
 };
 
-typedef gemfire::SharedPtr<PositionPdx> PositionPdxPtr;
+typedef apache::geode::client::SharedPtr<PositionPdx> PositionPdxPtr;
 }  // namespace AutoPdxTests
 #endif

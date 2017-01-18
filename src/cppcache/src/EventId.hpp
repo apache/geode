@@ -29,7 +29,9 @@
 /** @file
 */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * EventID "token" with a Distributed Member ID, Thread ID and per-thread
@@ -145,6 +147,8 @@ class CPPCACHE_EXPORT EventId : public Cacheable {
   void operator=(const EventId& other);
   EventId(const EventId& other);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  //_GEMFIRE_EVENTID_HPP_

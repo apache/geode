@@ -45,14 +45,14 @@ namespace GemStone
           virtual void OnEvent(GemStone::GemFire::Cache::Generic::CqEvent<Object^, Object^>^ ev)
           {
             //TODO:split---Done
-            CqEvent<TKey, TResult> gevent(GetNativePtr<gemfire::CqEvent>(ev));
+            CqEvent<TKey, TResult> gevent(GetNativePtr<apache::geode::client::CqEvent>(ev));
             m_listener->OnEvent(%gevent);
           }
 
           virtual void OnError( GemStone::GemFire::Cache::Generic::CqEvent<Object^, Object^>^ ev) 
           {
             //TODO::split--Done
-            CqEvent<TKey, TResult> gevent(GetNativePtr<gemfire::CqEvent>(ev));
+            CqEvent<TKey, TResult> gevent(GetNativePtr<apache::geode::client::CqEvent>(ev));
             m_listener->OnError(%gevent);
           }
 

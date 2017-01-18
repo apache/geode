@@ -32,7 +32,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class CacheFactory;
 class CacheRegionHelper;
@@ -241,6 +243,7 @@ class CPPCACHE_EXPORT Cache : public GemFireCache {
   friend class CacheXmlCreation;
   friend class RegionXmlCreation;
 };
-
-};      // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // ifndef __GEMFIRE_CACHE_H__

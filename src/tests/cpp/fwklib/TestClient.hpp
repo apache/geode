@@ -23,7 +23,9 @@
 
 #include "ace/Task.h"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace testframework {
 
 class TestClient : public ACE_Task_Base {
@@ -112,5 +114,7 @@ class TestClient : public ACE_Task_Base {
 };
 
 }  // namespace testframework
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // __TestClient_hpp__

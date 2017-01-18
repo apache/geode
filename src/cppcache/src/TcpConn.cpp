@@ -28,7 +28,7 @@
 #include <ace/SOCK_Acceptor.h>
 #include <ace/OS.h>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 int TcpConn::m_chunkSize = TcpConn::setChunkSize();
 

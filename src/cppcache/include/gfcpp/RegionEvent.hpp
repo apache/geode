@@ -25,7 +25,9 @@
 /** @file
 */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /** Declares region events.
 */
@@ -65,6 +67,8 @@ class CPPCACHE_EXPORT RegionEvent {
   RegionEvent(const RegionEvent& other);
   void operator=(const RegionEvent& other);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

@@ -20,7 +20,9 @@
 
 #include <functional>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class AppDomainContext {
  public:
@@ -31,6 +33,8 @@ class AppDomainContext {
 };
 
 extern AppDomainContext::factory createAppDomainContext;
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __gemfire_AppDomainContext_h__

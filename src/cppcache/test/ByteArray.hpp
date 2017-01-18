@@ -21,7 +21,9 @@
 #include <memory>
 #include <string>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class ByteArray {
  public:
   static ByteArray fromString(const std::string &str);
@@ -54,4 +56,6 @@ class ByteArray {
   std::shared_ptr<uint8_t> m_bytes;
   std::size_t m_size;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

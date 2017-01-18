@@ -18,22 +18,26 @@
 #define __GEMFIRE_VERSION_HPP__
 #include "CacheImpl.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class Version {
  public:
   // getter for ordinal
   static int8_t getOrdinal() { return Version::m_ordinal; }
 
-  friend void gemfire::CacheImpl::setVersionOrdinalForTest(int8_t newOrdinal);
-  friend int8_t gemfire::CacheImpl::getVersionOrdinalForTest();
+  friend void apache::geode::client::CacheImpl::setVersionOrdinalForTest(
+      int8_t newOrdinal);
+  friend int8_t apache::geode::client::CacheImpl::getVersionOrdinalForTest();
 
  private:
   static int8_t m_ordinal;
 
   Version(){};
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  //__GEMFIRE_VERSION_HPP__s

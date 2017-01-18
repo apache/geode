@@ -24,13 +24,13 @@
 #include <vector>
 
 class AccountHistory;
-typedef gemfire::SharedPtr< AccountHistory > AccountHistoryPtr;
+typedef apache::geode::client::SharedPtr< AccountHistory > AccountHistoryPtr;
 
 /** 
  * Defines a custom type that can be used as a value in a
  * gemfire region.
  */
-class AccountHistory : public gemfire::Cacheable
+class AccountHistory : public apache::geode::client::Cacheable
 {
   private:
     std::vector< std::string > m_history;
@@ -42,17 +42,17 @@ class AccountHistory : public gemfire::Cacheable
    /**
    *@brief serialize this object
    **/
-  virtual void toData( gemfire::DataOutput& output ) const;
+  virtual void toData( apache::geode::client::DataOutput& output ) const;
 
   /**
    *@brief deserialize this object
    **/
-  virtual gemfire::Serializable* fromData( gemfire::DataInput& input );
+  virtual apache::geode::client::Serializable* fromData( apache::geode::client::DataInput& input );
   
   /**
    * @brief creation function for strings.
    */
-  static gemfire::Serializable* createDeserializable( );
+  static apache::geode::client::Serializable* createDeserializable( );
 
   /**
    *@brief return the classId of the instance being serialized.

@@ -283,8 +283,8 @@ namespace GemStone
 
         void PdxReaderWithTypeCollector::ReadCollection( String^ fieldName, System::Collections::IList^ obj)
         {
-					checkType(fieldName, gemfire::GemfireTypeIds::CacheableArrayList, "Collection");
-          m_newPdxType->AddVariableLengthTypeField(fieldName, /*obj->GetType()->FullName*/"Collection", gemfire::GemfireTypeIds::CacheableArrayList);
+					checkType(fieldName, apache::geode::client::GemfireTypeIds::CacheableArrayList, "Collection");
+          m_newPdxType->AddVariableLengthTypeField(fieldName, /*obj->GetType()->FullName*/"Collection", apache::geode::client::GemfireTypeIds::CacheableArrayList);
           int position = m_pdxType->GetFieldPosition(fieldName, m_offsetsBuffer, m_offsetSize, m_serializedLength);
           if(position != -1)
           {

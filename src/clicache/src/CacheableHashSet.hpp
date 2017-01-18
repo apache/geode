@@ -51,8 +51,8 @@ namespace GemStone
         {
           output->WriteArrayLen(this->Count);
 
-          Internal::ManagedPtrWrap< gemfire::Serializable,
-              Internal::SBWrap<gemfire::Serializable> > nptr = NativePtr;
+          Internal::ManagedPtrWrap< apache::geode::client::Serializable,
+              Internal::SBWrap<apache::geode::client::Serializable> > nptr = NativePtr;
           HSTYPE* set = static_cast<HSTYPE*>(nptr());
           for (typename HSTYPE::Iterator iter = set->begin();
               iter != set->end(); ++iter) {
@@ -326,7 +326,7 @@ namespace GemStone
           {
             _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-              gemfire::CacheableKeyPtr nativeptr(Serializable::GetUnmanagedValueGeneric(item));
+              apache::geode::client::CacheableKeyPtr nativeptr(Serializable::GetUnmanagedValueGeneric(item));
             static_cast<HSTYPE*>(NativePtr())->insert(nativeptr);
 
             _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
@@ -354,7 +354,7 @@ namespace GemStone
           virtual bool Contains(Object^ item)
           {
             return static_cast<HSTYPE*>(NativePtr())->contains(
-              gemfire::CacheableKeyPtr(Serializable::GetUnmanagedValueGeneric(item)));
+              apache::geode::client::CacheableKeyPtr(Serializable::GetUnmanagedValueGeneric(item)));
           }
 
           /// <summary>
@@ -385,8 +385,8 @@ namespace GemStone
               throw gcnew IllegalArgumentException("CacheableHashSet.CopyTo():"
                 " array is null or array index is less than zero");
             }
-            Internal::ManagedPtrWrap< gemfire::Serializable,
-              Internal::SBWrap<gemfire::Serializable> > nptr = NativePtr;
+            Internal::ManagedPtrWrap< apache::geode::client::Serializable,
+              Internal::SBWrap<apache::geode::client::Serializable> > nptr = NativePtr;
             HSTYPE* set = static_cast<HSTYPE*>(nptr());
             int32_t index = arrayIndex;
 
@@ -432,7 +432,7 @@ namespace GemStone
           virtual bool Remove(Object^ item)
           {
             return (static_cast<HSTYPE*>(NativePtr())->erase(
-              gemfire::CacheableKeyPtr(Serializable::GetUnmanagedValueGeneric(item))) > 0);
+              apache::geode::client::CacheableKeyPtr(Serializable::GetUnmanagedValueGeneric(item))) > 0);
           }
 
           /// <summary>
@@ -475,7 +475,7 @@ namespace GemStone
           /// <summary>
           /// Factory function to register wrapper
           /// </summary>
-          static IGFSerializable^ Create(gemfire::Serializable* obj)
+          static IGFSerializable^ Create(apache::geode::client::Serializable* obj)
           {
             return (obj != NULL ?
               gcnew CacheableHashSetType<TYPEID,HSTYPE>(obj) : nullptr);
@@ -504,7 +504,7 @@ namespace GemStone
           /// Private constructor to wrap a native object pointer
           /// </summary>
           /// <param name="nativeptr">The native object pointer</param>
-          inline CacheableHashSetType<TYPEID, HSTYPE>(gemfire::Serializable* nativeptr)
+          inline CacheableHashSetType<TYPEID, HSTYPE>(apache::geode::client::Serializable* nativeptr)
             : Serializable(nativeptr) { }
 
           /// <summary>
@@ -571,13 +571,13 @@ namespace GemStone
         }                                                                     \
                                                                               \
       internal:                                                               \
-        static IGFSerializable^ Create(gemfire::Serializable* obj)            \
+        static IGFSerializable^ Create(apache::geode::client::Serializable* obj)            \
         {                                                                     \
           return gcnew m(obj);                                                \
         }                                                                     \
                                                                               \
       private:                                                                \
-        inline m(gemfire::Serializable* nativeptr)                            \
+        inline m(apache::geode::client::Serializable* nativeptr)                            \
         : Internal::CacheableHashSetType<GemStone::GemFire::Cache::Generic::GemFireClassIds::m, HSTYPE>(nativeptr) { }             \
       };
 
@@ -586,7 +586,7 @@ namespace GemStone
       /// a distributable object for caching.
       /// </summary>
       _GFCLI_CACHEABLEHASHSET_DEF_GENERIC(CacheableHashSet,
-        gemfire::CacheableHashSet);
+        apache::geode::client::CacheableHashSet);
 
       /// <summary>
       /// A mutable <c>ICacheableKey</c> hash set wrapper that can serve as
@@ -596,7 +596,7 @@ namespace GemStone
       /// java <c>LinkedHashSet</c>.
       /// </summary>
       _GFCLI_CACHEABLEHASHSET_DEF_GENERIC(CacheableLinkedHashSet,
-        gemfire::CacheableLinkedHashSet);
+        apache::geode::client::CacheableLinkedHashSet);
     }
   }
 }

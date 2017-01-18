@@ -46,7 +46,9 @@ struct _xmlDoc;
 typedef struct _xmlDoc xmlDoc;
 typedef struct _xmlNode xmlNode;
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 typedef std::map<std::string, RegionConfigPtr> RegionConfigMapT;
 
@@ -72,5 +74,7 @@ class CPPCACHE_EXPORT CacheConfig {
 
   RegionConfigMapT m_regionList;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // !defined(AFX_CacheConfig_H__48B95D79_F676_4F8A_8522_8B172DB33F7E__INCLUDED_)

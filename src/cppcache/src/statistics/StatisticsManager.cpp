@@ -32,7 +32,7 @@
 #include "AtomicStatisticsImpl.hpp"
 #include "OsStatisticsImpl.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace gemfire_statistics;
 
 /**

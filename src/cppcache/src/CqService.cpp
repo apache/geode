@@ -24,7 +24,7 @@
 #include <gfcpp/CqServiceStatistics.hpp>
 #include "ThinClientPoolDM.hpp"
 #include <gfcpp/CqStatusListener.hpp>
-using namespace gemfire;
+using namespace apache::geode::client;
 
 CqService::CqService(ThinClientBaseDM* tccdm)
     : m_tccdm(tccdm), m_notificationSema(1), m_stats(new CqServiceVsdStats()) {

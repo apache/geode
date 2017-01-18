@@ -17,7 +17,7 @@
 #include "MapEntry.hpp"
 #include "MapEntryT.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 EntryFactory* EntryFactory::singleton = NULL;
 MapEntryPtr MapEntry::MapEntry_NullPointer(NULLPTR);

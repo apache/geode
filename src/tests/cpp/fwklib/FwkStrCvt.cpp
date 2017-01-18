@@ -18,7 +18,7 @@
 #include "fwklib/FwkStrCvt.hpp"
 #include "fwklib/FwkLog.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace testframework;
 
 // ----------------------------------------------------------------------------

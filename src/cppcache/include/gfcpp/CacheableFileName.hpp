@@ -26,7 +26,9 @@
 /** @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 /**
  * Implement an immutable wrapper for filenames that can serve as a
  * distributable filename object for caching as both key and value.
@@ -110,6 +112,8 @@ class CPPCACHE_EXPORT CacheableFileName : public CacheableString {
  private:
   mutable int m_hashcode;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

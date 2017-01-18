@@ -27,7 +27,9 @@
 #include <ace/TSS_T.h>
 #include "TXId.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class TXState;
 
 class TSSTXStateWrapper {
@@ -44,6 +46,8 @@ class TSSTXStateWrapper {
   TSSTXStateWrapper& operator=(const TSSTXStateWrapper&);
   TSSTXStateWrapper(const TSSTXStateWrapper&);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif /* TSSTXSTATEWRAPPER_HPP_ */

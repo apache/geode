@@ -32,7 +32,7 @@ static bool isRegionLive[4] = {false, false, false, false};
 static bool isRegionDead[4] = {false, false, false, false};
 const char* locatorsG =
     CacheHelper::getLocatorHostPort(isLocator, isLocalServer, numberOfLocators);
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace test;
 class DisconnectCacheListioner : public CacheListener {
   int m_index;

@@ -26,7 +26,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * @class CqAttributesFactory CqAttributesFactory.hpp
@@ -94,7 +96,8 @@ class CPPCACHE_EXPORT CqAttributesFactory : public SharedBase {
  private:
   CqAttributesPtr m_cqAttributes;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_CQ_ATTRIBUTES_FACTORY_H__

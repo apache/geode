@@ -24,7 +24,9 @@
 #include <map>
 #include "EventId.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * @class CacheEventFlags RegionInternal.hpp
@@ -289,7 +291,8 @@ class RegionInternal : public Region {
 };
 
 typedef SharedPtr<RegionInternal> RegionInternalPtr;
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_REGIONINTERNAL_H__

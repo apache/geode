@@ -38,7 +38,7 @@
 
 #include <ace/Date_Time.h>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace test;
 using namespace testobject;
 using namespace PdxTests;
@@ -237,7 +237,7 @@ DUNIT_TASK_DEFINITION(CLIENT1, putPdxWithIdentityField)
     try {
       Serializable::registerPdxType(SerializePdx::createDeserializable);
       LOG("SerializePdx Registered Successfully....");
-    } catch (gemfire::IllegalStateException& /* ex*/) {
+    } catch (apache::geode::client::IllegalStateException& /* ex*/) {
       LOG("SerializePdx IllegalStateException");
     }
 
@@ -260,7 +260,7 @@ DUNIT_TASK_DEFINITION(CLIENT1, putCacheableObjectArrayWithPdxFields)
     try {
       Serializable::registerPdxType(Address::createDeserializable);
       LOG("Address Registered Successfully....");
-    } catch (gemfire::IllegalStateException& /* ex*/) {
+    } catch (apache::geode::client::IllegalStateException& /* ex*/) {
       LOG("Address IllegalStateException");
     }
 
@@ -294,7 +294,7 @@ DUNIT_TASK_DEFINITION(CLIENT2, verifyPdxIdentityField)
     try {
       Serializable::registerPdxType(SerializePdx::createDeserializable);
       LOG("SerializePdx Registered Successfully....");
-    } catch (gemfire::IllegalStateException& /* ex*/) {
+    } catch (apache::geode::client::IllegalStateException& /* ex*/) {
       LOG("SerializePdx IllegalStateException");
     }
 
@@ -400,7 +400,7 @@ DUNIT_TASK_DEFINITION(CLIENT2, verifyCacheableObjectArrayWithPdxField)
     try {
       Serializable::registerPdxType(Address::createDeserializable);
       LOG("Address Registered Successfully....");
-    } catch (gemfire::IllegalStateException& /* ex*/) {
+    } catch (apache::geode::client::IllegalStateException& /* ex*/) {
       LOG("Address IllegalStateException");
     }
 
@@ -516,7 +516,7 @@ DUNIT_TASK_DEFINITION(CLIENT1, pdxPut)
     try {
       Serializable::registerPdxType(PdxTests::PdxType::createDeserializable);
       LOG("PdxObject Registered Successfully....");
-    } catch (gemfire::IllegalStateException& /* ex*/) {
+    } catch (apache::geode::client::IllegalStateException& /* ex*/) {
       LOG("PdxObject IllegalStateException");
     }
 
@@ -593,21 +593,21 @@ DUNIT_TASK_DEFINITION(CLIENT2, getObject)
     try {
       Serializable::registerPdxType(PdxTests::PdxType::createDeserializable);
       LOG("PdxObject Registered Successfully....");
-    } catch (gemfire::IllegalStateException& /* ex*/) {
+    } catch (apache::geode::client::IllegalStateException& /* ex*/) {
       LOG("PdxObject IllegalStateException");
     }
 
     try {
       Serializable::registerPdxType(ChildPdx::createDeserializable);
       LOG("ChildPdx Registered Successfully....");
-    } catch (gemfire::IllegalStateException& /* ex*/) {
+    } catch (apache::geode::client::IllegalStateException& /* ex*/) {
       LOG("ChildPdx IllegalStateException");
     }
 
     try {
       Serializable::registerPdxType(ParentPdx::createDeserializable);
       LOG("ParentPdx Registered Successfully....");
-    } catch (gemfire::IllegalStateException& /* ex*/) {
+    } catch (apache::geode::client::IllegalStateException& /* ex*/) {
       LOG("ParentPdx IllegalStateException");
     }
 
@@ -709,7 +709,7 @@ DUNIT_TASK_DEFINITION(CLIENT2, verifyPdxInstanceEquals)
     try {
       Serializable::registerPdxType(PdxTests::PdxType::createDeserializable);
       LOG("PdxObject Registered Successfully....");
-    } catch (gemfire::IllegalStateException& /* ex*/) {
+    } catch (apache::geode::client::IllegalStateException& /* ex*/) {
       LOG("PdxObject IllegalStateException");
     }
 
@@ -773,14 +773,14 @@ DUNIT_TASK_DEFINITION(CLIENT2, accessPdxInstance)
     try {
       Serializable::registerPdxType(PdxTests::PdxType::createDeserializable);
       LOG("PdxObject Registered Successfully....");
-    } catch (gemfire::IllegalStateException& /* ex*/) {
+    } catch (apache::geode::client::IllegalStateException& /* ex*/) {
       LOG("PdxObject IllegalStateException");
     }
 
     try {
       Serializable::registerPdxType(Address::createDeserializable);
       LOG("Address Registered Successfully....");
-    } catch (gemfire::IllegalStateException& /* ex*/) {
+    } catch (apache::geode::client::IllegalStateException& /* ex*/) {
       LOG("Address IllegalStateException");
     }
 
@@ -2339,28 +2339,28 @@ DUNIT_TASK_DEFINITION(CLIENT1, pdxIFPutGetTest)
     try {
       Serializable::registerPdxType(Address::createDeserializable);
       LOG("Address Registered Successfully....");
-    } catch (gemfire::IllegalStateException& /* ex*/) {
+    } catch (apache::geode::client::IllegalStateException& /* ex*/) {
       LOG("Address IllegalStateException");
     }
 
     try {
       Serializable::registerPdxType(PdxTests::PdxType::createDeserializable);
       LOG("PdxObject Registered Successfully....");
-    } catch (gemfire::IllegalStateException& /* ex*/) {
+    } catch (apache::geode::client::IllegalStateException& /* ex*/) {
       LOG("PdxObject IllegalStateException");
     }
 
     try {
       Serializable::registerPdxType(ChildPdx::createDeserializable);
       LOG("ChildPdx Registered Successfully....");
-    } catch (gemfire::IllegalStateException& /* ex*/) {
+    } catch (apache::geode::client::IllegalStateException& /* ex*/) {
       LOG("ChildPdx IllegalStateException");
     }
 
     try {
       Serializable::registerPdxType(ParentPdx::createDeserializable);
       LOG("ParentPdx Registered Successfully....");
-    } catch (gemfire::IllegalStateException& /* ex*/) {
+    } catch (apache::geode::client::IllegalStateException& /* ex*/) {
       LOG("ParentPdx IllegalStateException");
     }
 

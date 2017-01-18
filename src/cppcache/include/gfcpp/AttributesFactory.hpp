@@ -33,7 +33,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /** Creates instances of {@link RegionAttributes}. An
  * <code>AttributesFactory</code>
@@ -370,5 +372,7 @@ class CPPCACHE_EXPORT AttributesFactory : public SharedBase {
   RegionAttributes m_regionAttributes;
   static void validateAttributes(RegionAttributes& attrs);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // ifndef __GEMFIRE_ATTRIBUTESFACTORY_H__

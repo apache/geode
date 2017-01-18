@@ -33,7 +33,7 @@
 
 #include "CacheHelper.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 #include "locator_globals.hpp"
 
@@ -263,7 +263,7 @@ DUNIT_TASK(Sender, SendCT)
         regionPtr->put(i, OtherType::uniqueCT(i, g_classIdToReturn));
         regionPtr->put(i + 1, OtherType::uniqueCT(i + 1, g_classIdToReturn2));
         regionPtr->put(i + 2, OtherType::uniqueCT(i + 2, g_classIdToReturn4));
-      } catch (const gemfire::TimeoutException&) {
+      } catch (const apache::geode::client::TimeoutException&) {
       }
     }
   }

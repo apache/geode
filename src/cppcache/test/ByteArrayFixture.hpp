@@ -28,5 +28,5 @@ class ByteArrayFixture {
  public:
   ::testing::AssertionResult assertByteArrayEqual(
       const char* expectedStr, const char* bytesStr, const char* expected,
-      const gemfire::ByteArray& bytes);
+      const apache::geode::client::ByteArray& bytes);
 };

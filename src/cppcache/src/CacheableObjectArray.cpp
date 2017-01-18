@@ -21,7 +21,9 @@
 #include <gfcpp/GemfireTypeIds.hpp>
 #include <GemfireTypeIdsImpl.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 void CacheableObjectArray::toData(DataOutput& output) const {
   int32_t len = size();
@@ -66,4 +68,6 @@ uint32_t CacheableObjectArray::objectSize() const {
   }
   return size;
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

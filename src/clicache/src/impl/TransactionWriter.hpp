@@ -54,7 +54,7 @@ namespace GemStone
 
           virtual void BeforeCommit(GemStone::GemFire::Cache::TransactionEvent^ te) override
           {
-            GemStone::GemFire::Cache::Generic::TransactionEvent<TKey, TValue> gevent(GetNativePtr<gemfire::TransactionEvent>(te));
+            GemStone::GemFire::Cache::Generic::TransactionEvent<TKey, TValue> gevent(GetNativePtr<apache::geode::client::TransactionEvent>(te));
             m_writer->BeforeCommit(%gevent);
           }
 

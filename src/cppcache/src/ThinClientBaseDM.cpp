@@ -26,7 +26,7 @@
 //#include "UserAttributes.hpp"
 #include "ProxyCache.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 volatile bool ThinClientBaseDM::s_isDeltaEnabledOnServer = true;
 const char* ThinClientBaseDM::NC_ProcessChunk = "NC ProcessChunk";

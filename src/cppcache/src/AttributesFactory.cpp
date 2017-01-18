@@ -15,9 +15,13 @@
  * limitations under the License.
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class Region;
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #include <gfcpp/Cache.hpp>
 #include <gfcpp/ExpirationAttributes.hpp>
@@ -27,7 +31,7 @@ class Region;
 #include <string.h>
 #include <gfcpp/Pool.hpp>
 #include <gfcpp/PoolManager.hpp>
-using namespace gemfire;
+using namespace apache::geode::client;
 
 AttributesFactory::AttributesFactory() : m_regionAttributes() {}
 

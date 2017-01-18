@@ -16,7 +16,7 @@
  */
 #include "ThinClientStickyManager.hpp"
 #include "ThinClientPoolDM.hpp"
-using namespace gemfire;
+using namespace apache::geode::client;
 bool ThinClientStickyManager::getStickyConnection(
     TcrConnection*& conn, GfErrType* error,
     std::set<ServerLocation>& excludeServers, bool forTransaction) {

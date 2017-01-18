@@ -20,7 +20,7 @@
 #include <RegionInternal.hpp>
 #include <MapEntry.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 CacheLoader::CacheLoader() {}
 

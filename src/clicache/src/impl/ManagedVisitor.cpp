@@ -23,24 +23,30 @@
 
 using namespace System;
 
-namespace gemfire
+namespace apache
 {
-
-  void ManagedVisitorGeneric::visit( CacheableKeyPtr& key, CacheablePtr& value )
+  namespace geode
   {
-    using namespace GemStone::GemFire::Cache::Generic;
-    try {
-      ICacheableKey^ mg_key(SafeGenericUMKeyConvert<ICacheableKey^>(key.ptr()));
-      IGFSerializable^ mg_value(SafeUMSerializableConvertGeneric(value.ptr()));
+    namespace client
+    {
 
-      m_visitor->Invoke( mg_key, (GemStone::GemFire::Cache::Generic::IGFSerializable^)mg_value );
-    }
-    catch (GemFireException^ ex) {
-      ex->ThrowNative();
-    }
-    catch (System::Exception^ ex) {
-      GemFireException::ThrowNative(ex);
-    }
-  }
+      void ManagedVisitorGeneric::visit(CacheableKeyPtr& key, CacheablePtr& value)
+      {
+        using namespace GemStone::GemFire::Cache::Generic;
+        try {
+          ICacheableKey^ mg_key(SafeGenericUMKeyConvert<ICacheableKey^>(key.ptr()));
+          IGFSerializable^ mg_value(SafeUMSerializableConvertGeneric(value.ptr()));
 
-}
+          m_visitor->Invoke(mg_key, (GemStone::GemFire::Cache::Generic::IGFSerializable^)mg_value);
+        }
+        catch (GemFireException^ ex) {
+          ex->ThrowNative();
+        }
+        catch (System::Exception^ ex) {
+          GemFireException::ThrowNative(ex);
+        }
+      }
+
+    }  // namespace client
+  }  // namespace geode
+}  // namespace apache

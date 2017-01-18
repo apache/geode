@@ -21,7 +21,9 @@
 #include "InputParser.hpp"
 #include <utility>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace pdx_auto_serializer {
 /**
  * Defines a function returning a pointer to an
@@ -64,7 +66,9 @@ class InputParserFactory {
    */
   std::map<std::string, InputParserFn> m_parserMap;
 };
-}
-}
+}  // namespace pdx_auto_serializer
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // _GFAS_INPUTPARSERFACTORY_HPP_

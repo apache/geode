@@ -44,14 +44,14 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-          gemfire::SelectResultsPtr& nativeptr = NativePtr->execute( timeout );
+          apache::geode::client::SelectResultsPtr& nativeptr = NativePtr->execute( timeout );
           if ( nativeptr.ptr( ) == NULL ) return nullptr;
 
-          gemfire::ResultSet* resultptr = dynamic_cast<gemfire::ResultSet*>(
+          apache::geode::client::ResultSet* resultptr = dynamic_cast<apache::geode::client::ResultSet*>(
             nativeptr.ptr( ) );
           if ( resultptr == NULL )
           {
-            gemfire::StructSet* structptr = dynamic_cast<gemfire::StructSet*>(
+            apache::geode::client::StructSet* structptr = dynamic_cast<apache::geode::client::StructSet*>(
               nativeptr.ptr( ) );
             if ( structptr == NULL )
             {
@@ -78,21 +78,21 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-        gemfire::CacheableVectorPtr rsptr = gemfire::CacheableVector::create();
+        apache::geode::client::CacheableVectorPtr rsptr = apache::geode::client::CacheableVector::create();
         for( int index = 0; index < paramList->Length; index++ )
         {
-          gemfire::CacheablePtr valueptr( Serializable::GetUnmanagedValueGeneric<Object^>(paramList[index]->GetType(), (Object^)paramList[index]) ) ;
+          apache::geode::client::CacheablePtr valueptr( Serializable::GetUnmanagedValueGeneric<Object^>(paramList[index]->GetType(), (Object^)paramList[index]) ) ;
           rsptr->push_back(valueptr);
 		    }
         
-        gemfire::SelectResultsPtr& nativeptr = NativePtr->execute(rsptr, timeout );
+        apache::geode::client::SelectResultsPtr& nativeptr = NativePtr->execute(rsptr, timeout );
         if ( nativeptr.ptr( ) == NULL ) return nullptr;
 
-        gemfire::ResultSet* resultptr = dynamic_cast<gemfire::ResultSet*>(
+        apache::geode::client::ResultSet* resultptr = dynamic_cast<apache::geode::client::ResultSet*>(
         nativeptr.ptr( ) );
         if ( resultptr == NULL )
         {
-          gemfire::StructSet* structptr = dynamic_cast<gemfire::StructSet*>(
+          apache::geode::client::StructSet* structptr = dynamic_cast<apache::geode::client::StructSet*>(
           nativeptr.ptr( ) );
           if ( structptr == NULL )
           {

@@ -33,7 +33,7 @@ namespace GemStone
       generic<class TKey, class TValue>
       TKey RegionEntry<TKey, TValue>::Key::get( )
       {
-        gemfire::CacheableKeyPtr& nativeptr( NativePtr->getKey( ) );
+        apache::geode::client::CacheableKeyPtr& nativeptr( NativePtr->getKey( ) );
         
         return Serializable::GetManagedValueGeneric<TKey>( nativeptr );
       }
@@ -41,7 +41,7 @@ namespace GemStone
       generic<class TKey, class TValue>
       TValue RegionEntry<TKey, TValue>::Value::get( )
       {
-        gemfire::CacheablePtr& nativeptr( NativePtr->getValue( ) );
+        apache::geode::client::CacheablePtr& nativeptr( NativePtr->getValue( ) );
 
         return Serializable::GetManagedValueGeneric<TValue>( nativeptr );
       }
@@ -49,7 +49,7 @@ namespace GemStone
       generic<class TKey, class TValue>
       IRegion<TKey, TValue>^ RegionEntry<TKey, TValue>::Region::get( )
       {
-        gemfire::RegionPtr rptr;
+        apache::geode::client::RegionPtr rptr;
 
         NativePtr->getRegion( rptr );
         return GemStone::GemFire::Cache::Generic::Region<TKey, TValue>::Create( rptr.ptr( ) );
@@ -58,7 +58,7 @@ namespace GemStone
       generic<class TKey, class TValue>
       GemStone::GemFire::Cache::Generic::CacheStatistics^ RegionEntry<TKey, TValue>::Statistics::get( )
       {
-        gemfire::CacheStatisticsPtr nativeptr;
+        apache::geode::client::CacheStatisticsPtr nativeptr;
 
         NativePtr->getStatistics( nativeptr );
         return GemStone::GemFire::Cache::Generic::CacheStatistics::Create( nativeptr.ptr( ) );

@@ -29,7 +29,9 @@
 #include <gfcpp/Cacheable.hpp>
 #include <gfcpp/VectorT.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 enum ServerRegionOperation {
   GF_CONTAINS_KEY,
@@ -50,7 +52,7 @@ enum ServerRegionOperation {
 
 _GF_PTR_DEF_(TransactionalOperation, TransactionalOperationPtr);
 
-class TransactionalOperation : public gemfire::SharedBase {
+class TransactionalOperation : public apache::geode::client::SharedBase {
  public:
   TransactionalOperation(ServerRegionOperation op, const char* regionName,
                          CacheableKeyPtr key, VectorOfCacheablePtr arguments);
@@ -64,6 +66,8 @@ class TransactionalOperation : public gemfire::SharedBase {
   CacheableKeyPtr m_key;
   VectorOfCacheablePtr m_arguments;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif /* TRANSACTIONALOPERATION_HPP_ */

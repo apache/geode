@@ -17,7 +17,7 @@
 
 #include "CacheXml.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 CacheXml::CacheXml() {
   /** The name of the <code>cache</code> element */

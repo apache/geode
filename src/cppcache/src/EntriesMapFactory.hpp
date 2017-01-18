@@ -21,7 +21,9 @@
 #include "EntriesMap.hpp"
 #include <gfcpp/RegionAttributes.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class CPPCACHE_EXPORT EntriesMapFactory {
  public:
@@ -36,7 +38,8 @@ class CPPCACHE_EXPORT EntriesMapFactory {
   EntriesMapFactory() {}
 
 };  // class
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __GEMFIRE_IMPL_ENTRIESMAPFACTORY_H__

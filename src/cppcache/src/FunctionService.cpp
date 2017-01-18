@@ -24,7 +24,7 @@
 #include <CacheRegionHelper.hpp>
 #include <gfcpp/TypeHelper.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 ExecutionPtr FunctionService::onRegion(RegionPtr region) {
   LOGDEBUG("FunctionService::onRegion(RegionPtr region)");

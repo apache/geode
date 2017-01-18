@@ -18,7 +18,7 @@
 #include "ReadWriteLock.hpp"
 #include <ace/Guard_T.h>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 TimedTryWriteGuard::TimedTryWriteGuard(ACE_RW_Thread_Mutex& lock, uint32_t usec)
     : lock_(lock), isAcquired_(false), mutex_(), cond_(mutex_) {

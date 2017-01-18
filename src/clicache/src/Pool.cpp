@@ -145,7 +145,7 @@ namespace GemStone
       //generic<class TKey, class TValue>
       array<String^>^ Pool/*<TKey, TValue>*/::Locators::get()
       {
-        gemfire::CacheableStringArrayPtr locators = NativePtr->getLocators();
+        apache::geode::client::CacheableStringArrayPtr locators = NativePtr->getLocators();
         int length = locators->length();
         if (length > 0)
         {
@@ -165,7 +165,7 @@ namespace GemStone
       //generic<class TKey, class TValue>
       array<String^>^ Pool/*<TKey, TValue>*/::Servers::get()
       {
-        gemfire::CacheableStringArrayPtr servers = NativePtr->getServers();
+        apache::geode::client::CacheableStringArrayPtr servers = NativePtr->getServers();
         int length = servers->length();
         if (length > 0)
         {

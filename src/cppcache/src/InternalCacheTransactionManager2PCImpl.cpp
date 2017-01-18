@@ -32,7 +32,9 @@
 #include <gfcpp/PoolManager.hpp>
 #include "TXCleaner.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 InternalCacheTransactionManager2PCImpl::InternalCacheTransactionManager2PCImpl(
     Cache* cache)
@@ -202,4 +204,6 @@ void InternalCacheTransactionManager2PCImpl::afterCompletion(int32_t status) {
     throw ex;
   }
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

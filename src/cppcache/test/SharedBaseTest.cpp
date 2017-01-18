@@ -19,7 +19,7 @@
 
 #include <gfcpp/SharedBase.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 namespace {
 class TestSharedBase : public SharedBase {

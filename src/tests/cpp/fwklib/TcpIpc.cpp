@@ -28,8 +28,8 @@
 #include <ace/SOCK_Acceptor.h>
 #include <ace/OS.h>
 
-using namespace gemfire;
-using namespace gemfire::testframework;
+using namespace apache::geode::client;
+using namespace apache::geode::client::testframework;
 
 void TcpIpc::clearNagle(int32_t sock) {
   int32_t val = 1;

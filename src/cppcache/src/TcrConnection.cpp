@@ -35,7 +35,7 @@
 #include "Utils.hpp"  // for RandGen for server challenge
 #include "ThinClientRegion.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 const int HEADER_LENGTH = 17;
 const int MAXBUFSIZE ATTR_UNUSED = 65536;
 const int BODYLENPOS ATTR_UNUSED = 4;

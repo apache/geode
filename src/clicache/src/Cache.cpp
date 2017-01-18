@@ -57,7 +57,7 @@ namespace GemStone
 
       DistributedSystem^ Cache::DistributedSystem::get( )
       {
-        gemfire::DistributedSystemPtr& nativeptr(
+        apache::geode::client::DistributedSystemPtr& nativeptr(
           NativePtr->getDistributedSystem( ) );
 
         return GemStone::GemFire::Cache::Generic::DistributedSystem::Create(
@@ -66,7 +66,7 @@ namespace GemStone
 
       CacheTransactionManager^ Cache::CacheTransactionManager::get( )
       {
-        gemfire::InternalCacheTransactionManager2PCPtr& nativeptr = static_cast<InternalCacheTransactionManager2PCPtr>(
+        apache::geode::client::InternalCacheTransactionManager2PCPtr& nativeptr = static_cast<InternalCacheTransactionManager2PCPtr>(
           NativePtr->getCacheTransactionManager( ) );
 
         return GemStone::GemFire::Cache::Generic::CacheTransactionManager::Create(
@@ -90,7 +90,7 @@ namespace GemStone
           NativePtr->close( keepalive );
 
           // If DS automatically disconnected due to the new bootstrap API, then cleanup the C++/CLI side
-          //if (!gemfire::DistributedSystem::isConnected())
+          //if (!apache::geode::client::DistributedSystem::isConnected())
           {
             GemStone::GemFire::Cache::Generic::DistributedSystem::UnregisterBuiltinManagedTypes();
           }
@@ -120,7 +120,7 @@ namespace GemStone
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
           ManagedString mg_path( path );
-          gemfire::RegionPtr& nativeptr(
+          apache::geode::client::RegionPtr& nativeptr(
             NativePtr->getRegion( mg_path.CharPtr ) );
 
           return Generic::Region<TKey,TValue>::Create( nativeptr.ptr( ) );
@@ -131,14 +131,14 @@ namespace GemStone
       generic<class TKey, class TValue>
       array<Generic::IRegion<TKey, TValue>^>^ Cache::RootRegions( )
       {
-        gemfire::VectorOfRegion vrr;
+        apache::geode::client::VectorOfRegion vrr;
         NativePtr->rootRegions( vrr );
         array<Generic::IRegion<TKey, TValue>^>^ rootRegions =
           gcnew array<Generic::IRegion<TKey, TValue>^>( vrr.size( ) );
 
         for( int32_t index = 0; index < vrr.size( ); index++ )
         {
-          gemfire::RegionPtr& nativeptr( vrr[ index ] );
+          apache::geode::client::RegionPtr& nativeptr( vrr[ index ] );
           rootRegions[ index ] = Generic::Region<TKey, TValue>::Create( nativeptr.ptr( ) );
         }
         return rootRegions;
@@ -169,24 +169,24 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2
 
-          gemfire::RegionShortcut preDefineRegionAttr = gemfire::CACHING_PROXY;
+          apache::geode::client::RegionShortcut preDefineRegionAttr = apache::geode::client::CACHING_PROXY;
 
           switch(preDefinedRegionAttributes)
           {
           case RegionShortcut::PROXY:
-              preDefineRegionAttr = gemfire::PROXY;
+              preDefineRegionAttr = apache::geode::client::PROXY;
               break;
           case RegionShortcut::CACHING_PROXY:
-              preDefineRegionAttr = gemfire::CACHING_PROXY;
+              preDefineRegionAttr = apache::geode::client::CACHING_PROXY;
               break;
           case RegionShortcut::CACHING_PROXY_ENTRY_LRU:
-              preDefineRegionAttr = gemfire::CACHING_PROXY_ENTRY_LRU;
+              preDefineRegionAttr = apache::geode::client::CACHING_PROXY_ENTRY_LRU;
               break;
           case RegionShortcut::LOCAL:
-              preDefineRegionAttr = gemfire::LOCAL;
+              preDefineRegionAttr = apache::geode::client::LOCAL;
               break;
           case RegionShortcut::LOCAL_ENTRY_LRU:
-              preDefineRegionAttr = gemfire::LOCAL_ENTRY_LRU;
+              preDefineRegionAttr = apache::geode::client::LOCAL_ENTRY_LRU;
               break;          
           }
 
@@ -199,12 +199,12 @@ namespace GemStone
       {
         //  TODO:
 				//TODO::split
-        gemfire::Properties* prop = NULL;
+        apache::geode::client::Properties* prop = NULL;
 
         if (credentials != nullptr)
-          prop = GetNativePtr<gemfire::Properties>( credentials );
+          prop = GetNativePtr<apache::geode::client::Properties>( credentials );
 
-        gemfire::PropertiesPtr credPtr(prop);
+        apache::geode::client::PropertiesPtr credPtr(prop);
         
         
         _GF_MG_EXCEPTION_TRY2
@@ -236,12 +236,12 @@ namespace GemStone
       {
          // TODO:
 				//TODO::split
-        gemfire::Properties* prop = NULL;
+        apache::geode::client::Properties* prop = NULL;
 
         if (credentials != nullptr)
-          prop = GetNativePtr<gemfire::Properties>( credentials );
+          prop = GetNativePtr<apache::geode::client::Properties>( credentials );
 
-        gemfire::PropertiesPtr credPtr(prop);
+        apache::geode::client::PropertiesPtr credPtr(prop);
 
         ManagedString mg_poolName( poolName );
         

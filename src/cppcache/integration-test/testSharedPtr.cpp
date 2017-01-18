@@ -22,7 +22,7 @@
 
 #include <HostAsm.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 // Test some HostAsm code first..
 DUNIT_TASK(s1p1, HostAsm)

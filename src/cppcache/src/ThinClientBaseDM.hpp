@@ -22,7 +22,9 @@
 #include "TcrEndpoint.hpp"
 #include <vector>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * @brief Distribute data between caches
@@ -192,7 +194,8 @@ class ThinClientBaseDM {
   static volatile bool s_isDeltaEnabledOnServer;
   static const char* NC_ProcessChunk;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __THINCLIENT_DISTRIBUTION_MANAGER_HPP__

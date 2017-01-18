@@ -25,79 +25,83 @@
 #include "ResultCollectorProxy.hpp"
 #include "SafeConvert.hpp"
 //#include "SafeConvert.hpp"
-//using namespace gemfire;
+//using namespace apache::geode::client;
 
-//using namespace gemfire;
-namespace gemfire {
+//using namespace apache::geode::client;
+namespace apache {
+  namespace geode {
+    namespace client {
 
-  /// <summary>
-  /// Wraps the managed <see cref="GemStone.GemFire.Cache.IResultCollector" />
-  /// object and implements the native <c>gemfire::ResultCollector</c> interface.
-  /// </summary>
-  class ManagedResultCollectorGeneric
-    : public gemfire::ResultCollector
-  {
-  public:
+      /// <summary>
+      /// Wraps the managed <see cref="GemStone.GemFire.Cache.IResultCollector" />
+      /// object and implements the native <c>apache::geode::client::ResultCollector</c> interface.
+      /// </summary>
+      class ManagedResultCollectorGeneric
+        : public apache::geode::client::ResultCollector
+      {
+      public:
 
-    /// <summary>
-    /// Constructor to initialize with the provided managed object.
-    /// </summary>
-    /// <param name="userptr">
-    /// The managed object.
-    /// </param>
-    inline ManagedResultCollectorGeneric( GemStone::GemFire::Cache::Generic::ResultCollectorG^ userptr )
-      : m_managedptr(userptr) { }
+        /// <summary>
+        /// Constructor to initialize with the provided managed object.
+        /// </summary>
+        /// <param name="userptr">
+        /// The managed object.
+        /// </param>
+        inline ManagedResultCollectorGeneric(GemStone::GemFire::Cache::Generic::ResultCollectorG^ userptr)
+          : m_managedptr(userptr) { }
 
-    /// <summary>
-    /// Static function to create a <c>ManagedResultCollector</c> using given
-    /// managed assembly path and given factory function.
-    /// </summary>
-    /// <param name="assemblyPath">
-    /// The path of the managed assembly that contains the <c>ICacheListener</c>
-    /// factory function.
-    /// </param>
-    /// <param name="factoryFunctionName">
-    /// The name of the factory function of the managed class for creating
-    /// an object that implements <c>IResultCollector</c>.
-    /// This should be a static function of the format
-    /// {Namespace}.{Class Name}.{Method Name}.
-    /// </param>
-    /// <exception cref="IllegalArgumentException">
-    /// If the managed library cannot be loaded or the factory function fails.
-    /// </exception>
-    static gemfire::ResultCollector* create( const char* assemblyPath,
-      const char* factoryFunctionName );
+        /// <summary>
+        /// Static function to create a <c>ManagedResultCollector</c> using given
+        /// managed assembly path and given factory function.
+        /// </summary>
+        /// <param name="assemblyPath">
+        /// The path of the managed assembly that contains the <c>ICacheListener</c>
+        /// factory function.
+        /// </param>
+        /// <param name="factoryFunctionName">
+        /// The name of the factory function of the managed class for creating
+        /// an object that implements <c>IResultCollector</c>.
+        /// This should be a static function of the format
+        /// {Namespace}.{Class Name}.{Method Name}.
+        /// </param>
+        /// <exception cref="IllegalArgumentException">
+        /// If the managed library cannot be loaded or the factory function fails.
+        /// </exception>
+        static apache::geode::client::ResultCollector* create(const char* assemblyPath,
+          const char* factoryFunctionName);
 
-    /// <summary>
-    /// Destructor -- does nothing.
-    /// </summary>
-    virtual ~ManagedResultCollectorGeneric( ) { }
+        /// <summary>
+        /// Destructor -- does nothing.
+        /// </summary>
+        virtual ~ManagedResultCollectorGeneric() { }
 
-    CacheableVectorPtr getResult(uint32_t timeout =  DEFAULT_QUERY_RESPONSE_TIMEOUT);
-    void addResult(CacheablePtr& result);
-    void endResults();
-    void clearResults();
-    /// <summary>
-    /// Returns the wrapped managed object reference.
-    /// </summary>
-    inline GemStone::GemFire::Cache::Generic::ResultCollectorG^ ptr( ) const
-    {   
-      return m_managedptr;
-    }
-
-   
-  private:
+        CacheableVectorPtr getResult(uint32_t timeout = DEFAULT_QUERY_RESPONSE_TIMEOUT);
+        void addResult(CacheablePtr& result);
+        void endResults();
+        void clearResults();
+        /// <summary>
+        /// Returns the wrapped managed object reference.
+        /// </summary>
+        inline GemStone::GemFire::Cache::Generic::ResultCollectorG^ ptr() const
+        {
+          return m_managedptr;
+        }
 
 
-    /// <summary>
-    /// Using gcroot to hold the managed delegate pointer (since it cannot be stored directly).
-    /// Note: not using auto_gcroot since it will result in 'Dispose' of the ICacheListener
-    /// to be called which is not what is desired when this object is destroyed. Normally this
-    /// managed object may be created by the user and will be handled automatically by the GC.
-    /// </summary>
-    gcroot<GemStone::GemFire::Cache::Generic::ResultCollectorG^> m_managedptr;
-    //GemStone::GemFire::Cache::IResultCollector^ m_managedptr;
-    //gcroot<Object^> m_userptr;
-  };
+      private:
 
-}
+
+        /// <summary>
+        /// Using gcroot to hold the managed delegate pointer (since it cannot be stored directly).
+        /// Note: not using auto_gcroot since it will result in 'Dispose' of the ICacheListener
+        /// to be called which is not what is desired when this object is destroyed. Normally this
+        /// managed object may be created by the user and will be handled automatically by the GC.
+        /// </summary>
+        gcroot<GemStone::GemFire::Cache::Generic::ResultCollectorG^> m_managedptr;
+        //GemStone::GemFire::Cache::IResultCollector^ m_managedptr;
+        //gcroot<Object^> m_userptr;
+      };
+
+    }  // namespace client
+  }  // namespace geode
+}  // namespace apache

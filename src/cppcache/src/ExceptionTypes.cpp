@@ -21,7 +21,9 @@
 #include <TXState.hpp>
 #include <TSSTXStateWrapper.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 void setTSSExceptionMessage(const char* exMsg);
 const char* getTSSExceptionMessage();
 
@@ -336,5 +338,6 @@ void GfErrTypeThrowException(const char* str, GfErrType err) {
     }
   }
 }
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

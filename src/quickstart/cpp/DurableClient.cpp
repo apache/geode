@@ -36,7 +36,7 @@
 #include "plugins/DurableCacheListener.hpp"
 
 // Use the "gemfire" namespace.
-using namespace gemfire;
+using namespace apache::geode::client;
 
 void RunDurableClient() {
   // Create durable client's properties using api.
@@ -83,7 +83,7 @@ void RunDurableClient() {
   LOGINFO("Sent ReadyForEvents message to server");
 
   // wait for some time to recieve events
-  gemfire::millisleep(1000);
+  apache::geode::client::millisleep(1000);
 
   // Close the GemFire Cache with keepalive = true.  Server will queue events
   // for

@@ -25,7 +25,9 @@
 #include "RegionXmlCreation.hpp"
 #include <gfcpp/RegionAttributes.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class Cache;
 
 /**
@@ -122,5 +124,7 @@ class CPPCACHE_EXPORT RegionXmlCreation {
   std::string getAttrId() const;
   void setAttrId(const std::string& attrId);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // #ifndef  _GEMFIRE_REGIONXMLCREATION_HPP_

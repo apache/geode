@@ -36,12 +36,12 @@ namespace GemStone
 	//interface class ICqListener;
 
       /// <summary>
-      /// This class wraps the native C++ <c>gemfire::Serializable</c> objects
+      /// This class wraps the native C++ <c>apache::geode::client::Serializable</c> objects
       /// as managed <see cref="../../IGFSerializable" /> objects.
       /// </summary>
       generic<class TKey, class TResult>    
       public ref class CqListener
-        : public Internal::SBWrap<gemfire::CqListener>, public ICqListener<TKey, TResult>
+        : public Internal::SBWrap<apache::geode::client::CqListener>, public ICqListener<TKey, TResult>
       {
       public:
 
@@ -78,7 +78,7 @@ namespace GemStone
         /// Internal constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline CqListener<TKey, TResult>( gemfire::CqListener* nativeptr )
+        inline CqListener<TKey, TResult>( apache::geode::client::CqListener* nativeptr )
           : SBWrap( nativeptr ) { }
 
         /// <summary>
@@ -88,7 +88,7 @@ namespace GemStone
         /// Note the order of preserveSB() and releaseSB(). This handles the
         /// corner case when <c>m_nativeptr</c> is same as <c>nativeptr</c>.
         /// </remarks>
-        inline void AssignSP( gemfire::CqListener* nativeptr )
+        inline void AssignSP( apache::geode::client::CqListener* nativeptr )
         {
           AssignPtr( nativeptr );
         }
@@ -96,7 +96,7 @@ namespace GemStone
         /// <summary>
         /// Used to assign the native CqListener pointer to a new object.
         /// </summary>
-        inline void SetSP( gemfire::CqListener* nativeptr )
+        inline void SetSP( apache::geode::client::CqListener* nativeptr )
         {
           if ( nativeptr != nullptr ) {
             nativeptr->preserveSB( );

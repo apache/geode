@@ -48,7 +48,7 @@
 
 /*****************************************************************************/
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 /**
  * The implementation of the Log class
@@ -144,7 +144,9 @@ static int comparator(const dirent** d1, const dirent** d2) {
 
 using namespace gemfire_log_globals;
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 // this method is not thread-safe and expected to be invoked once
 // during initialization
 void gf_log_libinit() {
@@ -161,7 +163,9 @@ void gf_log_libinit() {
     throw IllegalStateException("Log not initialized successfully");
   }
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 /*****************************************************************************/
 
@@ -400,7 +404,7 @@ void Log::init(LogLevel level, const char* logFileName, int32 logFileLimit,
           break;
         }
         // continue after some sleep
-        gemfire::millisleep(200);
+        apache::geode::client::millisleep(200);
       }
       /* (don't throw exception; try appending to existing file instead)
       if (renameResult < 0) {
@@ -465,7 +469,7 @@ void Log::writeBanner() {
       break;
     }
     // continue after some sleep
-    gemfire::millisleep(200);
+    apache::geode::client::millisleep(200);
   }
   if (!g_log) {
     // g_log = stdout;

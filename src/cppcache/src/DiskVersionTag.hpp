@@ -21,7 +21,9 @@
 #include "GemfireTypeIdsImpl.hpp"
 #include "DiskStoreId.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class RegionInternal;
 class CacheImpl;
@@ -72,6 +74,8 @@ class DiskVersionTag : public VersionTag {
       : VersionTag(entryVersion, regionVersionHighBytes, regionVersionLowBytes,
                    internalMemId, previousMemId) {}
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __DISKVERSIONTAG_HPP__

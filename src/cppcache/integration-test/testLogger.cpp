@@ -26,7 +26,7 @@
 
 #define LENGTH_OF_BANNER 16
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 int numOfLinesInFile(const char* fname) {
   char line[2048];

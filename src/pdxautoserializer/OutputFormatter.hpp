@@ -23,7 +23,9 @@
 #include <fstream>
 #include <string>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace pdx_auto_serializer {
 /** The default character to use for indentation. */
 const char DefaultIndentChar = ' ';
@@ -218,7 +220,9 @@ class OutputFormatter : public std::ostream {
   /** The formatter to use for formatting the output. */
   OutputFormatStreamBuf m_streamBuf;
 };
-}
-}
+}  // namespace pdx_auto_serializer
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // _GFAS_OUTPUTFORMATTER_HPP_

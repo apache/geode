@@ -35,7 +35,7 @@
 
 #include "ThinClientHelper.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 class CustomPartitionResolver : public PartitionResolver {
  public:

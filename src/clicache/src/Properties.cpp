@@ -64,18 +64,18 @@ namespace GemStone
       TPropValue Properties<TPropKey, TPropValue>::Find( TPropKey key)
       {
         //ManagedString mg_key( key );
-        gemfire::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TPropKey>( key ) );
+        apache::geode::client::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TPropKey>( key ) );
 
         //_GF_MG_EXCEPTION_TRY2
 
-          gemfire::CacheablePtr nativeptr(NativePtr->find( keyptr ));
+          apache::geode::client::CacheablePtr nativeptr(NativePtr->find( keyptr ));
           TPropValue returnVal = Serializable::GetManagedValueGeneric<TPropValue>( nativeptr );
           return returnVal;
 
-          //gemfire::CacheablePtr& value = NativePtr->find( keyptr );
+          //apache::geode::client::CacheablePtr& value = NativePtr->find( keyptr );
           //return SafeUMSerializableConvert( value.ptr( ) );
 
-          //gemfire::CacheableStringPtr value = NativePtr->find( mg_key.CharPtr );
+          //apache::geode::client::CacheableStringPtr value = NativePtr->find( mg_key.CharPtr );
           //return CacheableString::GetString( value.ptr( ) );
 
        // _GF_MG_EXCEPTION_CATCH_ALL2
@@ -88,22 +88,22 @@ namespace GemStone
         if ( key != nullptr) {
           _GF_MG_EXCEPTION_TRY2
           
-          gemfire::CacheableStringPtr csPtr;
+          apache::geode::client::CacheableStringPtr csPtr;
           
           CacheableString::GetCacheableString(cStr->Value, csPtr);
 
-          gemfire::CacheablePtr& value = NativePtr->find( csPtr );
+          apache::geode::client::CacheablePtr& value = NativePtr->find( csPtr );
 
           return ConvertCacheableString(value);
 
           _GF_MG_EXCEPTION_CATCH_ALL2
         }
         else {
-          gemfire::CacheableKeyPtr keyptr( SafeMKeyConvert( key ) );
+          apache::geode::client::CacheableKeyPtr keyptr( SafeMKeyConvert( key ) );
 
           _GF_MG_EXCEPTION_TRY2
 
-            gemfire::CacheablePtr& value = NativePtr->find( keyptr );
+            apache::geode::client::CacheablePtr& value = NativePtr->find( keyptr );
             return SafeUMSerializableConvert( value.ptr( ) );
 
           _GF_MG_EXCEPTION_CATCH_ALL2
@@ -113,15 +113,15 @@ namespace GemStone
 
       /*
        generic<class TPropKey, class TPropValue>
-       IGFSerializable^ Properties<TPropKey, TPropValue>::ConvertCacheableString(gemfire::CacheablePtr& value)
+       IGFSerializable^ Properties<TPropKey, TPropValue>::ConvertCacheableString(apache::geode::client::CacheablePtr& value)
        {
-         gemfire::CacheableString * cs =  dynamic_cast<gemfire::CacheableString *>( value.ptr() );
+         apache::geode::client::CacheableString * cs =  dynamic_cast<apache::geode::client::CacheableString *>( value.ptr() );
           if ( cs == NULL) {
             return SafeUMSerializableConvert( value.ptr( ) );
           } 
           else {
-            if(cs->typeId() == (int8_t)gemfire::GemfireTypeIds::CacheableASCIIString
-              || cs->typeId() == (int8_t)gemfire::GemfireTypeIds::CacheableASCIIStringHuge) {
+            if(cs->typeId() == (int8_t)apache::geode::client::GemfireTypeIds::CacheableASCIIString
+              || cs->typeId() == (int8_t)apache::geode::client::GemfireTypeIds::CacheableASCIIStringHuge) {
               String^ str = gcnew String(cs->asChar());
               return CacheableString::Create(str);
             }
@@ -141,23 +141,23 @@ namespace GemStone
         if ( key != nullptr) {
           _GF_MG_EXCEPTION_TRY2
           
-          gemfire::CacheableStringPtr csPtr;
+          apache::geode::client::CacheableStringPtr csPtr;
           
           CacheableString::GetCacheableString(cStr->Value, csPtr);
 
-          gemfire::CacheablePtr& value = NativePtr->find( csPtr );
+          apache::geode::client::CacheablePtr& value = NativePtr->find( csPtr );
 
           return ConvertCacheableString(value);
 
           _GF_MG_EXCEPTION_CATCH_ALL2
         }
         else {
-          gemfire::CacheableKeyPtr keyptr(
-            (gemfire::CacheableKey*)GetNativePtr<gemfire::Cacheable>( key ) );
+          apache::geode::client::CacheableKeyPtr keyptr(
+            (apache::geode::client::CacheableKey*)GetNativePtr<apache::geode::client::Cacheable>( key ) );
 
           _GF_MG_EXCEPTION_TRY2
 
-            gemfire::CacheablePtr& value = NativePtr->find( keyptr );
+            apache::geode::client::CacheablePtr& value = NativePtr->find( keyptr );
             return SafeUMSerializableConvert( value.ptr( ) );
 
           _GF_MG_EXCEPTION_CATCH_ALL2        
@@ -168,8 +168,8 @@ namespace GemStone
       generic<class TPropKey, class TPropValue>
       void Properties<TPropKey, TPropValue>::Insert( TPropKey key, TPropValue value )
       {
-        gemfire::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TPropKey>( key, true ) );
-        gemfire::CacheablePtr valueptr( Serializable::GetUnmanagedValueGeneric<TPropValue>( value, true ) );
+        apache::geode::client::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TPropKey>( key, true ) );
+        apache::geode::client::CacheablePtr valueptr( Serializable::GetUnmanagedValueGeneric<TPropValue>( value, true ) );
 
         //ManagedString mg_key( key );
         //ManagedString mg_value( value );
@@ -199,22 +199,22 @@ namespace GemStone
         CacheableString^ cStr = dynamic_cast<CacheableString ^>(key);
         if (cStr != nullptr) {
            _GF_MG_EXCEPTION_TRY2
-          gemfire::CacheableKeyPtr keyptr(ConvertCacheableStringKey(cStr));
+          apache::geode::client::CacheableKeyPtr keyptr(ConvertCacheableStringKey(cStr));
           CacheableString^ cValueStr = dynamic_cast<CacheableString ^>(value);
 
           if (cValueStr != nullptr) {
-            gemfire::CacheablePtr valueptr(ConvertCacheableStringKey(cValueStr));
+            apache::geode::client::CacheablePtr valueptr(ConvertCacheableStringKey(cValueStr));
             NativePtr->insert( keyptr, valueptr );
           }
           else {
-            gemfire::CacheablePtr valueptr( SafeMSerializableConvert( value ) );
+            apache::geode::client::CacheablePtr valueptr( SafeMSerializableConvert( value ) );
             NativePtr->insert( keyptr, valueptr );
           }
           _GF_MG_EXCEPTION_CATCH_ALL2
         }
         else {
-          gemfire::CacheableKeyPtr keyptr( SafeMKeyConvert( key ) );
-          gemfire::CacheablePtr valueptr( SafeMSerializableConvert( value ) );
+          apache::geode::client::CacheableKeyPtr keyptr( SafeMKeyConvert( key ) );
+          apache::geode::client::CacheablePtr valueptr( SafeMSerializableConvert( value ) );
 
           _GF_MG_EXCEPTION_TRY2
 
@@ -229,23 +229,23 @@ namespace GemStone
         CacheableString^ cStr = dynamic_cast<CacheableString ^>(key);
         if (cStr != nullptr) {
            _GF_MG_EXCEPTION_TRY2
-          gemfire::CacheableKeyPtr keyptr(ConvertCacheableStringKey(cStr));
+          apache::geode::client::CacheableKeyPtr keyptr(ConvertCacheableStringKey(cStr));
           CacheableString^ cValueStr = dynamic_cast<CacheableString ^>(value);
 
           if (cValueStr != nullptr) {
-            gemfire::CacheablePtr valueptr(ConvertCacheableStringKey(cValueStr));
+            apache::geode::client::CacheablePtr valueptr(ConvertCacheableStringKey(cValueStr));
             NativePtr->insert( keyptr, valueptr );
           }
           else {
-            gemfire::CacheablePtr valueptr( SafeMSerializableConvert( value ) );
+            apache::geode::client::CacheablePtr valueptr( SafeMSerializableConvert( value ) );
             NativePtr->insert( keyptr, valueptr );
           }
           _GF_MG_EXCEPTION_CATCH_ALL2
         }
         else {
-          gemfire::CacheableKeyPtr keyptr(
-            (gemfire::CacheableKey*)GetNativePtr<gemfire::Cacheable>( key ) );
-          gemfire::CacheablePtr valueptr( SafeMSerializableConvert( value ) );
+          apache::geode::client::CacheableKeyPtr keyptr(
+            (apache::geode::client::CacheableKey*)GetNativePtr<apache::geode::client::Cacheable>( key ) );
+          apache::geode::client::CacheablePtr valueptr( SafeMSerializableConvert( value ) );
 
           _GF_MG_EXCEPTION_TRY2
 
@@ -257,9 +257,9 @@ namespace GemStone
 
       /*
       generic<class TPropKey, class TPropValue>
-      gemfire::CacheableKey * Properties<TPropKey, TPropValue>::ConvertCacheableStringKey(CacheableString^ cStr)
+      apache::geode::client::CacheableKey * Properties<TPropKey, TPropValue>::ConvertCacheableStringKey(CacheableString^ cStr)
       {
-        gemfire::CacheableStringPtr csPtr;
+        apache::geode::client::CacheableStringPtr csPtr;
         CacheableString::GetCacheableString(cStr->Value, csPtr);
 
         return csPtr.ptr();
@@ -271,24 +271,24 @@ namespace GemStone
         CacheableString^ cStr = dynamic_cast<CacheableString ^>(key);
         if (cStr != nullptr) {
            _GF_MG_EXCEPTION_TRY2
-          gemfire::CacheableKeyPtr keyptr(ConvertCacheableStringKey(cStr));
+          apache::geode::client::CacheableKeyPtr keyptr(ConvertCacheableStringKey(cStr));
           CacheableString^ cValueStr = dynamic_cast<CacheableString ^>(value);
 
           if (cValueStr != nullptr) {
-            gemfire::CacheablePtr valueptr(ConvertCacheableStringKey(cValueStr));
+            apache::geode::client::CacheablePtr valueptr(ConvertCacheableStringKey(cValueStr));
             NativePtr->insert( keyptr, valueptr );
           }
           else {
-            gemfire::CacheablePtr valueptr(
-              GetNativePtr<gemfire::Cacheable>( value ) );
+            apache::geode::client::CacheablePtr valueptr(
+              GetNativePtr<apache::geode::client::Cacheable>( value ) );
             NativePtr->insert( keyptr, valueptr );
           }
           _GF_MG_EXCEPTION_CATCH_ALL2
         }
         else {
-          gemfire::CacheableKeyPtr keyptr( SafeMKeyConvert( key ) );
-          gemfire::CacheablePtr valueptr(
-            GetNativePtr<gemfire::Cacheable>( value ) );
+          apache::geode::client::CacheableKeyPtr keyptr( SafeMKeyConvert( key ) );
+          apache::geode::client::CacheablePtr valueptr(
+            GetNativePtr<apache::geode::client::Cacheable>( value ) );
 
           _GF_MG_EXCEPTION_TRY2
 
@@ -303,25 +303,25 @@ namespace GemStone
         CacheableString^ cStr = dynamic_cast<CacheableString ^>(key);
         if (cStr != nullptr) {
            _GF_MG_EXCEPTION_TRY2
-          gemfire::CacheableKeyPtr keyptr(ConvertCacheableStringKey(cStr));
+          apache::geode::client::CacheableKeyPtr keyptr(ConvertCacheableStringKey(cStr));
           CacheableString^ cValueStr = dynamic_cast<CacheableString ^>(value);
 
           if (cValueStr != nullptr) {
-            gemfire::CacheablePtr valueptr(ConvertCacheableStringKey(cValueStr));
+            apache::geode::client::CacheablePtr valueptr(ConvertCacheableStringKey(cValueStr));
             NativePtr->insert( keyptr, valueptr );
           }
           else {
-            gemfire::CacheablePtr valueptr(
-              GetNativePtr<gemfire::Cacheable>( value ) );
+            apache::geode::client::CacheablePtr valueptr(
+              GetNativePtr<apache::geode::client::Cacheable>( value ) );
             NativePtr->insert( keyptr, valueptr );
           }
           _GF_MG_EXCEPTION_CATCH_ALL2
         }
         else {
-          gemfire::CacheableKeyPtr keyptr(
-            (gemfire::CacheableKey*)GetNativePtr<gemfire::Cacheable>( key ) );
-          gemfire::CacheablePtr valueptr(
-            GetNativePtr<gemfire::Cacheable>( value ) );
+          apache::geode::client::CacheableKeyPtr keyptr(
+            (apache::geode::client::CacheableKey*)GetNativePtr<apache::geode::client::Cacheable>( key ) );
+          apache::geode::client::CacheablePtr valueptr(
+            GetNativePtr<apache::geode::client::Cacheable>( value ) );
 
           _GF_MG_EXCEPTION_TRY2
 
@@ -335,7 +335,7 @@ namespace GemStone
       void Properties<TPropKey, TPropValue>::Remove( TPropKey key)
       {
         //ManagedString mg_key( key );
-        gemfire::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TPropKey>( key ) );
+        apache::geode::client::CacheableKeyPtr keyptr( Serializable::GetUnmanagedValueGeneric<TPropKey>( key ) );
 
         _GF_MG_EXCEPTION_TRY2
 
@@ -351,14 +351,14 @@ namespace GemStone
         if (cStr != nullptr) {
            _GF_MG_EXCEPTION_TRY2
           
-             gemfire::CacheableKeyPtr keyptr(ConvertCacheableStringKey(cStr));
+             apache::geode::client::CacheableKeyPtr keyptr(ConvertCacheableStringKey(cStr));
 
              NativePtr->remove( keyptr );
           
            _GF_MG_EXCEPTION_CATCH_ALL2
         }
         else {
-          gemfire::CacheableKeyPtr keyptr( SafeMKeyConvert( key ) );
+          apache::geode::client::CacheableKeyPtr keyptr( SafeMKeyConvert( key ) );
 
           _GF_MG_EXCEPTION_TRY2
 
@@ -374,15 +374,15 @@ namespace GemStone
         if (cStr != nullptr) {
            _GF_MG_EXCEPTION_TRY2
           
-             gemfire::CacheableKeyPtr keyptr(ConvertCacheableStringKey(cStr));
+             apache::geode::client::CacheableKeyPtr keyptr(ConvertCacheableStringKey(cStr));
 
              NativePtr->remove( keyptr );
           
            _GF_MG_EXCEPTION_CATCH_ALL2
         }
         else {
-          gemfire::CacheableKeyPtr keyptr(
-            (gemfire::CacheableKey*)GetNativePtr<gemfire::Cacheable>( key ) );
+          apache::geode::client::CacheableKeyPtr keyptr(
+            (apache::geode::client::CacheableKey*)GetNativePtr<apache::geode::client::Cacheable>( key ) );
 
           _GF_MG_EXCEPTION_TRY2
 
@@ -397,7 +397,7 @@ namespace GemStone
       {
        if (visitor != nullptr)
         {
-          gemfire::ManagedVisitorGeneric mg_visitor( visitor );
+          apache::geode::client::ManagedVisitorGeneric mg_visitor( visitor );
 
           PropertyVisitorProxy<TPropKey, TPropValue>^ proxy = gcnew PropertyVisitorProxy<TPropKey, TPropValue>();
           proxy->SetPropertyVisitorGeneric(visitor);
@@ -426,11 +426,11 @@ namespace GemStone
       generic<class TPropKey, class TPropValue>
       void Properties<TPropKey, TPropValue>::AddAll( Properties<TPropKey, TPropValue>^ other )
       {
-        /*gemfire::PropertiesPtr p_other(
-          GetNativePtr<gemfire::Properties>( other ) );*/
+        /*apache::geode::client::PropertiesPtr p_other(
+          GetNativePtr<apache::geode::client::Properties>( other ) );*/
 
-        gemfire::PropertiesPtr p_other(
-          GetNativePtrFromSBWrapGeneric<gemfire::Properties>( other ) );        
+        apache::geode::client::PropertiesPtr p_other(
+          GetNativePtrFromSBWrapGeneric<apache::geode::client::Properties>( other ) );        
 
         _GF_MG_EXCEPTION_TRY2
 
@@ -472,8 +472,8 @@ namespace GemStone
           output->WriteBytesToUMDataOutput();          
         }
         
-         gemfire::DataOutput* nativeOutput =
-            GetNativePtr<gemfire::DataOutput>(output);
+         apache::geode::client::DataOutput* nativeOutput =
+            GetNativePtr<apache::geode::client::DataOutput>(output);
         
         if (nativeOutput != nullptr)
         {
@@ -496,13 +496,13 @@ namespace GemStone
           input->AdvanceUMCursor();
         }
         //TODO::??
-        gemfire::DataInput* nativeInput =
-          GetNativePtr<gemfire::DataInput>( input );
+        apache::geode::client::DataInput* nativeInput =
+          GetNativePtr<apache::geode::client::DataInput>( input );
         if (nativeInput != nullptr)
         {
           _GF_MG_EXCEPTION_TRY2
 
-            AssignPtr( static_cast<gemfire::Properties*>(
+            AssignPtr( static_cast<apache::geode::client::Properties*>(
               NativePtr->fromData( *nativeInput ) ) );
 
           _GF_MG_EXCEPTION_CATCH_ALL2
@@ -533,7 +533,7 @@ namespace GemStone
         StreamingContext context )
       {
         if (_NativePtr != NULL) {
-          gemfire::DataOutput output;
+          apache::geode::client::DataOutput output;
 
           _GF_MG_EXCEPTION_TRY2
 
@@ -554,7 +554,7 @@ namespace GemStone
       generic<class TPropKey, class TPropValue>
       Properties<TPropKey, TPropValue>::Properties( SerializationInfo^ info,
         StreamingContext context )
-        : SBWrap( gemfire::Properties::create( ).ptr( ) )
+        : SBWrap( apache::geode::client::Properties::create( ).ptr( ) )
       {
         array<Byte>^ bytes = nullptr;
         try {
@@ -569,8 +569,8 @@ namespace GemStone
 
           _GF_MG_EXCEPTION_TRY2
 
-            gemfire::DataInput input( (uint8_t*)pin_bytes, bytes->Length );
-            AssignPtr( static_cast<gemfire::Properties*>(
+            apache::geode::client::DataInput input( (uint8_t*)pin_bytes, bytes->Length );
+            AssignPtr( static_cast<apache::geode::client::Properties*>(
               NativePtr->fromData( input ) ) );
 
           _GF_MG_EXCEPTION_CATCH_ALL2

@@ -21,7 +21,9 @@
 #include "Cacheable.hpp"
 #include <string>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class EntryEvent;
 
@@ -99,5 +101,7 @@ class CPPCACHE_EXPORT PartitionResolver : public SharedBase {
   PartitionResolver(const PartitionResolver& other);
   void operator=(const PartitionResolver& other);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif

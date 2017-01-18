@@ -24,10 +24,14 @@
 #include "gfcpp_globals.hpp"
 #include "Serializable.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 typedef Serializable UserData;
 typedef SharedPtr<UserData> UserDataPtr;
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_USERDATA_H__

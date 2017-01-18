@@ -65,7 +65,7 @@ namespace GemStone
       /// </para>
       /// </remarks>
       public ref class Cache sealed
-        : public IGemFireCache, Internal::SBWrap<gemfire::Cache>
+        : public IGemFireCache, Internal::SBWrap<apache::geode::client::Cache>
       {
       public:
 
@@ -270,7 +270,7 @@ namespace GemStone
         /// <returns>
         /// The managed wrapper object; null if the native pointer is null.
         /// </returns>
-        inline static Cache^ Create( gemfire::Cache* nativeptr )
+        inline static Cache^ Create( apache::geode::client::Cache* nativeptr )
         {
           return ( nativeptr != nullptr ?
             gcnew Cache( nativeptr ) : nullptr );
@@ -283,7 +283,7 @@ namespace GemStone
         /// Private constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline Cache( gemfire::Cache* nativeptr )
+        inline Cache( apache::geode::client::Cache* nativeptr )
           : SBWrap( nativeptr ) { }
       };
       } // end namespace Generic

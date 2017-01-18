@@ -41,7 +41,7 @@ namespace GemStone
       {
         if (routingObj != nullptr) {
           _GF_MG_EXCEPTION_TRY2/* due to auto replace */
-          gemfire::CacheableVectorPtr rsptr = gemfire::CacheableVector::create();
+          apache::geode::client::CacheableVectorPtr rsptr = apache::geode::client::CacheableVector::create();
         
           for each(TFilter item in routingObj)
           {
@@ -62,7 +62,7 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
           
-          gemfire::CacheablePtr argsptr( Serializable::GetUnmanagedValueGeneric<TArgs>( args ) );
+          apache::geode::client::CacheablePtr argsptr( Serializable::GetUnmanagedValueGeneric<TArgs>( args ) );
         return Execution<TResult>::Create(NativePtr->withArgs(argsptr).ptr(), this->m_rc);
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
       }
@@ -71,13 +71,13 @@ namespace GemStone
       Execution<TResult>^ Execution<TResult>::WithCollector(Generic::IResultCollector<TResult>^ rc)
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
-          gemfire::ResultCollectorPtr rcptr;
+          apache::geode::client::ResultCollectorPtr rcptr;
         if ( rc != nullptr ) {
           ResultCollectorGeneric<TResult>^ rcg = gcnew ResultCollectorGeneric<TResult>();
           rcg->SetResultCollector(rc);
           
-          rcptr = new gemfire::ManagedResultCollectorGeneric(  rcg );
-          //((gemfire::ManagedResultCollectorGeneric*)rcptr.ptr())->setptr(rcg);
+          rcptr = new apache::geode::client::ManagedResultCollectorGeneric(  rcg );
+          //((apache::geode::client::ManagedResultCollectorGeneric*)rcptr.ptr())->setptr(rcg);
         }
         return Execution<TResult>::Create( NativePtr->withCollector(rcptr).ptr(), rc);
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
@@ -88,7 +88,7 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
           ManagedString mg_function( func );
-        gemfire::ResultCollectorPtr rc = NativePtr->execute(mg_function.CharPtr, timeout);
+        apache::geode::client::ResultCollectorPtr rc = NativePtr->execute(mg_function.CharPtr, timeout);
         if(m_rc == nullptr)
           return gcnew ResultCollector<TResult>(rc.ptr());
         else

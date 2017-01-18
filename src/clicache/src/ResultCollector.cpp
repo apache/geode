@@ -36,8 +36,8 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-          gemfire::Serializable * result = SafeGenericMSerializableConvert((IGFSerializable^)rs);
-        NativePtr->addResult( result==NULL ? (NULLPTR) : (gemfire::CacheablePtr(result)) );
+          apache::geode::client::Serializable * result = SafeGenericMSerializableConvert((IGFSerializable^)rs);
+        NativePtr->addResult( result==NULL ? (NULLPTR) : (apache::geode::client::CacheablePtr(result)) );
 
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
       }
@@ -52,12 +52,12 @@ namespace GemStone
       System::Collections::Generic::ICollection<TResult>^  ResultCollector<TResult>::GetResult(UInt32 timeout)
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
-          gemfire::CacheableVectorPtr results = NativePtr->getResult(timeout);
+          apache::geode::client::CacheableVectorPtr results = NativePtr->getResult(timeout);
         array<TResult>^ rs =
           gcnew array<TResult>( results->size( ) );
         for( int32_t index = 0; index < results->size( ); index++ )
         {
-          gemfire::CacheablePtr& nativeptr(results->operator[](index));
+          apache::geode::client::CacheablePtr& nativeptr(results->operator[](index));
 
           rs[ index] =  Serializable::GetManagedValueGeneric<TResult>( nativeptr);
         }

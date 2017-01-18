@@ -22,7 +22,7 @@
 
 #include "ThinClientSecurity.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace test;
 
 #define CORRECT_CREDENTIALS 'C'
@@ -167,7 +167,8 @@ DUNIT_TASK_DEFINITION(CLIENT1, StepOne)
     initCredentialGenerator();
     try {
       initClientAuth(INCORRECT_CREDENTIALS);
-    } catch (const gemfire::AuthenticationFailedException& other) {
+    } catch (
+        const apache::geode::client::AuthenticationFailedException& other) {
       other.printStackTrace();
       LOG(other.getMessage());
     }
@@ -175,10 +176,11 @@ DUNIT_TASK_DEFINITION(CLIENT1, StepOne)
     try {
       createRegionForSecurity(regionNamesAuth[0], USE_ACK, true);
       FAIL("Should have thrown AuthenticationFailedException.");
-    } catch (const gemfire::AuthenticationFailedException& other) {
+    } catch (
+        const apache::geode::client::AuthenticationFailedException& other) {
       other.printStackTrace();
       LOG(other.getMessage());
-    } catch (const gemfire::Exception& other) {
+    } catch (const apache::geode::client::Exception& other) {
       other.printStackTrace();
       LOG(other.getMessage());
       FAIL("Only AuthenticationFailedException is expected");
@@ -195,8 +197,9 @@ DUNIT_TASK_DEFINITION(CLIENT1, StepTwo)
       createEntry(regionNamesAuth[0], keys[0], vals[0]);
       updateEntry(regionNamesAuth[0], keys[0], nvals[0]);
       RegionPtr regPtr0 = getHelper()->getRegion(regionNamesAuth[0]);
-      regPtr0->containsKeyOnServer(gemfire::CacheableKey::create(keys[0]));
-    } catch (const gemfire::Exception& other) {
+      regPtr0->containsKeyOnServer(
+          apache::geode::client::CacheableKey::create(keys[0]));
+    } catch (const apache::geode::client::Exception& other) {
       other.printStackTrace();
       FAIL(other.getMessage());
     }
@@ -211,7 +214,7 @@ DUNIT_TASK_DEFINITION(CLIENT2, StepThree)
     initClientAuth(CORRECT_CREDENTIALS);
     try {
       createRegionForSecurity(regionNamesAuth[0], USE_ACK, true);
-    } catch (const gemfire::Exception& other) {
+    } catch (const apache::geode::client::Exception& other) {
       other.printStackTrace();
       FAIL(other.getMessage());
     }
@@ -225,7 +228,8 @@ DUNIT_TASK_DEFINITION(CLIENT3, StepFour)
     initCredentialGenerator();
     try {
       initClientAuth(NOT_PROVIDED_CREDENTIALS);
-    } catch (const gemfire::AuthenticationRequiredException& other) {
+    } catch (
+        const apache::geode::client::AuthenticationRequiredException& other) {
       other.printStackTrace();
       FAIL(other.getMessage());
     }
@@ -233,10 +237,11 @@ DUNIT_TASK_DEFINITION(CLIENT3, StepFour)
     try {
       createRegionForSecurity(regionNamesAuth[0], USE_ACK, true);
       FAIL("Should have thrown AuthenticationRequiredException.");
-    } catch (const gemfire::AuthenticationRequiredException& other) {
+    } catch (
+        const apache::geode::client::AuthenticationRequiredException& other) {
       other.printStackTrace();
       LOG(other.getMessage());
-    } catch (const gemfire::Exception& other) {
+    } catch (const apache::geode::client::Exception& other) {
       other.printStackTrace();
       LOG(other.getMessage());
       FAIL("Only AuthenticationRequiredException is expected");
@@ -263,7 +268,7 @@ DUNIT_TASK_DEFINITION(CLIENT2, StepFive)
       } else {
         LOG("checkPtr is NULL");
       }
-    } catch (const gemfire::Exception& other) {
+    } catch (const apache::geode::client::Exception& other) {
       other.printStackTrace();
       FAIL(other.getMessage());
     }
@@ -279,7 +284,7 @@ DUNIT_TASK_DEFINITION(CLIENT1, StepSix)
       createRegionForSecurity(regionNamesAuth[0], USE_ACK, true);
       createEntry(regionNamesAuth[0], keys[0], vals[0]);
       updateEntry(regionNamesAuth[0], keys[0], nvals[0]);
-    } catch (const gemfire::Exception& other) {
+    } catch (const apache::geode::client::Exception& other) {
       other.printStackTrace();
       FAIL(other.getMessage());
     }
@@ -292,7 +297,8 @@ DUNIT_TASK_DEFINITION(CLIENT2, StepSeven)
   {
     try {
       initClientAuth(INCORRECT_CREDENTIALS);
-    } catch (const gemfire::AuthenticationFailedException& other) {
+    } catch (
+        const apache::geode::client::AuthenticationFailedException& other) {
       other.printStackTrace();
       LOG(other.getMessage());
     }
@@ -303,10 +309,11 @@ DUNIT_TASK_DEFINITION(CLIENT2, StepSeven)
       createRegionForSecurity(regionNamesAuth[0], USE_ACK, true, NULLPTR, true,
                               0);
       FAIL("Should have thrown AuthenticationFailedException.");
-    } catch (const gemfire::AuthenticationFailedException& other) {
+    } catch (
+        const apache::geode::client::AuthenticationFailedException& other) {
       other.printStackTrace();
       LOG(other.getMessage());
-    } catch (const gemfire::Exception& other) {
+    } catch (const apache::geode::client::Exception& other) {
       other.printStackTrace();
       LOG(other.getMessage());
       FAIL("Only AuthenticationFailedException is expected");
@@ -415,7 +422,7 @@ DUNIT_TASK_DEFINITION(CLIENT1, StepEight)
         LOG("checkPtr is NULL");
       }
 
-    } catch (const gemfire::Exception& other) {
+    } catch (const apache::geode::client::Exception& other) {
       other.printStackTrace();
       FAIL(other.getMessage());
     }

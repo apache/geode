@@ -25,7 +25,7 @@
 #include "ThinClientRegion.hpp"
 #include "ReadWriteLock.hpp"
 #include "ThinClientRegion.hpp"
-using namespace gemfire;
+using namespace apache::geode::client;
 
 CqQueryImpl::CqQueryImpl(CqServicePtr& cqService, std::string& cqName,
                          std::string& queryString,

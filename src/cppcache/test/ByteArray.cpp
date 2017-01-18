@@ -39,7 +39,9 @@ std::string convertWstringToString(const wchar_t* wstr) {
 }
 }  // namespace
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 ByteArray ByteArray::fromString(const std::string& str) {
   ByteArray ba;
   if (!str.empty()) {
@@ -123,4 +125,6 @@ ByteArray& ByteArray::operator=(const ByteArray& other) {
 }
 
 std::string ByteArray::toString() const { return toString(*this); }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

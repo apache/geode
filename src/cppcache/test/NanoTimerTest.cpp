@@ -19,7 +19,7 @@
 
 #include <NanoTimer.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 TEST(NanoTimerTest, ValidateSleep) {
   const int64_t before = NanoTimer::now();

@@ -28,7 +28,9 @@
  * @file ExpiryTaskManager.hpp
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 /**
  * @class ExpiryTaskManager ExpiryTaskManager.hpp
  *
@@ -265,7 +267,8 @@ class CPPCACHE_EXPORT ExpiryTaskManager : public ACE_Task_Base {
                                           // of expiry tasks.
   static const char* NC_ETM_Thread;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef _GEMFIRE_EXPIRYTASKMANAGER_H__

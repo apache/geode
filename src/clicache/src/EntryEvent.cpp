@@ -37,49 +37,49 @@ namespace GemStone
         : UMWrap( )
       {
         //TODO:: from where this gets called
-        /*gemfire::RegionPtr regionptr( GetNativePtr<gemfire::Region>( region ) );
-        gemfire::CacheableKeyPtr keyptr( SafeMKeyConvert( key ) );
-        gemfire::CacheablePtr oldptr( SafeMSerializableConvert( oldValue ) );
-        gemfire::CacheablePtr newptr( SafeMSerializableConvert( newValue ) );
-        gemfire::UserDataPtr callbackptr(SafeMSerializableConvert(
+        /*apache::geode::client::RegionPtr regionptr( GetNativePtr<apache::geode::client::Region>( region ) );
+        apache::geode::client::CacheableKeyPtr keyptr( SafeMKeyConvert( key ) );
+        apache::geode::client::CacheablePtr oldptr( SafeMSerializableConvert( oldValue ) );
+        apache::geode::client::CacheablePtr newptr( SafeMSerializableConvert( newValue ) );
+        apache::geode::client::UserDataPtr callbackptr(SafeMSerializableConvert(
             aCallbackArgument));
 
-        SetPtr(new gemfire::EntryEvent(regionptr, keyptr,
+        SetPtr(new apache::geode::client::EntryEvent(regionptr, keyptr,
           oldptr, newptr, callbackptr, remoteOrigin), true);*/
       }
 
       generic<class TKey, class TValue>
       IRegion<TKey, TValue>^ EntryEvent<TKey, TValue>::Region::get( )
       {
-        gemfire::RegionPtr& regionptr( NativePtr->getRegion( ) );
+        apache::geode::client::RegionPtr& regionptr( NativePtr->getRegion( ) );
         return Generic::Region<TKey, TValue>::Create( regionptr.ptr( ) );
       }
 
       generic<class TKey, class TValue>
       TKey EntryEvent<TKey, TValue>::Key::get( )
       {
-        gemfire::CacheableKeyPtr& keyptr( NativePtr->getKey( ) );
+        apache::geode::client::CacheableKeyPtr& keyptr( NativePtr->getKey( ) );
         return Serializable::GetManagedValueGeneric<TKey>( keyptr );
       }
 
       generic<class TKey, class TValue>
       TValue EntryEvent<TKey, TValue>::OldValue::get( )
       {
-        gemfire::CacheablePtr& valptr( NativePtr->getOldValue( ) );
+        apache::geode::client::CacheablePtr& valptr( NativePtr->getOldValue( ) );
         return Serializable::GetManagedValueGeneric<TValue>( valptr );
       }
 
       generic<class TKey, class TValue>
       TValue EntryEvent<TKey, TValue>::NewValue::get( )
       {
-        gemfire::CacheablePtr& valptr( NativePtr->getNewValue( ) );
+        apache::geode::client::CacheablePtr& valptr( NativePtr->getNewValue( ) );
         return Serializable::GetManagedValueGeneric<TValue>( valptr );
       }
 
       generic<class TKey, class TValue>
       Object^ EntryEvent<TKey, TValue>::CallbackArgument::get()
       {
-        gemfire::UserDataPtr& valptr(NativePtr->getCallbackArgument());
+        apache::geode::client::UserDataPtr& valptr(NativePtr->getCallbackArgument());
         return Serializable::GetManagedValueGeneric<Object^>( valptr );
       }
 

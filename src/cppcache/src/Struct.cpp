@@ -18,7 +18,9 @@
 #include <GemfireTypeIdsImpl.hpp>
 #include <gfcpp/DataInput.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 Struct::Struct() : m_parent(NULL), m_lastAccessIndex(0) {}
 
@@ -149,5 +151,6 @@ const SerializablePtr Struct::next() {
 }
 
 Serializable* Struct::createDeserializable() { return new Struct(); }
-
-}  // end namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

@@ -20,7 +20,9 @@
 
 #include "gfcpp_globals.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace serializer {
 
 template <typename TObj>
@@ -88,6 +90,8 @@ inline uint32_t hashcode(const double value) {
   return hashcode(v.u);
 }
 }  // namespace serializer
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // _GEMFIRE_CACHEABLEKEYS_HPP_

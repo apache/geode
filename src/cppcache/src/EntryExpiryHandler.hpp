@@ -28,7 +28,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 /**
  * @class EntryExpiryTask EntryExpiryTask.hpp
  *
@@ -68,5 +70,7 @@ class CPPCACHE_EXPORT EntryExpiryHandler : public ACE_Event_Handler {
   // perform the actual expiration action
   void DoTheExpirationAction(const CacheableKeyPtr& key);
 };
-};      // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // ifndef _GEMFIRE_ENTRYEXPIRYTASK_H__

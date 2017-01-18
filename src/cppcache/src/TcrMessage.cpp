@@ -33,7 +33,7 @@
 #include "DiskStoreId.hpp"
 #include "DiskVersionTag.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 static const uint32_t REGULAR_EXPRESSION =
     1;  // come from Java InterestType.REGULAR_EXPRESSION
 
@@ -483,14 +483,16 @@ SerializablePtr TcrMessage::readCacheableString(DataInput& input, int lenObj) {
                static_cast<uint16_t>(lenObj));
       input.readDirectObject(
           sPtr,
-          static_cast<int8_t>(gemfire::GemfireTypeIds::CacheableASCIIString));
+          static_cast<int8_t>(
+              apache::geode::client::GemfireTypeIds::CacheableASCIIString));
     } else {
       input.rewindCursor(4);
       writeInt(const_cast<uint8_t*>(input.currentBufferPosition()),
                static_cast<uint32_t>(lenObj));
       input.readDirectObject(
-          sPtr, static_cast<int8_t>(
-                    gemfire::GemfireTypeIds::CacheableASCIIStringHuge));
+          sPtr,
+          static_cast<int8_t>(
+              apache::geode::client::GemfireTypeIds::CacheableASCIIStringHuge));
     }
   } else {
     if (decodedLen <= 0xffff) {
@@ -498,14 +500,16 @@ SerializablePtr TcrMessage::readCacheableString(DataInput& input, int lenObj) {
       writeInt(const_cast<uint8_t*>(input.currentBufferPosition()),
                static_cast<uint16_t>(lenObj));
       input.readDirectObject(
-          sPtr, static_cast<int8_t>(gemfire::GemfireTypeIds::CacheableString));
+          sPtr, static_cast<int8_t>(
+                    apache::geode::client::GemfireTypeIds::CacheableString));
     } else {
       input.rewindCursor(4);
       writeInt(const_cast<uint8_t*>(input.currentBufferPosition()),
                static_cast<uint32_t>(lenObj));
       input.readDirectObject(
           sPtr,
-          static_cast<int8_t>(gemfire::GemfireTypeIds::CacheableStringHuge));
+          static_cast<int8_t>(
+              apache::geode::client::GemfireTypeIds::CacheableStringHuge));
     }
   }
 
@@ -532,7 +536,8 @@ SerializablePtr TcrMessage::readCacheableBytes(DataInput& input, int lenObj) {
   }
 
   input.readDirectObject(
-      sPtr, static_cast<int8_t>(gemfire::GemfireTypeIds::CacheableBytes));
+      sPtr, static_cast<int8_t>(
+                apache::geode::client::GemfireTypeIds::CacheableBytes));
 
   return sPtr;
 }
@@ -590,7 +595,7 @@ void TcrMessage::writeObjectPart(const SerializablePtr& se, bool isDelta,
         byteArrLength = cacheableBytes->length();
       } else {
         std::string classname(Utils::getCacheableKeyString(se)->asChar());
-        if (classname.find("gemfire::ManagedCacheableKey") !=
+        if (classname.find("apache::geode::client::ManagedCacheableKey") !=
             std::string::npos) {
           byteArrLength = se->objectSize();
         }
@@ -601,7 +606,7 @@ void TcrMessage::writeObjectPart(const SerializablePtr& se, bool isDelta,
         m_request->write(isObject);
         return;
       }
-    } catch (const gemfire::Exception& ex) {
+    } catch (const apache::geode::client::Exception& ex) {
       LOGDEBUG("Exception in writing EMPTY_BYTE_ARRAY : %s", ex.getMessage());
     }
     isObject = 0;
@@ -2932,7 +2937,8 @@ void TcrMessage::readEventIdPart(DataInput& input, bool skip, int32_t parts) {
   input.readObject(m_eventid);
 }
 
-DSMemberForVersionStampPtr TcrMessage::readDSMember(gemfire::DataInput& input) {
+DSMemberForVersionStampPtr TcrMessage::readDSMember(
+    apache::geode::client::DataInput& input) {
   uint8_t typeidLen;
   input.read(&typeidLen);
   if (typeidLen == 1) {
@@ -2964,8 +2970,8 @@ DSMemberForVersionStampPtr TcrMessage::readDSMember(gemfire::DataInput& input) {
         "byte.");
   }
 }
-void TcrMessage::readHashMapForGCVersions(gemfire::DataInput& input,
-                                          CacheableHashMapPtr& value) {
+void TcrMessage::readHashMapForGCVersions(
+    apache::geode::client::DataInput& input, CacheableHashMapPtr& value) {
   uint8_t hashmaptypeid;
 
   input.read(&hashmaptypeid);
@@ -3001,8 +3007,8 @@ void TcrMessage::readHashMapForGCVersions(gemfire::DataInput& input,
   }
 }
 
-void TcrMessage::readHashSetForGCVersions(gemfire::DataInput& input,
-                                          CacheableHashSetPtr& value) {
+void TcrMessage::readHashSetForGCVersions(
+    apache::geode::client::DataInput& input, CacheableHashSetPtr& value) {
   uint8_t hashsettypeid;
 
   input.read(&hashsettypeid);

@@ -41,8 +41,8 @@ namespace GemStone
       void CacheableObjectArray::ToData(DataOutput^ output)
       {
         output->WriteArrayLen((int32_t)Count);
-        output->WriteByte((int8_t)gemfire::GemfireTypeIdsImpl::Class);
-        output->WriteByte((int8_t)gemfire::GemfireTypeIds::CacheableASCIIString);
+        output->WriteByte((int8_t)apache::geode::client::GemfireTypeIdsImpl::Class);
+        output->WriteByte((int8_t)apache::geode::client::GemfireTypeIds::CacheableASCIIString);
         output->WriteUTF("java.lang.Object");
 
         for each (Object^ obj in this) {
@@ -52,13 +52,13 @@ namespace GemStone
 
         /*_GF_MG_EXCEPTION_TRY
 
-          gemfire::DataOutput& nativeOutput = *(output->_NativePtr);
+          apache::geode::client::DataOutput& nativeOutput = *(output->_NativePtr);
           nativeOutput.writeArrayLen((int32_t)Count);
-          nativeOutput.write((int8_t)gemfire::GemfireTypeIdsImpl::Class);
-          nativeOutput.write((int8_t)gemfire::GemfireTypeIds::CacheableASCIIString);
+          nativeOutput.write((int8_t)apache::geode::client::GemfireTypeIdsImpl::Class);
+          nativeOutput.write((int8_t)apache::geode::client::GemfireTypeIds::CacheableASCIIString);
           nativeOutput.writeASCII("java.lang.Object");
           for each (IGFSerializable^ obj in this) {
-            gemfire::SerializablePtr objPtr(SafeMSerializableConvert(obj));
+            apache::geode::client::SerializablePtr objPtr(SafeMSerializableConvert(obj));
             nativeOutput.writeObject(objPtr);
           }
 
@@ -84,7 +84,7 @@ namespace GemStone
         return this;
         /*_GF_MG_EXCEPTION_TRY
 
-          gemfire::DataInput& nativeInput = *(input->_NativePtr);
+          apache::geode::client::DataInput& nativeInput = *(input->_NativePtr);
           int32_t len;
           nativeInput.readArrayLen(&len);
           if (len >= 0) {
@@ -95,7 +95,7 @@ namespace GemStone
             nativeInput.readInt(&classLen);
             nativeInput.advanceCursor(classLen);
           }
-          gemfire::CacheablePtr value;
+          apache::geode::client::CacheablePtr value;
           for (int32_t index = 0; index < len; ++index) {
             nativeInput.readObject(value);
             Add(SafeUMSerializableConvert(value.ptr()));

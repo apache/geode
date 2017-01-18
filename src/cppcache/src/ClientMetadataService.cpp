@@ -22,7 +22,9 @@
 #include <cstdlib>
 #include <climits>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 const char* ClientMetadataService::NC_CMDSvcThread = "NC CMDSvcThread";
 ClientMetadataService::~ClientMetadataService() {
   delete m_regionQueue;
@@ -1006,4 +1008,6 @@ bool ClientMetadataService::isBucketMarkedForTimeout(const char* regionFullPath,
 
   return false;
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

@@ -23,8 +23,9 @@
  * @file
  */
 
-namespace gemfire
-{
+namespace apache {
+namespace geode {
+namespace client {
 
 template< class PRIM >
 inline CacheableKeyPtr CacheableKey::create( const PRIM value )
@@ -44,6 +45,8 @@ inline CacheableKeyPtr createKey( const TKEY* value )
   return createKeyArr( value );
 }
 
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

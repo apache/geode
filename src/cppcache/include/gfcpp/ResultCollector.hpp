@@ -27,7 +27,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 /**
  * @class ResultCollector ResultCollector.hpp
  * Defines the interface for a container that gathers results from function
@@ -102,6 +104,7 @@ class CPPCACHE_EXPORT ResultCollector : public SharedBase {
   CacheableVectorPtr m_resultList;
   volatile bool m_isResultReady;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // ifndef __GEMFIRE_RESULTCOLLECTOR_H__

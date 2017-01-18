@@ -281,7 +281,7 @@ namespace GemStone
 			  _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
         ManagedString mg_name( name );
-        gemfire::PoolPtr & pool = NativePtr->create(mg_name.CharPtr);
+        apache::geode::client::PoolPtr & pool = NativePtr->create(mg_name.CharPtr);
         return Pool/*<TKey, TValue>*/::Create(pool.ptr());
 
 			  _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */

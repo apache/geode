@@ -23,7 +23,9 @@
 #include <ace/ACE.h>
 #include <ace/OS.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace testframework {
 namespace security {
 
@@ -108,6 +110,8 @@ class LdapUserCredentialGenerator : public CredentialGenerator {
 
 }  // namespace security
 }  // namespace testframework
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif /*_GEMFIRE_LDAPUSERCREDENTIALGENERATOR_HPP_*/

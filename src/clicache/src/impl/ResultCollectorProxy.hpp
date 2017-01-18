@@ -53,7 +53,7 @@ namespace GemStone
 
           virtual void AddResult( Object^ rs ) 
           {
-            //gemfire::CacheablePtr nativeptr(rs);
+            //apache::geode::client::CacheablePtr nativeptr(rs);
             //TResult grs =  Serializable::GetManagedValueGeneric<TResult>( nativeptr);
             m_rscoll->AddResult(safe_cast<TResult>(rs));
           }

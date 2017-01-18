@@ -30,7 +30,7 @@
 #include <ace/Dev_Poll_Reactor.h>
 #endif
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 const char* ExpiryTaskManager::NC_ETM_Thread = "NC ETM Thread";
 

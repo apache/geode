@@ -29,7 +29,9 @@
 #include <string>
 #include <map>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace testframework {
 
 // ----------------------------------------------------------------------------
@@ -239,9 +241,8 @@ class RegionHelper {
       poolName = atts->getPoolName();
     } else {
       poolName = "";
-
-    
-}region = regionFac->create(regionName.c_str());
+    }
+    region = regionFac->create(regionName.c_str());
     FWKINFO("Region created with name = " << regionName + " and pool name= "
                                           << poolName);
     FWKINFO(" Region Created with following attributes :"
@@ -251,7 +252,9 @@ class RegionHelper {
 };
 
 }  // namespace testframework
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 // ----------------------------------------------------------------------------
 

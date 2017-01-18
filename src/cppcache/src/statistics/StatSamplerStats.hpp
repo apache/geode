@@ -23,7 +23,7 @@
 #include <gfcpp/statistics/Statistics.hpp>
 #include <gfcpp/statistics/StatisticsFactory.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 /** @file
 */

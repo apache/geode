@@ -24,7 +24,9 @@
 #include <gfcpp/Serializable.hpp>
 #include <gfcpp/CacheableEnum.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class PdxEnumInstantiator : public Serializable {
  private:
@@ -49,5 +51,7 @@ class PdxEnumInstantiator : public Serializable {
 
   CacheableStringPtr toString() const;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif /* _GEMFIRE_PDXENUM_INSTANTIATOR_HPP_ */

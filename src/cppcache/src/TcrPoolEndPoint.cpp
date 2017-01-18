@@ -17,7 +17,7 @@
 #include "TcrPoolEndPoint.hpp"
 #include <gfcpp/SystemProperties.hpp>
 #include "ThinClientPoolDM.hpp"
-using namespace gemfire;
+using namespace apache::geode::client;
 #define DEFAULT_CALLBACK_CONNECTION_TIMEOUT_SECONDS 180
 TcrPoolEndPoint::TcrPoolEndPoint(const std::string& name, CacheImpl* cache,
                                  ACE_Semaphore& failoverSema,

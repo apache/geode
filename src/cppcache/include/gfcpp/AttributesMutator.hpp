@@ -24,7 +24,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class CacheListener;
 class CacheLoader;
@@ -181,6 +183,7 @@ class CPPCACHE_EXPORT AttributesMutator : public SharedBase {
    */
   void setCacheWriter(const char* libpath, const char* factoryFuncName);
 };
-
-};      // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // ifndef __GEMFIRE_ATTRIBUTESMUTATOR_H__

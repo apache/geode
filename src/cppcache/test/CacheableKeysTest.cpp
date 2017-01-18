@@ -19,7 +19,7 @@
 
 #include <gfcpp/CacheableKeys.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 TEST(CacheableKeysTest, boolDifferentHashCodes) {
   EXPECT_NE(serializer::hashcode(false), serializer::hashcode(true))

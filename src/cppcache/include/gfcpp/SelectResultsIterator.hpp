@@ -29,7 +29,9 @@
 #include "SelectResults.hpp"
 #include "CacheableBuiltins.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class ResultSetImpl;
 class StructSetImpl;
@@ -92,7 +94,8 @@ class CPPCACHE_EXPORT SelectResultsIterator : public SharedBase {
   friend class ResultSetImpl;
   friend class StructSetImpl;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_SELECTRESULTSITERATOR_H__

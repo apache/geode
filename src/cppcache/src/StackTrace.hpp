@@ -25,7 +25,9 @@
 #include <string>
 #include <list>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class StackTrace;
 typedef SharedPtr<StackTrace> StackTracePtr;
@@ -58,6 +60,8 @@ class StackTrace : public SharedBase {
   void addFrame(const char* line, int i);
 };
 #endif
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

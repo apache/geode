@@ -16,7 +16,9 @@
  */
 #include <gfcpp/RegionEvent.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 RegionEvent::RegionEvent(const RegionPtr& region,
                          const UserDataPtr& aCallbackArgument,
@@ -28,4 +30,6 @@ RegionEvent::RegionEvent(const RegionPtr& region,
 RegionEvent::RegionEvent() : m_remoteOrigin(false) {}
 
 RegionEvent::~RegionEvent() {}
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

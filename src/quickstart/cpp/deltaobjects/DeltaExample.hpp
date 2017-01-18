@@ -20,7 +20,7 @@
 
 #include <gfcpp/GemfireCppCache.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 class DeltaExample : public Cacheable, public Delta {
  private:

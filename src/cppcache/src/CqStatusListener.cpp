@@ -17,8 +17,12 @@
 
 #include <gfcpp/CqStatusListener.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 void CqStatusListener::onCqDisconnected() {}
 void CqStatusListener::onCqConnected() {}
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

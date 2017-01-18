@@ -20,9 +20,9 @@
 #include "fwklib/FwkLog.hpp"
 #include "fwklib/PerfFwk.hpp"
 
-using namespace gemfire;
-using namespace gemfire::testframework;
-using namespace gemfire::testframework::perf;
+using namespace apache::geode::client;
+using namespace apache::geode::client::testframework;
+using namespace apache::geode::client::testframework::perf;
 
 int32_t TimeBomb::svc() {
   while (!m_stop) {

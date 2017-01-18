@@ -25,7 +25,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class CacheTransactionManagerImpl;
 /**
  * @class SuspendedTxExpiryHandler
@@ -58,5 +60,7 @@ class CPPCACHE_EXPORT SuspendedTxExpiryHandler : public ACE_Event_Handler {
   CacheTransactionManagerImpl* m_cacheTxMgr;
   TransactionIdPtr m_txid;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // ifndef _GEMFIRE_ENTRYEXPIRYTASK_H__

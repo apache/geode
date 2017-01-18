@@ -22,7 +22,9 @@
 #include <gfcpp/ExceptionTypes.hpp>
 #include "GemfireTypeIdsImpl.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 /**
  * Helper class to deserialize bytes received from GFE in the form of
  * PREFER_BYTES_CACHED_DESERIALIZABLE = -65, or
@@ -93,7 +95,8 @@ class CachedDeserializableHelper : public Cacheable,
 };
 
 typedef SharedPtr<CachedDeserializableHelper> CachedDeserializableHelperPtr;
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // CACHEDDESERIALIZABLEHELPER_HPP_

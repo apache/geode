@@ -17,8 +17,8 @@
 
 #include "GsRandom.hpp"
 
-using namespace gemfire;
-using namespace gemfire::testframework;
+using namespace apache::geode::client;
+using namespace apache::geode::client::testframework;
 
 GsRandom *GsRandom::singleton = 0;
 MTRand GsRandom::gen;

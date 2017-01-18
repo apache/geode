@@ -23,7 +23,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 /**
  * @class ExpirationAction ExpirationAction.hpp
  * Enumerated type for expiration actions.
@@ -105,5 +107,7 @@ class CPPCACHE_EXPORT ExpirationAction {
   ~ExpirationAction();
   static char* names[];
 };
-};      // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // ifndef __GEMFIRE_EXPIRATIONACTION_H__

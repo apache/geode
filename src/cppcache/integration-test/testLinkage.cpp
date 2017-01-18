@@ -20,7 +20,7 @@
 #include <gfcpp/GemfireCppCache.hpp>
 #include "fw_helper.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 /**
  * @brief Test that we can link to all classes.

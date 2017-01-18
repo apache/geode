@@ -28,7 +28,8 @@
 #define CLIENT3 s2p2
 
 class SimpleCacheListener;
-typedef gemfire::SharedPtr<SimpleCacheListener> SimpleCacheListenerPtr;
+typedef apache::geode::client::SharedPtr<SimpleCacheListener>
+    SimpleCacheListenerPtr;
 
 // The SimpleCacheListener class.
 class SimpleCacheListener : public CacheListener {

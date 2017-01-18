@@ -24,7 +24,9 @@
 #include "TXEntryState.hpp"
 #include <gfcpp/ExceptionTypes.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 TXEntryState::TXEntryState()
     : /* adongre
@@ -368,4 +370,6 @@ int8_t TXEntryState::adviseOp(int8_t requestedOpCode) {
   }
   return advisedOpCode;
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

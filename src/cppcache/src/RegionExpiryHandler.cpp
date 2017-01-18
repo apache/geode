@@ -28,7 +28,7 @@
 #include "RegionExpiryHandler.hpp"
 #include "RegionInternal.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 RegionExpiryHandler::RegionExpiryHandler(RegionInternalPtr& rptr,
                                          ExpirationAction::Action action,

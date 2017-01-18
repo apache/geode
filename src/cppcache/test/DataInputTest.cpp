@@ -28,7 +28,7 @@
 #include <gfcpp/SharedPtr.hpp>
 #include "ByteArrayFixture.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 class TestDataInput {
  public:
@@ -197,7 +197,8 @@ TEST_F(DataInputTest, ThrowsWhenReadingInputWithSizeZero) {
   TestDataInput dataInput("");
 
   uint8_t aByte = 0U;
-  ASSERT_THROW(dataInput.read(&aByte), gemfire::OutOfRangeException);
+  ASSERT_THROW(dataInput.read(&aByte),
+               apache::geode::client::OutOfRangeException);
 }
 
 TEST_F(DataInputTest, ThrowsWhenReadingMoreBytesThanSizePassedToConstructor) {
@@ -208,7 +209,8 @@ TEST_F(DataInputTest, ThrowsWhenReadingMoreBytesThanSizePassedToConstructor) {
   EXPECT_EQ(1U, aByte);
 
   aByte = 0U;
-  ASSERT_THROW(dataInput.read(&aByte), gemfire::OutOfRangeException);
+  ASSERT_THROW(dataInput.read(&aByte),
+               apache::geode::client::OutOfRangeException);
 }
 
 TEST_F(DataInputTest, CanReadUnsignedBytesFromInput) {
@@ -265,7 +267,7 @@ TEST_F(DataInputTest,
   // fails to read 4 bytes from 3 byte buffer
   uint8_t byteArrayCopy[4];
   ASSERT_THROW(dataInput.readBytesOnly(byteArrayCopy, 4),
-               gemfire::OutOfRangeException);
+               apache::geode::client::OutOfRangeException);
 }
 
 TEST_F(DataInputTest, CanReadIntWithAMaxSizeUnsigned64BitIntInput) {
@@ -299,7 +301,7 @@ TEST_F(DataInputTest, ThrowsWhenCallingReadStringWithAnASCIIStringInput) {
 
   // ASCII and non-ASCII: consider matching exception string
   ASSERT_THROW(dataInput.readString(&actualString),
-               gemfire::IllegalArgumentException);
+               apache::geode::client::IllegalArgumentException);
 }
 
 TEST_F(DataInputTest, CanReadASCIIWithAnUTFStringInput) {
@@ -324,7 +326,7 @@ TEST_F(DataInputTest, ThrowsWhenCallingReadStringWithAnUTFStringInput) {
 
   // UTF and non-UTF: consider matching exception string
   ASSERT_THROW(dataInput.readString(&actualString),
-               gemfire::IllegalArgumentException);
+               apache::geode::client::IllegalArgumentException);
 }
 
 TEST_F(DataInputTest, CanReadUTFWithAnUTFStringInput) {

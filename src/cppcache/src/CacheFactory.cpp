@@ -46,7 +46,9 @@ extern ACE_Recursive_Thread_Mutex* g_disconnectLock;
 
 bool Cache_CreatedFromCacheFactory = false;
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 ACE_Recursive_Thread_Mutex g_cfLock;
 
 typedef std::map<std::string, CachePtr> StringToCachePtrMap;
@@ -283,9 +285,9 @@ CachePtr CacheFactory::create(const char* name,
         cptr->m_cacheImpl->initServices();
       }
     }
-  } catch (const gemfire::RegionExistsException&) {
+  } catch (const apache::geode::client::RegionExistsException&) {
     LOGWARN("Attempt to create existing regions declaratively");
-  } catch (const gemfire::Exception&) {
+  } catch (const apache::geode::client::Exception&) {
     if (!cptr->isClosed()) {
       cptr->close();
       cptr = NULLPTR;
@@ -296,7 +298,8 @@ CachePtr CacheFactory::create(const char* name,
       cptr->close();
       cptr = NULLPTR;
     }
-    throw gemfire::UnknownException("Exception thrown in CacheFactory::create");
+    throw apache::geode::client::UnknownException(
+        "Exception thrown in CacheFactory::create");
   }
 
   return cptr;
@@ -575,4 +578,6 @@ CacheFactoryPtr CacheFactory::setPdxReadSerialized(bool prs) {
   CacheFactoryPtr cfPtr(this);
   return cfPtr;
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

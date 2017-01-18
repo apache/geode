@@ -28,7 +28,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class PoolAttributes : public SharedBase {
  public:
   PoolAttributes();
@@ -154,7 +156,8 @@ class PoolAttributes : public SharedBase {
 
   friend class ThinClientPoolDM;
 };
-
-};  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_POOL_ATTRIBUTES_HPP__

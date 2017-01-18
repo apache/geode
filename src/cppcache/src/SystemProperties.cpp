@@ -34,7 +34,7 @@
 #include <dlfcn.h>
 #endif
 
-using namespace gemfire;
+using namespace apache::geode::client;
 namespace gemfire_impl {
 void* getFactoryFunc(const char* lib, const char* funcName);
 }  // namespace gemfire_impl

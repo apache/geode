@@ -21,7 +21,9 @@
 #include "CacheableBuiltins.hpp"
 #include "PdxUnreadFields.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class PdxReader;
 typedef SharedPtr<PdxReader> PdxReaderPtr;
@@ -409,5 +411,7 @@ class CPPCACHE_EXPORT PdxReader : public SharedBase {
    */
   virtual PdxUnreadFieldsPtr readUnreadFields() = 0;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif /* PDXREADER_HPP_ */

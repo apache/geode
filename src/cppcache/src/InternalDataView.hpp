@@ -24,13 +24,17 @@
 #ifndef INTERNALDATAVIEW_HPP_
 #define INTERNALDATAVIEW_HPP_
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class InternalDataView {
  protected:
   InternalDataView();
   virtual ~InternalDataView();
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif /* INTERNALDATAVIEW_HPP_ */

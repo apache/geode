@@ -17,7 +17,7 @@
 
 #include "InterestResultPolicy.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 char InterestResultPolicy::nextOrdinal = 0;
 InterestResultPolicy InterestResultPolicy::NONE;

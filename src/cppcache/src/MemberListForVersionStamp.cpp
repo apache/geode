@@ -17,7 +17,7 @@
 #include "MemberListForVersionStamp.hpp"
 #include <gfcpp/Log.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 MemberListForVersionStamp::MemberListForVersionStamp() { m_memberCounter = 0; }
 

@@ -36,7 +36,7 @@
 
 #include <string>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 // ----------------------------------------------------------------------------
 

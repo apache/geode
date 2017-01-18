@@ -21,7 +21,9 @@
 #include "gf_base.hpp"
 #include "SharedBase.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * Marker interface for an object that GemFire creates and returns
@@ -42,6 +44,8 @@ class CPPCACHE_EXPORT PdxUnreadFields : public SharedBase {
   PdxUnreadFields() {}
   virtual ~PdxUnreadFields() {}
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif /* __GEMFIRE_PDXUNREADFIELDS_HPP_ */

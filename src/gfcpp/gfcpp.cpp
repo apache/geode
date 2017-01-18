@@ -22,7 +22,7 @@
 #include <gfcpp/ExceptionTypes.hpp>
 #include <gfcpp/CacheFactory.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 void doVersion() { printf("\n%s\n", CacheFactory::getProductDescription()); }
 

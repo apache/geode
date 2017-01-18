@@ -40,17 +40,17 @@ namespace GemStone
             "null region passed" );
         }
 
-        gemfire::UserDataPtr callbackptr(SafeMSerializableConvert(
+        apache::geode::client::UserDataPtr callbackptr(SafeMSerializableConvert(
             aCallbackArgument));
 
-        SetPtr(new gemfire::RegionEvent(gemfire::RegionPtr(region->_NativePtr),
+        SetPtr(new apache::geode::client::RegionEvent(apache::geode::client::RegionPtr(region->_NativePtr),
           callbackptr, remoteOrigin), true);*/
       }
 
       generic<class TKey, class TValue>
       IRegion<TKey, TValue>^ RegionEvent<TKey, TValue>::Region::get( )
       {
-        gemfire::RegionPtr& regionptr( NativePtr->getRegion( ) );
+        apache::geode::client::RegionPtr& regionptr( NativePtr->getRegion( ) );
 
         return Generic::Region<TKey, TValue>::Create( regionptr.ptr( ) );
       }
@@ -58,7 +58,7 @@ namespace GemStone
       generic<class TKey, class TValue>
       Object^ RegionEvent<TKey, TValue>::CallbackArgument::get()
       {
-        gemfire::UserDataPtr& valptr(NativePtr->getCallbackArgument());
+        apache::geode::client::UserDataPtr& valptr(NativePtr->getCallbackArgument());
         return Serializable::GetManagedValueGeneric<Object^>( valptr );
       }
 

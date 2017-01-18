@@ -38,7 +38,7 @@ namespace GemStone
       generic<class TKey, class TValue>
       Cache^ TransactionEvent<TKey, TValue>::Cache::get( )
       {
-        gemfire::CachePtr & nativeptr(
+        apache::geode::client::CachePtr & nativeptr(
           NativePtr->getCache( ) );
 
 				return GemStone::GemFire::Cache::Generic::Cache::Create(
@@ -48,7 +48,7 @@ namespace GemStone
       generic<class TKey, class TValue>
 			GemStone::GemFire::Cache::Generic::TransactionId^ TransactionEvent<TKey, TValue>::TransactionId::get( )
       {
-        gemfire::TransactionIdPtr & nativeptr(
+        apache::geode::client::TransactionIdPtr & nativeptr(
           NativePtr->getTransactionId( ) );
 
 				return GemStone::GemFire::Cache::Generic::TransactionId::Create(
@@ -58,14 +58,14 @@ namespace GemStone
       generic<class TKey, class TValue>
       array<EntryEvent<TKey, TValue>^>^ TransactionEvent<TKey, TValue>::Events::get( )
       {
-        gemfire::VectorOfEntryEvent vee;
+        apache::geode::client::VectorOfEntryEvent vee;
         vee = NativePtr->getEvents();
         array<EntryEvent<TKey, TValue>^>^ events =
           gcnew array<EntryEvent<TKey, TValue>^>( vee.size( ) );
         // Loop through the unmanaged event objects to convert them to the managed generic objects. 
         for( int32_t index = 0; index < vee.size( ); index++ )
         {
-          gemfire::EntryEventPtr& nativeptr( vee[ index ] );
+          apache::geode::client::EntryEventPtr& nativeptr( vee[ index ] );
           EntryEvent<TKey, TValue> entryEvent( nativeptr.ptr( ) );
           events[ index ] = (%entryEvent);
         }

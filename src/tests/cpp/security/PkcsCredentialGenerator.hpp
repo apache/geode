@@ -28,7 +28,9 @@ const char KEYSTORE_PASSWORD[] = "security-keystorepass";
 #include <ace/ACE.h>
 #include <ace/OS.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace testframework {
 namespace security {
 
@@ -136,6 +138,8 @@ class PKCSCredentialGenerator : public CredentialGenerator {
 
 }  // namespace security
 }  // namespace testframework
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif /*_GEMFIRE_PKCSCREDENTIALGENERATOR_HPP_*/

@@ -48,7 +48,7 @@
 
 XERCES_CPP_NAMESPACE_USE
 
-using namespace gemfire::testframework;
+using namespace apache::geode::client::testframework;
 
 #define HOSTGROUP_TAG "hostGroup"
 #define LOCALFILE_TAG "localFile"
@@ -78,7 +78,9 @@ using namespace gemfire::testframework;
 
 #define CLIENT_STATUS_BB "clientStatusBB"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace testframework {
 
 // ----------------------------------------------------------------------------
@@ -375,7 +377,8 @@ class Attributes {
   }
 
   void setConcurrencyLevel(std::string val) {
-    m_factory.setConcurrencyLevel(static_cast<uint8_t>(FwkStrCvt::toInt32(val)));
+    m_factory.setConcurrencyLevel(
+        static_cast<uint8_t>(FwkStrCvt::toInt32(val)));
   }
 
   void setLruEntriesLimit(std::string val) {
@@ -1610,6 +1613,8 @@ class TestDriver {
 // ----------------------------------------------------------------------------
 
 }  // namespace testframework
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __FWK_OBJECTS_HPP__

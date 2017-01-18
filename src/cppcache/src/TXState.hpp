@@ -29,7 +29,9 @@
 #include "TransactionalOperation.hpp"
 #include <string>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class ThinClientPoolDM;
 class TXState {
  public:
@@ -94,6 +96,8 @@ class TXState {
     TXState* m_txState;
   };
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif /* TXSTATE_HPP_ */

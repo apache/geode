@@ -22,7 +22,9 @@ extern "C" {
 #include <stdarg.h>
 }
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 int gf_sprintf(char* buffer, const char* fmt, ...) {
   va_list args;
@@ -56,4 +58,6 @@ _GF_CACHEABLE_KEY_DEF_(CacheableInt16, "%" PRIi16);
 _GF_CACHEABLE_KEY_DEF_(CacheableInt32, "%" PRIi32);
 _GF_CACHEABLE_KEY_DEF_(CacheableInt64, "%" PRIi64);
 _GF_CACHEABLE_KEY_DEF_(CacheableWideChar, "%lc");
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

@@ -38,13 +38,13 @@
 #define TESTOBJECT_EXPORT
 #endif
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 namespace testobject {
 
 #define GFID
 
-class PositionPdxAuto : public gemfire::PdxSerializable {
+class PositionPdxAuto : public apache::geode::client::PdxSerializable {
  private:
   GFID int64_t avg20DaysVol;
   GFID char* bondRating;
@@ -100,6 +100,6 @@ class PositionPdxAuto : public gemfire::PdxSerializable {
   void init();
 };
 
-typedef gemfire::SharedPtr<PositionPdxAuto> PositionPdxPtr;
+typedef apache::geode::client::SharedPtr<PositionPdxAuto> PositionPdxPtr;
 }
 #endif

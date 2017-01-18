@@ -19,7 +19,9 @@
 
 #include "SpinLock.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 void* testSpinLockCreate() { return (void*)new SpinLock(); }
 
@@ -30,4 +32,6 @@ void testSpinLockAcquire(void* lock) {
 void testSpinLockRelease(void* lock) {
   (reinterpret_cast<SpinLock*>(lock))->release();
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

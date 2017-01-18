@@ -184,21 +184,21 @@ void initClientRemoveIntrest(int ClientIdx, OperMonitorPtr mon) {
 
 void feederUpdate(int value) {
   createIntEntry(regionNames[0], mixKeys[0], value);
-  gemfire::millisleep(10);
+  apache::geode::client::millisleep(10);
   createIntEntry(regionNames[0], mixKeys[1], value);
-  gemfire::millisleep(10);
+  apache::geode::client::millisleep(10);
 }
 
 void feederUpdate1(int value) {
   createIntEntry(regionNames[0], mixKeys[0], value);
-  gemfire::millisleep(10);
+  apache::geode::client::millisleep(10);
   createIntEntry(regionNames[0], mixKeys[1], value);
-  gemfire::millisleep(10);
+  apache::geode::client::millisleep(10);
 
   createIntEntry(regionNames[1], mixKeys[2], value);
-  gemfire::millisleep(10);
+  apache::geode::client::millisleep(10);
   createIntEntry(regionNames[1], mixKeys[3], value);
-  gemfire::millisleep(10);
+  apache::geode::client::millisleep(10);
 }
 
 DUNIT_TASK_DEFINITION(FEEDER, FeederInit)

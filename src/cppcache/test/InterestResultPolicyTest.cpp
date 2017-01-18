@@ -19,7 +19,7 @@
 
 #include <InterestResultPolicy.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 TEST(InterestResultPolicyTest, VerifyOrdinals) {
   EXPECT_NE(InterestResultPolicy::NONE.getOrdinal(),

@@ -39,7 +39,7 @@
 #define TESTOBJECT_EXPORT
 #endif
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 namespace PdxTests {
 
@@ -112,7 +112,7 @@ class TESTOBJECT_EXPORT CharTypesWithInvalidUsage : public PdxSerializable {
         return false;
       } else {
         i++;
-}
+      }
     }
 
     return true;

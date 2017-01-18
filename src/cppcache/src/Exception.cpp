@@ -28,7 +28,9 @@ extern "C" {
 
 #include <string>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 // globals can only be trusted to initialize to ZERO.
 bool Exception::s_exceptionStackTraceEnabled = false;
@@ -67,7 +69,7 @@ Exception::Exception(const char* msg1, const char* msg2, bool forceTrace,
 
 Exception::~Exception() {}
 
-const char _exception_name_Exception[] = "gemfire::Exception";
+const char _exception_name_Exception[] = "apache::geode::client::Exception";
 
 const char* Exception::getName() const { return _exception_name_Exception; }
 
@@ -152,5 +154,6 @@ void setTSSExceptionMessage(const char* exMsg) {
 const char* getTSSExceptionMessage() {
   return TSSExceptionString::s_tssExceptionMsg->str().c_str();
 }
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

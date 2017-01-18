@@ -23,7 +23,7 @@
 #include "PkcsCredentialGenerator.hpp"
 #include "NoopCredentialGenerator.hpp"
 
-using namespace gemfire::testframework::security;
+using namespace apache::geode::client::testframework::security;
 
 CredentialGenerator::registeredClassMap* CredentialGenerator::generatormap =
     NULL;

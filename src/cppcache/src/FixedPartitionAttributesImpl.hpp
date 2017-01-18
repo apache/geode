@@ -23,7 +23,9 @@
 #include <gfcpp/CacheableString.hpp>
 #include <gfcpp/CacheableBuiltins.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 _GF_PTR_DEF_(FixedPartitionAttributesImpl, FixedPartitionAttributesImplPtr)
 
 class FixedPartitionAttributesImpl : public Serializable {
@@ -116,6 +118,8 @@ class FixedPartitionAttributesImpl : public Serializable {
     return getStartingBucketID() <= bucketId && bucketId <= getLastBucketID();
   }
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

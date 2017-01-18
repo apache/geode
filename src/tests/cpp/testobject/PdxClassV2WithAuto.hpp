@@ -32,7 +32,7 @@
 #define TESTOBJECT_EXPORT
 #endif
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 #define GFIGNORE(X) X
 #define GFID

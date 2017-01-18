@@ -42,7 +42,7 @@ namespace GemStone
       /// </summary>
       generic<class TKey, class TValue>
       public ref class EntryEvent sealed
-        : public Internal::UMWrap<gemfire::EntryEvent>
+        : public Internal::UMWrap<apache::geode::client::EntryEvent>
       {
       public:
 
@@ -113,9 +113,9 @@ namespace GemStone
         /// Private constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline EntryEvent<TKey, TValue>( const gemfire::EntryEvent* nativeptr )
-          : Internal::UMWrap<gemfire::EntryEvent>(
-            const_cast<gemfire::EntryEvent*>( nativeptr ), false ) { }
+        inline EntryEvent<TKey, TValue>( const apache::geode::client::EntryEvent* nativeptr )
+          : Internal::UMWrap<apache::geode::client::EntryEvent>(
+            const_cast<apache::geode::client::EntryEvent*>( nativeptr ), false ) { }
       };
 
     }

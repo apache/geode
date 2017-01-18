@@ -100,7 +100,7 @@ class MTRand {
   int32_t left;       // number of values left before reload needed
 
  private:
-  static gemfire::SpinLock lck;
+  static apache::geode::client::SpinLock lck;
 
   // Methods
  public:
@@ -152,7 +152,8 @@ class MTRand {
   }
   uint32_t twist(const uint32_t& m, const uint32_t& s0,
                  const uint32_t& s1) const {
-    return m ^ (mixBits(s0, s1) >> 1) ^ (-static_cast<int32_t>(loBit(s1)) & 0x9908b0df);
+    return m ^ (mixBits(s0, s1) >> 1) ^
+           (-static_cast<int32_t>(loBit(s1)) & 0x9908b0df);
   }
   static uint32_t hash(time_t t, clock_t c);
 };

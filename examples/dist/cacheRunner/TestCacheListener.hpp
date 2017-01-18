@@ -30,7 +30,7 @@
 
 #include "TestCacheCallback.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 /**
  * A <code>CacheListener</code> used in testing.  Its callback methods

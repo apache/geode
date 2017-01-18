@@ -23,15 +23,19 @@
 
 #include "NonCopyable.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 // A synchronized Set using std::unordered_set<T>
 
 /* adongre
  * CID 28616: Other violation (COPY_WITHOUT_ASSIGN)
- * Class "gemfire::Set<unsigned short>::Iterator" has user-written copyi
- * `constructor "gemfire::Set<unsigned
- * short>::Iterator::Iterator(gemfire::Set<unsigned short>::Iterator const &)" i
+ * Class "apache::geode::client::Set<unsigned short>::Iterator" has user-written
+ * copyi
+ * `constructor "apache::geode::client::Set<unsigned
+ * short>::Iterator::Iterator(apache::geode::client::Set<unsigned
+ * short>::Iterator const &)" i
  * but no corresponding user-written assignment operator.
  *
  * FIX : Make the class non copyable
@@ -117,6 +121,8 @@ class CPPCACHE_EXPORT Set : private NonAssignable {
   std::unordered_set<T> m_set;
   ACE_Recursive_Thread_Mutex m_mutex;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // !defined _GEMFIRE_SET_HPP_

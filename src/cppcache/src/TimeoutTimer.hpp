@@ -25,7 +25,9 @@
 #include <ace/Time_Value.h>
 #include <ace/OS_NS_sys_time.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class CPPCACHE_EXPORT TimeoutTimer {
  private:
@@ -61,6 +63,8 @@ class CPPCACHE_EXPORT TimeoutTimer {
     m_reset = true;
   }
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

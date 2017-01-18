@@ -23,7 +23,9 @@
 #define SECURITY_USERNAME "security-username"
 #define SECURITY_PASSWORD "security-password"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 extern "C" {
 LIBEXP AuthInitialize* createUserPasswordAuthInitInstance() {
@@ -54,4 +56,6 @@ PropertiesPtr UserPasswordAuthInit::getCredentials(PropertiesPtr& securityprops,
   //    userName->toString()->asChar(), passwd->toString()->asChar());
   return credentials;
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

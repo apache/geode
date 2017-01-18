@@ -21,10 +21,10 @@
 #include <gfcpp/GemfireCppCache.hpp>
 #include <string>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 class TallyListener;
 
-typedef gemfire::SharedPtr<TallyListener> TallyListenerPtr;
+typedef apache::geode::client::SharedPtr<TallyListener> TallyListenerPtr;
 
 class TallyListener : public CacheListener {
  private:

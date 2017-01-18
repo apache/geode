@@ -28,7 +28,9 @@
 /**
  * This class does the actual evictions
  */
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class EvictionController;
 typedef IntQueue<int64_t> HeapSizeInfoQueue;
 
@@ -60,6 +62,8 @@ class CPPCACHE_EXPORT EvictionThread : public ACE_Task_Base {
 
   static const char* NC_Evic_Thread;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  //_EVICTIONTHREAD_H__

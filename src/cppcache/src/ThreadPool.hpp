@@ -33,7 +33,9 @@
 #include <ace/Recursive_Thread_Mutex.h>
 #include <ace/Guard_T.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 template <class T>
 class PooledWork : public ACE_Method_Request {
@@ -152,6 +154,8 @@ class ThreadPool : public ACE_Task_Base, IThreadPool {
 };
 
 typedef ACE_Singleton<ThreadPool, ACE_Recursive_Thread_Mutex> TPSingleton;
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif /* THREADPOOL_HPP_ */

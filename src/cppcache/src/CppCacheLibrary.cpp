@@ -38,11 +38,15 @@
 
 #include <string>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 void gf_log_libinit();
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 CppCacheLibrary::CppCacheLibrary() {
   // TODO: This should catch any exceptions, log it, and bail out..
@@ -58,7 +62,7 @@ CppCacheLibrary::CppCacheLibrary() {
     SerializationRegistry::init();
     // PdxTypeRegistry::init();
     // log( "Finished initializing CppCacheLibrary." );
-  } catch (gemfire::Exception& ge) {
+  } catch (apache::geode::client::Exception& ge) {
     ge.printStackTrace();
     throw;
   }
@@ -158,7 +162,7 @@ std::string CppCacheLibrary::getProductDir() {
             "Cannot determine location of product directory.\n"
             "Please set GFCPP environment variable.\n");
     fflush(stderr);
-    throw gemfire::IllegalStateException(
+    throw apache::geode::client::IllegalStateException(
         "Product installation directory "
         "not found. Please set GFCPP environment variable.");
   }
@@ -203,7 +207,8 @@ std::string CppCacheLibrary::getProductDir() {
   fprintf(stderr, "Cannot determine location of product directory.\n"
       "Please set GFCPP environment variable.\n");
   fflush(stderr);
-  throw gemfire::IllegalStateException("Product installation directory "
+  throw apache::geode::client::IllegalStateException("Product installation
+  directory "
       "not found. Please set GFCPP environment variable.");
       */
 }

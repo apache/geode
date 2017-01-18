@@ -25,7 +25,9 @@
 /** @file
 */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * @class SharedBase SharedBase.hpp
@@ -78,8 +80,10 @@ class CPPCACHE_EXPORT NullSharedBase : public SharedBase {
 
   friend class SharedBase;  // just to get rid of warning with gcc3.x
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
-#define NULLPTR gemfire::NullSharedBase::s_instancePtr
+#define NULLPTR ::apache::geode::client::NullSharedBase::s_instancePtr
 
 #endif  //#define _GEMFIRE_SHAREDBASE_HPP_

@@ -48,7 +48,7 @@ namespace GemStone
       /// </summary>
       generic<class TKey, class TResult>
       public ref class QueryService sealed
-				: public Internal::SBWrap<gemfire::QueryService>
+				: public Internal::SBWrap<apache::geode::client::QueryService>
       {
       public:
 
@@ -132,7 +132,7 @@ namespace GemStone
         /// <returns>
         /// The managed wrapper object; null if the native pointer is null.
         /// </returns>
-        inline static GemStone::GemFire::Cache::Generic::QueryService<TKey, TResult>^ Create( gemfire::QueryService* nativeptr )
+        inline static GemStone::GemFire::Cache::Generic::QueryService<TKey, TResult>^ Create( apache::geode::client::QueryService* nativeptr )
         {
           return ( nativeptr != nullptr ?
             gcnew GemStone::GemFire::Cache::Generic::QueryService<TKey, TResult>( nativeptr ) : nullptr );
@@ -145,7 +145,7 @@ namespace GemStone
         /// Private constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline QueryService( gemfire::QueryService* nativeptr )
+        inline QueryService( apache::geode::client::QueryService* nativeptr )
           : SBWrap( nativeptr ) { }
       };
 

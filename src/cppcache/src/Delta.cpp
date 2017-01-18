@@ -23,7 +23,7 @@
 
 #include <gfcpp/Delta.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 DeltaPtr Delta::clone() {
   DataOutput out;

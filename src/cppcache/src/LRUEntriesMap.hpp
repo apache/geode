@@ -28,7 +28,9 @@
 
 #include "NonCopyable.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class EvictionController;
 
 /**
@@ -38,13 +40,15 @@ class EvictionController;
 
 /* adongre
  * CID 28728: Other violation (MISSING_COPY)
- * Class "gemfire::LRUEntriesMap" owns resources that are managed in its
+ * Class "apache::geode::client::LRUEntriesMap" owns resources that are managed
+ * in its
  * constructor and destructor but has no user-written copy constructor.
  *
  * FIX : Make the class non copyable
  *
  * CID 28714: Other violation (MISSING_ASSIGN)
- * Class "gemfire::LRUEntriesMap" owns resources that are managed in
+ * Class "apache::geode::client::LRUEntriesMap" owns resources that are managed
+ * in
  * its constructor and destructor but has no user-written assignment operator.
  * Fix : Make the class Non Assinable
  */
@@ -126,7 +130,8 @@ class CPPCACHE_EXPORT LRUEntriesMap : public ConcurrentEntriesMap,
   virtual void clear();
 
 };  // class LRUEntriesMap
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __GEMFIRE_IMPL_LRUENTRIESMAP_H__

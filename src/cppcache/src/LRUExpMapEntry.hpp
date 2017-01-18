@@ -22,7 +22,9 @@
 #include "LRUList.hpp"
 #include "VersionStamp.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 /**
  * @brief Hold region mapped entry value and lru information.
  */
@@ -91,6 +93,8 @@ class CPPCACHE_EXPORT LRUExpEntryFactory : public EntryFactory {
   virtual void newMapEntry(const CacheableKeyPtr& key,
                            MapEntryImplPtr& result) const;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  //__GEMFIRE_IMPL_LRUEXPMAPENTRY_H__

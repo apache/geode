@@ -27,9 +27,12 @@
 #include "gfcpp_globals.hpp"
 #include "gf_types.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
-class CPPCACHE_EXPORT CacheTransactionManager : public gemfire::SharedBase {
+class CPPCACHE_EXPORT CacheTransactionManager
+    : public apache::geode::client::SharedBase {
  public:
   /** Creates a new transaction and associates it with the current thread.
    *
@@ -193,6 +196,8 @@ class CPPCACHE_EXPORT CacheTransactionManager : public gemfire::SharedBase {
   CacheTransactionManager();
   virtual ~CacheTransactionManager();
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif /* CACHETRANSACTIONMANAGER_H_ */

@@ -25,7 +25,9 @@
 #include <ace/OS.h>
 #include <string>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class ClientProxyMembershipID;
 typedef SharedPtr<ClientProxyMembershipID> ClientProxyMembershipIDPtr;
 
@@ -139,6 +141,8 @@ class ClientProxyMembershipID : public DSMemberForVersionStamp {
   void readVersion(int flags, DataInput& input);
   void writeVersion(int16_t ordinal, DataOutput& output);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __CLIENTPROXYMEMBERSHIPID_HPP__

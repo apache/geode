@@ -26,18 +26,22 @@
 
 #include "SharedBase.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /** The TransactionId interface is a "marker" interface that
 * represents a unique GemFire transaction.
 * @see Cache#getCacheTransactionManager
 * @see CacheTransactionManager#getTransactionId
 */
-class CPPCACHE_EXPORT TransactionId : public gemfire::SharedBase {
+class CPPCACHE_EXPORT TransactionId : public apache::geode::client::SharedBase {
  protected:
   TransactionId();
   virtual ~TransactionId();
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif /* TRANSACTIONID_H_ */

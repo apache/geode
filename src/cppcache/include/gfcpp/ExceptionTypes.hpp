@@ -24,13 +24,15 @@
 #include "gfcpp_globals.hpp"
 #include "Exception.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 #define _GF_EXCEPTION_DEF(x)                                              \
-  const char _exception_name_##x[] = "gemfire::" #x;                      \
+  const char _exception_name_##x[] = "apache::geode::client::" #x;        \
   class x;                                                                \
   typedef SharedPtr<x> x##Ptr;                                            \
-  class CPPCACHE_EXPORT x : public gemfire::Exception {                   \
+  class CPPCACHE_EXPORT x : public apache::geode::client::Exception {     \
    public:                                                                \
     x(const char* msg1, const char* msg2 = NULL, bool forceStack = false, \
       const ExceptionPtr& cause = NULLPTR)                                \
@@ -54,7 +56,8 @@ namespace gemfire {
 
 /*
  *
- * This is the list of exceptions directly derived from gemfire::Exception.
+ * This is the list of exceptions directly derived from
+ * apache::geode::client::Exception.
  *
  */
 
@@ -400,6 +403,8 @@ extern void CPPCACHE_EXPORT GfErrTypeThrowException(const char* str,
       GfErrTypeThrowException(str, err); \
     }                                    \
   }
-};  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_EXCEPTIONTYPES_H__

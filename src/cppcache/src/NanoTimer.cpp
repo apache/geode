@@ -22,7 +22,9 @@
 
 // @TODO: Make these actually nano granularity when possible.
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 int64_t NanoTimer::now() {
   ACE_Time_Value now = ACE_High_Res_Timer::gettimeofday_hr();
@@ -46,4 +48,6 @@ void millisleep(uint32_t millis) {
   ACE_Time_Value duration(secs, usecs);
   ACE_OS::sleep(duration);
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

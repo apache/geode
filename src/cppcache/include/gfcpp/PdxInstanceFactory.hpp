@@ -25,7 +25,9 @@
 #include "CacheableDate.hpp"
 #include "CacheableObjectArray.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
 * PdxInstanceFactory gives you a way to create PdxInstances.
@@ -465,6 +467,8 @@ class CPPCACHE_EXPORT PdxInstanceFactory : public SharedBase {
   */
   virtual PdxInstanceFactoryPtr markIdentityField(const char* fieldName) = 0;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif /* __PDXINSTANCE_FACTORY_HPP_ */

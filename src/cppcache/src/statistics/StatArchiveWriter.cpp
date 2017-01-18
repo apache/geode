@@ -28,7 +28,7 @@
 #include "GemfireStatisticsFactory.hpp"
 #include <NanoTimer.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace gemfire_statistics;
 
 // Constructor and Member functions of StatDataOutput class

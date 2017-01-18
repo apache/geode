@@ -18,7 +18,9 @@
 #include "DiskStoreId.hpp"
 #include <ace/OS.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 std::string DiskStoreId::getHashKey() {
   if (m_hashCode.size() == 0) {
     char hashCode[128] = {0};
@@ -38,4 +40,6 @@ std::string DiskStoreId::getHashKey() {
   }
   return m_hashCode;
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

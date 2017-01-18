@@ -24,7 +24,9 @@
 #include "gfcpp_globals.hpp"
 #include "gf_types.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * @class CacheAttributes CacheAttributes.hpp
@@ -96,7 +98,8 @@ class CPPCACHE_EXPORT CacheAttributes : public SharedBase {
 
   const CacheAttributes& operator=(const CacheAttributes&);
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_CACHEATTRIBUTES_H__

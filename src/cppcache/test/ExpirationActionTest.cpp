@@ -19,7 +19,7 @@
 
 #include <gfcpp/ExpirationAction.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 TEST(ExpirationActionTest, VerifyOrdinalAndNameSymmetryForInvalidate) {
   const char* name = ExpirationAction::fromOrdinal(0);

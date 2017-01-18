@@ -30,13 +30,15 @@
 #include <gfcpp/Log.hpp>
 #include "SuspendedTxExpiryHandler.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 enum status { STATUS_COMMITTED = 3, STATUS_ROLLEDBACK = 4 };
 enum commitOp { BEFORE_COMMIT, AFTER_COMMIT };
 
 class CacheTransactionManagerImpl
-    : public virtual gemfire::CacheTransactionManager {
+    : public virtual apache::geode::client::CacheTransactionManager {
  public:
   CacheTransactionManagerImpl(Cache* cache);
   virtual ~CacheTransactionManagerImpl();
@@ -102,6 +104,8 @@ class CacheTransactionManagerImpl
 
   friend class TXCleaner;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif /* CACHETRANSACTIONMANAGERIMPL_H_ */

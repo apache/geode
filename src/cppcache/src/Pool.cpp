@@ -25,7 +25,7 @@
  * @file
  */
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 Pool::Pool(PoolAttributesPtr attr) : m_attrs(attr) {}
 Pool::~Pool() {}

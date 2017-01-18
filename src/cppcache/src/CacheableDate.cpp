@@ -26,7 +26,9 @@
 #include <cwchar>
 #include <ace/OS.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 void CacheableDate::toData(DataOutput& output) const {
   int64_t msec = static_cast<int64_t>(m_timevalue.tv_sec);
@@ -138,4 +140,6 @@ int32_t CacheableDate::logString(char* buffer, int32_t maxLength) const {
                           "CacheableDate (mm/dd/yyyy) ( %d/%d/%d )",
                           date.tm_mon + 1, date.tm_mday, date.tm_year + 1900);
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

@@ -21,7 +21,9 @@
 #include <gfcpp/Serializable.hpp>
 #include "GemfireTypeIdsImpl.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class GatewaySenderEventCallbackArgument : public Serializable {
   SerializablePtr m_callback;
 
@@ -65,6 +67,8 @@ class GatewaySenderEventCallbackArgument : public Serializable {
     return new GatewaySenderEventCallbackArgument();
   }
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __GATEWAYSENDEREVENTCALLBACKARGUMENT_HPP__

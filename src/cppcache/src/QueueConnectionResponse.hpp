@@ -20,7 +20,9 @@
 #include "ServerLocationResponse.hpp"
 #include <gfcpp/DataInput.hpp>
 #include "ServerLocation.hpp"
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class QueueConnectionResponse : public ServerLocationResponse {
  public:
   QueueConnectionResponse()
@@ -44,5 +46,7 @@ class QueueConnectionResponse : public ServerLocationResponse {
   bool m_durableQueueFound;
 };
 typedef SharedPtr<QueueConnectionResponse> QueueConnectionResponsePtr;
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif

@@ -41,7 +41,7 @@
 #include "plugins/SimpleCacheListener.hpp"
 
 // Use the "gemfire" namespace.
-using namespace gemfire;
+using namespace apache::geode::client;
 
 // The DataExpiration QuickStart example.
 int main(int argc, char** argv) {
@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
     LOGINFO("Got Entry Idle Timeout as %d seconds", entryIdleTimeout);
 
     // Wait for half the Entry Idle Timeout duration, using
-    // gemfire::millisleep().
+    // apache::geode::client::millisleep().
     millisleep(entryIdleTimeout * 1000 / 2);
 
     // Get the number of Keys remaining in the Region, should be all 3.
@@ -102,8 +102,8 @@ int main(int argc, char** argv) {
     LOGINFO("The SimpleCacheListener should next report the expiration action");
 
     // Wait for the entire Entry Idle Timeout duration, using
-    // gemfire::millisleep().
-    gemfire::millisleep(entryIdleTimeout * 1000);
+    // apache::geode::client::millisleep().
+    apache::geode::client::millisleep(entryIdleTimeout * 1000);
 
     // Get the number of Keys remaining in the Region, should be 0 now.
     regionPtr->keys(keys);

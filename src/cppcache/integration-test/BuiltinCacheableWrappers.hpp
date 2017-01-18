@@ -26,7 +26,7 @@ extern "C" {
 
 #include <ace/Date_Time.h>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 namespace CacheableHelper {
 const uint32_t m_crc32Table[] = {
@@ -148,7 +148,7 @@ inline uint32_t crc32(const uint8_t* buffer, uint32_t bufLen) {
 template <typename TPRIM>
 inline uint32_t crc32(TPRIM value) {
   DataOutput output;
-  gemfire::serializer::writeObject(output, value);
+  apache::geode::client::serializer::writeObject(output, value);
   return crc32(output.getBuffer(), output.getBufferLength());
 }
 
@@ -156,7 +156,7 @@ template <typename TPRIM>
 inline uint32_t crc32Array(const TPRIM* arr, uint32_t len) {
   DataOutput output;
   for (uint32_t index = 0; index < len; index++) {
-    gemfire::serializer::writeObject(output, arr[index]);
+    apache::geode::client::serializer::writeObject(output, arr[index]);
   }
   return crc32(output.getBuffer(), output.getBufferLength());
 }

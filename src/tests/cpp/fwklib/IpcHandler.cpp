@@ -27,8 +27,8 @@
 #include <ace/SOCK_Connector.h>
 #include <ace/OS.h>
 
-using namespace gemfire;
-using namespace gemfire::testframework;
+using namespace apache::geode::client;
+using namespace apache::geode::client::testframework;
 
 // This class is not thread safe, and its use in the test framework
 // does not require it to be.

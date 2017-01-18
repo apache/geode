@@ -27,7 +27,9 @@
 /** @file
 */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /** Vector template type class */
 template <class PTR_TYPE>
@@ -250,6 +252,8 @@ class CPPCACHE_EXPORT VectorOfCacheableKey : public _VectorOfCacheableKey,
 
 typedef SharedPtr<VectorOfCacheable> VectorOfCacheablePtr;
 typedef SharedPtr<VectorOfCacheableKey> VectorOfCacheableKeyPtr;
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

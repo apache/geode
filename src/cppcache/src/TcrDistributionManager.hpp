@@ -20,7 +20,9 @@
 #include <gfcpp/gfcpp_globals.hpp>
 #include "ThinClientDistributionManager.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class ThinClientRegion;
 /**
@@ -48,5 +50,7 @@ class CPPCACHE_EXPORT TcrDistributionManager
   TcrDistributionManager(const TcrDistributionManager&);
   TcrDistributionManager& operator=(const TcrDistributionManager&);
 };
-};      // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // __TCR_DISTRIBUTION_MANAGER_HPP__

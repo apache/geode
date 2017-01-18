@@ -27,7 +27,7 @@
 #include "ThinClientPoolDM.hpp"
 #include <gfcpp/PoolManager.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 ThinClientPoolRegion::ThinClientPoolRegion(
     const std::string& name, CacheImpl* cache, RegionInternal* rPtr,

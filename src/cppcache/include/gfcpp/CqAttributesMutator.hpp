@@ -25,7 +25,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * @class CqAttributesMutator CqAttributesMutator.hpp
@@ -65,7 +67,8 @@ class CPPCACHE_EXPORT CqAttributesMutator : virtual public SharedBase {
    */
   virtual void setCqListeners(VectorOfCqListener& newListeners) = 0;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_CQ_ATTRIBUTES_MUTATOR_H__

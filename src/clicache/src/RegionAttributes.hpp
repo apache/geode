@@ -70,7 +70,7 @@ namespace GemStone
       /// <seealso cref="Region.Attributes" />
       generic <class TKey, class TValue>
       public ref class RegionAttributes sealed
-				: public Generic::Internal::SBWrap<gemfire::RegionAttributes>, public IGFSerializable
+				: public Generic::Internal::SBWrap<apache::geode::client::RegionAttributes>, public IGFSerializable
       {
       public:
 
@@ -483,7 +483,7 @@ namespace GemStone
         /// <returns>
         /// The managed wrapper object; null if the native pointer is null.
         /// </returns>
-        inline static RegionAttributes<TKey, TValue>^ Create( gemfire::RegionAttributes* nativeptr )
+        inline static RegionAttributes<TKey, TValue>^ Create( apache::geode::client::RegionAttributes* nativeptr )
         {
           return ( nativeptr != nullptr ?
             gcnew RegionAttributes<TKey, TValue>( nativeptr ) : nullptr );
@@ -496,7 +496,7 @@ namespace GemStone
         /// Private constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline RegionAttributes<TKey, TValue>( gemfire::RegionAttributes* nativeptr )
+        inline RegionAttributes<TKey, TValue>( apache::geode::client::RegionAttributes* nativeptr )
           : SBWrap( nativeptr ) { }
       };
 

@@ -30,7 +30,9 @@
 
 /*Stores the information such as partition attributes and meta data details*/
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class ThinClientPoolDM;
 class ClientMetadata;
 
@@ -99,6 +101,8 @@ class CPPCACHE_EXPORT ClientMetadata : public SharedBase, public NonAssignable {
   BucketServerLocationPtr advisePrimaryServerLocation(int bucketId);
   BucketServerLocationPtr adviseRandomServerLocation();
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

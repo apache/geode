@@ -27,13 +27,16 @@
 /** @file
 */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 #if GF_DEVEL_ASSERTS == 1
-#define GF_CHECK_NPE(x) \
-  if (x != NULL) {      \
-  } else                \
-    gemfire::SPEHelper::throwNullPointerException(typeid(*this).name())
+#define GF_CHECK_NPE(x)                                          \
+  if (x != NULL) {                                               \
+  } else                                                         \
+    apache::geode::client::SPEHelper::throwNullPointerException( \
+        typeid(*this).name())
 #else
 #define GF_CHECK_NPE(x)
 #endif
@@ -273,6 +276,8 @@ template <class TargetSP, class Other>
 bool instanceOf(const SharedPtr<Other>& other) {
   return (dynamic_cast<GF_UNWRAP_SP(TargetSP)*>(other.ptr()) != NULL);
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

@@ -25,7 +25,9 @@
 
 #include <string>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace testframework {
 
 class ClientTask {
@@ -152,6 +154,8 @@ class ThreadedTask : public ClientTask {
 };
 
 }  // namespace testframework
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __ClientTask_hpp__

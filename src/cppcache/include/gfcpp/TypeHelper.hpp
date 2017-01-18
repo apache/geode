@@ -24,7 +24,9 @@
 
 #include "gfcpp_globals.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 // Forward declaration of SharedPtr<T>
 template <typename Target>
 class SharedPtr;
@@ -117,28 +119,34 @@ struct UnwrapSharedPtr<SharedArrayPtr<T, ID> > {
   typedef CacheableArrayType<T, ID> type;
 };
 }  // namespace TypeHelper
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 /** @brief Macro to unwrap the type <code>T</code> inside SharedPtr. */
-#define GF_UNWRAP_SP(T) typename gemfire::TypeHelper::UnwrapSharedPtr<T>::type
+#define GF_UNWRAP_SP(T) \
+  typename apache::geode::client::TypeHelper::UnwrapSharedPtr<T>::type
 
 /**
  * @brief Macro to determine if the type <code>T</code> is derived from
  *        <code>Serializable</code>.
  */
-#define GF_TYPE_IS_SERIALIZABLE(T) \
-  gemfire::TypeHelper::SuperSubclass<gemfire::Serializable, T>::result
+#define GF_TYPE_IS_SERIALIZABLE(T)                  \
+  apache::geode::client::TypeHelper::SuperSubclass< \
+      apache::geode::client::Serializable, T>::result
 
 /**
  * @brief Macro that returns <code>yes_type</code> if the type <code>T</code> is
  *        derived from <code>Serializable</code> and <code>no_type</code>
  *        otherwise. Useful for overloaded template functions.
  */
-#define GF_TYPE_IS_SERIALIZABLE_TYPE(T) \
-  gemfire::TypeHelper::YesNoType<GF_TYPE_IS_SERIALIZABLE(T)>::value
+#define GF_TYPE_IS_SERIALIZABLE_TYPE(T)                                 \
+  apache::geode::client::TypeHelper::YesNoType<GF_TYPE_IS_SERIALIZABLE( \
+      T)>::value
 
-#define GF_SRC_IS_TARGET_TYPE(TARGET, SRC) \
-  gemfire::TypeHelper::YesNoType<          \
-      gemfire::TypeHelper::SuperSubclass<TARGET, SRC>::result>::value
+#define GF_SRC_IS_TARGET_TYPE(TARGET, SRC)                     \
+  apache::geode::client::TypeHelper::YesNoType<                \
+      apache::geode::client::TypeHelper::SuperSubclass<TARGET, \
+                                                       SRC>::result>::value
 
 #endif  // _GEMFIRE_TYPEHELPER_HPP_

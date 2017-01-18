@@ -33,7 +33,7 @@
 #include <gfcpp/GemfireCppCache.hpp>
 
 // Use the "gemfire" namespace.
-using namespace gemfire;
+using namespace apache::geode::client;
 
 char* getFuncIName = (char*)"MultiGetFunctionI";
 
@@ -174,7 +174,7 @@ int main(int argc, char** argv) {
           "writer2 was doing get operation.");
 
       return 1;
-    } catch (const gemfire::NotAuthorizedException& expected) {
+    } catch (const apache::geode::client::NotAuthorizedException& expected) {
       LOGINFO(
           "Got expected authorization failure while obtaining the Entry: %s",
           expected.getMessage());

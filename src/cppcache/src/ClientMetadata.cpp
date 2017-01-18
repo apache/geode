@@ -21,7 +21,9 @@
 #include <climits>
 #include <ace/OS.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 ClientMetadata::ClientMetadata(
     int totalNumBuckets, CacheableStringPtr colocatedWith,
@@ -383,4 +385,6 @@ BucketServerLocationPtr ClientMetadata::adviseRandomServerLocation() {
   }
   return NULLPTR;
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

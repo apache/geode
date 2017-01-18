@@ -21,7 +21,9 @@
 #include <gfcpp/SharedPtr.hpp>
 #include "SpinLock.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 // Bit mask for recently used
 #define RECENTLY_USED_BITS 1ul
 // Bit mask for evicted
@@ -144,7 +146,8 @@ class LRUList {
   LRUListNode* m_tailNode;
 
 };  // LRUList
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __GEMFIRE_IMPL_LRULIST_H__

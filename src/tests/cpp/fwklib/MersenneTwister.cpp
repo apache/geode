@@ -76,7 +76,7 @@
 
 #include "MersenneTwister.hpp"
 
-gemfire::SpinLock MTRand::lck;
+apache::geode::client::SpinLock MTRand::lck;
 
 MTRand::MTRand(const uint32_t &oneSeed) { seed(oneSeed); }
 
@@ -116,7 +116,7 @@ double MTRand::randNorm(const double &mean, const double &variance) {
 uint32_t MTRand::randInt() {
   // Pull a 32-bit integer from the generator state
   // Every other access function simply transforms the numbers extracted here
-  gemfire::SpinLockGuard guard(lck);
+  apache::geode::client::SpinLockGuard guard(lck);
 
   if (left <= 0) reload();
   --left;

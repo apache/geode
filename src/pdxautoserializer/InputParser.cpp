@@ -18,7 +18,9 @@
 #include "base_types.hpp"
 #include "InputParser.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace pdx_auto_serializer {
 // ClassInfo method definitions
 
@@ -49,4 +51,6 @@ bool InputParser::contains(const std::string& className) const {
   return (findClass != m_classes.end());
 }
 }  // namespace pdx_auto_serializer
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

@@ -17,8 +17,8 @@
 #include "Service.hpp"
 #include "fwklib/FwkLog.hpp"
 
-using namespace gemfire;
-using namespace gemfire::testframework;
+using namespace apache::geode::client;
+using namespace apache::geode::client::testframework;
 
 Service::Service(int32_t threadCnt)
     : m_ThreadCount(threadCnt), m_run(true), m_Mutex() {

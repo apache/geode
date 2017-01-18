@@ -23,7 +23,9 @@
 #include <ace/SOCK_Acceptor.h>
 #include <string>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace testframework {
 
 class TcpIpc {
@@ -67,6 +69,8 @@ class TcpIpc {
 };
 
 }  // namespace testframework
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __TcpIpc_hpp__

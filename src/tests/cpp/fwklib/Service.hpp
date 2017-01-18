@@ -27,7 +27,9 @@
 
 #include <string>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace testframework {
 
 class SharedTaskObject {
@@ -84,7 +86,9 @@ class Service : public ACE_Task_Base {
 
   int32_t runThreaded(ServiceTask* task, uint32_t threads);
 
-  inline uint32_t getBusyCount() { return static_cast<uint32_t>(m_busy.value()); }
+  inline uint32_t getBusyCount() {
+    return static_cast<uint32_t>(m_busy.value());
+  }
   inline uint32_t getIdleCount() {
     return m_ThreadCount - static_cast<uint32_t>(m_busy.value());
   }
@@ -156,5 +160,7 @@ class IPCMessage {
 };
 
 }  // namespace testframework
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // __Service_hpp__

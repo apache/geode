@@ -34,7 +34,7 @@ END_TEST(NotOnWindows)
 #include <VersionTag.hpp>
 #include <stdlib.h>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace std;
 
 typedef std::vector<MapEntryImplPtr> VectorOfMapEntry;

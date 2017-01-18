@@ -25,7 +25,9 @@
 /** @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /** typedef for the hash function used by the hashing schemes. */
 typedef int32_t (*Hasher)(const SharedBasePtr&);
@@ -70,6 +72,8 @@ template <typename TKEY>
 inline bool equalToFunction(const TKEY& x, const TKEY& y) {
   return (*x.ptr() == *y.ptr());
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

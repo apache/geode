@@ -24,7 +24,9 @@
 #include "PdxRemoteWriter.hpp"
 #include "PdxTypeRegistry.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 /* adongre
  * Coverity - II
  * Non-static class member "m_currentDataIdx" is not initialized in this
@@ -321,4 +323,6 @@ PdxWriterPtr PdxRemoteWriter::writeArrayOfByteArrays(const char* fieldName,
                                          elementLength);
   return PdxWriterPtr(this);
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

@@ -51,7 +51,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class CacheFactory;
 class ExpiryTaskManager;
@@ -77,7 +79,7 @@ class ExpiryTaskManager;
 
 /* adongre
  * CID 28711: Other violation (MISSING_ASSIGN)
- * Class "gemfire::CacheImpl" owns resources that are managed
+ * Class "apache::geode::client::CacheImpl" owns resources that are managed
  * in its constructor and destructor but has no user-written assignment
  * operator.
  *
@@ -335,6 +337,7 @@ class CPPCACHE_EXPORT CacheImpl : private NonCopyable, private NonAssignable {
   friend class CacheFactory;
   friend class Cache;
 };
-
-};      // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // ifndef __GEMFIRE_CACHEIMPL_H__

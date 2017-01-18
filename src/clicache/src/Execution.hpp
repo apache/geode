@@ -43,7 +43,7 @@ namespace GemStone
       /// </summary>
       generic<class TResult>
       public ref class Execution sealed
-        : public Internal::SBWrap<gemfire::Execution>
+        : public Internal::SBWrap<apache::geode::client::Execution>
       {
       public:
         /// <summary>
@@ -89,7 +89,7 @@ namespace GemStone
         /// <returns>
         /// The managed wrapper object; null if the native pointer is null.
         /// </returns>
-        inline static Execution<TResult>^ Create( gemfire::Execution* nativeptr, IResultCollector<TResult>^ rc )
+        inline static Execution<TResult>^ Create( apache::geode::client::Execution* nativeptr, IResultCollector<TResult>^ rc )
         {
           return ( nativeptr != nullptr ?
             gcnew Execution<TResult>( nativeptr, rc ) : nullptr );
@@ -99,7 +99,7 @@ namespace GemStone
         /// Private constructor to wrap a native object pointer.
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline Execution( gemfire::Execution* nativeptr, IResultCollector<TResult>^ rc )
+        inline Execution( apache::geode::client::Execution* nativeptr, IResultCollector<TResult>^ rc )
           : SBWrap( nativeptr ) { m_rc = rc;}
       private:
         IResultCollector<TResult>^ m_rc;

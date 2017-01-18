@@ -19,7 +19,7 @@
 #include <gfcpp/CacheableKey.hpp>
 #include <CacheableToken.hpp>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 RegionEntry::RegionEntry(const RegionPtr& region, const CacheableKeyPtr& key,
                          const CacheablePtr& value)

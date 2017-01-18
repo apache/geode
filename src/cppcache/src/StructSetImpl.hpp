@@ -33,7 +33,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class CPPCACHE_EXPORT StructSetImpl : public StructSet {
  public:
@@ -67,7 +69,8 @@ class CPPCACHE_EXPORT StructSetImpl : public StructSet {
 
   int32_t m_nextIndex;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_STRUCTSETIMPL_H__

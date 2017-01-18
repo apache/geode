@@ -41,7 +41,7 @@
 #define TESTOBJECT_EXPORT
 #endif
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace testframework;
 namespace testobject {
 class TESTOBJECT_EXPORT FastAssetAccount : public TimestampedObject {
@@ -67,8 +67,9 @@ class TESTOBJECT_EXPORT FastAssetAccount : public TimestampedObject {
         timestamp(0) {}
   FastAssetAccount(int index, bool encodeTimestp, int maxVal, int asstSize = 0);
   virtual ~FastAssetAccount();
-  virtual void toData(gemfire::DataOutput& output) const;
-  virtual gemfire::Serializable* fromData(gemfire::DataInput& input);
+  virtual void toData(apache::geode::client::DataOutput& output) const;
+  virtual apache::geode::client::Serializable* fromData(
+      apache::geode::client::DataInput& input);
   virtual int32_t classId() const { return 23; }
   CacheableStringPtr toString() const;
 
@@ -112,11 +113,11 @@ class TESTOBJECT_EXPORT FastAssetAccount : public TimestampedObject {
       resetTimestamp();
     }
   }
-  static gemfire::Serializable* createDeserializable() {
+  static apache::geode::client::Serializable* createDeserializable() {
     return new FastAssetAccount();
   }
 };
 
-typedef gemfire::SharedPtr<FastAssetAccount> FastAssetAccountPtr;
+typedef apache::geode::client::SharedPtr<FastAssetAccount> FastAssetAccountPtr;
 }  // namespace testobject
 #endif

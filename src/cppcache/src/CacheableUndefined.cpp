@@ -20,7 +20,9 @@
 #include <gfcpp/GemfireTypeIds.hpp>
 #include <GemfireTypeIdsImpl.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 void CacheableUndefined::toData(DataOutput& output) const {}
 
@@ -37,4 +39,6 @@ int8_t CacheableUndefined::DSFID() const {
 }
 
 uint32_t CacheableUndefined::objectSize() const { return 0; }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

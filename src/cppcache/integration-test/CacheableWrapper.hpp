@@ -22,7 +22,7 @@
 #include <map>
 #include <vector>
 
-using namespace gemfire;
+using namespace apache::geode::client;
 
 class CacheableWrapper {
  protected:

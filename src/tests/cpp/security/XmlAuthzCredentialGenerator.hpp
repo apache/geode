@@ -26,7 +26,9 @@
 #include <time.h>
 #include <stdlib.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace testframework {
 namespace security {
 
@@ -305,6 +307,8 @@ class XmlAuthzCredentialGenerator : public SharedBase {
 
 }  // namespace security
 }  // namespace testframework
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif /*_GEMFIRE_AUTHZCREDENTIALGENERATOR_HPP_*/

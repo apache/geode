@@ -46,7 +46,7 @@ namespace GemStone
       {
         return static_cast<ExpirationAction>(
           NativePtr->setEntryIdleTimeoutAction(
-          static_cast<gemfire::ExpirationAction::Action>( action ) ) );
+          static_cast<apache::geode::client::ExpirationAction::Action>( action ) ) );
       }
 
       generic<class TKey, class TValue>
@@ -61,7 +61,7 @@ namespace GemStone
       {
         return static_cast<ExpirationAction>(
           NativePtr->setEntryTimeToLiveAction(
-          static_cast<gemfire::ExpirationAction::Action>( action ) ) );
+          static_cast<apache::geode::client::ExpirationAction::Action>( action ) ) );
       }
 
       generic<class TKey, class TValue>
@@ -76,7 +76,7 @@ namespace GemStone
       {
         return static_cast<ExpirationAction>(
           NativePtr->setRegionIdleTimeoutAction(
-          static_cast<gemfire::ExpirationAction::Action>( action ) ) );
+          static_cast<apache::geode::client::ExpirationAction::Action>( action ) ) );
       }
 
       generic<class TKey, class TValue>
@@ -91,7 +91,7 @@ namespace GemStone
       {
         return static_cast<ExpirationAction>(
           NativePtr->setRegionTimeToLiveAction(
-          static_cast<gemfire::ExpirationAction::Action>( action ) ) );
+          static_cast<apache::geode::client::ExpirationAction::Action>( action ) ) );
       }
 
       generic<class TKey, class TValue>
@@ -103,13 +103,13 @@ namespace GemStone
       generic<class TKey, class TValue>
       void AttributesMutator<TKey, TValue>::SetCacheListener( ICacheListener<TKey, TValue>^ cacheListener )
       {
-        gemfire::CacheListenerPtr listenerptr;
+        apache::geode::client::CacheListenerPtr listenerptr;
         if (cacheListener != nullptr)
         {
           CacheListenerGeneric<TKey, TValue>^ clg = gcnew CacheListenerGeneric<TKey, TValue>();
           clg->SetCacheListener(cacheListener);
-          listenerptr = new gemfire::ManagedCacheListenerGeneric( /*clg,*/ cacheListener );
-          ((gemfire::ManagedCacheListenerGeneric*)listenerptr.ptr())->setptr(clg);
+          listenerptr = new apache::geode::client::ManagedCacheListenerGeneric( /*clg,*/ cacheListener );
+          ((apache::geode::client::ManagedCacheListenerGeneric*)listenerptr.ptr())->setptr(clg);
         }
         NativePtr->setCacheListener( listenerptr );
       }
@@ -129,13 +129,13 @@ namespace GemStone
       generic<class TKey, class TValue>
       void AttributesMutator<TKey, TValue>::SetCacheLoader( ICacheLoader<TKey, TValue>^ cacheLoader )
       {
-        gemfire::CacheLoaderPtr loaderptr;
+        apache::geode::client::CacheLoaderPtr loaderptr;
         if (cacheLoader != nullptr)
         {
           CacheLoaderGeneric<TKey, TValue>^ clg = gcnew CacheLoaderGeneric<TKey, TValue>();
           clg->SetCacheLoader(cacheLoader);
-          loaderptr = new gemfire::ManagedCacheLoaderGeneric( /*clg,*/ cacheLoader );
-          ((gemfire::ManagedCacheLoaderGeneric*)loaderptr.ptr())->setptr(clg);
+          loaderptr = new apache::geode::client::ManagedCacheLoaderGeneric( /*clg,*/ cacheLoader );
+          ((apache::geode::client::ManagedCacheLoaderGeneric*)loaderptr.ptr())->setptr(clg);
         }
         NativePtr->setCacheLoader( loaderptr );
       }
@@ -155,13 +155,13 @@ namespace GemStone
       generic<class TKey, class TValue>
       void AttributesMutator<TKey, TValue>::SetCacheWriter( ICacheWriter<TKey, TValue>^ cacheWriter )
       {
-        gemfire::CacheWriterPtr writerptr;
+        apache::geode::client::CacheWriterPtr writerptr;
         if (cacheWriter != nullptr)
         {
           CacheWriterGeneric<TKey, TValue>^ cwg = gcnew CacheWriterGeneric<TKey, TValue>();
           cwg->SetCacheWriter(cacheWriter);
-          writerptr = new gemfire::ManagedCacheWriterGeneric( /*cwg,*/ cacheWriter );
-          ((gemfire::ManagedCacheWriterGeneric*)writerptr.ptr())->setptr(cwg);
+          writerptr = new apache::geode::client::ManagedCacheWriterGeneric( /*cwg,*/ cacheWriter );
+          ((apache::geode::client::ManagedCacheWriterGeneric*)writerptr.ptr())->setptr(cwg);
         }
         NativePtr->setCacheWriter( writerptr );
       }

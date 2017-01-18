@@ -31,7 +31,9 @@
 #include <gfcpp/DataOutput.hpp>
 #include <string>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class PdxFieldType;
 typedef SharedPtr<PdxFieldType> PdxFieldTypePtr;
 class CPPCACHE_EXPORT PdxFieldType : public Serializable {
@@ -106,5 +108,7 @@ class CPPCACHE_EXPORT PdxFieldType : public Serializable {
 
   int32 getRelativeOffset() const { return m_relativeOffset; }
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif /* PDXFIELDTYPE_HPP_ */

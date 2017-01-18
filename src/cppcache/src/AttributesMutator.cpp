@@ -18,7 +18,9 @@
 #include <gfcpp/AttributesMutator.hpp>
 #include <RegionInternal.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 AttributesMutator::AttributesMutator(const RegionPtr& region)
     : m_region(region) {}
@@ -158,4 +160,6 @@ void AttributesMutator::setCacheWriter(const char* libpath,
   RegionInternal* rImpl = dynamic_cast<RegionInternal*>(m_region.ptr());
   rImpl->adjustCacheWriter(libpath, factoryFuncName);
 }
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

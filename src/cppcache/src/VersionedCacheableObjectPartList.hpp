@@ -37,7 +37,9 @@
 /** @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class ThinClientRegion;
 
 /**
@@ -277,6 +279,8 @@ class VersionedCacheableObjectPartList : public CacheableObjectPartList {
 
   virtual uint32_t objectSize() const;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // _GEMFIRE_VERSIONEDCACHEABLEOBJECTPARTLIST_HPP_

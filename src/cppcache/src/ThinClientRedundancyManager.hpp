@@ -32,7 +32,9 @@
 #include <list>
 #include <string>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class TcrConnectionManager;
 class TcrHADistributionManager;
@@ -139,6 +141,8 @@ class ThinClientRedundancyManager {
   friend class TcrConnectionManager;
   static const char* NC_PerodicACK;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif /* THINCLIENTREDUNDANCYMANAGER_HPP_ */

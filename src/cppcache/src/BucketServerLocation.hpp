@@ -20,7 +20,9 @@
 #include "ServerLocation.hpp"
 #include <string>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 _GF_PTR_DEF_(BucketServerLocation, BucketServerLocationPtr)
 
 class BucketServerLocation : public ServerLocation {
@@ -91,7 +93,7 @@ class BucketServerLocation : public ServerLocation {
 
   inline int8 getVersion() const { return m_version; }
 
-  void toData(gemfire::DataOutput& output) const {
+  void toData(apache::geode::client::DataOutput& output) const {
     ServerLocation::toData(output);
     output.writeInt(m_bucketId);
     output.writeBoolean(m_isPrimary);
@@ -104,7 +106,7 @@ class BucketServerLocation : public ServerLocation {
     }
   }
 
-  BucketServerLocation* fromData(gemfire::DataInput& input) {
+  BucketServerLocation* fromData(apache::geode::client::DataInput& input) {
     ServerLocation::fromData(input);
     input.readInt((int32_t*)&m_bucketId);
     input.readBoolean(&m_isPrimary);
@@ -168,6 +170,8 @@ class BucketServerLocation : public ServerLocation {
 
   inline CacheableStringArrayPtr getServerGroups() { return m_serverGroups; }
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif

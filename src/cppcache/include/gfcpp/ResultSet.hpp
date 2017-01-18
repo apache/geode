@@ -30,7 +30,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * @class ResultSet ResultSet.hpp
@@ -75,7 +77,8 @@ class CPPCACHE_EXPORT ResultSet : public SelectResults {
    */
   virtual ~ResultSet(){};
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_RESULTSET_H__

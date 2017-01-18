@@ -22,7 +22,9 @@
 #include "VersionedCacheableObjectPartList.hpp"
 #include "PutAllPartialResult.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class PutAllPartialResultServerException;
 typedef SharedPtr<PutAllPartialResultServerException>
@@ -136,5 +138,7 @@ class CPPCACHE_EXPORT PutAllPartialResultServerException : public Serializable {
   CacheableStringPtr m_message;  // error message
   PutAllPartialResultPtr m_result;
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif

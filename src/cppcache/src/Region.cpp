@@ -17,7 +17,11 @@
 
 #include <gfcpp/Region.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 Region::Region() {}
 Region::~Region() {}
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

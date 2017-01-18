@@ -55,7 +55,7 @@ namespace GemStone
         {
           _GF_MG_EXCEPTION_TRY2
 
-            gemfire::CacheableStringPtr value = NativePtr->getMessage(  );
+            apache::geode::client::CacheableStringPtr value = NativePtr->getMessage(  );
             return CacheableString::GetString( value.ptr( ) );          
 
           _GF_MG_EXCEPTION_CATCH_ALL2
@@ -65,7 +65,7 @@ namespace GemStone
         {
           _GF_MG_EXCEPTION_TRY2
 
-            gemfire::CacheableStringPtr value = NativePtr->getName(  );
+            apache::geode::client::CacheableStringPtr value = NativePtr->getName(  );
             return CacheableString::GetString( value.ptr( ) );          
 
           _GF_MG_EXCEPTION_CATCH_ALL2

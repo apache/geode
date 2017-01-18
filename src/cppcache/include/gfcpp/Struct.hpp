@@ -30,7 +30,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class StructSet;
 
@@ -151,7 +153,8 @@ class CPPCACHE_EXPORT Struct : public Serializable {
 
   int32_t m_lastAccessIndex;
 };
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_STRUCT_H__

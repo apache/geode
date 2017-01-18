@@ -22,7 +22,9 @@
  */
 #include "gfcpp_globals.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 /**
  * @class DiskPolicyType DiskPolicyType.hpp
  * Enumerated type for disk policy.
@@ -64,5 +66,7 @@ class CPPCACHE_EXPORT DiskPolicyType {
   DiskPolicyType(){};
   static const char* names[];
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // ifndef __GEMFIRE_DISKPOLICYTYPE_H__

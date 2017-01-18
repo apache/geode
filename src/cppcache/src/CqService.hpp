@@ -45,7 +45,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
  * @class CqService CqService.hpp
@@ -56,11 +58,13 @@ namespace gemfire {
 
 /* adongre
  * CID 28727: Other violation (MISSING_COPY)
- * Class "gemfire::CqService" owns resources that are managed in its
+ * Class "apache::geode::client::CqService" owns resources that are managed in
+ * its
  * constructor and destructor but has no user-written copy constructor.
  *
  * CID 28713: Other violation (MISSING_ASSIGN)
- * Class "gemfire::CqService" owns resources that are managed in its constructor
+ * Class "apache::geode::client::CqService" owns resources that are managed in
+ * its constructor
  * and destructor but has no user-written assignment operator.
  *
  * FIX : Make the class NonCopyable
@@ -253,7 +257,8 @@ class CPPCACHE_EXPORT CqService : public SharedBase,
 };
 
 typedef SharedPtr<CqService> CqServicePtr;
-
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_CQ_SERVICE_H__

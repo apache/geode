@@ -20,17 +20,21 @@
 
 #include "CacheTransactionManager.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
- * Extension of the gemfire::CacheTransactionManager that enables client
+ * Extension of the apache::geode::client::CacheTransactionManager that enables
+ * client
  * application
  * to use Gemfire transaction as part of the global XA transaction.
  *
  * The prepare method of this class corresponds to the prepare phases of the
  * 2 phase commit protocol driven by a global transaction manager.
  *
- * The implementation of the gemfire::CacheTransactionManager commit() and
+ * The implementation of the apache::geode::client::CacheTransactionManager
+ * commit() and
  * rollback()
  * methods must be 2 phase commit process aware.
  *
@@ -43,7 +47,7 @@ namespace gemfire {
  *
  */
 class CPPCACHE_EXPORT InternalCacheTransactionManager2PC
-    : public virtual gemfire::CacheTransactionManager {
+    : public virtual apache::geode::client::CacheTransactionManager {
  public:
   /**
    * Performs prepare during 2 phase commit completion.
@@ -62,6 +66,8 @@ class CPPCACHE_EXPORT InternalCacheTransactionManager2PC
   InternalCacheTransactionManager2PC();
   virtual ~InternalCacheTransactionManager2PC();
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif /* INTERNALCACHETRANSACTIONMANAGER2PC_H_ */

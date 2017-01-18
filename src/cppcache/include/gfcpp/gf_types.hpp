@@ -23,7 +23,9 @@
  * @file
  */
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 class CacheFactory;
 
@@ -99,6 +101,7 @@ _GF_PTR_DEF_(CacheableEnum, CacheableEnumPtr);
 _GF_PTR_DEF_(CqStatusListener, CqStatusListenerPtr);
 _GF_PTR_DEF_(InternalCacheTransactionManager2PC,
              InternalCacheTransactionManager2PCPtr);
-
-};      // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // ifndef __GEMFIRE_GF_TYPEDEF_H__

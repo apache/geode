@@ -24,7 +24,9 @@
 #include "ace/OS.h"
 #include "ace/Task.h"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace testframework {
 
 // Some useful conversion constants
@@ -85,5 +87,7 @@ class TimeSync : public ACE_Task_Base {
 };
 
 }  // namespace testframework
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // __TimeSync_hpp__

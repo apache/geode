@@ -25,7 +25,9 @@
 #include <ace/SOCK_Stream.h>
 #include <ace/OS.h>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 #ifdef WIN32
 
@@ -133,6 +135,8 @@ class CPPCACHE_EXPORT TcpConn : public Connector {
 
   virtual uint16 getPort();
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __TcpConn_hpp__

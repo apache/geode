@@ -20,7 +20,9 @@
 #include "GemfireTypeIdsImpl.hpp"
 #include "ServerLocationResponse.hpp"
 #include "ServerLocation.hpp"
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 class DataInput;
 class LocatorListResponse : public ServerLocationResponse {
  private:
@@ -43,5 +45,7 @@ class LocatorListResponse : public ServerLocationResponse {
   static Serializable* create();
 };
 typedef SharedPtr<LocatorListResponse> LocatorListResponsePtr;
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif

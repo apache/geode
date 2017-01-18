@@ -20,7 +20,9 @@
 
 #include "CodeGenerator.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace pdx_auto_serializer {
 /**
  * Defines a function with no arguments returning a pointer to
@@ -62,7 +64,9 @@ class CodeGeneratorFactory {
    */
   std::map<std::string, ASCodeGeneratorFn> m_generatorMap;
 };
-}
-}
+}  // namespace pdx_auto_serializer
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // _GFAS_CODEGENERATORFACTORY_HPP_

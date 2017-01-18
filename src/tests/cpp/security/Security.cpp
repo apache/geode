@@ -48,9 +48,9 @@ std::string READYCLIENTS("ReadyClients");
 }  // namespace FwkSecurity
 
 using namespace FwkSecurity;
-using namespace gemfire;
-using namespace gemfire::testframework;
-using namespace gemfire::testframework::security;
+using namespace apache::geode::client;
+using namespace apache::geode::client::testframework;
+using namespace apache::geode::client::testframework::security;
 
 Security *g_test = NULL;
 

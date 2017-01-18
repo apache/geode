@@ -23,7 +23,9 @@
 
 #include "PdxInstance.hpp"
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 /**
 * WritablePdxInstance is a {@link PdxInstance} that also supports field
@@ -529,6 +531,8 @@ class CPPCACHE_EXPORT WritablePdxInstance : public PdxInstance {
   WritablePdxInstance(const WritablePdxInstance& other);
   void operator=(const WritablePdxInstance& other);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif /* __WRITABLE_PDXINSTANCE_HPP_ */

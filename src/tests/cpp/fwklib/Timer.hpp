@@ -42,7 +42,9 @@
 
 #endif
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace testframework {
 
 #ifdef _WIN32
@@ -171,6 +173,8 @@ class HRTimer {
 };
 
 }  // namespace testframework
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __Timer_hpp__

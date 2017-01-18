@@ -22,7 +22,7 @@
 #define CLIENT2 s1p2
 #define SERVER1 s2p1
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace test;
 
 bool isLocalServer = true;

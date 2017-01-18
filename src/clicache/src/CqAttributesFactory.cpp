@@ -35,14 +35,14 @@ namespace GemStone
       generic<class TKey, class TResult>
       void CqAttributesFactory<TKey, TResult>::AddCqListener(Generic::ICqListener<TKey, TResult>^ cqListener )
       {
-        gemfire::CqListenerPtr listenerptr;
+        apache::geode::client::CqListenerPtr listenerptr;
         if ( cqListener != nullptr ) {
           ICqStatusListener<TKey, TResult>^ cqStatusListener = 
             dynamic_cast<ICqStatusListener<TKey, TResult>^>(cqListener);
           if (cqStatusListener != nullptr) {
             CqStatusListenerGeneric<TKey, TResult>^ sLstr = gcnew CqStatusListenerGeneric<TKey, TResult>();
             sLstr->AddCqListener(cqListener);
-            listenerptr = new gemfire::ManagedCqStatusListenerGeneric(cqListener);
+            listenerptr = new apache::geode::client::ManagedCqStatusListenerGeneric(cqListener);
             try {
               CqListenerHelper<TKey, TResult>::g_readerWriterLock->AcquireWriterLock(-1);
               if ( CqListenerHelper<TKey, TResult>::m_ManagedVsUnManagedCqLstrDict->ContainsKey( cqListener) ) {
@@ -54,14 +54,14 @@ namespace GemStone
             } finally {
                 CqListenerHelper<TKey, TResult>::g_readerWriterLock->ReleaseWriterLock();
             }
-            ((gemfire::ManagedCqStatusListenerGeneric*)listenerptr.ptr())->setptr(sLstr);
+            ((apache::geode::client::ManagedCqStatusListenerGeneric*)listenerptr.ptr())->setptr(sLstr);
           }
           else {
             //TODO::split
             CqListenerGeneric<TKey, TResult>^ cqlg = gcnew CqListenerGeneric<TKey, TResult>();
             cqlg->AddCqListener(cqListener);
-            //listenerptr = new gemfire::ManagedCqListenerGeneric((ICqListener<Object^, Object^>^)cqListener );
-            listenerptr = new gemfire::ManagedCqListenerGeneric( /*clg,*/ cqListener );
+            //listenerptr = new apache::geode::client::ManagedCqListenerGeneric((ICqListener<Object^, Object^>^)cqListener );
+            listenerptr = new apache::geode::client::ManagedCqListenerGeneric( /*clg,*/ cqListener );
             try {
               CqListenerHelper<TKey, TResult>::g_readerWriterLock->AcquireWriterLock(-1);
               if ( CqListenerHelper<TKey, TResult>::m_ManagedVsUnManagedCqLstrDict->ContainsKey( cqListener) ) {
@@ -73,7 +73,7 @@ namespace GemStone
             } finally {
                 CqListenerHelper<TKey, TResult>::g_readerWriterLock->ReleaseWriterLock();
             }
-            ((gemfire::ManagedCqListenerGeneric*)listenerptr.ptr())->setptr(cqlg);
+            ((apache::geode::client::ManagedCqListenerGeneric*)listenerptr.ptr())->setptr(cqlg);
           }
         }
 
@@ -83,12 +83,12 @@ namespace GemStone
       generic<class TKey, class TResult>
       void CqAttributesFactory<TKey, TResult>::InitCqListeners(array<Generic::ICqListener<TKey, TResult>^>^ cqListeners)
       {
-        gemfire::VectorOfCqListener vrr;
+        apache::geode::client::VectorOfCqListener vrr;
         for( int i = 0; i < cqListeners->Length; i++ )
         {
           ICqStatusListener<TKey, TResult>^ lister = dynamic_cast<ICqStatusListener<TKey, TResult>^>(cqListeners[i]);
           if (lister != nullptr) {
-            gemfire::CqStatusListenerPtr cptr(new gemfire::ManagedCqStatusListenerGeneric(
+            apache::geode::client::CqStatusListenerPtr cptr(new apache::geode::client::ManagedCqStatusListenerGeneric(
               (ICqStatusListener<TKey, TResult>^)lister ));
             vrr.push_back(cptr);
             CqStatusListenerGeneric<TKey, TResult>^ cqlg = gcnew CqStatusListenerGeneric<TKey, TResult>();
@@ -104,11 +104,11 @@ namespace GemStone
             } finally {
                 CqListenerHelper<TKey, TResult>::g_readerWriterLock->ReleaseWriterLock();
             }
-            ((gemfire::ManagedCqStatusListenerGeneric*)vrr[i].ptr())->setptr(cqlg);
+            ((apache::geode::client::ManagedCqStatusListenerGeneric*)vrr[i].ptr())->setptr(cqlg);
           }
           else {
             ICqListener<TKey, TResult>^ lister = cqListeners[i];
-            gemfire::CqListenerPtr cptr(new gemfire::ManagedCqListenerGeneric(
+            apache::geode::client::CqListenerPtr cptr(new apache::geode::client::ManagedCqListenerGeneric(
               (ICqListener<TKey, TResult>^)lister ));
             vrr.push_back(cptr);
             CqListenerGeneric<TKey, TResult>^ cqlg = gcnew CqListenerGeneric<TKey, TResult>();
@@ -124,7 +124,7 @@ namespace GemStone
             } finally {
                 CqListenerHelper<TKey, TResult>::g_readerWriterLock->ReleaseWriterLock();
             }
-            ((gemfire::ManagedCqListenerGeneric*)vrr[i].ptr())->setptr(cqlg);
+            ((apache::geode::client::ManagedCqListenerGeneric*)vrr[i].ptr())->setptr(cqlg);
           }
         }
 

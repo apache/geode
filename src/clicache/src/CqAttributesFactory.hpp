@@ -47,7 +47,7 @@ namespace GemStone
       /// <seealso cref="CqAttributes" />
       generic<class TKey, class TResult>
       public ref class CqAttributesFactory sealed
-        : public Internal::UMWrap<gemfire::CqAttributesFactory>
+        : public Internal::UMWrap<apache::geode::client::CqAttributesFactory>
       {
       public:
 
@@ -56,11 +56,11 @@ namespace GemStone
         /// to create a <c>CqAttributes</c> with default settings.
         /// </summary>
         inline CqAttributesFactory( )
-          : UMWrap( new gemfire::CqAttributesFactory( ), true )
+          : UMWrap( new apache::geode::client::CqAttributesFactory( ), true )
         { }
 
         inline CqAttributesFactory(Generic::CqAttributes<TKey, TResult>^ cqAttributes )
-          : UMWrap( new gemfire::CqAttributesFactory(gemfire::CqAttributesPtr(GetNativePtrFromSBWrapGeneric<gemfire::CqAttributes>(cqAttributes ))), true )
+          : UMWrap( new apache::geode::client::CqAttributesFactory(apache::geode::client::CqAttributesPtr(GetNativePtrFromSBWrapGeneric<apache::geode::client::CqAttributes>(cqAttributes ))), true )
         { }
 
         // ATTRIBUTES

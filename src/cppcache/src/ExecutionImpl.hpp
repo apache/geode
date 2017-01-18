@@ -28,7 +28,9 @@
 #include <ace/Guard_T.h>
 #include <map>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 typedef std::map<std::string, std::vector<int8>*> FunctionToFunctionAttributes;
 
 class ExecutionImpl : public Execution {
@@ -105,5 +107,7 @@ class ExecutionImpl : public Execution {
   std::vector<int8>* getFunctionAttributes(const char* func);
   GfErrType getFuncAttributes(const char* func, std::vector<int8>** attr);
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  //__GEMFIRE_EXECUTION_IMPL_H__

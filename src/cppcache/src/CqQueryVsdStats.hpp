@@ -24,7 +24,9 @@
 
 #include <gfcpp/CqStatistics.hpp>
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 
 using namespace gemfire_statistics;
 
@@ -100,6 +102,8 @@ class CqQueryStatType {
 
   inline int32_t getNumEventsId() { return m_numEventsId; }
 };
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __GEMFIRE_CQ_QUERY_STATS_H__

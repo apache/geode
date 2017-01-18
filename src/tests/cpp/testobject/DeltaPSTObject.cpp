@@ -18,7 +18,7 @@
 #include "ArrayOfByte.hpp"
 #include "DeltaPSTObject.hpp"
 
-using namespace gemfire;
+using namespace apache::geode::client;
 using namespace testframework;
 using namespace testobject;
 
@@ -45,14 +45,15 @@ void DeltaPSTObject::toDelta(DataOutput& output) const {
   output.writeInt(static_cast<int32_t>(field1));
   output.writeInt(static_cast<int64_t>(timestamp));
 }
-void DeltaPSTObject::toData(gemfire::DataOutput& output) const {
+void DeltaPSTObject::toData(apache::geode::client::DataOutput& output) const {
   output.writeInt(static_cast<int64_t>(timestamp));
   output.writeInt(static_cast<int32_t>(field1));
   output.write(field2);
   output.writeObject(valueData);
 }
 
-gemfire::Serializable* DeltaPSTObject::fromData(gemfire::DataInput& input) {
+apache::geode::client::Serializable* DeltaPSTObject::fromData(
+    apache::geode::client::DataInput& input) {
   input.readInt(reinterpret_cast<int64_t*>(&timestamp));
   input.readInt(&field1);
   input.read(&field2);

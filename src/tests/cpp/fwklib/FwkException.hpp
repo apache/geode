@@ -32,7 +32,9 @@
 
 // ----------------------------------------------------------------------------
 
-namespace gemfire {
+namespace apache {
+namespace geode {
+namespace client {
 namespace testframework {
 // ----------------------------------------------------------------------------
 
@@ -60,6 +62,8 @@ class FwkException {
 // ----------------------------------------------------------------------------
 
 }  // namespace  testframework
-}  // namespace gemfire
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // __FWKEXCEPTION_HPP__
