@@ -48,6 +48,7 @@ import org.apache.geode.internal.util.CollectionUtils;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.management.internal.cli.result.CommandResultException;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
@@ -75,7 +76,6 @@ public class LuceneIndexCommandsJUnitTest {
   public void testListIndexWithoutStats() {
 
     final Cache mockCache = mock(Cache.class, "Cache");
-    final String serverName = "mockServer";
     final AbstractExecution mockFunctionExecutor =
         mock(AbstractExecution.class, "Function Executor");
     final ResultCollector mockResultCollector = mock(ResultCollector.class, "ResultCollector");
@@ -85,12 +85,12 @@ public class LuceneIndexCommandsJUnitTest {
     fieldAnalyzers.put("field1", new StandardAnalyzer());
     fieldAnalyzers.put("field2", new KeywordAnalyzer());
     fieldAnalyzers.put("field3", null);
-    final LuceneIndexDetails indexDetails1 = createIndexDetails("memberFive", "/Employees",
-        searchableFields, fieldAnalyzers, true, serverName);
-    final LuceneIndexDetails indexDetails2 = createIndexDetails("memberSix", "/Employees",
-        searchableFields, fieldAnalyzers, false, serverName);
-    final LuceneIndexDetails indexDetails3 = createIndexDetails("memberTen", "/Employees",
-        searchableFields, fieldAnalyzers, true, serverName);
+    final LuceneIndexDetails indexDetails1 =
+        createIndexDetails("memberFive", "/Employees", searchableFields, fieldAnalyzers, true);
+    final LuceneIndexDetails indexDetails2 =
+        createIndexDetails("memberSix", "/Employees", searchableFields, fieldAnalyzers, false);
+    final LuceneIndexDetails indexDetails3 =
+        createIndexDetails("memberTen", "/Employees", searchableFields, fieldAnalyzers, true);
 
     final List<Set<LuceneIndexDetails>> results = new ArrayList<>();
 
@@ -124,7 +124,6 @@ public class LuceneIndexCommandsJUnitTest {
   public void testListIndexWithStats() {
 
     final Cache mockCache = mock(Cache.class, "Cache");
-    final String serverName = "mockServer";
     final AbstractExecution mockFunctionExecutor =
         mock(AbstractExecution.class, "Function Executor");
     final ResultCollector mockResultCollector = mock(ResultCollector.class, "ResultCollector");
@@ -137,11 +136,11 @@ public class LuceneIndexCommandsJUnitTest {
     fieldAnalyzers.put("field2", new KeywordAnalyzer());
     fieldAnalyzers.put("field3", null);
     final LuceneIndexDetails indexDetails1 = createIndexDetails("memberFive", "/Employees",
-        searchableFields, fieldAnalyzers, mockIndexStats1, true, serverName);
+        searchableFields, fieldAnalyzers, mockIndexStats1, true);
     final LuceneIndexDetails indexDetails2 = createIndexDetails("memberSix", "/Employees",
-        searchableFields, fieldAnalyzers, mockIndexStats2, true, serverName);
+        searchableFields, fieldAnalyzers, mockIndexStats2, true);
     final LuceneIndexDetails indexDetails3 = createIndexDetails("memberTen", "/Employees",
-        searchableFields, fieldAnalyzers, mockIndexStats3, true, serverName);
+        searchableFields, fieldAnalyzers, mockIndexStats3, true);
 
     final List<Set<LuceneIndexDetails>> results = new ArrayList<>();
 
@@ -207,7 +206,6 @@ public class LuceneIndexCommandsJUnitTest {
   public void testDescribeIndex() throws Exception {
 
     final Cache mockCache = mock(Cache.class, "Cache");
-    final String serverName = "mockServer";
     final ResultCollector mockResultCollector = mock(ResultCollector.class, "ResultCollector");
     final LuceneIndexCommands commands = spy(createIndexCommands(mockCache, null));
 
@@ -219,7 +217,7 @@ public class LuceneIndexCommandsJUnitTest {
     final LuceneIndexStats mockIndexStats = getMockIndexStats(1, 10, 5, 1);
     final List<LuceneIndexDetails> indexDetails = new ArrayList<>();
     indexDetails.add(createIndexDetails("memberFive", "/Employees", searchableFields,
-        fieldAnalyzers, mockIndexStats, true, serverName));
+        fieldAnalyzers, mockIndexStats, true));
 
     doReturn(mockResultCollector).when(commands).executeFunctionOnGroups(
         isA(LuceneDescribeIndexFunction.class), any(), any(LuceneIndexInfo.class));
@@ -441,16 +439,15 @@ public class LuceneIndexCommandsJUnitTest {
 
   private LuceneIndexDetails createIndexDetails(final String indexName, final String regionPath,
       final String[] searchableFields, final Map<String, Analyzer> fieldAnalyzers,
-      LuceneIndexStats indexStats, boolean status, final String serverName) {
+      LuceneIndexStats indexStats, boolean status) {
     return new LuceneIndexDetails(indexName, regionPath, searchableFields, fieldAnalyzers,
-        indexStats, status, serverName);
+        indexStats, status);
   }
 
   private LuceneIndexDetails createIndexDetails(final String indexName, final String regionPath,
-      final String[] searchableFields, final Map<String, Analyzer> fieldAnalyzers, boolean status,
-      final String serverName) {
+      final String[] searchableFields, final Map<String, Analyzer> fieldAnalyzers, boolean status) {
     return new LuceneIndexDetails(indexName, regionPath, searchableFields, fieldAnalyzers, null,
-        status, serverName);
+        status);
   }
 
   private LuceneSearchResults createQueryResults(final String key, final String value,

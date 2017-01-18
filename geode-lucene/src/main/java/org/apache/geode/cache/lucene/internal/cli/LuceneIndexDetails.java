@@ -21,8 +21,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.lucene.internal.LuceneIndexCreationProfile;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
@@ -33,7 +31,6 @@ public class LuceneIndexDetails implements Comparable<LuceneIndexDetails>, Seria
   private static final long serialVersionUID = 1L;
   private final String indexName;
   private final String regionPath;
-  private final String serverName;
   private final String[] searchableFieldNames;
   private Map<String, String> fieldAnalyzers = null;
   private final Map<String, Integer> indexStats;
@@ -41,24 +38,23 @@ public class LuceneIndexDetails implements Comparable<LuceneIndexDetails>, Seria
 
   public LuceneIndexDetails(final String indexName, final String regionPath,
       final String[] searchableFieldNames, final Map<String, Analyzer> fieldAnalyzers,
-      LuceneIndexStats indexStats, boolean initialized, final String serverName) {
+      LuceneIndexStats indexStats, boolean initialized) {
     this.indexName = indexName;
     this.regionPath = regionPath;
-    this.serverName = serverName;
     this.searchableFieldNames = searchableFieldNames;
     this.fieldAnalyzers = getFieldAnalyzerStrings(fieldAnalyzers);
     this.indexStats = getIndexStatsMap(indexStats);
     this.initialized = initialized;
   }
 
-  public LuceneIndexDetails(LuceneIndexImpl index, final String serverName) {
+  public LuceneIndexDetails(LuceneIndexImpl index) {
     this(index.getName(), index.getRegionPath(), index.getFieldNames(), index.getFieldAnalyzers(),
-        index.getIndexStats(), true, serverName);
+        index.getIndexStats(), true);
   }
 
-  public LuceneIndexDetails(LuceneIndexCreationProfile indexProfile, final String serverName) {
+  public LuceneIndexDetails(LuceneIndexCreationProfile indexProfile) {
     this(indexProfile.getIndexName(), indexProfile.getRegionPath(), indexProfile.getFieldNames(),
-        null, null, false, serverName);
+        null, null, false);
     this.fieldAnalyzers = getFieldAnalyzerStringsFromProfile(indexProfile.getFieldAnalyzers());
   }
 
@@ -161,7 +157,4 @@ public class LuceneIndexDetails implements Comparable<LuceneIndexDetails>, Seria
         : compare(getRegionPath(), indexDetails.getRegionPath()));
   }
 
-  public String getServerName() {
-    return serverName;
-  }
 }
