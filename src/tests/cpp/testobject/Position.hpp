@@ -103,5 +103,5 @@ class TESTOBJECT_EXPORT Position : public gemfire::Serializable {
 };
 
 typedef gemfire::SharedPtr<Position> PositionPtr;
-}
+}  // namespace testobject
 #endif

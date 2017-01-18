@@ -79,6 +79,6 @@ class TcpSslConn : public TcpConn {
 
   uint16 getPort();
 };
-}  // gemfire
+}  // namespace gemfire
 
 #endif  // __TcpSslConn_hpp__

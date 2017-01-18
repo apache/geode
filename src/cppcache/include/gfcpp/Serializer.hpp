@@ -141,7 +141,7 @@ inline void readObject(gemfire::DataInput& input, float& value) {
 }
 
 inline void writeObject(gemfire::DataOutput& output, wchar_t value) {
-  output.writeInt((int16_t)value);
+  output.writeInt(static_cast<int16_t>(value));
 }
 
 inline void readObject(gemfire::DataInput& input, wchar_t& value) {
@@ -225,7 +225,7 @@ template <typename TObj, typename TLen>
 inline void writeObject(gemfire::DataOutput& output, const TObj* array,
                         TLen len) {
   if (array == NULL) {
-    output.write((int8_t)-1);
+    output.write(static_cast<int8_t>(-1));
   } else {
     output.writeArrayLen(len);
     const TObj* endArray = array + len;
@@ -297,7 +297,7 @@ inline uint32_t objectSize(const _VectorOfCacheable& value) {
       objectSize += (*iter)->objectSize();
     }
   }
-  objectSize += (uint32_t)(sizeof(CacheablePtr) * value.size());
+  objectSize += static_cast<uint32_t>(sizeof(CacheablePtr) * value.size());
   return objectSize;
 }
 
@@ -337,8 +337,8 @@ inline uint32_t objectSize(const _HashMapOfCacheable& value) {
       objectSize += iter.second()->objectSize();
     }
   }
-  objectSize += (uint32_t)((sizeof(CacheableKeyPtr) + sizeof(CacheablePtr)) *
-                           value.size());
+  objectSize += static_cast<uint32_t>(
+      (sizeof(CacheableKeyPtr) + sizeof(CacheablePtr)) * value.size());
   return objectSize;
 }
 
@@ -377,7 +377,7 @@ inline uint32_t objectSize(const _HashSetOfCacheableKey& value) {
       objectSize += (*iter)->objectSize();
     }
   }
-  objectSize += (uint32_t)(sizeof(CacheableKeyPtr) * value.size());
+  objectSize += static_cast<uint32_t>(sizeof(CacheableKeyPtr) * value.size());
   return objectSize;
 }
 
@@ -415,7 +415,7 @@ template <>
 inline float zeroObject<float>() {
   return 0.0F;
 }
-}
-}
+}  // namespace serializer
+}  // namespace gemfire
 
 #endif  // _GEMFIRE_SERIALIZER_HPP_

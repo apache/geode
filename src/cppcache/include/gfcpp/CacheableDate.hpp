@@ -141,6 +141,6 @@ inline CacheableKeyPtr createKey(const timeval& value) {
 inline CacheablePtr createValue(const timeval& value) {
   return CacheablePtr(CacheableDate::create(value));
 }
-}
+}  // namespace gemfire
 
 #endif

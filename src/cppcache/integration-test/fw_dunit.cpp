@@ -1206,4 +1206,4 @@ NOCout::FLAGS endl = NOCout::endl;
 NOCout::FLAGS flush = NOCout::flush;
 NOCout::FLAGS hex = NOCout::hex;
 NOCout::FLAGS dec = NOCout::dec;
-}
+}  // namespace test

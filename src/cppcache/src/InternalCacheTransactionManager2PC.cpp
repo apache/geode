@@ -20,4 +20,4 @@
 namespace gemfire {
 InternalCacheTransactionManager2PC::InternalCacheTransactionManager2PC() {}
 InternalCacheTransactionManager2PC::~InternalCacheTransactionManager2PC() {}
-}
+}  // namespace gemfire

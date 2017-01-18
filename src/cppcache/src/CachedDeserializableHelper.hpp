@@ -94,6 +94,6 @@ class CachedDeserializableHelper : public Cacheable,
 
 typedef SharedPtr<CachedDeserializableHelper> CachedDeserializableHelperPtr;
 
-}  // end namespace gemfire;
+}  // namespace gemfire
 
 #endif  // CACHEDDESERIALIZABLEHELPER_HPP_

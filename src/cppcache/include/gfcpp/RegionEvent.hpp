@@ -65,6 +65,6 @@ class CPPCACHE_EXPORT RegionEvent {
   RegionEvent(const RegionEvent& other);
   void operator=(const RegionEvent& other);
 };
-}
+}  // namespace gemfire
 
 #endif

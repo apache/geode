@@ -119,5 +119,5 @@ class TESTOBJECT_EXPORT DeltaTestImpl : public Cacheable, public Delta {
   void setTestObjFlag() { deltaBits = deltaBits | TEST_OBJ_MASK; }
   CacheableStringPtr toString() const;
 };
-}
+}  // namespace testobject
 #endif /* DELTATESTIMPL_HPP_ */

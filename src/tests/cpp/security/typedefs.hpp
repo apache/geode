@@ -105,7 +105,7 @@ _Pragma("GCC system_header")
     OperationCode retCode = OP_END;
 
     if (it != allOpCodes.end()) {
-      retCode = (OperationCode)(it - allOpCodes.begin());
+      retCode = static_cast<OperationCode>(it - allOpCodes.begin());
       if (allOpCodes[retCode] != opCodeStr) {
         retCode = OP_END;
       }
@@ -121,8 +121,8 @@ _Pragma("GCC system_header")
   }
   */
 
-  };  // security
-  };  // testframework
-};    // gemfire
+  }  // namespace security
+  }  // namespace testframework
+}  // namespace gemfire
 
 #endif /*__TYPEDEFS_HPP_*/

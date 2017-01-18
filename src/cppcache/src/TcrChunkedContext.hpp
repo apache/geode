@@ -178,6 +178,6 @@ class TcrChunkedContext {
     }
   }
 };
-}
+}  // namespace gemfire
 
 #endif  // __TCR_CHUNKED_CONTEXT_HPP__

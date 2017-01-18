@@ -46,7 +46,8 @@ using namespace testobject;
 bool isLocator = false;
 bool isLocalServer = false;
 const char* poolNames[] = {"Pool1", "Pool2", "Pool3"};
-const char* locHostPort = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locHostPort =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 
 const char* qRegionNames[] = {"Portfolios", "Positions"};
 

@@ -91,8 +91,8 @@ class CPPCACHE_EXPORT PdxFieldType : public Serializable {
 
   virtual uint32_t objectSize() const {
     uint32_t size = sizeof(PdxFieldType);
-    size += (uint32_t)m_className.length();
-    size += (uint32_t)m_fieldName.length();
+    size += static_cast<uint32_t>(m_className.length());
+    size += static_cast<uint32_t>(m_fieldName.length());
     return size;
   }
 
@@ -106,5 +106,5 @@ class CPPCACHE_EXPORT PdxFieldType : public Serializable {
 
   int32 getRelativeOffset() const { return m_relativeOffset; }
 };
-}
+}  // namespace gemfire
 #endif /* PDXFIELDTYPE_HPP_ */

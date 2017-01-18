@@ -77,11 +77,11 @@ class PdxLocalWriter : public PdxWriter {
   inline void writeObject(bool value) { m_dataOutput->writeBoolean(value); }
 
   inline void writeObject(wchar_t value) {
-    m_dataOutput->writeInt((uint16_t)value);
+    m_dataOutput->writeInt(static_cast<uint16_t>(value));
   }
 
   inline void writePdxChar(char value) {
-    m_dataOutput->writeInt((uint16_t)value);
+    m_dataOutput->writeInt(static_cast<uint16_t>(value));
   }
 
   inline void writePdxCharArray(char* objArray, int arrayLen) {
@@ -95,7 +95,7 @@ class PdxLocalWriter : public PdxWriter {
         }
       }
     } else {
-      m_dataOutput->write((uint8_t)0xff);
+      m_dataOutput->write(static_cast<uint8_t>(0xff));
     }
   }
 
@@ -123,7 +123,7 @@ class PdxLocalWriter : public PdxWriter {
         }
       }
     } else {
-      m_dataOutput->write((uint8_t)0xff);
+      m_dataOutput->write(static_cast<uint8_t>(0xff));
     }
   }
 
@@ -337,5 +337,5 @@ class PdxLocalWriter : public PdxWriter {
   inline int32_t getStartPositionOffset() { return m_startPositionOffset; }
 };
 typedef SharedPtr<PdxLocalWriter> PdxLocalWriterPtr;
-}
+}  // namespace gemfire
 #endif /* PDXLOCALWRITER_HPP_ */

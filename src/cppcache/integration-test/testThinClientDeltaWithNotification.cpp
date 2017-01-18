@@ -33,7 +33,8 @@ CacheHelper* cacheHelper = NULL;
 bool isLocalServer = false;
 
 static bool isLocator = false;
-const char* locatorsG = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locatorsG =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 #define CLIENT1 s1p1
 #define CLIENT2 s1p2
 #define SERVER1 s2p1

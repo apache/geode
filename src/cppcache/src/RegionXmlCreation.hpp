@@ -122,5 +122,5 @@ class CPPCACHE_EXPORT RegionXmlCreation {
   std::string getAttrId() const;
   void setAttrId(const std::string& attrId);
 };
-};
+}  // namespace gemfire
 #endif  // #ifndef  _GEMFIRE_REGIONXMLCREATION_HPP_

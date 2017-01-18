@@ -62,8 +62,8 @@ void createRegionForSecurity(const char* name, bool ackMode,
   }
   printf("createRegionForSecurity poolname = %s \n", poolName);
   getHelper()->createPoolWithLocators(
-      poolName, locatorsG, clientNotificationEnabled,
-      subscriptionRedundancy, -1, connections, isMultiuserMode);
+      poolName, locatorsG, clientNotificationEnabled, subscriptionRedundancy,
+      -1, connections, isMultiuserMode);
   createRegionAndAttachPool(name, ackMode, poolName, caching);
   setCacheListener(name, listener);
 }
@@ -75,6 +75,5 @@ RegionServicePtr getVirtualCache(PropertiesPtr creds, PoolPtr pool) {
   // return pool->createSecureUserCache(creds);
   return cachePtr->createAuthenticatedView(creds, pool->getName());
 }
-
 
 #endif /* THINCLIENTSECURITY_HPP_ */

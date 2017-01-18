@@ -78,12 +78,14 @@ std::string getServerEndPoint(int instance) {
   std::string::size_type start_idx = 0;
   std::string::size_type end_idx = 0;
 
-  for (int i = 0; i < instance - 1; i++)
+  for (int i = 0; i < instance - 1; i++) {
     start_idx = allEndPts.find(',', start_idx) + 1;
+  }
 
   end_idx = allEndPts.find(',', start_idx);
-  if (end_idx == std::string::npos) /* asking for last endpoint */
+  if (end_idx == std::string::npos) { /* asking for last endpoint */
     end_idx = allEndPts.size();
+  }
 
   return (std::string(allEndPts, start_idx, end_idx - start_idx));
 }
@@ -100,27 +102,30 @@ END_TASK_DEFINITION
 
 DUNIT_TASK_DEFINITION(SERVER_SET1, S2Up)
   {
-    if (isLocalServer)
+    if (isLocalServer) {
       CacheHelper::initServer(2, "cacheserver_notify_subscription2.xml",
                               g_Locators);
+    }
     LOG("SERVER 2 started");
   }
 END_TASK_DEFINITION
 
 DUNIT_TASK_DEFINITION(SERVER_SET2, S3Up)
   {
-    if (isLocalServer)
+    if (isLocalServer) {
       CacheHelper::initServer(3, "cacheserver_notify_subscription3.xml",
                               g_Locators);
+    }
     LOG("SERVER 3 started");
   }
 END_TASK_DEFINITION
 
 DUNIT_TASK_DEFINITION(SERVER_SET2, S4Up)
   {
-    if (isLocalServer)
+    if (isLocalServer) {
       CacheHelper::initServer(4, "cacheserver_notify_subscription4.xml",
                               g_Locators);
+    }
     LOG("SERVER 4 started");
   }
 END_TASK_DEFINITION

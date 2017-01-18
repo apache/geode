@@ -273,6 +273,6 @@ template <class TargetSP, class Other>
 bool instanceOf(const SharedPtr<Other>& other) {
   return (dynamic_cast<GF_UNWRAP_SP(TargetSP)*>(other.ptr()) != NULL);
 }
-}
+}  // namespace gemfire
 
 #endif

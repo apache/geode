@@ -140,5 +140,5 @@ class ThinClientPoolHADM : public ThinClientPoolDM {
   static const char* NC_Redundancy;
 };
 typedef SharedPtr<ThinClientPoolHADM> ThinClientPoolHADMPtr;
-}
+}  // namespace gemfire
 #endif

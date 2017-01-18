@@ -67,16 +67,18 @@ void _verifyEntry(const char* name, const char* key, const char* val,
                   bool noKey) {
   // Verify key and value exist in this region, in this process.
   const char* value = (val == 0) ? "" : val;
-  char* buf = (char*)malloc(1024 + strlen(key) + strlen(value));
+  char* buf =
+      reinterpret_cast<char*>(malloc(1024 + strlen(key) + strlen(value)));
   ASSERT(buf, "Unable to malloc buffer for logging.");
-  if (noKey)
+  if (noKey) {
     sprintf(buf, "Verify key %s does not exist in region %s", key, name);
-  else if (val == 0)
+  } else if (val == 0) {
     sprintf(buf, "Verify value for key %s does not exist in region %s", key,
             name);
-  else
+  } else {
     sprintf(buf, "Verify value for key %s is: %s in region %s", key, value,
             name);
+  }
   LOG(buf);
   free(buf);
 
@@ -98,17 +100,19 @@ void _verifyEntry(const char* name, const char* key, const char* val,
 
   for (int i = MAX; i >= 0; i--) {
     if (noKey) {
-      if (regPtr->containsKey(keyPtr))
+      if (regPtr->containsKey(keyPtr)) {
         containsKeyCnt++;
-      else
+      } else {
         break;
+      }
       ASSERT(containsKeyCnt < MAX, "Key found in region.");
     }
     if (val == NULL) {
       if (regPtr->containsValueForKey(keyPtr)) {
         containsValueCnt++;
-      } else
+      } else {
         break;
+      }
       ASSERT(containsValueCnt < MAX, "Value found in region.");
     }
 
@@ -174,16 +178,16 @@ void createRegion(const char* name, bool ackMode, const char* endpoints,
   ASSERT(regPtr != NULLPTR, "Failed to create region.");
   LOG("Region created.");
 }
-void createPooledRegion(const char* name, bool ackMode, 
-                        const char* locators, const char* poolname,
+void createPooledRegion(const char* name, bool ackMode, const char* locators,
+                        const char* poolname,
                         bool clientNotificationEnabled = false,
                         bool cachingEnable = true) {
   LOG("createRegion_Pool() entered.");
   fprintf(stdout, "Creating region --  %s  ackMode is %d\n", name, ackMode);
   fflush(stdout);
-  RegionPtr regPtr = getHelper()->createPooledRegion(
-      name, ackMode, locators, poolname, cachingEnable,
-      clientNotificationEnabled);
+  RegionPtr regPtr =
+      getHelper()->createPooledRegion(name, ackMode, locators, poolname,
+                                      cachingEnable, clientNotificationEnabled);
   ASSERT(regPtr != NULLPTR, "Failed to create region.");
   LOG("Pooled Region created.");
 }
@@ -344,10 +348,10 @@ DUNIT_TASK_DEFINITION(CLIENT1, StepOne_Pool_Locator)
     char* buf = getcwd(buff, 2048);
     LOG(buf);
     initClient(true);
-    createPooledRegion(regionNames[0], USE_ACK,  locatorsG,
-                       "__TEST_POOL1__", true);
-    createPooledRegion(regionNames[1], NO_ACK,  locatorsG,
-                       "__TEST_POOL1__", true);
+    createPooledRegion(regionNames[0], USE_ACK, locatorsG, "__TEST_POOL1__",
+                       true);
+    createPooledRegion(regionNames[1], NO_ACK, locatorsG, "__TEST_POOL1__",
+                       true);
     RegionPtr regPtr = getHelper()->getRegion(regionNames[0]);
     regPtr->registerAllKeys(false, NULLPTR, false, false);
     regPtr = getHelper()->getRegion(regionNames[1]);
@@ -362,10 +366,10 @@ DUNIT_TASK_DEFINITION(CLIENT2, StepTwo_Pool_Locator)
     char* buf = getcwd(buff, 2048);
     LOG(buf);
     initClient(true);
-    createPooledRegion(regionNames[0], USE_ACK,  locatorsG,
-                       "__TEST_POOL1__", true);
-    createPooledRegion(regionNames[1], NO_ACK,  locatorsG,
-                       "__TEST_POOL1__", true);
+    createPooledRegion(regionNames[0], USE_ACK, locatorsG, "__TEST_POOL1__",
+                       true);
+    createPooledRegion(regionNames[1], NO_ACK, locatorsG, "__TEST_POOL1__",
+                       true);
     RegionPtr regPtr = getHelper()->getRegion(regionNames[0]);
     regPtr->registerAllKeys(false, NULLPTR, false, false);
     regPtr = getHelper()->getRegion(regionNames[1]);

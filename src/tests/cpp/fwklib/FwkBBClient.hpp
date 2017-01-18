@@ -181,6 +181,6 @@ class FwkBBClient {
 // ----------------------------------------------------------------------------
 
 }  // namespace  testframework
-}  // namepace gemfire
+}  // namespace gemfire
 
 #endif  // __FWK_BB_CLIENT_HPP__

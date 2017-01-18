@@ -62,5 +62,5 @@ class ThinClientLocatorHelper {
   ThinClientLocatorHelper(const ThinClientLocatorHelper&);
   ThinClientLocatorHelper& operator=(const ThinClientLocatorHelper&);
 };
-}
+}  // namespace gemfire
 #endif

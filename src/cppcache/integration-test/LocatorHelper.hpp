@@ -57,61 +57,68 @@ END_TASK_DEFINITION
 DUNIT_TASK_DEFINITION(SERVER1, CreateServer1_With_Locator_XML)
   {
     // starting servers
-    if (isLocalServer)
+    if (isLocalServer) {
       CacheHelper::initServer(1, "cacheserver_notify_subscription.xml",
                               locatorsG);
+    }
   }
 END_TASK_DEFINITION
 
 DUNIT_TASK_DEFINITION(SERVER1, CreateServer1_With_Locator_XML_Bug849)
   {
     // starting servers
-    if (isLocalServer)
+    if (isLocalServer) {
       CacheHelper::initServer(1, "cacheserver_notify_subscriptionBug849.xml",
                               locatorsG);
+    }
   }
 END_TASK_DEFINITION
 
 DUNIT_TASK_DEFINITION(SERVER1, CreateServer1_With_Locator_XML2)
   {
     // starting servers
-    if (isLocalServer)
+    if (isLocalServer) {
       CacheHelper::initServer(
           1, "cacheserver_notify_subscription_PutAllTimeout.xml", locatorsG);
+    }
   }
 END_TASK_DEFINITION
 
 DUNIT_TASK_DEFINITION(SERVER1, CreateServer1_With_Locator_XML5)
   {
     // starting servers
-    if (isLocalServer)
+    if (isLocalServer) {
       CacheHelper::initServer(1, "cacheserver_notify_subscription5.xml",
                               locatorsG);
+    }
   }
 END_TASK_DEFINITION
 
 DUNIT_TASK_DEFINITION(SERVER2, CreateServer2_With_Locator_XML)
   {
     // starting servers
-    if (isLocalServer)
+    if (isLocalServer) {
       CacheHelper::initServer(2, "cacheserver_notify_subscription2.xml",
                               locatorsG);
+    }
   }
 END_TASK_DEFINITION
 
 DUNIT_TASK_DEFINITION(SERVER1, CreateServer1_With_Locator_OQL)
   {
     // starting servers
-    if (isLocalServer)
+    if (isLocalServer) {
       CacheHelper::initServer(1, "cacheserver_remoteoql.xml", locatorsG);
+    }
   }
 END_TASK_DEFINITION
 
 DUNIT_TASK_DEFINITION(SERVER2, CreateServer2_With_Locator_OQL)
   {
     // starting servers
-    if (isLocalServer)
+    if (isLocalServer) {
       CacheHelper::initServer(2, "cacheserver_remoteoql2.xml", locatorsG);
+    }
   }
 END_TASK_DEFINITION
 

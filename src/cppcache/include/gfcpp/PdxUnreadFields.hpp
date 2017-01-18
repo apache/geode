@@ -18,7 +18,6 @@
  * limitations under the License.
  */
 
-
 #include "gf_base.hpp"
 #include "SharedBase.hpp"
 
@@ -43,6 +42,6 @@ class CPPCACHE_EXPORT PdxUnreadFields : public SharedBase {
   PdxUnreadFields() {}
   virtual ~PdxUnreadFields() {}
 };
-}
+}  // namespace gemfire
 
 #endif /* __GEMFIRE_PDXUNREADFIELDS_HPP_ */

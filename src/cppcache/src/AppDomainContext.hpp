@@ -31,7 +31,6 @@ class AppDomainContext {
 };
 
 extern AppDomainContext::factory createAppDomainContext;
-}
+}  // namespace gemfire
 
-#endif // __gemfire_AppDomainContext_h__
-
+#endif  // __gemfire_AppDomainContext_h__

@@ -33,7 +33,8 @@ CacheHelper* cacheHelper = NULL;
 bool isLocalServer = false;
 
 static bool isLocator = false;
-const char* locatorsG = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locatorsG =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 #define CLIENT1 s1p1
 #define CLIENT2 s1p2
 #define SERVER1 s2p1
@@ -74,16 +75,16 @@ CacheHelper* getHelper() {
   return cacheHelper;
 }
 
-void createPooledRegion(const char* name, bool ackMode, 
-                        const char* locators, const char* poolname,
+void createPooledRegion(const char* name, bool ackMode, const char* locators,
+                        const char* poolname,
                         bool clientNotificationEnabled = false,
                         bool cachingEnable = true) {
   LOG("createRegion_Pool() entered.");
   fprintf(stdout, "Creating region --  %s  ackMode is %d\n", name, ackMode);
   fflush(stdout);
-  RegionPtr regPtr = getHelper()->createPooledRegion(
-      name, ackMode, locators, poolname, cachingEnable,
-      clientNotificationEnabled);
+  RegionPtr regPtr =
+      getHelper()->createPooledRegion(name, ackMode, locators, poolname,
+                                      cachingEnable, clientNotificationEnabled);
   ASSERT(regPtr != NULLPTR, "Failed to create region.");
   LOG("Pooled Region created.");
 }
@@ -148,7 +149,7 @@ const bool USE_ACK = true;
 DUNIT_TASK_DEFINITION(CLIENT1, CreateClient1)
   {
     initClient(true);
-    createPooledRegion(regionNames[0], USE_ACK,  locatorsG, "__TESTPOOL1_",
+    createPooledRegion(regionNames[0], USE_ACK, locatorsG, "__TESTPOOL1_",
                        true);  // without LRU
     createPooledLRURegion(regionNames[1], USE_ACK, NULL, locatorsG,
                           "__TESTPOOL1_", true);  // with LRU
@@ -168,7 +169,7 @@ END_TASK_DEFINITION
 DUNIT_TASK_DEFINITION(CLIENT2, CreateClient2)
   {
     initClient(true);
-    createPooledRegion(regionNames[0], USE_ACK,  locatorsG, "__TESTPOOL1_",
+    createPooledRegion(regionNames[0], USE_ACK, locatorsG, "__TESTPOOL1_",
                        true);
     createPooledLRURegion(regionNames[1], USE_ACK, NULL, locatorsG,
                           "__TESTPOOL1_", true);  // with LRU

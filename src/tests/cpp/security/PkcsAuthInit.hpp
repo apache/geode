@@ -98,5 +98,5 @@ class PKCSAuthInitInternal : public AuthInitialize {
  private:
   bool m_stringCredentials;
 };
-};
+}  // namespace gemfire;
 #endif  //_GEMFIRE__PKCSAUTHINIT__HPP

@@ -38,13 +38,14 @@ class DummyCredentialGenerator2 : public CredentialGenerator {
       workingDir = std::string(buildDir);
       workingDir += std::string("/framework/xml/Security/");
     }
-    if (userMode)
+    if (userMode) {
       additionalArgs = std::string(" --J=-Dgemfire.security-authz-xml-uri=") +
                        std::string(workingDir) +
                        std::string("authz-dummyMU.xml");
-    else
+    } else {
       additionalArgs = std::string(" --J=-Dgemfire.security-authz-xml-uri=") +
                        std::string(workingDir) + std::string("authz-dummy.xml");
+}
 
     return additionalArgs;
   }
@@ -92,8 +93,8 @@ class DummyCredentialGenerator2 : public CredentialGenerator {
   }
 };
 
-};  // security
-};  // testframework
-};  // gemfire
+}  // namespace security
+}  // namespace testframework
+}  // namespace gemfire
 
 #endif

@@ -29,7 +29,8 @@ bool isLocator = false;
 bool isPoolWithEndpoint = false;
 
 const char* endPoints1 = CacheHelper::getTcrEndpoints(isLocalServer, 3);
-const char* locHostPort = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locHostPort =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 const char* poolRegNames[] = {"partition_region", "PoolRegion2"};
 const char* poolName = "__TEST_POOL1__";
 

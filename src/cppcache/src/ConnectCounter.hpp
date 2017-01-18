@@ -30,6 +30,6 @@ class CPPCACHE_EXPORT ConnectCounter {
   virtual void inc(const char* clientName) = 0;
   virtual void dec(const char* clientName) = 0;
 };
-}
+}  // namespace gemfire
 
 #endif

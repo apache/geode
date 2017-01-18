@@ -37,6 +37,6 @@ enum RegionEventType {
   BEFORE_REGION_CLEAR,
   AFTER_REGION_CLEAR
 };
-}
+}  // namespace gemfire
 
 #endif  // _EVENTTYPE_H__

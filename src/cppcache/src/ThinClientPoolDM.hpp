@@ -42,7 +42,7 @@
 
 namespace gemfire_statistics {
 class PoolStatsSampler;
-}
+}  // namespace gemfire_statistics
 using namespace gemfire_statistics;
 namespace gemfire {
 class CacheImpl;
@@ -286,8 +286,9 @@ class ThinClientPoolDM
             createPoolConnectionToAEndPoint(conn, theEP, maxConnLimit, true);
         if (*error == GF_CLIENT_WAIT_TIMEOUT ||
             *error == GF_CLIENT_WAIT_TIMEOUT_REFRESH_PRMETADATA) {
-          if (m_clientMetadataService == NULL || request.getKey() == NULLPTR)
+          if (m_clientMetadataService == NULL || request.getKey() == NULLPTR) {
             return NULL;
+          }
           RegionPtr region;
           m_connManager.getCacheImpl()->getRegion(
               request.getRegionName().c_str(), region);

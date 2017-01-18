@@ -118,5 +118,5 @@ class TESTOBJECT_EXPORT FastAssetAccount : public TimestampedObject {
 };
 
 typedef gemfire::SharedPtr<FastAssetAccount> FastAssetAccountPtr;
-}
+}  // namespace testobject
 #endif

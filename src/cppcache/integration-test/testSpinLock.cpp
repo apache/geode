@@ -31,7 +31,7 @@ namespace gemfire {
 CPPCACHE_EXPORT void* testSpinLockCreate();
 CPPCACHE_EXPORT void testSpinLockAcquire(void* lock);
 CPPCACHE_EXPORT void testSpinLockRelease(void* lock);
-}
+}  // namespace gemfire
 
 DUNIT_TASK(s1p1, Basic)
   {

@@ -71,17 +71,19 @@ void _verifyEntry(const char* name, const char* key, const char* val,
                   bool noKey, bool isCreated = false) {
   // Verify key and value exist in this region, in this process.
   const char* value = (val == 0) ? "" : val;
-  char* buf = (char*)malloc(1024 + strlen(key) + strlen(value));
+  char* buf =
+      reinterpret_cast<char*>(malloc(1024 + strlen(key) + strlen(value)));
   ASSERT(buf, "Unable to malloc buffer for logging.");
   if (!isCreated) {
-    if (noKey)
+    if (noKey) {
       sprintf(buf, "Verify key %s does not exist in region %s", key, name);
-    else if (val == 0)
+    } else if (val == 0) {
       sprintf(buf, "Verify value for key %s does not exist in region %s", key,
               name);
-    else
+    } else {
       sprintf(buf, "Verify value for key %s is: %s in region %s", key, value,
               name);
+    }
     LOG(buf);
   }
   free(buf);
@@ -111,24 +113,27 @@ void _verifyEntry(const char* name, const char* key, const char* val,
 
   for (int i = MAX; i >= 0; i--) {
     if (isCreated) {
-      if (!regPtr->containsKey(keyPtr))
+      if (!regPtr->containsKey(keyPtr)) {
         containsKeyCnt++;
-      else
+      } else {
         break;
+      }
       ASSERT(containsKeyCnt < MAX, "Key has not been created in region.");
     } else {
       if (noKey) {
-        if (regPtr->containsKey(keyPtr))
+        if (regPtr->containsKey(keyPtr)) {
           containsKeyCnt++;
-        else
+        } else {
           break;
+        }
         ASSERT(containsKeyCnt < MAX, "Key found in region.");
       }
       if (val == NULL) {
-        if (regPtr->containsValueForKey(keyPtr))
+        if (regPtr->containsValueForKey(keyPtr)) {
           containsValueCnt++;
-        else
+        } else {
           break;
+        }
         ASSERT(containsValueCnt < MAX, "Value found in region.");
       }
 
@@ -203,16 +208,16 @@ void createRegion(const char* name, bool ackMode, bool isCacheEnabled,
   ASSERT(regPtr != NULLPTR, "Failed to create region.");
   LOG("Region created.");
 }
-void createPooledRegion(const char* name, bool ackMode, 
-                        const char* locators, const char* poolname,
+void createPooledRegion(const char* name, bool ackMode, const char* locators,
+                        const char* poolname,
                         bool clientNotificationEnabled = false,
                         bool cachingEnable = true) {
   LOG("createRegion_Pool() entered.");
   fprintf(stdout, "Creating region --  %s  ackMode is %d\n", name, ackMode);
   fflush(stdout);
-  RegionPtr regPtr = getHelper()->createPooledRegion(
-      name, ackMode, locators, poolname, cachingEnable,
-      clientNotificationEnabled);
+  RegionPtr regPtr =
+      getHelper()->createPooledRegion(name, ackMode, locators, poolname,
+                                      cachingEnable, clientNotificationEnabled);
   ASSERT(regPtr != NULLPTR, "Failed to create region.");
   LOG("Pooled Region created.");
 }
@@ -238,7 +243,9 @@ void createEntry(const char* name, const char* key, const char* value = NULL) {
   fflush(stdout);
   // Create entry, verify entry is correct
   CacheableKeyPtr keyPtr = createKey(key);
-  if (value == NULL) value = "";
+  if (value == NULL) {
+    value = "";
+  }
   CacheableStringPtr valPtr = CacheableString::create(value);
 
   RegionPtr regPtr = getHelper()->getRegion(name);
@@ -347,10 +354,9 @@ END_TASK_DEFINITION
 DUNIT_TASK_DEFINITION(CLIENT1, StepOne_Pooled_Locator)
   {
     initClient(true);
-    createPooledRegion(regionNames[0], USE_ACK,  locatorsG, poolName, true,
+    createPooledRegion(regionNames[0], USE_ACK, locatorsG, poolName, true,
                        true);
-    createPooledRegion(regionNames[1], NO_ACK,  locatorsG, poolName, true,
-                       true);
+    createPooledRegion(regionNames[1], NO_ACK, locatorsG, poolName, true, true);
     LOG("StepOne complete.");
   }
 END_TASK_DEFINITION
@@ -358,8 +364,8 @@ END_TASK_DEFINITION
 DUNIT_TASK_DEFINITION(CLIENT1, StepOne_Pooled_Locator_NoCaching)
   {
     initClient(true);
-    createPooledRegion(regionNames[0], USE_ACK,  locatorsG, poolName,
-                       false, false);
+    createPooledRegion(regionNames[0], USE_ACK, locatorsG, poolName, false,
+                       false);
     LOG("StepOne_Pooled_Locator_NoCaching complete.");
   }
 END_TASK_DEFINITION
@@ -376,10 +382,9 @@ END_TASK_DEFINITION
 DUNIT_TASK_DEFINITION(CLIENT2, StepTwo_Pooled_Locator)
   {
     initClient(true);
-    createPooledRegion(regionNames[0], USE_ACK,  locatorsG, poolName, true,
+    createPooledRegion(regionNames[0], USE_ACK, locatorsG, poolName, true,
                        true);
-    createPooledRegion(regionNames[1], NO_ACK,  locatorsG, poolName, true,
-                       true);
+    createPooledRegion(regionNames[1], NO_ACK, locatorsG, poolName, true, true);
     LOG("StepOne complete.");
   }
 END_TASK_DEFINITION

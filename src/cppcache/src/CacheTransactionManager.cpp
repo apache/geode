@@ -20,4 +20,4 @@
 namespace gemfire {
 CacheTransactionManager::CacheTransactionManager() {}
 CacheTransactionManager::~CacheTransactionManager() {}
-}
+}  // namespace gemfire

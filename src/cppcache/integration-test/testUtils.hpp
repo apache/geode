@@ -184,5 +184,5 @@ class TestUtils {
     }
   }
 };
-};
+}  // namespace unitTests
 #endif  // define __UNIT_TEST_TEST_UTILS__

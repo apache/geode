@@ -239,12 +239,12 @@ DUNIT_TASK_DEFINITION(READER_CLIENT, CloseCacheReader)
 END_TASK_DEFINITION
 
 void doThinClientWriterException() {
-    CALL_TASK(StartLocator);
-    CALL_TASK(StartServer1);
-    CALL_TASK(StartClientPoolLocator);
-    CALL_TASK(CloseCacheReader);
-    CALL_TASK(CloseServer1);
-    CALL_TASK(CloseLocator);
+  CALL_TASK(StartLocator);
+  CALL_TASK(StartServer1);
+  CALL_TASK(StartClientPoolLocator);
+  CALL_TASK(CloseCacheReader);
+  CALL_TASK(CloseServer1);
+  CALL_TASK(CloseLocator);
 }
 
 DUNIT_MAIN

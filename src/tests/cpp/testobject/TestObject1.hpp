@@ -64,5 +64,5 @@ class TESTOBJECT_EXPORT TestObject1 : public Cacheable {
 };
 
 typedef SharedPtr<TestObject1> TestObject1Ptr;
-}
+}  // namespace testobject
 #endif /* TESTOBJECT1_HPP_ */

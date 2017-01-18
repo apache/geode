@@ -37,6 +37,6 @@ class DSMemberForVersionStamp : public CacheableKey {
   /** return the hashcode for this key. */
   virtual uint32_t hashcode() const = 0;
 };
-}
+}  // namespace gemfire
 
 #endif  // __DSMemberForVersionStamp_HPP__

@@ -111,6 +111,6 @@ class TestClient : public ACE_Task_Base {
   }
 };
 
-}  // testframework
-}  // gemfire
+}  // namespace testframework
+}  // namespace gemfire
 #endif  // __TestClient_hpp__

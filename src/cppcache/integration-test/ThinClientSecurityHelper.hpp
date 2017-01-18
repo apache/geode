@@ -24,8 +24,8 @@ using namespace gemfire;
 bool isLocator = false;
 bool isLocalServer = false;
 
-
-const char* locHostPort = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locHostPort =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 
 const char* regionNamesAuth[] = {"DistRegionAck"};
 
@@ -200,10 +200,11 @@ class putThread : public ACE_Task_Base {
       ACE_OS::sleep(m_waitTime);
     }
     while (ops++ < m_numops) {
-      if (m_sameKey)
+      if (m_sameKey) {
         sprintf(buf, "key-%d", 1);
-      else
+      } else {
         sprintf(buf, "key-%d", ops);
+      }
       key = CacheableKey::create(buf);
       if (m_opcode == 0) {
         if (m_isCallBack) {
@@ -230,8 +231,9 @@ class putThread : public ACE_Task_Base {
           if (m_isCallBack) {
             CacheableBooleanPtr boolptr = CacheableBoolean::create("true");
             m_reg->destroy(key, boolptr);
-          } else
+          } else {
             m_reg->destroy(key);
+          }
         } catch (Exception& ex) {
           printf("%d: %ld exception got and exception message = %s\n", pid,
                  (long)thr_id, ex.getMessage());

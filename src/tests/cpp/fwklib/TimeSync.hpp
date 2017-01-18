@@ -80,10 +80,10 @@ class TimeSync : public ACE_Task_Base {
   }
 
   inline static int64_t timevalMicros(const ACE_Time_Value& tv) {
-    return ((tv.sec() * (int64_t)MICROS_PER_SECOND) + tv.usec());
+    return ((tv.sec() * static_cast<int64_t>(MICROS_PER_SECOND)) + tv.usec());
   }
 };
 
-}  // testframework
-}  // gemfire
+}  // namespace testframework
+}  // namespace gemfire
 #endif  // __TimeSync_hpp__

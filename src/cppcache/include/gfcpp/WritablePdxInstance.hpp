@@ -18,7 +18,6 @@
  * limitations under the License.
  */
 
-
 #include "SharedPtr.hpp"
 #include "Cacheable.hpp"
 
@@ -530,6 +529,6 @@ class CPPCACHE_EXPORT WritablePdxInstance : public PdxInstance {
   WritablePdxInstance(const WritablePdxInstance& other);
   void operator=(const WritablePdxInstance& other);
 };
-}
+}  // namespace gemfire
 
 #endif /* __WRITABLE_PDXINSTANCE_HPP_ */

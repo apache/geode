@@ -89,7 +89,7 @@ class UDPMessage : public IPCMessage {
 
   void setCmd(UdpCmds cmd) { m_hdr.cmd = cmd; }
 
-  UdpCmds getCmd() { return (UdpCmds)m_hdr.cmd; }
+  UdpCmds getCmd() { return static_cast<UdpCmds>(m_hdr.cmd); }
 
   ACE_INET_Addr& getSender() { return m_sender; }
 
@@ -110,8 +110,9 @@ class UDPMessage : public IPCMessage {
   const char* cmdString(uint32_t cmd) {
     const char* UdpStrings[] = {"Null", "ACK", "ACK_REQUEST", "ADDR_REQUEST",
                                 "ADDR_RESPONSE"};
-    if (cmd > 4) return "UNKNOWN";
-    return UdpStrings[cmd];
+    if (cmd > 4) { return "UNKNOWN";
+    
+}return UdpStrings[cmd];
   }
 
   void clearHdr() {
@@ -286,7 +287,7 @@ class Responder : public ServiceTask {
 
   void finalize() { m_io->close(); }
 };
-}  // testframework
-}  // gemfire
+}  // namespace testframework
+}  // namespace gemfire
 
 #endif  // __UDPIpc_hpp__

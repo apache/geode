@@ -157,14 +157,14 @@ class HRTimer {
     m_timer.stop();
     ACE_hrtime_t e;
     m_timer.elapsed_time(e);
-    return (int64_t)e;
+    return static_cast<int64_t>(e);
   }
 
   inline int64_t elapsedMicros() {
     m_timer.stop();
     ACE_hrtime_t e;
     m_timer.elapsed_microseconds(e);
-    return (int64_t)e;
+    return static_cast<int64_t>(e);
   }
 
 #endif  // _LINUX || _MACOSX

@@ -22,4 +22,4 @@ namespace gemfire_statistics {
 StatisticsFactory* StatisticsFactory::getExistingInstance() {
   return GemfireStatisticsFactory::getExistingInstance();
 }
-}
+}  // namespace gemfire_statistics

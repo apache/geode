@@ -124,6 +124,6 @@ class CPPCACHE_EXPORT CacheableToken : public Cacheable {
   void operator=(const CacheableToken& other);
   CacheableToken(const CacheableToken& other);
 };
-}
+}  // namespace gemfire
 
 #endif

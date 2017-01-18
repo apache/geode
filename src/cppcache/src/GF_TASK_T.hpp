@@ -76,5 +76,5 @@ class CPPCACHE_EXPORT GF_TASK_T : public ACE_Task_Base {
   const char* m_threadName;
 };
 
-}  // end namespace
+}  // namespace gemfire
 #endif  // __GF_TASK_T_HPP__

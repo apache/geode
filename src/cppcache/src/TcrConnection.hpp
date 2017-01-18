@@ -273,17 +273,19 @@ class CPPCACHE_EXPORT TcrConnection {
   }
 
   CacheableBytesPtr encryptBytes(CacheableBytesPtr data) {
-    if (m_dh != NULL)
+    if (m_dh != NULL) {
       return m_dh->encrypt(data);
-    else
+    } else {
       return data;
+    }
   }
 
   CacheableBytesPtr decryptBytes(CacheableBytesPtr data) {
-    if (m_dh != NULL)
+    if (m_dh != NULL) {
       return m_dh->decrypt(data);
-    else
+    } else {
       return data;
+    }
   }
 
  private:
@@ -395,6 +397,6 @@ class CPPCACHE_EXPORT TcrConnection {
   volatile uint32_t m_isUsed;
   ThinClientPoolDM* m_poolDM;
 };
-}
+}  // namespace gemfire
 
 #endif  // __TCR_CONNECTION_HPP__

@@ -48,7 +48,8 @@ using namespace test;
 bool isLocalServer = false;
 
 static bool isLocator = false;
-const char* locatorsG = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locatorsG =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 
 #if defined(WIN32)
 // because we run out of memory on our pune windows desktops

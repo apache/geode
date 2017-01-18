@@ -136,5 +136,5 @@ class CPPCACHE_EXPORT PutAllPartialResultServerException : public Serializable {
   CacheableStringPtr m_message;  // error message
   PutAllPartialResultPtr m_result;
 };
-}
+}  // namespace gemfire
 #endif

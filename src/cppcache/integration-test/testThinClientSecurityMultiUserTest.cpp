@@ -33,7 +33,8 @@
 using namespace gemfire::testframework::security;
 using namespace gemfire;
 
-const char* locHostPort = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locHostPort =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 CredentialGeneratorPtr credentialGeneratorHandler;
 
 std::string getXmlPath() {
@@ -128,9 +129,7 @@ class UserThread : public ACE_Task_Base {
   bool getValidOps;
   int m_totalOpsPassed;
 
-  int getNextOp() {
-    return (rand() % 17) % 2;
-  }
+  int getNextOp() { return (rand() % 17) % 2; }
 
   int getNextKeyIdx() {
     if (getValidOps) {
@@ -359,8 +358,8 @@ DUNIT_TASK_DEFINITION(CLIENT_1, StepOne)
     initClientAuth();
     try {
       LOG("Tying Region creation");
-      createRegionForSecurity(regionNamesAuth[0], USE_ACK, false,
-                              NULLPTR, false, -1, true, 0);
+      createRegionForSecurity(regionNamesAuth[0], USE_ACK, false, NULLPTR,
+                              false, -1, true, 0);
       LOG("Region created successfully");
       PoolPtr pool = getPool(regionNamesAuth[0]);
       int m_numberOfUsers = 10;

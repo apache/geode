@@ -138,6 +138,6 @@ class CacheableObjectPartList : public Cacheable {
 };
 
 typedef SharedPtr<CacheableObjectPartList> CacheableObjectPartListPtr;
-}
+}  // namespace gemfire
 
 #endif  // _GEMFIRE_CACHEABLEOBJECTPARTLIST_HPP_

@@ -440,7 +440,7 @@ END_TASK_DEFINITION
 
 DUNIT_TASK_DEFINITION(CLIENT1, InitClient1)
   {
-      initClient();
+    initClient();
     initClientAndRegion(1, false);
     LOG("Initialized client with redundancy level 1.");
   }
@@ -448,7 +448,7 @@ END_TASK_DEFINITION
 
 DUNIT_TASK_DEFINITION(CLIENT2, InitClient2)
   {
-      initClient();
+    initClient();
     initClientAndRegion(1);
     LOG("Initialized client with redundancy level 1.");
 

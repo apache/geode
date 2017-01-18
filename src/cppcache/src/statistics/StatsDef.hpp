@@ -46,5 +46,5 @@ typedef enum {
   GFS_OSTYPE_MACOSX = 3
 
 } GFS_OSTYPES;
-};
+}  // namespace gemfire_statistics
 #endif  // _GEMFIRE_STATISTICS_STATSDEF_HPP_

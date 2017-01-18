@@ -216,6 +216,6 @@ class BBProcessor : public ServiceTask {
 };
 
 }  // namespace  testframework
-}  // namepace gemfire
+}  // namespace gemfire
 
 #endif  // __FWK_BB_SERVER_HPP__

@@ -103,7 +103,7 @@ extern void CPPCACHE_EXPORT millisleep(uint32_t millis);
 #ifdef _WIN32
 extern void CPPCACHE_EXPORT setNewAndDelete(pNew, pDelete);
 #endif
-}
+}  // namespace gemfire
 
 #include "Log.hpp"
 #include "Assert.hpp"

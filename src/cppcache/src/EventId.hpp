@@ -116,11 +116,11 @@ class CPPCACHE_EXPORT EventId : public Cacheable {
     //  Write EventId threadid and seqno.
     int idsBufferLength = 18;
     output.writeInt(idsBufferLength);
-    output.write((uint8_t)0);
+    output.write(static_cast<uint8_t>(0));
     char longCode = 3;
-    output.write((uint8_t)longCode);
+    output.write(static_cast<uint8_t>(longCode));
     output.writeInt(m_eidThr);
-    output.write((uint8_t)longCode);
+    output.write(static_cast<uint8_t>(longCode));
     output.writeInt(m_eidSeq);
   }
 
@@ -145,6 +145,6 @@ class CPPCACHE_EXPORT EventId : public Cacheable {
   void operator=(const EventId& other);
   EventId(const EventId& other);
 };
-}
+}  // namespace gemfire
 
 #endif  //_GEMFIRE_EVENTID_HPP_

@@ -39,11 +39,11 @@ class GetAllServersRequest : public Serializable {
     return GemfireTypeIdsImpl::GetAllServersRequest;
   }
   virtual int8_t DSFID() const {
-    return (int8_t)GemfireTypeIdsImpl::FixedIDByte;
+    return static_cast<int8_t>(GemfireTypeIdsImpl::FixedIDByte);
   }
   virtual uint32_t objectSize() const { return m_serverGroup->length(); }
   virtual ~GetAllServersRequest() {}
 };
-}
+}  // namespace gemfire
 
 #endif

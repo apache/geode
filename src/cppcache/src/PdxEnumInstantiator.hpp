@@ -49,5 +49,5 @@ class PdxEnumInstantiator : public Serializable {
 
   CacheableStringPtr toString() const;
 };
-}
+}  // namespace gemfire
 #endif /* _GEMFIRE_PDXENUM_INSTANTIATOR_HPP_ */

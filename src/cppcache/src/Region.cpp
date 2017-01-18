@@ -20,4 +20,4 @@
 namespace gemfire {
 Region::Region() {}
 Region::~Region() {}
-}
+}  // namespace gemfire

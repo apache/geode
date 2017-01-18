@@ -62,6 +62,6 @@ class CPPCACHE_EXPORT InternalCacheTransactionManager2PC
   InternalCacheTransactionManager2PC();
   virtual ~InternalCacheTransactionManager2PC();
 };
-}
+}  // namespace gemfire
 
 #endif /* INTERNALCACHETRANSACTIONMANAGER2PC_H_ */

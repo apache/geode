@@ -142,8 +142,9 @@ class GFIGNORE(TESTOBJECT_EXPORT) Child : public Parent,
     if (pap == this) return true;
 
     if (m_a == pap->m_a && m_b == pap->m_b && m_c == pap->m_c &&
-        m_d == pap->m_d && m_e == pap->m_e && m_f == pap->m_f)
+        m_d == pap->m_d && m_e == pap->m_e && m_f == pap->m_f) {
       return true;
+}
 
     return false;
   }
@@ -213,10 +214,11 @@ class GFIGNORE(TESTOBJECT_EXPORT) CharTypes : public PdxSerializable {
           "%lc m_widecharArray[%d] = %lc",
           i, ot->m_widecharArray[i], i, m_widecharArray[i]);
       if (ot->m_chArray[i] != m_chArray[i] ||
-          ot->m_widecharArray[i] != m_widecharArray[i])
+          ot->m_widecharArray[i] != m_widecharArray[i]) {
         return false;
-      else
+      } else {
         i++;
+}
     }
 
     return true;
@@ -272,8 +274,8 @@ class GFIGNORE(TESTOBJECT_EXPORT) Address : public PdxSerializable {
 
   Address(int32_t aptN, const char* street, const char* city) {
     _aptNumber = aptN;
-    _street = (char*)street;
-    _city = (char*)city;
+    _street = const_cast<char*>(street);
+    _city = const_cast<char*>(city);
   }
 
   bool equals(Address& other) const {
@@ -442,8 +444,8 @@ class GFIGNORE(TESTOBJECT_EXPORT) PdxType : public PdxSerializable {
     m_sbyteArray[1] = 0x64;
 
     m_charArray = new wchar_t[2];
-    m_charArray[0] = (wchar_t)L'c';
-    m_charArray[1] = (wchar_t)L'v';
+    m_charArray[0] = L'c';
+    m_charArray[1] = L'v';
 
     // time_t offset = 1310447869154L;
     // m_date = CacheableDate::create(offset);
@@ -502,12 +504,12 @@ class GFIGNORE(TESTOBJECT_EXPORT) PdxType : public PdxSerializable {
     const char* str1 = "one";
     const char* str2 = "two";
 
-    int size = (int)strlen(str1);
+    int size = static_cast<int>(strlen(str1));
     for (int i = 0; i < 2; i++) {
       m_stringArray[i] = new char[size];
     }
-    m_stringArray[0] = (char*)str1;
-    m_stringArray[1] = (char*)str2;
+    m_stringArray[0] = const_cast<char*>(str1);
+    m_stringArray[1] = const_cast<char*>(str2);
 
     m_arraylist = CacheableArrayList::create();
     m_arraylist->push_back(CacheableInt32::create(1));
@@ -749,5 +751,5 @@ class GFIGNORE(TESTOBJECT_EXPORT) PdxType : public PdxSerializable {
                         int* arrLengths) const;
 };
 typedef SharedPtr<PdxTestsAuto::PdxType> PdxTypePtr;
-}
+}  // namespace PdxTestsAuto
 #endif /* PDXOBJECT_HPP_ */

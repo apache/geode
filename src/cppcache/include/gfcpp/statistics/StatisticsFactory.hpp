@@ -211,6 +211,6 @@ class CPPCACHE_EXPORT StatisticsFactory {
   const StatisticsFactory& operator=(const StatisticsFactory&);
 
 };  // class
-};  // namespace
+}  // namespace gemfire_statistics
 
 #endif  //  _GEMFIRE__STATISTICS_STATISTICSFACTORY_HPP_

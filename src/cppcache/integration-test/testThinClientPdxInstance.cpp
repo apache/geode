@@ -55,7 +55,8 @@ static bool isLocator = false;
 const bool USE_ACK = true;
 const bool NO_ACK ATTR_UNUSED = false;
 
-const char* locatorsG = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locatorsG =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 
 const char* regionNames[] = {"DistRegionAck", "DistRegionNoAck"};
 
@@ -127,8 +128,8 @@ CacheHelper* getHelper() {
   ASSERT(cacheHelper != NULL, "No cacheHelper initialized.");
   return cacheHelper;
 }
-void createPooledRegion(const char* name, bool ackMode, 
-                        const char* locators, const char* poolname,
+void createPooledRegion(const char* name, bool ackMode, const char* locators,
+                        const char* poolname,
                         bool clientNotificationEnabled = false,
                         bool cachingEnable = true) {
   LOG("createRegion_Pool() entered.");
@@ -170,8 +171,8 @@ END_TASK_DEFINITION
 DUNIT_TASK_DEFINITION(CLIENT1, StepOne_Pooled_Locator_PdxReadSerialized)
   {
     initClient(true, true);
-    createPooledRegion(regionNames[0], USE_ACK,  locatorsG,
-                       "__TEST_POOL1__", false, false);
+    createPooledRegion(regionNames[0], USE_ACK, locatorsG, "__TEST_POOL1__",
+                       false, false);
     LOG("StepOne_Pooled_Locator complete.");
   }
 END_TASK_DEFINITION
@@ -179,8 +180,8 @@ END_TASK_DEFINITION
 DUNIT_TASK_DEFINITION(CLIENT2, StepTwo_Pooled_Locator_PdxReadSerialized)
   {
     initClient(true, true);
-    createPooledRegion(regionNames[0], USE_ACK,  locatorsG,
-                       "__TEST_POOL1__", false, false);
+    createPooledRegion(regionNames[0], USE_ACK, locatorsG, "__TEST_POOL1__",
+                       false, false);
     LOG("StepOne_Pooled_Locator complete.");
   }
 END_TASK_DEFINITION
@@ -189,8 +190,8 @@ DUNIT_TASK_DEFINITION(CLIENT2,
                       StepTwo_Pooled_Locator_CachingEnabled_PdxReadSerialized)
   {
     initClient(true, true);
-    createPooledRegion(regionNames[0], USE_ACK,  locatorsG,
-                       "__TEST_POOL1__", false, true);
+    createPooledRegion(regionNames[0], USE_ACK, locatorsG, "__TEST_POOL1__",
+                       false, true);
     LOG("StepTwo_Pooled_Locator complete.");
   }
 END_TASK_DEFINITION
@@ -198,8 +199,8 @@ END_TASK_DEFINITION
 DUNIT_TASK_DEFINITION(CLIENT1, StepOne_Pooled_Locator)
   {
     initClient(true, false);
-    createPooledRegion(regionNames[0], USE_ACK,  locatorsG,
-                       "__TEST_POOL1__", false, false);
+    createPooledRegion(regionNames[0], USE_ACK, locatorsG, "__TEST_POOL1__",
+                       false, false);
     LOG("StepOne_Pooled_Locator complete.");
   }
 END_TASK_DEFINITION
@@ -207,8 +208,8 @@ END_TASK_DEFINITION
 DUNIT_TASK_DEFINITION(CLIENT2, StepTwo_Pooled_Locator)
   {
     initClient(true, false);
-    createPooledRegion(regionNames[0], USE_ACK,  locatorsG,
-                       "__TEST_POOL1__", false, false);
+    createPooledRegion(regionNames[0], USE_ACK, locatorsG, "__TEST_POOL1__",
+                       false, false);
     LOG("StepTwo_Pooled_Locator complete.");
   }
 END_TASK_DEFINITION

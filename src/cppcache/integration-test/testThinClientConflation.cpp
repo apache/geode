@@ -137,8 +137,9 @@ void closeClient() {
 
 DUNIT_TASK_DEFINITION(SERVER1, StartServer)
   {
-    if (isLocalServer)
+    if (isLocalServer) {
       CacheHelper::initServer(1, "cacheserver_conflation.xml", locatorsG);
+    }
     LOG("SERVER started");
   }
 END_TASK_DEFINITION

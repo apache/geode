@@ -40,7 +40,8 @@ volatile bool g_poolLocators = false;
 #define SERVER2 s2p2
 static bool isLocator = false;
 // static int numberOfLocators = 0;
-const char* locatorsG = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locatorsG =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 #include "LocatorHelper.hpp"
 #include "ThinClientTasks_C2S2.hpp"
 void initClient(const bool isthinClient) {
@@ -67,7 +68,8 @@ void _verifyEntry(const char* name, const char* key, const char* val,
                   bool noKey, bool isCreated = false) {
   // Verify key and value exist in this region, in this process.
   const char* value = (val == 0) ? "" : val;
-  char* buf = (char*)malloc(1024 + strlen(key) + strlen(value));
+  char* buf =
+      reinterpret_cast<char*>(malloc(1024 + strlen(key) + strlen(value)));
   ASSERT(buf, "Unable to malloc buffer for logging.");
   if (!isCreated) {
     if (noKey) {
@@ -278,8 +280,9 @@ const bool NO_ACK = false;
 
 DUNIT_TASK_DEFINITION(SERVER1, CreateServer1)
   {
-    if (isLocalServer)
+    if (isLocalServer) {
       CacheHelper::initServer(1, "cacheserver_notify_subscription.xml");
+    }
     LOG("SERVER1 started");
   }
 END_TASK_DEFINITION
@@ -424,8 +427,9 @@ END_TASK_DEFINITION
 
 DUNIT_TASK_DEFINITION(SERVER2, CreateServer2)
   {
-    if (isLocalServer)
+    if (isLocalServer) {
       CacheHelper::initServer(2, "cacheserver_notify_subscription2.xml");
+    }
     LOG("SERVER2 started");
   }
 END_TASK_DEFINITION

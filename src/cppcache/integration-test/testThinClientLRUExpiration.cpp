@@ -39,7 +39,8 @@ CacheHelper* cacheHelper = NULL;
 bool isLocalServer = false;
 
 static bool isLocator = false;
-const char* locatorsG = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locatorsG =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 
 const char* regionNames[] = {"DistRegionAck1", "DistRegionAck2",
                              "DistRegionAck3", "DistRegionAck4",

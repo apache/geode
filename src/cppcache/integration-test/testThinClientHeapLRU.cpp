@@ -67,7 +67,6 @@ void createOnekEntries() {
   ASSERT(me.size() <= 1024, "Should have evicted anything over 1024 entries");
 }
 
-
 DUNIT_TASK_DEFINITION(CLIENT1, StepOne)
   {
     PropertiesPtr pp = Properties::create();

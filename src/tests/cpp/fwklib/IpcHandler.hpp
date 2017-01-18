@@ -78,7 +78,7 @@ class IpcHandler {
   }
 };
 
-}  // testframework
-}  // gemfire
+}  // namespace testframework
+}  // namespace gemfire
 
 #endif  // __IpcHandler_hpp__

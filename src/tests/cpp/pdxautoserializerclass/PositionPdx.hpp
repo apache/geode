@@ -103,5 +103,5 @@ class GFIGNORE(TESTOBJECT_EXPORT) PositionPdx
 };
 
 typedef gemfire::SharedPtr<PositionPdx> PositionPdxPtr;
-}
+}  // namespace AutoPdxTests
 #endif

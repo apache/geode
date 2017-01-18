@@ -98,13 +98,13 @@ class FwkBBMessage {
     */
   void fromMessageStream(std::string data) {
     //        FWKINFO( "FwkBBMessage::fromMessageStream: " << data );
-    char* str = (char*)(data.c_str());
+    char* str = const_cast<char*>(data.c_str());
     char* tag = strstr(str, BB_ID_TAG);
     if (tag == NULL) {
       FWKEXCEPTION("Invalid BB message: " << data);
     }
     tag += 3;
-    int32_t len = (int32_t)strcspn(tag, "<");
+    int32_t len = static_cast<int32_t>(strcspn(tag, "<"));
     std::string id(tag, len);
     setId(id);
 
@@ -113,14 +113,14 @@ class FwkBBMessage {
       FWKEXCEPTION("Invalid BB message: " << data);
     }
     tag += 3;
-    len = (int32_t)strcspn(tag, "<");
+    len = static_cast<int32_t>(strcspn(tag, "<"));
     std::string cmd(tag, len);
     setCommand(cmd);
 
     tag = strstr(str, BB_RESULT_TAG);
     if (tag != NULL) {
       tag += 3;
-      len = (int32_t)strcspn(tag, "<");
+      len = static_cast<int32_t>(strcspn(tag, "<"));
       std::string result(tag, len);
       setResult(result);
     }
@@ -128,7 +128,7 @@ class FwkBBMessage {
     tag = strstr(str, BB_PARAMETER_TAG);
     while (tag != NULL) {
       tag += 3;
-      len = (int32_t)strcspn(tag, "<");
+      len = static_cast<int32_t>(strcspn(tag, "<"));
       std::string param(tag, len);
       addParameter(param);
       tag = strstr(tag, BB_PARAMETER_TAG);
@@ -222,7 +222,7 @@ class FwkBBMessage {
 // ----------------------------------------------------------------------------
 
 }  // namespace  testframework
-}  // namepace gemfire
+}  // namespace gemfire
 
 // ----------------------------------------------------------------------------
 

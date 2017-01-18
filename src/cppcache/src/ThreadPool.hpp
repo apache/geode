@@ -152,6 +152,6 @@ class ThreadPool : public ACE_Task_Base, IThreadPool {
 };
 
 typedef ACE_Singleton<ThreadPool, ACE_Recursive_Thread_Mutex> TPSingleton;
-}
+}  // namespace gemfire
 
 #endif /* THREADPOOL_HPP_ */

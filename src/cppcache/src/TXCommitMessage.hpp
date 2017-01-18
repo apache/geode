@@ -53,5 +53,5 @@ class TXCommitMessage : public gemfire::Cacheable {
 
   VectorOfSharedBase m_regions;
 };
-}
+}  // namespace gemfire
 #endif /* TXCOMMITMESSAGE_HPP_ */

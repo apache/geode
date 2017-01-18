@@ -62,6 +62,6 @@ class DeleteArray {
     }
   }
 };
-}
+}  // namespace gemfire
 
 #endif  // #ifndef _GEMFIRE_AUTODELETE_HPP_

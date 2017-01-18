@@ -60,5 +60,5 @@ class ClientConnectionRequest : public ServerLocationRequest {
   const std::set<TcrEndpoint*>& m_excludeServergroup;
 #endif
 };
-}
+}  // namespace gemfire
 #endif

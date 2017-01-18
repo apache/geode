@@ -85,5 +85,5 @@ class TESTOBJECT_EXPORT PSTObject : public TimestampedObject {
 };
 
 typedef gemfire::SharedPtr<PSTObject> PSTObjectPtr;
-}
+}  // namespace testobject
 #endif

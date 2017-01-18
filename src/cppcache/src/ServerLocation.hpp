@@ -48,7 +48,7 @@ class CPPCACHE_EXPORT ServerLocation : public Serializable {
     /*
     name = Utils::convertHostToCanonicalForm(name.c_str());
     */
-    int32_t position = (int32_t)name.find_first_of(":");
+    int32_t position = static_cast<int32_t>(name.find_first_of(":"));
     std::string serverName;
     serverName = name.substr(0, position);
     m_port = atoi((name.substr(position + 1)).c_str());
@@ -80,8 +80,8 @@ class CPPCACHE_EXPORT ServerLocation : public Serializable {
   }
   uint32_t objectSize() const {
     if (m_serverName != NULLPTR) {
-      return (uint32_t)sizeof(int) +
-             (uint32_t)(m_serverName->length()) * (uint32_t)sizeof(char);
+      return static_cast<uint32_t>(sizeof(int)) +
+             (m_serverName->length()) * static_cast<uint32_t>(sizeof(char));
     }
     return 0;
   }
@@ -89,7 +89,7 @@ class CPPCACHE_EXPORT ServerLocation : public Serializable {
     return 0;  // NOt needed infact
   }
   int8_t DSFID() const {
-    return (int8_t)GemfireTypeIdsImpl::FixedIDByte;  // Never used
+    return static_cast<int8_t>(GemfireTypeIdsImpl::FixedIDByte);  // Never used
   }
 
   int32_t classId() const {
@@ -170,5 +170,5 @@ class CPPCACHE_EXPORT ServerLocation : public Serializable {
   int m_port;
   std::string m_epString;
 };
-}
+}  // namespace gemfire
 #endif

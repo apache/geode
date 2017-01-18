@@ -78,6 +78,6 @@ class CPPCACHE_EXPORT WindowsProcessStats : public ProcessStats {
 
   friend class HostStatHelperWin;
 };
-};
+}  // namespace gemfire_statistics
 
 #endif  //_GEMFIRE_STATISTICS_WINDOWSPROCESSSTATS_HPP_

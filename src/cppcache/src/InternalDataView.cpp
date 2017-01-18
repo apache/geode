@@ -32,4 +32,4 @@ InternalDataView::InternalDataView() {
 InternalDataView::~InternalDataView() {
   // TODO Auto-generated destructor stub
 }
-}
+}  // namespace gemfire

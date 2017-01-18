@@ -216,5 +216,5 @@ class PdxLocalReader : public PdxReader {
   virtual PdxUnreadFieldsPtr readUnreadFields();
 };
 typedef SharedPtr<PdxLocalReader> PdxLocalReaderPtr;
-}
+}  // namespace gemfire
 #endif /* PDXLOCALREADER_HPP_ */

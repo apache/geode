@@ -54,8 +54,7 @@ void operator delete[](void* p) { operator delete(p); }
 #endif  // _WIN32
 
 int RandGen::operator()(size_t max) {
-  unsigned int seed =
-      static_cast<unsigned int>(NanoTimer::now());
+  unsigned int seed = static_cast<unsigned int>(NanoTimer::now());
   return ACE_OS::rand_r(&seed) % max;
 }
 

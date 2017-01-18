@@ -131,9 +131,9 @@ class TESTOBJECT_EXPORT ParentPdx : public PdxSerializable {
     for (size_t i = 0; i < 3; i++) {
       m_wideparentArrayName[i] = new wchar_t[size];
     }
-    m_wideparentArrayName[0] = (wchar_t*)wstr1;
-    m_wideparentArrayName[1] = (wchar_t*)wstr2;
-    m_wideparentArrayName[2] = (wchar_t*)wstr3;
+    m_wideparentArrayName[0] = const_cast<wchar_t*>(wstr1);
+    m_wideparentArrayName[1] = const_cast<wchar_t*>(wstr2);
+    m_wideparentArrayName[2] = const_cast<wchar_t*>(wstr3);
     m_arrLength = 3;
 
     m_char = 'C';
@@ -334,5 +334,5 @@ class TESTOBJECT_EXPORT SerializePdx : public PdxSerializable {
   }
 };
 typedef SharedPtr<SerializePdx> SerializePdxPtr;
-}
+}  // namespace testobject
 #endif /* __NESTEDPDXOBJECT_HPP__ */

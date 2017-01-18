@@ -73,6 +73,6 @@ class GemfireTypeIdsImpl {
     DiskVersionTag = 2131
   };
 };
-}
+}  // namespace gemfire
 
 #endif

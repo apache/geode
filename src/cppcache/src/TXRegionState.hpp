@@ -42,6 +42,6 @@ class TXRegionState : public gemfire::SharedBase {
 };
 
 _GF_PTR_DEF_(TXRegionState, TXRegionStatePtr);
-}
+}  // namespace gemfire
 
 #endif /* TXREGIONSTATE_HPP_ */

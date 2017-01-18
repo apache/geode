@@ -645,7 +645,7 @@ const int cqResultsetRowCounts[CQRS_ARRAY_SIZE] = {20, 1,  19, 0, 0, 0,  0, 20,
                                                    10, 20, 10, 0, 0, 0,  0, 2};
 
 const int constantExpectedRowsCQRS[1] = {35};
-};  // end of namespace
+}  // namespace testData
 using namespace testData;
 using namespace testobject;
 
@@ -717,12 +717,13 @@ class QueryHelper {
 
   bool isExpectedRowsConstantRS(int queryindex) {
     for (int i = (sizeof(constantExpectedRowsRS) / sizeof(int)) - 1; i > -1;
-         i--)
+         i--) {
       if (constantExpectedRowsRS[i] == queryindex) {
         FWKINFO("index " << constantExpectedRowsRS[i]
                          << " is having constant rows ");
         return true;
       }
+}
 
     return false;
   }
@@ -742,24 +743,26 @@ class QueryHelper {
 
   bool isExpectedRowsConstantCQRS(int queryindex) {
     for (int i = (sizeof(constantExpectedRowsCQRS) / sizeof(int)) - 1; i > -1;
-         i--)
+         i--) {
       if (constantExpectedRowsCQRS[i] == queryindex) {
         FWKINFO("index " << constantExpectedRowsCQRS[i]
                          << " is having constant rows ");
         return true;
       }
+}
 
     return false;
   }
 
   bool isExpectedRowsConstantPQRS(int queryindex) {
     for (int i = (sizeof(constantExpectedRowsPQRS) / sizeof(int)) - 1; i > -1;
-         i--)
+         i--) {
       if (constantExpectedRowsPQRS[i] == queryindex) {
         printf("index %d is having constant rows \n",
                constantExpectedRowsPQRS[i]);
         return true;
       }
+}
 
     return false;
   }
@@ -903,13 +906,13 @@ void QueryHelper::destroyPortfolioOrPositionData(RegionPtr& rptr, int setSize,
         char portname[100] = {0};
         if (strcmp(dataType, "Portfolio") == 0 ||
             strcmp(dataType, "PortfolioPdx") == 0 ||
-            strcmp(dataType, "AutoPortfolioPdx") == 0)
+            strcmp(dataType, "AutoPortfolioPdx") == 0) {
           ACE_OS::sprintf(portname, "port%d-%d", set, current);
-        else if (strcmp(dataType, "Position") == 0 ||
+        } else if (strcmp(dataType, "Position") == 0 ||
                  strcmp(dataType, "PositionPdx") == 0 ||
-                 strcmp(dataType, "AutoPositionPdx") == 0)
+                 strcmp(dataType, "AutoPositionPdx") == 0) {
           ACE_OS::sprintf(portname, "pos%d-%d", set, current);
-        else {
+        } else {
           throw gemfire::IllegalArgumentException("Unknown object type");
         }
 
@@ -931,10 +934,11 @@ void QueryHelper::invalidatePortfolioOrPositionData(RegionPtr& rptr,
     for (int set = 1; set <= numSets; set++) {
       for (int current = 1; current <= setSize; current++) {
         char portname[100] = {0};
-        if (strcmp(dataType, "Portfolio") == 0)
+        if (strcmp(dataType, "Portfolio") == 0) {
           ACE_OS::sprintf(portname, "port%d-%d", set, current);
-        else if (strcmp(dataType, "Position") == 0)
+        } else if (strcmp(dataType, "Position") == 0) {
           ACE_OS::sprintf(portname, "pos%d-%d", set, current);
+}
 
         CacheableKeyPtr keyport = CacheableKey::create(portname);
         rptr->invalidate(keyport);
@@ -1091,8 +1095,9 @@ bool QueryHelper::verifySS(SelectResultsPtr& structSet, int expectedRows,
           << expectedRows << " ,expectedFields = " << expectedFields);
 
   if (!instanceOf<StructSetPtr>(structSet)) {
-    if (expectedRows == 0 && expectedFields == 0)
+    if (expectedRows == 0 && expectedFields == 0) {
       return true;  // quite possible we got a null set back.
+}
     FWKINFO("we have structSet itself NULL");
     return false;
   }

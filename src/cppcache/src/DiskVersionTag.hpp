@@ -37,8 +37,7 @@ class DiskVersionTag : public VersionTag {
       DiskStoreId* temp = new DiskStoreId();
       temp->fromData(input);
       internalMemId = DSMemberForVersionStampPtr(temp);
-      m_internalMemId =
-          memberList->add((DSMemberForVersionStampPtr)internalMemId);
+      m_internalMemId = memberList->add(internalMemId);
     }
 
     if ((flags & HAS_PREVIOUS_MEMBER_ID) != 0) {
@@ -48,8 +47,7 @@ class DiskVersionTag : public VersionTag {
         DiskStoreId* temp = new DiskStoreId();
         temp->fromData(input);
         previousMemId = DSMemberForVersionStampPtr(temp);
-        m_previousMemId =
-            memberList->add((DSMemberForVersionStampPtr)previousMemId);
+        m_previousMemId = memberList->add(previousMemId);
       }
     }
   }
@@ -60,7 +58,7 @@ class DiskVersionTag : public VersionTag {
   virtual int32_t classId() const { return 0; }
 
   virtual int8_t typeId() const {
-    return (int8_t)GemfireTypeIdsImpl::DiskVersionTag;
+    return static_cast<int8_t>(GemfireTypeIdsImpl::DiskVersionTag);
   }
 
   static Serializable* createDeserializable() { return new DiskVersionTag(); }
@@ -74,6 +72,6 @@ class DiskVersionTag : public VersionTag {
       : VersionTag(entryVersion, regionVersionHighBytes, regionVersionLowBytes,
                    internalMemId, previousMemId) {}
 };
-}
+}  // namespace gemfire
 
 #endif  // __DISKVERSIONTAG_HPP__

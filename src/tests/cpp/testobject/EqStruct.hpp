@@ -147,5 +147,5 @@ class TESTOBJECT_EXPORT EqStruct : public TimestampedObject {
 };
 
 typedef gemfire::SharedPtr<EqStruct> EqStructPtr;
-}
+}  // namespace testobject
 #endif

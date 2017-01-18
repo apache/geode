@@ -173,6 +173,6 @@ class CPPCACHE_EXPORT LRUOverFlowToDiskAction : public virtual LRUAction {
 
   friend class LRUAction;
 };
-};
+}  // namespace gemfire
 
 #endif  // __GEMFIRE_IMPL_LRUACTION_H__

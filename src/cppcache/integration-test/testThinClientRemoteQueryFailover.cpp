@@ -72,7 +72,8 @@ bool isLocalServer = false;
 const char* qRegionNames[] = {"Portfolios", "Positions"};
 KillServerThread* kst = NULL;
 const char* poolNames[] = {"Pool1", "Pool2", "Pool3"};
-const char* locHostPort = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locHostPort =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 bool isPoolConfig = false;  // To track if pool case is running
 
 DUNIT_TASK_DEFINITION(LOCATOR, StartLocator)

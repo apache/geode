@@ -54,6 +54,6 @@ class RegionCommit : public gemfire::SharedBase {
   CacheableStringPtr m_parentRegionPath;
   VectorOfSharedBase m_farSideEntryOps;
 };
-}
+}  // namespace gemfire
 
 #endif /* REGIONCOMMIT_HPP_ */

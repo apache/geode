@@ -87,6 +87,6 @@ class CPPCACHE_EXPORT StatisticsType {
 
 };  // class
 
-};  // namespace
+}  // namespace gemfire_statistics
 
 #endif  // ifndef __GEMFIRE_STATISTICSTYPE_H__

@@ -48,6 +48,6 @@ class InternalCacheTransactionManager2PCImpl
   InternalCacheTransactionManager2PCImpl(
       const InternalCacheTransactionManager2PCImpl& other);
 };
-}
+}  // namespace gemfire
 
 #endif /* INTERNALCACHETRANSACTIONMANAGER2PCIMPL_H_ */

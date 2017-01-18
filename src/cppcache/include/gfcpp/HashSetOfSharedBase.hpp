@@ -142,6 +142,6 @@ class CPPCACHE_EXPORT HashSetOfSharedBase {
   /** Destructor, sets all SharedPtr elements to NULLPTR. */
   ~HashSetOfSharedBase();
 };
-}
+}  // namespace gemfire
 
 #endif

@@ -43,7 +43,8 @@ bool isLocator = false;
 bool isLocalServer = false;
 
 const char* poolNames[] = {"Pool1", "Pool2", "Pool3"};
-const char* locHostPort = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locHostPort =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 bool isPoolConfig = false;  // To track if pool case is running
 const char* qRegionNames[] = {"Portfolios", "Positions", "Portfolios2",
                               "Portfolios3"};
@@ -235,12 +236,12 @@ void stepOne() {
 
   initGridClient(true);
 
-    isPoolConfig = true;
-    createPool(poolNames[0], locHostPort, NULL, 0, true);
-    createRegionAndAttachPool(qRegionNames[0], USE_ACK, poolNames[0]);
-    createRegionAndAttachPool(qRegionNames[1], USE_ACK, poolNames[0]);
-    createRegionAndAttachPool(qRegionNames[2], USE_ACK, poolNames[0]);
-    createRegionAndAttachPool(qRegionNames[3], USE_ACK, poolNames[0]);
+  isPoolConfig = true;
+  createPool(poolNames[0], locHostPort, NULL, 0, true);
+  createRegionAndAttachPool(qRegionNames[0], USE_ACK, poolNames[0]);
+  createRegionAndAttachPool(qRegionNames[1], USE_ACK, poolNames[0]);
+  createRegionAndAttachPool(qRegionNames[2], USE_ACK, poolNames[0]);
+  createRegionAndAttachPool(qRegionNames[3], USE_ACK, poolNames[0]);
 
   RegionPtr regptr = getHelper()->getRegion(qRegionNames[0]);
   RegionAttributesPtr lattribPtr = regptr->getAttributes();

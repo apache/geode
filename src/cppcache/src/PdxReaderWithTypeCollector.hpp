@@ -177,6 +177,6 @@ class PdxReaderWithTypeCollector : public PdxLocalReader {
                               CacheableArrayListPtr& collection);
 };
 typedef SharedPtr<PdxReaderWithTypeCollector> PdxReaderWithTypeCollectorPtr;
-}
+}  // namespace gemfire
 
 #endif /* PDXREADERWITHTYPECOLLECTOR_HPP_ */

@@ -22,4 +22,4 @@ namespace gemfire {
 AppDomainContext* nullAppDomainContext() { return nullptr; }
 
 AppDomainContext::factory createAppDomainContext = &nullAppDomainContext;
-}
+}  // namespace gemfire

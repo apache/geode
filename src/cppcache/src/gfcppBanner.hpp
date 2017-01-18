@@ -21,4 +21,4 @@ class gfcppBanner {
  public:
   static std::string getBanner();
 };
-};
+}  // namespace gemfire

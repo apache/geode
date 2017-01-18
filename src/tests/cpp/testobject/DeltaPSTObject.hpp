@@ -90,5 +90,5 @@ class TESTOBJECT_EXPORT DeltaPSTObject : public Cacheable, public Delta {
   static Serializable* createDeserializable() { return new DeltaPSTObject(); }
 };
 typedef gemfire::SharedPtr<DeltaPSTObject> DeltaPSTObjectPtr;
-}
+}  // namespace testobject
 #endif

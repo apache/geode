@@ -32,4 +32,4 @@ TXId::TXId() : m_TXId(m_transactionId++) {}
 TXId::~TXId() {}
 
 int32_t TXId::getId() { return m_TXId; }
-}
+}  // namespace gemfire

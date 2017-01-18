@@ -233,12 +233,13 @@ class CPPCACHE_EXPORT TcrMessage {
   inline const std::string& getRegex() const { return m_regex; }
 
   inline InterestResultPolicy getInterestResultPolicy() const {
-    if (m_interestPolicy == 2)
+    if (m_interestPolicy == 2) {
       return InterestResultPolicy::KEYS_VALUES;
-    else if (m_interestPolicy == 1)
+    } else if (m_interestPolicy == 1) {
       return InterestResultPolicy::KEYS;
-    else
+    } else {
       return InterestResultPolicy::NONE;
+    }
   }
 
   const char* getPoolName();
@@ -1181,7 +1182,7 @@ class TcrMessageHelper {
 
     if (partLen == 0) {
       // special null object is case for scalar query result
-      return (int8_t)NULL_OBJECT;
+      return static_cast<int8_t>(NULL_OBJECT);
     } else if (!isObj) {
       // otherwise we're currently always expecting an object
       char exMsg[256];
@@ -1199,7 +1200,7 @@ class TcrMessageHelper {
       input.reset();
       if (TcrMessageHelper::readExceptionPart(msg, input, isLastChunk)) {
         msg.setMessageType(TcrMessage::EXCEPTION);
-        return (int8_t)EXCEPTION;
+        return static_cast<int8_t>(EXCEPTION);
       } else {
         char exMsg[256];
         ACE_OS::snprintf(
@@ -1211,11 +1212,11 @@ class TcrMessageHelper {
       }
     } else if (partType == GemfireTypeIds::NullObj) {
       // special null object is case for scalar query result
-      return (int8_t)NULL_OBJECT;
+      return static_cast<int8_t>(NULL_OBJECT);
     }
     return partType;
   }
 };
-}
+}  // namespace gemfire
 
 #endif  // __TCR_MESSAGE_HPP__

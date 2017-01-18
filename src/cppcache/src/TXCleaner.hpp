@@ -46,6 +46,6 @@ class TXCleaner {
   TXCleaner& operator=(const TXCleaner& other);
   TXCleaner(const TXCleaner& other);
 };
-}
+}  // namespace gemfire
 
 #endif /* TXCLEANER_HPP_ */

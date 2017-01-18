@@ -211,5 +211,5 @@ class PdxRemoteReader : public PdxLocalReader {
                               CacheableArrayListPtr& collection);
 };
 typedef SharedPtr<PdxRemoteReader> PdxRemoteReaderPtr;
-}
+}  // namespace gemfire
 #endif /* PDXREMOTEREADER_HPP_ */

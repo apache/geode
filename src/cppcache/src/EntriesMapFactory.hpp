@@ -37,6 +37,6 @@ class CPPCACHE_EXPORT EntriesMapFactory {
 
 };  // class
 
-};  // namespace
+}  // namespace gemfire
 
 #endif  // __GEMFIRE_IMPL_ENTRIESMAPFACTORY_H__

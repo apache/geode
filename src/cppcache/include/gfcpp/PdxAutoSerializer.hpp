@@ -495,6 +495,6 @@ inline void readPdxObject(gemfire::PdxReaderPtr& pr, const char* fieldName,
 //}
 
 }  // namespace PdxAutoSerializable
-}
+}  // namespace gemfire
 
 #endif  // _GEMFIRE_SERIALIZER_HPP_

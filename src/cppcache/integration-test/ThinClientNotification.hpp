@@ -60,16 +60,18 @@ void _verifyEntry(const char* name, const char* key, const char* val,
                   bool noKey) {
   // Verify key and value exist in this region, in this process.
   const char* value = (val == 0) ? "" : val;
-  char* buf = (char*)malloc(1024 + strlen(key) + strlen(value));
+  char* buf =
+      reinterpret_cast<char*>(malloc(1024 + strlen(key) + strlen(value)));
   ASSERT(buf, "Unable to malloc buffer for logging.");
-  if (noKey)
+  if (noKey) {
     sprintf(buf, "Verify key %s does not exist in region %s", key, name);
-  else if (val == 0)
+  } else if (val == 0) {
     sprintf(buf, "Verify value for key %s does not exist in region %s", key,
             name);
-  else
+  } else {
     sprintf(buf, "Verify value for key %s is: %s in region %s", key, value,
             name);
+  }
   LOG(buf);
   free(buf);
 
@@ -93,17 +95,19 @@ void _verifyEntry(const char* name, const char* key, const char* val,
 
   for (int i = MAX; i >= 0; i--) {
     if (noKey) {
-      if (regPtr->containsKey(keyPtr))
+      if (regPtr->containsKey(keyPtr)) {
         containsKeyCnt++;
-      else
+      } else {
         break;
+      }
       ASSERT(containsKeyCnt < MAX, "Key found in region.");
     }
     if (val == NULL) {
       if (regPtr->containsValueForKey(keyPtr)) {
         containsValueCnt++;
-      } else
+      } else {
         break;
+      }
       ASSERT(containsValueCnt < MAX, "Value found in region.");
     }
 

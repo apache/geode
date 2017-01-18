@@ -169,6 +169,6 @@ class CPPCACHE_EXPORT HashSetOfCacheableKey : public _HashSetOfCacheableKey,
 };
 
 typedef SharedPtr<HashSetOfCacheableKey> HashSetOfCacheableKeyPtr;
-}
+}  // namespace gemfire
 
 #endif

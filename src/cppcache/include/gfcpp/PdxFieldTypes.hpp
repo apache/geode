@@ -47,5 +47,5 @@ class CPPCACHE_EXPORT PdxFieldTypes {
     ARRAY_OF_BYTE_ARRAYS
   };
 };
-}
+}  // namespace gemfire
 #endif /* __GEMFIRE_PDXFIELDTYPES_HPP_ */

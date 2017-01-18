@@ -63,7 +63,7 @@ class TimeBomb : public ACE_Task_Base {
     m_endOfLife = ACE_OS::gettimeofday() + ACE_Time_Value(m_seconds);
     m_armed = true;
     char tbuf[64];
-    const time_t tsec = (const time_t)m_endOfLife.sec();
+    const time_t tsec = static_cast<const time_t>(m_endOfLife.sec());
     ACE_OS::ctime_r(&tsec, tbuf, 64);
     for (int32_t len = static_cast<int32_t>(strlen(tbuf)); len >= 0; len--) {
       if ((tbuf[len] == '\n') || (tbuf[len] == '\r')) {
@@ -75,6 +75,6 @@ class TimeBomb : public ACE_Task_Base {
   inline void disarm() { m_armed = false; }
 };
 
-}  // testframework
-}  // gemfire
+}  // namespace testframework
+}  // namespace gemfire
 #endif  // __TimeBomb_hpp__

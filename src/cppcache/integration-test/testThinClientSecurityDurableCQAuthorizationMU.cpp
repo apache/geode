@@ -52,7 +52,8 @@ using namespace testData;
 using namespace gemfire::testframework::security;
 using namespace gemfire;
 
-const char* locHostPort = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locHostPort =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 CredentialGeneratorPtr credentialGeneratorHandler;
 #define CLIENT1 s1p1
 #define SERVER1 s2p1
@@ -215,8 +216,7 @@ void stepOne(bool pool = false, bool locator = false) {
   LOG("StepOne1 complete. 1");
   initClientCq(true, 0);
   LOG("StepOne1 complete. 2");
-  createRegionForCQMU(regionNamesCq[0], USE_ACK, true,
-                      0, NULLPTR, false, true);
+  createRegionForCQMU(regionNamesCq[0], USE_ACK, true, 0, NULLPTR, false, true);
   LOG("StepOne1 complete. 3");
   RegionPtr regptr = getHelper()->getRegion(regionNamesCq[0]);
   LOG("StepOne1 complete. 4");
@@ -240,8 +240,7 @@ void stepOne2(bool pool = false, bool locator = false) {
   LOG("StepOne2 complete. 1");
   initClientCq(true, 1);
   LOG("StepOne2 complete. 2");
-  createRegionForCQMU(regionNamesCq[0], USE_ACK, true,
-                      0, NULLPTR, false, true);
+  createRegionForCQMU(regionNamesCq[0], USE_ACK, true, 0, NULLPTR, false, true);
   LOG("StepOne2 complete. 3");
   RegionPtr regptr = getHelper()->getRegion(regionNamesCq[0]);
   LOG("StepOne2 complete. 4");

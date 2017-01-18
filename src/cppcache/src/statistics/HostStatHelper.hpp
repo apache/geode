@@ -72,5 +72,5 @@ class CPPCACHE_EXPORT HostStatHelper {
 
   static void cleanup();
 };
-};
+}  // namespace gemfire_statistics
 #endif  //_GEMFIRE_STATISTICS_HOSTSTATHELPER_HPP_

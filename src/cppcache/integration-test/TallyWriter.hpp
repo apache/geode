@@ -143,8 +143,9 @@ class TallyWriter : virtual public CacheWriter {
       CacheableKeyPtr callbkArg =
           dynCast<CacheableKeyPtr>(event.getCallbackArgument());
       if (strcmp(m_callbackArg->toString()->asChar(),
-                 callbkArg->toString()->asChar()) == 0)
+                 callbkArg->toString()->asChar()) == 0) {
         isCallbackCalled = true;
+      }
     }
   }
 };

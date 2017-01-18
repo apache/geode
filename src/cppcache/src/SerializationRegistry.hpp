@@ -38,7 +38,9 @@ ACE_BEGIN_VERSIONED_NAMESPACE_DECL
 template <>
 class ACE_Export ACE_Hash<int64_t> {
  public:
-  inline unsigned long operator()(int64_t t) const { return (long)t; }
+  inline unsigned long operator()(int64_t t) const {
+    return static_cast<long>(t);
+  }
 };
 
 ACE_END_VERSIONED_NAMESPACE_DECL
@@ -61,33 +63,36 @@ class CPPCACHE_EXPORT SerializationRegistry {
   inline static void serialize(const Serializable* obj, DataOutput& output,
                                bool isDelta = false) {
     if (obj == NULL) {
-      output.write((int8_t)GemfireTypeIds::NullObj);
+      output.write(static_cast<int8_t>(GemfireTypeIds::NullObj));
     } else {
       int8_t typeId = obj->typeId();
       switch (obj->DSFID()) {
         case GemfireTypeIdsImpl::FixedIDByte:
-          output.write((int8_t)GemfireTypeIdsImpl::FixedIDByte);
+          output.write(static_cast<int8_t>(GemfireTypeIdsImpl::FixedIDByte));
           output.write(typeId);  // write the type ID.
           break;
         case GemfireTypeIdsImpl::FixedIDShort:
-          output.write((int8_t)GemfireTypeIdsImpl::FixedIDShort);
-          output.writeInt((int16_t)typeId);  // write the type ID.
+          output.write(static_cast<int8_t>(GemfireTypeIdsImpl::FixedIDShort));
+          output.writeInt(static_cast<int16_t>(typeId));  // write the type ID.
           break;
         case GemfireTypeIdsImpl::FixedIDInt:
-          output.write((int8_t)GemfireTypeIdsImpl::FixedIDInt);
-          output.writeInt((int32_t)typeId);  // write the type ID.
+          output.write(static_cast<int8_t>(GemfireTypeIdsImpl::FixedIDInt));
+          output.writeInt(static_cast<int32_t>(typeId));  // write the type ID.
           break;
         default:
           output.write(typeId);  // write the type ID.
           break;
       }
 
-      if ((int32_t)typeId == GemfireTypeIdsImpl::CacheableUserData) {
-        output.write((int8_t)obj->classId());
-      } else if ((int32_t)typeId == GemfireTypeIdsImpl::CacheableUserData2) {
-        output.writeInt((int16_t)obj->classId());
-      } else if ((int32_t)typeId == GemfireTypeIdsImpl::CacheableUserData4) {
-        output.writeInt((int32_t)obj->classId());
+      if (static_cast<int32_t>(typeId) ==
+          GemfireTypeIdsImpl::CacheableUserData) {
+        output.write(static_cast<int8_t>(obj->classId()));
+      } else if (static_cast<int32_t>(typeId) ==
+                 GemfireTypeIdsImpl::CacheableUserData2) {
+        output.writeInt(static_cast<int16_t>(obj->classId()));
+      } else if (static_cast<int32_t>(typeId) ==
+                 GemfireTypeIdsImpl::CacheableUserData4) {
+        output.writeInt(obj->classId());
       }
       if (isDelta) {
         const Delta* ptr = dynamic_cast<const Delta*>(obj);
@@ -145,6 +150,6 @@ class CPPCACHE_EXPORT SerializationRegistry {
   static IdToFactoryMap* s_typeMap;
   static PdxSerializerPtr m_pdxSerializer;
 };
-}
+}  // namespace gemfire
 
 #endif

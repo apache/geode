@@ -268,5 +268,5 @@ class GFIGNORE(TESTOBJECT_EXPORT) AutoPdxVersioned2 : public PdxSerializable {
                         int* arrLengths) const;
 };
 typedef SharedPtr<AutoPdxTests::AutoPdxVersioned2> AutoPdxVersioned2Ptr;
-}
+}  // namespace AutoPdxTests
 #endif /* __AUTOPDXVERSIONED2OBJECT_HPP__ */

@@ -46,7 +46,8 @@ using namespace test;
 TallyListenerPtr reg1Listener1;
 bool isLocalServer = false;
 static bool isLocator = false;
-const char* locatorsG = CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
+const char* locatorsG =
+    CacheHelper::getLocatorHostPort(isLocator, isLocalServer, 1);
 
 void setCacheListener(const char* regName, TallyListenerPtr regListener) {
   RegionPtr reg = getHelper()->getRegion(regName);

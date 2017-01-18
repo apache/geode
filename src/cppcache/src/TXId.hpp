@@ -46,6 +46,6 @@ class TXId : public gemfire::TransactionId {
   TXId& operator=(const TXId&);
   TXId(const TXId&);
 };
-}
+}  // namespace gemfire
 
 #endif /* TXID_H_ */

@@ -47,6 +47,6 @@ class ThinClientPoolRegion : public ThinClientRegion {
   ThinClientPoolRegion(const ThinClientPoolRegion&);
   ThinClientPoolRegion& operator=(const ThinClientPoolRegion&);
 };
-}
+}  // namespace gemfire
 
 #endif /* THINCLIENTPOOLREGION_HPP_ */

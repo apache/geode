@@ -28,6 +28,6 @@ class CPPCACHE_EXPORT NanoTimer {
 
   static void sleep(uint32_t nanos);
 };
-}
+}  // namespace gemfire
 
 #endif

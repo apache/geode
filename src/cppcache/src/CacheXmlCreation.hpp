@@ -87,6 +87,6 @@ class CPPCACHE_EXPORT CacheXmlCreation {
   bool m_pdxIgnoreUnreadFields;
   bool m_readPdxSerialized;
 };
-};
+}  // namespace gemfire
 
 #endif  // #ifndef  _GEMFIRE_CACHEXMLCREATION_HPP_

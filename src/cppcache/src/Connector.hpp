@@ -99,6 +99,6 @@ class Connector {
   Connector(const Connector &);
   Connector &operator=(const Connector &);
 };
-}
+}  // namespace gemfire
 
 #endif  // __CONNECTOR_HPP__

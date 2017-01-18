@@ -72,14 +72,14 @@ class PaceMeter {
       return;
     }
 
-    double os = (double)ops / (double)seconds;
+    double os = static_cast<double>(ops) / static_cast<double>(seconds);
 
     if ((ops / seconds) < 1) {  // This is for the "seconds per op" case
       double dsec = 1 / os;
       m_opsLimit = 1;
-      m_waitSeconds = (int32_t)dsec;
+      m_waitSeconds = static_cast<int32_t>(dsec);
       dsec -= m_waitSeconds;
-      m_waitMicros = (int32_t)(dsec * 1000000);
+      m_waitMicros = static_cast<int32_t>(dsec * 1000000);
     } else {
       int32_t ios = ops / seconds;
       m_waitSeconds = 0;

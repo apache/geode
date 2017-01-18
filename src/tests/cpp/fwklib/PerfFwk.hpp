@@ -142,30 +142,33 @@ class Record {
 
   void setName(const char* name) {
     if (m_testName != NULL) free(m_testName);
-    if (name != NULL)
+    if (name != NULL) {
       m_testName = strdup(name);
-    else
+    } else {
       m_testName = NULL;
+}
   }
 
   void setAction(const char* action) {
     if (m_action != NULL) free(m_action);
-    if (action != NULL)
+    if (action != NULL) {
       m_action = strdup(action);
-    else
+    } else {
       m_action = NULL;
+}
   }
 
   void setDate(const char* date) {
     if (m_runDate != NULL) free(m_runDate);
-    if (date != NULL)
+    if (date != NULL) {
       m_runDate = strdup(date);
-    else
+    } else {
       m_runDate = NULL;
+}
   }
 
   void setDate() {
-    if (m_runDate == NULL) m_runDate = (char*)malloc(32);
+    if (m_runDate == NULL) m_runDate = reinterpret_cast<char*>(malloc(32));
 
     time_t esecs = time(0);
     struct tm* now = localtime(&esecs);
@@ -190,24 +193,24 @@ class Record {
   //
   inline void write(gemfire::DataOutput& output) {
     output.writeASCII(m_testName);
-    output.writeInt((int32_t)m_operations);
-    output.writeInt((int32_t)m_micros);
+    output.writeInt(static_cast<int32_t>(m_operations));
+    output.writeInt(static_cast<int32_t>(m_micros));
   }
 
   inline void read(gemfire::DataInput& input) {
     input.readASCII(&m_testName);
-    input.readInt((int32_t*)&m_operations);
-    input.readInt((int32_t*)&m_micros);
+    input.readInt(reinterpret_cast<int32_t*>(&m_operations));
+    input.readInt(reinterpret_cast<int32_t*>(&m_micros));
   }
 
   inline std::string perSec() {
-    double ps = ((1000000.0 * (double)m_operations) / (double)m_micros);
+    double ps = ((1000000.0 * static_cast<double>(m_operations)) / static_cast<double>(m_micros));
     std::ostringstream oss;
     if (ps < 10.0) {
       oss.precision(2);
       oss << ps;
     } else {
-      oss << ((int32_t)(ps + .5));
+      oss << (static_cast<int32_t>(ps + .5));
     }
     return oss.str();
     //      return (int32_t) ((((double) 1000000 * m_operations) / (double)

@@ -55,5 +55,5 @@ class TcrPoolEndPoint : public TcrEndpoint {
  private:
   ThinClientPoolDM* m_dm;
 };
-}
+}  // namespace gemfire
 #endif
