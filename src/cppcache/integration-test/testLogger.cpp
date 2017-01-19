@@ -24,7 +24,7 @@
 #include <unistd.h>
 #endif
 
-#define LENGTH_OF_BANNER 9
+#define LENGTH_OF_BANNER 16
 
 using namespace gemfire;
 
