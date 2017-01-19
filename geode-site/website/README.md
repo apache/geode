@@ -15,7 +15,7 @@ The website is updated by a "sync" tool that monitors the __asf-site__ branch
 of our Git repo, so after making changes you must place your updated source
 and generated files on the __asf-site__ branch and push.
 The content will be published to the
-Geode website](http://geode.apache.org) after a 5-20 minute delay.
+[Geode website](http://geode.apache.org) after a 5-20 minute delay.
 
 ## Prerequisites
 
