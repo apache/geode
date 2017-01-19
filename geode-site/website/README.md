@@ -89,9 +89,10 @@ Here is one way to accomplish this:
         $ tar cvf new-website-content.tar .
         $ mv new-website-content.tar ~/Desktop/
 
-2. Expand the TAR file at the top level of the __asf-site__ branch (cwd should be ${geode-project-dir}:
+2. Expand the TAR file at the top level of the __asf-site__ branch. Set your working directory to ${geode-project-dir}, checkout the __asf-site__ branch, and run a `git clean -xdf` command before unpacking your tar file:
 
         $ git checkout asf-site
+        $ git clean -xdf
         $ tar xvf ~/Desktop/new-website-content.tar
 
 3. Commit and push on the __asf-site__ branch
