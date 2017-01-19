@@ -60,7 +60,10 @@ Log::LogLevel Log::s_logLevel = Default;
 
 /*****************************************************************************/
 
-namespace gemfire_log_globals {
+namespace apache {
+namespace geode {
+namespace log {
+namespace globals {
 
 std::string* g_logFile = NULL;
 std::string* g_logFileWithExt = NULL;
@@ -85,14 +88,18 @@ typedef std::vector<std::pair<std::string, int64_t> > g_fileInfo;
 FILE* g_log = NULL;
 ACE_utsname g_uname;
 pid_t g_pid = 0;
-}  // namespace gemfire_log_globals
+
+}  // namespace globals
+}  // namespace log
+}  // namespace geode
+}  // namespace apache
 
 extern "C" {
 
 static int selector(const dirent* d) {
   std::string inputname(d->d_name);
   std::string filebasename =
-      ACE::basename(gemfire_log_globals::g_logFileWithExt->c_str());
+      ACE::basename(apache::geode::log::globals::g_logFileWithExt->c_str());
   size_t actualHyphenPos = filebasename.find_last_of('.');
   if (strcmp(filebasename.c_str(), d->d_name) == 0) return 1;
   size_t fileExtPos = inputname.find_last_of('.');
@@ -142,7 +149,7 @@ static int comparator(const dirent** d1, const dirent** d2) {
 }
 }
 
-using namespace gemfire_log_globals;
+using namespace apache::geode::log::globals;
 
 namespace apache {
 namespace geode {

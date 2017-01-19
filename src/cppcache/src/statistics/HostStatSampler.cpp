@@ -41,7 +41,10 @@
 using namespace apache::geode::statistics;
 using namespace apache::geode::client;
 
-namespace gemfire_stats_globals {
+namespace apache {
+namespace geode {
+namespace statistics {
+namespace globals {
 std::string g_statFile;
 std::string g_statFileWithExt;
 int64 g_spaceUsed = 0;
@@ -51,16 +54,19 @@ int64 g_previoussamplesizeLastFile = 0;
 std::pair<std::string, size_t> g_fileInfoPair;
 // Vector to hold the fileInformation
 typedef std::vector<std::pair<std::string, int64> > g_fileInfo;
-}  // namespace gemfire_stats_globals
+}  // namespace globals
+}  // namespace statistics
+}  // namespace geode
+}  // namespace apache
 
-using namespace gemfire_stats_globals;
+using namespace apache::geode::statistics::globals;
 
 extern "C" {
 
 int selector(const dirent* d) {
   std::string inputname(d->d_name);
-  std::string filebasename =
-      ACE::basename(gemfire_stats_globals::g_statFileWithExt.c_str());
+  std::string filebasename = ACE::basename(
+      apache::geode::statistics::globals::g_statFileWithExt.c_str());
   size_t actualHyphenPos = filebasename.find_last_of('.');
   if (strcmp(filebasename.c_str(), d->d_name) == 0) return 1;
   size_t fileExtPos = inputname.find_last_of('.');

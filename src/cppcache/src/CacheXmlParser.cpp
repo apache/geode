@@ -29,11 +29,17 @@
 
 using namespace apache::geode::client;
 
-namespace gemfire_impl {
+namespace apache {
+namespace geode {
+namespace client {
+namespace impl {
 void* getFactoryFunc(const char* lib, const char* funcName);
-}  // namespace gemfire_impl
+}  // namespace impl
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
-using namespace gemfire_impl;
+using namespace apache::geode::client::impl;
 
 namespace {
 std::vector<std::pair<std::string, int>> parseEndPoints(
