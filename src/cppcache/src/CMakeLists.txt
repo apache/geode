@@ -83,11 +83,7 @@ target_link_libraries(_gfcppcache INTERFACE
   libxml2
 )
 
-if (${UNIX})
-   target_link_libraries(_gfcppcache INTERFACE
-       z
-   )
-elseif (${WIN32})
+if (${WIN32})
   target_link_libraries(_gfcppcache INTERFACE
       Dbghelp
   )

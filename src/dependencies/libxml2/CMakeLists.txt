@@ -62,4 +62,9 @@ target_include_directories(${PROJECT_NAME} INTERFACE
 target_link_libraries(${PROJECT_NAME} INTERFACE
     ${${PROJECT_NAME}_INSTALL_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}xml2${CMAKE_STATIC_LIBRARY_SUFFIX}
 )
+if (${UNIX})
+   target_link_libraries(${PROJECT_NAME} INTERFACE
+       z
+   )
+endif()
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXTERN})
