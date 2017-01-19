@@ -27,7 +27,9 @@ using namespace apache::geode::client;
 /** @file
 */
 
-namespace gemfire_statistics {
+namespace apache {
+namespace geode {
+namespace statistics {
 
 /**
  * An implementation of {@link Statistics} that stores its statistics
@@ -37,12 +39,13 @@ namespace gemfire_statistics {
 
 /* adongre
  * CID 28734: Other violation (MISSING_COPY)
- * Class "gemfire_statistics::OsStatisticsImpl" owns resources that are
+ * Class "apache::geode::statistics::OsStatisticsImpl" owns resources that are
  * managed in its constructor and destructor but has no user-written copy
  * constructor.
  *
  * CID 28720: Other violation (MISSING_ASSIGN)
- * Class "gemfire_statistics::OsStatisticsImpl" owns resources that are managed
+ * Class "apache::geode::statistics::OsStatisticsImpl" owns resources that are
+ * managed
  * in its constructor and destructor but has no user-written assignment
  * operator.
  *
@@ -250,6 +253,8 @@ class OsStatisticsImpl : public Statistics,
 
 };  // class
 
-}  // namespace gemfire_statistics
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // _GEMFIRE_STATISTICS_OSSTATISTICSIMPL_HPP_

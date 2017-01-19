@@ -16,7 +16,7 @@
  */
 
 #include <gfcpp/statistics/Statistics.hpp>
-using namespace gemfire_statistics;
+using namespace apache::geode::statistics;
 
 void Statistics::close() {}
 

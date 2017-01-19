@@ -42,7 +42,7 @@
 #include "version.h"
 
 using namespace apache::geode::client;
-using namespace gemfire_statistics;
+using namespace apache::geode::statistics;
 
 DistributedSystemPtr* DistributedSystem::m_instance_ptr = NULL;
 bool DistributedSystem::m_connected = false;

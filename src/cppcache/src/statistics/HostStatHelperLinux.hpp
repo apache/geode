@@ -26,7 +26,9 @@
 /** @file
 */
 
-namespace gemfire_statistics {
+namespace apache {
+namespace geode {
+namespace statistics {
 
 /**
  * Linux Implementation to fetch operating system stats.
@@ -41,7 +43,9 @@ class HostStatHelperLinux {
  private:
   static uint8_t m_logStatErrorCountDown;
 };
-};
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // if def(_LINUX)
 

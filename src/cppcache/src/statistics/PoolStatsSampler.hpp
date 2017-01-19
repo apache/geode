@@ -29,7 +29,9 @@ class ThinClientPoolDM;
 }  // namespace geode
 }  // namespace apache
 using namespace apache::geode::client;
-namespace gemfire_statistics {
+namespace apache {
+namespace geode {
+namespace statistics {
 class StatisticsManager;
 class CPPCACHE_EXPORT PoolStatsSampler : public ACE_Task_Base {
  public:
@@ -54,5 +56,7 @@ class CPPCACHE_EXPORT PoolStatsSampler : public ACE_Task_Base {
   ACE_Recursive_Thread_Mutex m_lock;
   static const char* NC_PSS_Thread;
 };
-}  // namespace gemfire_statistics
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif

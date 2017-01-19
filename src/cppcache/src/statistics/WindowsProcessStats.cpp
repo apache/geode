@@ -22,7 +22,7 @@
 #include "GemfireStatisticsFactory.hpp"
 #include "HostStatHelper.hpp"
 
-using namespace gemfire_statistics;
+using namespace apache::geode::statistics;
 
 WindowsProcessStats::WindowsProcessStats(int64 pid, const char* name) {
   GemfireStatisticsFactory* statFactory =

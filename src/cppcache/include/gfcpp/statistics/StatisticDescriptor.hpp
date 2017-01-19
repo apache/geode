@@ -25,7 +25,9 @@ using namespace apache::geode::client;
 /** @file
 */
 
-namespace gemfire_statistics {
+namespace apache {
+namespace geode {
+namespace statistics {
 
 /**
  * Describes an individual statistic whose value is updated by an
@@ -82,7 +84,8 @@ class CPPCACHE_EXPORT StatisticDescriptor {
   virtual ~StatisticDescriptor() {}
 
 };  // class
-
-}  // namespace gemfire_statistics
+}  // namespace statistics
+}  // namespace geode
+}  // namespace apache
 
 #endif  // _GEMFIRE_STATISTICS_STATISTICDESCRIPTOR_HPP_

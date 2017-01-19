@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 #include "ProcessStats.hpp"
-using namespace gemfire_statistics;
+using namespace apache::geode::statistics;
 
 /**
  * Creates a new <code>ProcessStats</code> that wraps the given

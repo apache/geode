@@ -31,7 +31,7 @@
 #include "HostStatHelper.hpp"
 
 using namespace apache::geode::client;
-using namespace gemfire_statistics;
+using namespace apache::geode::statistics;
 
 /**
  * static member initialization

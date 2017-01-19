@@ -91,7 +91,6 @@ void StackTrace::addFrame(std::list<std::string>& frames) {
 }  // namespace geode
 }  // namespace apache
 
-
 #elif defined(_LINUX)
 #include <execinfo.h>
 #include <signal.h>

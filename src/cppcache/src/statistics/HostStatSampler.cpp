@@ -38,7 +38,7 @@
 #include "GemfireStatisticsFactory.hpp"
 #include <ClientHealthStats.hpp>
 #include <ClientProxyMembershipID.hpp>
-using namespace gemfire_statistics;
+using namespace apache::geode::statistics;
 using namespace apache::geode::client;
 
 namespace gemfire_stats_globals {

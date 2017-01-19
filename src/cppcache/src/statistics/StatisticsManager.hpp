@@ -34,7 +34,9 @@
 /** @file
 */
 
-namespace gemfire_statistics {
+namespace apache {
+namespace geode {
+namespace statistics {
 
 /**
  * Head Application Manager for Statistics Module.
@@ -123,6 +125,8 @@ class StatisticsManager {
 
 };  // class
 
-}  // namespace gemfire_statistics
+}  // namespace statistics
+}  // namespace geode
+}  // namespace apache
 
 #endif  //  _GEMFIRE_STATISTICS_STATISTICSAPPMANAGER_HPP_

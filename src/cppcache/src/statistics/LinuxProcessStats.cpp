@@ -20,7 +20,7 @@
 #include "LinuxProcessStats.hpp"
 #include "GemfireStatisticsFactory.hpp"
 #include "HostStatHelperLinux.hpp"
-using namespace gemfire_statistics;
+using namespace apache::geode::statistics;
 
 /**
  * <P>This class provides the interface for statistics about a

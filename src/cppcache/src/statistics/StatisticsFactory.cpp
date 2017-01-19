@@ -17,9 +17,13 @@
 
 #include "GemfireStatisticsFactory.hpp"
 
-namespace gemfire_statistics {
+namespace apache {
+namespace geode {
+namespace statistics {
 
 StatisticsFactory* StatisticsFactory::getExistingInstance() {
   return GemfireStatisticsFactory::getExistingInstance();
 }
-}  // namespace gemfire_statistics
+}  // namespace client
+}  // namespace geode
+}  // namespace apache

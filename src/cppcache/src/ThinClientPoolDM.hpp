@@ -40,10 +40,14 @@
 
 #include "NonCopyable.hpp"
 
-namespace gemfire_statistics {
+namespace apache {
+namespace geode {
+namespace statistics {
 class PoolStatsSampler;
-}  // namespace gemfire_statistics
-using namespace gemfire_statistics;
+}  // namespace statistics
+}  // namespace geode
+}  // namespace apache
+using namespace apache::geode::statistics;
 namespace apache {
 namespace geode {
 namespace client {
@@ -413,7 +417,7 @@ class ThinClientPoolDM
   void cleanStaleConnections(volatile bool& isRunning);
   void restoreMinConnections(volatile bool& isRunning);
   volatile int32 m_clientOps;  // Actual Size of Pool
-  PoolStatsSampler* m_PoolStatsSampler;
+  statistics::PoolStatsSampler* m_PoolStatsSampler;
   ClientMetadataService* m_clientMetadataService;
   friend class CacheImpl;
   friend class ThinClientStickyManager;

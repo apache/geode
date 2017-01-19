@@ -179,9 +179,8 @@ class CPPCACHE_EXPORT Utils {
     return objectSize;
   }
 
-  inline static void updateStatOpTime(
-      gemfire_statistics::Statistics* m_regionStats, int32 statId,
-      int64 start) {
+  inline static void updateStatOpTime(statistics::Statistics* m_regionStats,
+                                      int32 statId, int64 start) {
     if (DistributedSystem::getSystemProperties() != NULL) {
       if (DistributedSystem::getSystemProperties()->getEnableTimeStatistics()) {
         m_regionStats->incLong(statId, startStatOpTime() - start);

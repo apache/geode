@@ -21,7 +21,7 @@
 #include "HostStatHelper.hpp"
 #include "GemfireStatisticsFactory.hpp"
 
-using namespace gemfire_statistics;
+using namespace apache::geode::statistics;
 
 /**
  * Provides native methods which fetch operating system statistics.

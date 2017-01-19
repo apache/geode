@@ -42,7 +42,7 @@ namespace GemStone
       /// StatisticDescriptors are naturally ordered by their name.
       /// </para>
       public ref class StatisticDescriptor sealed
-        : public Internal::UMWrap<gemfire_statistics::StatisticDescriptor>
+        : public Internal::UMWrap<apache::geode::statistics::StatisticDescriptor>
        {
          public:
            /// <summary>
@@ -107,7 +107,7 @@ namespace GemStone
            /// the managed wrapper object, or null if the native pointer is null.
            /// </returns>
            inline static StatisticDescriptor^ Create(
-           gemfire_statistics::StatisticDescriptor* nativeptr )
+           apache::geode::statistics::StatisticDescriptor* nativeptr )
            {
              return ( nativeptr != nullptr ?
              gcnew StatisticDescriptor( nativeptr ) : nullptr );
@@ -118,7 +118,7 @@ namespace GemStone
            /// Private constructor to wrap a native object pointer
            /// </summary>
            /// <param name="nativeptr">The native object pointer</param>
-           inline StatisticDescriptor( gemfire_statistics::StatisticDescriptor* nativeptr )
+           inline StatisticDescriptor( apache::geode::statistics::StatisticDescriptor* nativeptr )
            : UMWrap( nativeptr, false ) { }
        };      
     }
