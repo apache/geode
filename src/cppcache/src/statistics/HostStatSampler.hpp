@@ -44,7 +44,9 @@ using namespace apache::geode::client;
 #ifndef GEMFIRE_MAX_STAT_DISK_LIMIT
 #define GEMFIRE_MAX_STAT_DISK_LIMIT (1024LL * 1024LL * 1024LL * 1024LL)
 #endif
-namespace gemfire_statistics {
+namespace apache {
+namespace geode {
+namespace statistics {
 
 class StatArchiveWriter;
 class StatisticsManager;
@@ -55,12 +57,12 @@ class StatisticsManager;
 
 /* adongre
  * CID 28733: Other violation (MISSING_COPY)
- * Class "gemfire_statistics::OsStatisticsImpl" owns resources that are
+ * Class "apache::geode::statistics::OsStatisticsImpl" owns resources that are
  * managed in its constructor and destructor but has no user-written copy
  * constructor.
  *
  * CID 28719: Other violation (MISSING_ASSIGN) Class
- * "gemfire_statistics::HostStatSampler"
+ * "apache::geode::statistics::HostStatSampler"
  * owns resources that are managed in its constructor and destructor but has no
  * user-written assignment operator.
  *
@@ -245,5 +247,8 @@ class CPPCACHE_EXPORT HostStatSampler : public ACE_Task_Base,
 
   static const char* NC_HSS_Thread;
 };
-};      // namespace gemfire_statistics
+}  // namespace statistics
+}  // namespace geode
+}  // namespace apache
+
 #endif  // _GEMFIRE_STATISTICS_HOSTSTATSAMPLER_HPP_

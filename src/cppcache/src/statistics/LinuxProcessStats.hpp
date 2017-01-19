@@ -28,7 +28,9 @@ using namespace apache::geode::client;
 /** @file
 */
 
-namespace gemfire_statistics {
+namespace apache {
+namespace geode {
+namespace statistics {
 /**
  * <P>This class provides the interface for statistics about a
  * Linux operating system process that is using a GemFire system.
@@ -73,6 +75,8 @@ class CPPCACHE_EXPORT LinuxProcessStats : public ProcessStats {
 
 };  // Class LinuxProcessStats
 
-}  // namespace gemfire_statistics
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  //_GEMFIRE_STATISTICS_LINUXPROCESSSTATS_HPP_

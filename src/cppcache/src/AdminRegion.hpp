@@ -25,9 +25,13 @@
 //#include <statistics/HostStatSampler.hpp>
 
 #include "NonCopyable.hpp"
-namespace gemfire_statistics {
+namespace apache {
+namespace geode {
+namespace statistics {
 class HostStatSampler;
-}  // namespace gemfire_statistics
+}  // namespace statistics
+}  // namespace geode
+}  // namespace apache
 
 namespace apache {
 namespace geode {
@@ -68,7 +72,7 @@ class AdminRegion : public SharedBase,
   void put(const CacheableKeyPtr& keyPtr, const CacheablePtr& valuePtr);
   AdminRegion(CacheImpl* cache, ThinClientBaseDM* distMan = NULL);
   ~AdminRegion();
-  friend class gemfire_statistics::HostStatSampler;
+  friend class apache::geode::statistics::HostStatSampler;
 };
 
 typedef SharedPtr<AdminRegion> AdminRegionPtr;

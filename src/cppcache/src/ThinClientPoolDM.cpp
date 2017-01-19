@@ -33,7 +33,7 @@
 #include "NonCopyable.hpp"
 
 using namespace apache::geode::client;
-using namespace gemfire_statistics;
+using namespace apache::geode::statistics;
 
 ExpiryTaskManager* getCacheImplExpiryTaskManager();
 void removePool(const char*);

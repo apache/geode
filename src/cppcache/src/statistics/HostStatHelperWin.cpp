@@ -29,7 +29,7 @@
  */
 
 #if defined(_WIN32)
-using namespace gemfire_statistics;
+using namespace apache::geode::statistics;
 
 PPERF_DATA_BLOCK HostStatHelperWin::PerfData = NULL;
 PPERF_OBJECT_TYPE HostStatHelperWin::ProcessObj = NULL;

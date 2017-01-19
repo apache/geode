@@ -28,7 +28,7 @@ namespace apache {
 namespace geode {
 namespace client {
 
-using namespace gemfire_statistics;
+using namespace apache::geode::statistics;
 
 class CPPCACHE_EXPORT CqQueryVsdStats : public CqStatistics {
  public:
@@ -62,7 +62,7 @@ class CPPCACHE_EXPORT CqQueryVsdStats : public CqStatistics {
   }
 
  private:
-  gemfire_statistics::Statistics* m_cqQueryVsdStats;
+  apache::geode::statistics::Statistics* m_cqQueryVsdStats;
 
   int32_t m_numInsertsId;
   int32_t m_numUpdatesId;

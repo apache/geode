@@ -19,7 +19,7 @@
 #include "StatisticDescriptorImpl.hpp"
 #include <string>
 #include <ace/OS.h>
-using namespace gemfire_statistics;
+using namespace apache::geode::statistics;
 
 /**
 * Gathers together a number of {@link StatisticDescriptor statistics}

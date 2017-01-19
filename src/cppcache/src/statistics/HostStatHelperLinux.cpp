@@ -25,12 +25,16 @@
 #include "LinuxProcessStats.hpp"
 #include <ace/OS.h>
 
-using namespace gemfire_statistics;
+using namespace apache::geode::statistics;
 
-namespace gemfire_statistics {
+namespace apache {
+namespace geode {
+namespace statistics {
 double lastIdle = 0;
 double lastUptime = 0;
-}
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 uint8_t HostStatHelperLinux::m_logStatErrorCountDown = 5;
 

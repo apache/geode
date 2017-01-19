@@ -25,7 +25,9 @@ using namespace apache::geode::client;
 /** @file
 */
 
-namespace gemfire_statistics {
+namespace apache {
+namespace geode {
+namespace statistics {
 
 /**
  * Abstracts the process statistics that are common on all platforms.
@@ -72,5 +74,7 @@ class CPPCACHE_EXPORT ProcessStats {
    */
   virtual ~ProcessStats();
 };
-}  // namespace gemfire_statistics
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  // _GEMFIRE_STATISTICS_PROCESSSTATS_HPP_

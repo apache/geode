@@ -27,7 +27,9 @@
 /** @file
 */
 
-namespace gemfire_statistics {
+namespace apache {
+namespace geode {
+namespace statistics {
 
 /**
  * Gathers together a number of {@link StatisticDescriptor statistics}
@@ -93,6 +95,8 @@ class StatisticsTypeImpl : public StatisticsType {
   //                                      StatisticsTypeFactory factory);
 
 };  // class
-}  // namespace gemfire_statistics
+}  // namespace statistics
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef _GEMFIRE_STATISTICS_STATISTICSTYPEIMPL_HPP_

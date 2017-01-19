@@ -30,7 +30,7 @@ namespace apache {
 namespace geode {
 namespace client {
 
-using namespace gemfire_statistics;
+using namespace apache::geode::statistics;
 
 class CPPCACHE_EXPORT RegionStats {
  public:
@@ -90,10 +90,12 @@ class CPPCACHE_EXPORT RegionStats {
 
   inline void incClears() { m_regionStats->incInt(m_clearsId, 1); }
 
-  inline gemfire_statistics::Statistics* getStat() { return m_regionStats; }
+  inline apache::geode::statistics::Statistics* getStat() {
+    return m_regionStats;
+  }
 
  private:
-  gemfire_statistics::Statistics* m_regionStats;
+  apache::geode::statistics::Statistics* m_regionStats;
 
   int32_t m_destroysId;
   int32_t m_createsId;
@@ -133,13 +135,13 @@ class RegionStatType {
  public:
   static RegionStatType* getInstance();
 
-  StatisticsType* getStatType();
+  statistics::StatisticsType* getStatType();
 
   static void clean();
 
  private:
   RegionStatType();
-  StatisticDescriptor* m_stats[26];
+  statistics::StatisticDescriptor* m_stats[26];
 
   int32_t m_destroysId;
   int32_t m_createsId;

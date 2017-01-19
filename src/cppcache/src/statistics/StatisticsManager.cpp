@@ -33,7 +33,7 @@
 #include "OsStatisticsImpl.hpp"
 
 using namespace apache::geode::client;
-using namespace gemfire_statistics;
+using namespace apache::geode::statistics;
 
 /**
  * static member initialization
@@ -106,7 +106,7 @@ StatisticsManager::~StatisticsManager() {
           LOGFINEST("Leftover statistic: %s", temp.c_str());
           /* adongre
            * Passing null variable "*iterFind" to function
-           * "gemfire_statistics::StatisticsManager::deleteStatistics(gemfire_statistics::Statistics
+           * "apache::geode::statistics::StatisticsManager::deleteStatistics(apache::geode::statistics::Statistics
            * *&)",
            * which dereferences it.
            * FIX : Put the call into the if condition

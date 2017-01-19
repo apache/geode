@@ -22,12 +22,16 @@
 /** @file
  */
 
-namespace gemfire_statistics {
+namespace apache {
+namespace geode {
+namespace statistics {
 
 class HostStatHelperNull {
  public:
   static void refreshProcess(ProcessStats* processStats) {}
 };
-}  // namespace gemfire_statistics
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // _GEMFIRE_STATISTICS_HOSTSTATHELPERLINUX_HPP_

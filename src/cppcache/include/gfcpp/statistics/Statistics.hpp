@@ -24,7 +24,9 @@
 /** @file
 */
 
-namespace gemfire_statistics {
+namespace apache {
+namespace geode {
+namespace statistics {
 /**
  * An instantiation of an existing <code>StatisticsType</code> object with
  * methods for
@@ -212,7 +214,9 @@ class CPPCACHE_EXPORT Statistics {
    *         if the described statistic is not of
    *         type <code>double</code>.
    */
-  virtual void setDouble(StatisticDescriptor* descriptor, double value) = 0;
+  virtual void setDouble(
+      apache::geode::statistics::StatisticDescriptor* descriptor,
+      double value) = 0;
   /**
    * Sets the value of a named statistic of type <code>double</code>.
    *
@@ -249,7 +253,8 @@ class CPPCACHE_EXPORT Statistics {
    *         if the described statistic is not of
    *         type <code>int</code>.
    */
-  virtual int32 getInt(StatisticDescriptor* descriptor) = 0;
+  virtual int32 getInt(
+      apache::geode::statistics::StatisticDescriptor* descriptor) = 0;
   /**
    * Returns the value of the statistic of type <code>int</code> at
    * the given name.
@@ -517,6 +522,8 @@ class CPPCACHE_EXPORT Statistics {
   virtual ~Statistics() = 0;
 };  // class
 
-}  // namespace gemfire_statistics
+}  // namespace statistics
+}  // namespace geode
+}  // namespace apache
 
 #endif  // _GEMFIRE_STATISTICS_STATISTICS_HPP_

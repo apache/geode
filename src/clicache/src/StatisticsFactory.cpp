@@ -38,7 +38,7 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-          return StatisticsFactory::Create(gemfire_statistics::StatisticsFactory::getExistingInstance());
+          return StatisticsFactory::Create(apache::geode::statistics::StatisticsFactory::getExistingInstance());
 
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
       }
@@ -153,10 +153,10 @@ namespace GemStone
         ManagedString mg_description( description );
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
                 
-          gemfire_statistics::StatisticDescriptor ** nativedescriptors = new gemfire_statistics::StatisticDescriptor*[statsLength];
+          apache::geode::statistics::StatisticDescriptor ** nativedescriptors = new apache::geode::statistics::StatisticDescriptor*[statsLength];
           for (int32_t index = 0; index < statsLength; index++)
           {
-            nativedescriptors[index] = GetNativePtr<gemfire_statistics::StatisticDescriptor>(stats[index]);
+            nativedescriptors[index] = GetNativePtr<apache::geode::statistics::StatisticDescriptor>(stats[index]);
           }
           return StatisticsType::Create(NativePtr->createType(mg_name.CharPtr, mg_description.CharPtr, nativedescriptors, statsLength));
           
@@ -177,7 +177,7 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
          
-          return Statistics::Create(NativePtr->createStatistics(GetNativePtr<gemfire_statistics::StatisticsType>(type)));
+          return Statistics::Create(NativePtr->createStatistics(GetNativePtr<apache::geode::statistics::StatisticsType>(type)));
 
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
       }
@@ -187,7 +187,7 @@ namespace GemStone
         ManagedString mg_text( textId );
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-          return Statistics::Create(NativePtr->createStatistics(GetNativePtr<gemfire_statistics::StatisticsType>(type),(char*)mg_text.CharPtr));
+          return Statistics::Create(NativePtr->createStatistics(GetNativePtr<apache::geode::statistics::StatisticsType>(type),(char*)mg_text.CharPtr));
 
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
       }
@@ -197,7 +197,7 @@ namespace GemStone
         ManagedString mg_text( textId );
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-          return Statistics::Create(NativePtr->createStatistics(GetNativePtr<gemfire_statistics::StatisticsType>(type),(char*)mg_text.CharPtr, numericId));
+          return Statistics::Create(NativePtr->createStatistics(GetNativePtr<apache::geode::statistics::StatisticsType>(type),(char*)mg_text.CharPtr, numericId));
 
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
       }
@@ -206,7 +206,7 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
          
-          return Statistics::Create(NativePtr->createAtomicStatistics(GetNativePtr<gemfire_statistics::StatisticsType>(type)));
+          return Statistics::Create(NativePtr->createAtomicStatistics(GetNativePtr<apache::geode::statistics::StatisticsType>(type)));
 
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
       }
@@ -216,7 +216,7 @@ namespace GemStone
         ManagedString mg_text( textId );
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-          return Statistics::Create(NativePtr->createAtomicStatistics(GetNativePtr<gemfire_statistics::StatisticsType>(type),(char*)mg_text.CharPtr));
+          return Statistics::Create(NativePtr->createAtomicStatistics(GetNativePtr<apache::geode::statistics::StatisticsType>(type),(char*)mg_text.CharPtr));
 
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
       }
@@ -226,7 +226,7 @@ namespace GemStone
         ManagedString mg_text( textId );
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-          return Statistics::Create(NativePtr->createAtomicStatistics(GetNativePtr<gemfire_statistics::StatisticsType>(type),(char*)mg_text.CharPtr, numericId));
+          return Statistics::Create(NativePtr->createAtomicStatistics(GetNativePtr<apache::geode::statistics::StatisticsType>(type),(char*)mg_text.CharPtr, numericId));
 
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
       }
@@ -234,7 +234,7 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
          
-          return Statistics::Create(NativePtr->findFirstStatisticsByType(GetNativePtr<gemfire_statistics::StatisticsType>(type)));
+          return Statistics::Create(NativePtr->findFirstStatisticsByType(GetNativePtr<apache::geode::statistics::StatisticsType>(type)));
 
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
       }

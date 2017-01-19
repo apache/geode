@@ -53,7 +53,7 @@ namespace GemStone
       /// is, exceeds its maximum value).
       /// </para>
       public ref class StatisticsFactory sealed
-        : public Internal::UMWrap<gemfire_statistics::StatisticsFactory>
+        : public Internal::UMWrap<apache::geode::statistics::StatisticsFactory>
       {
         protected:
           StatisticsFactory(){}
@@ -245,7 +245,7 @@ namespace GemStone
            /// the managed wrapper object, or null if the native pointer is null.
            /// </returns>
            inline static StatisticsFactory^ Create(
-           gemfire_statistics::StatisticsFactory* nativeptr )
+           apache::geode::statistics::StatisticsFactory* nativeptr )
            {
              return ( nativeptr != nullptr ?
              gcnew StatisticsFactory( nativeptr ) : nullptr );
@@ -256,7 +256,7 @@ namespace GemStone
            /// Private constructor to wrap a native object pointer
            /// </summary>
            /// <param name="nativeptr">The native object pointer</param>
-           inline StatisticsFactory( gemfire_statistics::StatisticsFactory* nativeptr )
+           inline StatisticsFactory( apache::geode::statistics::StatisticsFactory* nativeptr )
            : UMWrap( nativeptr, false ) { }
       };
     }

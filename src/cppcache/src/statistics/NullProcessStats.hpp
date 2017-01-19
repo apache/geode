@@ -28,7 +28,9 @@ using namespace apache::geode::client;
 /** @file
  */
 
-namespace gemfire_statistics {
+namespace apache {
+namespace geode {
+namespace statistics {
 /**
  * <P>This class provides the interface for statistics about a
  * Null operating system process that is using a GemFire system.
@@ -46,9 +48,9 @@ class CPPCACHE_EXPORT NullProcessStats : public ProcessStats {
   int32 getNumThreads();
   int64 getAllCpuTime();
   void close();
-};
-// Class NullProcessStats
-}  // namespace gemfire_statistics
-// NameSpace
+};  // Class NullProcessStats
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  //_GEMFIRE_STATISTICS_NULLPROCESSSTATS_HPP_

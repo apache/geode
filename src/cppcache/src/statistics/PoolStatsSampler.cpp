@@ -23,7 +23,7 @@
 #include <ClientHealthStats.hpp>
 #include <NanoTimer.hpp>
 #include "HostStatHelper.hpp"
-using namespace gemfire_statistics;
+using namespace apache::geode::statistics;
 using namespace apache::geode::client;
 const char* PoolStatsSampler::NC_PSS_Thread = "NC PSS Thread";
 

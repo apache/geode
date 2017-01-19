@@ -29,7 +29,7 @@ namespace apache {
 namespace geode {
 namespace client {
 
-using namespace gemfire_statistics;
+using namespace apache::geode::statistics;
 
 ////////////////////////////////////////////////////////////////////////////////
 
