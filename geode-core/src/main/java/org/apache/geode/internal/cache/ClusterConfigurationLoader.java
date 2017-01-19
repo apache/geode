@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.geode.internal.ClassPathLoader;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.UnmodifiableException;
@@ -35,7 +36,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.ConfigSource;
-import org.apache.geode.internal.JarClassLoader;
+import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -67,18 +68,16 @@ public class ClusterConfigurationLoader {
     String[] jarFileNames = response.getJarNames();
     byte[][] jarBytes = response.getJars();
 
-    final JarDeployer jarDeployer = new JarDeployer(
-        ((GemFireCacheImpl) cache).getDistributedSystem().getConfig().getDeployWorkingDir());
-
     /******
      * Un-deploy the existing jars, deployed during cache creation, do not delete anything
      */
 
     if (jarFileNames != null && jarBytes != null) {
-      JarClassLoader[] jarClassLoaders = jarDeployer.deploy(jarFileNames, jarBytes);
+      List<DeployedJar> jarClassLoaders =
+          ClassPathLoader.getLatest().getJarDeployer().deploy(jarFileNames, jarBytes);
       for (int i = 0; i < jarFileNames.length; i++) {
-        if (jarClassLoaders[i] != null) {
-          logger.info("Deployed " + (jarClassLoaders[i].getFileCanonicalPath()));
+        if (jarClassLoaders.get(i) != null) {
+          logger.info("Deployed " + (jarClassLoaders.get(i).getFileCanonicalPath()));
         }
       }
     }

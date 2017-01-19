@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.apache.geode.internal.ClassPathLoader;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
@@ -28,7 +29,7 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.InternalEntity;
-import org.apache.geode.internal.JarClassLoader;
+import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.logging.LogService;
@@ -50,8 +51,7 @@ public class UndeployFunction implements Function, InternalEntity {
       final String jarFilenameList = (String) args[0]; // Comma separated
       Cache cache = CacheFactory.getAnyInstance();
 
-      final JarDeployer jarDeployer = new JarDeployer(
-          ((GemFireCacheImpl) cache).getDistributedSystem().getConfig().getDeployWorkingDir());
+      final JarDeployer jarDeployer = ClassPathLoader.getLatest().getJarDeployer();
 
       DistributedMember member = cache.getDistributedSystem().getDistributedMember();
 
@@ -63,13 +63,14 @@ public class UndeployFunction implements Function, InternalEntity {
 
       String[] undeployedJars = new String[0];
       if (jarFilenameList == null || jarFilenameList.equals("")) {
-        final List<JarClassLoader> jarClassLoaders = jarDeployer.findJarClassLoaders();
+        final List<DeployedJar> jarClassLoaders = jarDeployer.findDeployedJars();
         undeployedJars = new String[jarClassLoaders.size() * 2];
         int index = 0;
-        for (JarClassLoader jarClassLoader : jarClassLoaders) {
+        for (DeployedJar jarClassLoader : jarClassLoaders) {
           undeployedJars[index++] = jarClassLoader.getJarName();
           try {
-            undeployedJars[index++] = jarDeployer.undeploy(jarClassLoader.getJarName());
+            undeployedJars[index++] =
+                ClassPathLoader.getLatest().getJarDeployer().undeploy(jarClassLoader.getJarName());
           } catch (IllegalArgumentException iaex) {
             // It's okay for it to have have been uneployed from this server
             undeployedJars[index++] = iaex.getMessage();
@@ -82,7 +83,7 @@ public class UndeployFunction implements Function, InternalEntity {
           String jarFilename = jarTokenizer.nextToken().trim();
           try {
             undeployedList.add(jarFilename);
-            undeployedList.add(jarDeployer.undeploy(jarFilename));
+            undeployedList.add(ClassPathLoader.getLatest().getJarDeployer().undeploy(jarFilename));
           } catch (IllegalArgumentException iaex) {
             // It's okay for it to not have been deployed to this server
             undeployedList.add(iaex.getMessage());

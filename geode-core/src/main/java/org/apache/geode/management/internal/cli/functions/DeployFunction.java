@@ -15,8 +15,10 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+import org.apache.geode.internal.ClassPathLoader;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
@@ -27,7 +29,7 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.InternalEntity;
-import org.apache.geode.internal.JarClassLoader;
+import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.logging.LogService;
@@ -62,11 +64,12 @@ public class DeployFunction implements Function, InternalEntity {
       }
 
       List<String> deployedList = new ArrayList<String>();
-      JarClassLoader[] jarClassLoaders = jarDeployer.deploy(jarFilenames, jarBytes);
+      List<DeployedJar> jarClassLoaders =
+          ClassPathLoader.getLatest().getJarDeployer().deploy(jarFilenames, jarBytes);
       for (int i = 0; i < jarFilenames.length; i++) {
         deployedList.add(jarFilenames[i]);
-        if (jarClassLoaders[i] != null) {
-          deployedList.add(jarClassLoaders[i].getFileCanonicalPath());
+        if (jarClassLoaders.get(i) != null) {
+          deployedList.add(jarClassLoaders.get(i).getFileCanonicalPath());
         } else {
           deployedList.add("Already deployed");
         }

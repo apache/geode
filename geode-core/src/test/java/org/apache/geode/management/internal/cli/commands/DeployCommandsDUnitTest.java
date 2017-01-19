@@ -14,508 +14,268 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
-import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_BIND_ADDRESS;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.test.dunit.Assert.assertEquals;
-import static org.apache.geode.test.dunit.Assert.assertFalse;
-import static org.apache.geode.test.dunit.Assert.assertTrue;
-import static org.apache.geode.test.dunit.Assert.fail;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertNotNull;
 
-import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
-import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.ClassBuilder;
-import org.apache.geode.internal.JarDeployer;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
-import org.apache.geode.management.internal.cli.remote.CommandProcessor;
+import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.SerializableRunnable;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.dunit.rules.Locator;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.dunit.rules.Server;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.io.Serializable;
 import java.util.Properties;
-import java.util.regex.Pattern;
 
 /**
  * Unit tests for the DeployCommands class
- *
+ * 
  * @since GemFire 7.0
  */
 @SuppressWarnings("serial")
 @Category(DistributedTest.class)
-public class DeployCommandsDUnitTest extends CliCommandTestBase {
+public class DeployCommandsDUnitTest implements Serializable {
+  private static final String GROUP1 = "Group1";
+  private static final String GROUP2 = "Group2";
 
-  private final Pattern pattern =
-      Pattern.compile("^" + JarDeployer.JAR_PREFIX + "DeployCommandsDUnit.*#\\d++$");
-  private File newDeployableJarFile;
-  private transient ClassBuilder classBuilder;
-  private transient CommandProcessor commandProcessor;
+  private final String class1 = "DeployCommandsDUnitA";
+  private final String class2 = "DeployCommandsDUnitB";
+  private final String class3 = "DeployCommandsDUnitC";
+  private final String class4 = "DeployCommandsDUnitD";
 
-  @Override
-  public final void postSetUpCliCommandTestBase() throws Exception {
-    this.newDeployableJarFile = new File(this.temporaryFolder.getRoot().getCanonicalPath()
-        + File.separator + "DeployCommandsDUnit1.jar");
-    this.classBuilder = new ClassBuilder();
-    this.commandProcessor = new CommandProcessor();
-    assertFalse(this.commandProcessor.isStopped());
+  private final String jarName1 = "DeployCommandsDUnit1.jar";
+  private final String jarName2 = "DeployCommandsDUnit2.jar";
+  private final String jarName3 = "DeployCommandsDUnit3.jar";
+  private final String jarName4 = "DeployCommandsDUnit4.jar";
 
-    Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
-      public void run() {
-        deleteSavedJarFiles();
-      }
-    });
-    deleteSavedJarFiles();
-  }
+  private File jar1;
+  private File jar2;
+  private File jar3;
+  private File jar4;
+  private File subdirWithJars3and4;
 
-  @SuppressWarnings("serial")
-  @Override
-  protected final void preTearDownCliCommandTestBase() throws Exception {
-    Host.getHost(0).getVM(1).invoke(new SerializableRunnable() {
-      public void run() {
-        DistributionManager.isDedicatedAdminVM = false;
-      }
-    });
+  private MemberVM locator;
+  private MemberVM server1;
+  private MemberVM server2;
 
-    Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
-      public void run() {
-        deleteSavedJarFiles();
-      }
-    });
-    deleteSavedJarFiles();
-  }
+  @Rule
+  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
-  @Test
-  public void testDeploy() throws Exception {
-    final Properties props = new Properties();
-    final Host host = Host.getHost(0);
-    final VM vm = host.getVM(0);
-    final String vmName = "VM" + vm.getPid();
+  @Rule
+  public transient GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
 
-    // Create the cache in this VM
-    props.setProperty(NAME, "Controller");
-    props.setProperty(GROUPS, "Group1");
-    getSystem(props);
-    getCache();
+  @Before
+  public void setup() throws Exception {
+    ClassBuilder classBuilder = new ClassBuilder();
+    File jarsDir = lsRule.getTempFolder().newFolder();
+    jar1 = new File(jarsDir, jarName1);
+    jar2 = new File(jarsDir, jarName2);
 
-    // Create the cache in the other VM
-    vm.invoke(new SerializableRunnable() {
-      public void run() {
-        props.setProperty(NAME, vmName);
-        props.setProperty(GROUPS, "Group2");
-        getSystem(props);
-        getCache();
-      }
-    });
+    subdirWithJars3and4 = new File(jarsDir, "subdir");
+    subdirWithJars3and4.mkdirs();
+    jar3 = new File(subdirWithJars3and4, jarName3);
+    jar4 = new File(subdirWithJars3and4, jarName4);
 
-    DeployCommands deployCommands = new DeployCommands();
+    classBuilder.writeJarFromName(class1, jar1);
+    classBuilder.writeJarFromName(class2, jar2);
+    classBuilder.writeJarFromName(class3, jar3);
+    classBuilder.writeJarFromName(class4, jar4);
 
-    // Single JAR all members
-    CommandExecutionContext.setBytesFromShell(new byte[][] {"DeployCommandsDUnit1.jar".getBytes(),
-        this.classBuilder.createJarFromName("DeployCommandsDUnitA")});
-    Result result = deployCommands.deploy(null, "DeployCommandsDUnit1.jar", null);
+    locator = lsRule.startLocatorVM(0);
 
-    assertEquals(true, result.hasNextLine());
+    Properties props = new Properties();
+    props.setProperty(GROUPS, GROUP1);
+    server1 = lsRule.startServerVM(1, props, locator.getPort());
 
-    String resultString = result.nextLine();
-    assertEquals(false, resultString.contains("ERROR"));
-    assertEquals(1, countMatchesInString(resultString, "Controller"));
-    assertEquals(1, countMatchesInString(resultString, vmName));
-    assertEquals(4, countMatchesInString(resultString, "DeployCommandsDUnit1.jar"));
+    props.setProperty(GROUPS, GROUP2);
+    server2 = lsRule.startServerVM(2, props, locator.getPort());
 
-    // Single JAR with group
-    CommandExecutionContext.setBytesFromShell(new byte[][] {"DeployCommandsDUnit2.jar".getBytes(),
-        this.classBuilder.createJarFromName("DeployCommandsDUnitB")});
-    result = deployCommands.deploy(new String[] {"Group2"}, "DeployCommandsDUnit2.jar", null);
-
-    assertEquals(true, result.hasNextLine());
-
-    resultString = result.nextLine();
-    assertEquals(false, resultString.contains("ERROR"));
-    assertEquals(false, resultString.contains("Controller"));
-    assertEquals(1, countMatchesInString(resultString, vmName));
-    assertEquals(2, countMatchesInString(resultString, "DeployCommandsDUnit2.jar"));
-
-    // Multiple JARs to all members
-    CommandExecutionContext.setBytesFromShell(new byte[][] {"DeployCommandsDUnit3.jar".getBytes(),
-        this.classBuilder.createJarFromName("DeployCommandsDUnitC"),
-        "DeployCommandsDUnit4.jar".getBytes(),
-        this.classBuilder.createJarFromName("DeployCommandsDUnitD")});
-    result = deployCommands.deploy(null, null, "AnyDirectory");
-
-    assertEquals(true, result.hasNextLine());
-
-    resultString = result.nextLine();
-    assertEquals(false, resultString.contains("ERROR"));
-    assertEquals(2, countMatchesInString(resultString, "Controller"));
-    assertEquals(2, countMatchesInString(resultString, vmName));
-    assertEquals(4, countMatchesInString(resultString, "DeployCommandsDUnit3.jar"));
-    assertEquals(4, countMatchesInString(resultString, "DeployCommandsDUnit4.jar"));
-
-    // Multiple JARs to a group
-    CommandExecutionContext.setBytesFromShell(new byte[][] {"DeployCommandsDUnit5.jar".getBytes(),
-        this.classBuilder.createJarFromName("DeployCommandsDUnitE"),
-        "DeployCommandsDUnit6.jar".getBytes(),
-        this.classBuilder.createJarFromName("DeployCommandsDUnitF")});
-    result = deployCommands.deploy(new String[] {"Group1"}, null, "AnyDirectory");
-
-    assertEquals(true, result.hasNextLine());
-
-    resultString = result.nextLine();
-    assertEquals(false, resultString.contains("ERROR"));
-    assertEquals(2, countMatchesInString(resultString, "Controller"));
-    assertEquals(false, resultString.contains(vmName));
-    assertEquals(2, countMatchesInString(resultString, "DeployCommandsDUnit5.jar"));
-    assertEquals(2, countMatchesInString(resultString, "DeployCommandsDUnit6.jar"));
+    gfshConnector.connectAndVerify(locator);
   }
 
   @Test
-  public void testUndeploy() throws Exception {
-    final Properties props = new Properties();
-    final Host host = Host.getHost(0);
-    final VM vm = host.getVM(0);
-    final String vmName = "VM" + vm.getPid();
+  public void deployJarToOneGroup() throws Exception {
+    // Deploy a jar to a single group
+    CommandResult cmdResult =
+        gfshConnector.executeAndVerifyCommand("deploy --jar=" + jar2 + " --group=" + GROUP1);
+    String resultString = commandResultToString(cmdResult);
 
-    // Create the cache in this VM
-    props.setProperty(NAME, "Controller");
-    props.setProperty(GROUPS, "Group1");
-    getSystem(props);
-    getCache();
+    assertThat(resultString).contains(server1.getName());
+    assertThat(resultString).doesNotContain(server2.getName());
+    assertThat(resultString).contains(jarName2);
 
-    // Create the cache in the other VM
-    vm.invoke(new SerializableRunnable() {
-      public void run() {
-        props.setProperty(NAME, vmName);
-        props.setProperty(GROUPS, "Group2");
-        getSystem(props);
-        getCache();
-      }
+    server1.invoke(() -> assertThatCanLoad(jarName2, class2));
+    server2.invoke(() -> assertThatCannotLoad(jarName2, class2));
+  }
+
+  @Test
+  public void deployMultipleJarsToOneGroup() throws Exception {
+    // Deploy of multiple JARs to a single group
+    CommandResult cmdResult = gfshConnector.executeAndVerifyCommand(
+        "deploy --group=" + GROUP1 + " --dir=" + subdirWithJars3and4.getCanonicalPath());
+    String resultString = commandResultToString(cmdResult);
+
+    assertThat(resultString).describedAs(resultString).contains(server1.getName());
+    assertThat(resultString).doesNotContain(server2.getName());
+    assertThat(resultString).contains(jarName3);
+    assertThat(resultString).contains(jarName4);
+
+    server1.invoke(() -> {
+      assertThatCanLoad(jarName3, class3);
+      assertThatCanLoad(jarName4, class4);
+    });
+    server2.invoke(() -> {
+      assertThatCannotLoad(jarName3, class3);
+      assertThatCannotLoad(jarName4, class4);
     });
 
-    DeployCommands deployCommands = new DeployCommands();
 
-    // Deploy a couple of JAR files which can be undeployed
-    CommandExecutionContext.setBytesFromShell(new byte[][] {"DeployCommandsDUnit1.jar".getBytes(),
-        this.classBuilder.createJarFromName("DeployCommandsDUnitA")});
-    deployCommands.deploy(new String[] {"Group1"}, "DeployCommandsDUnit1.jar", null);
-    CommandExecutionContext.setBytesFromShell(new byte[][] {"DeployCommandsDUnit2.jar".getBytes(),
-        this.classBuilder.createJarFromName("DeployCommandsDUnitB")});
-    deployCommands.deploy(new String[] {"Group2"}, "DeployCommandsDUnit2.jar", null);
-    CommandExecutionContext.setBytesFromShell(new byte[][] {"DeployCommandsDUnit3.jar".getBytes(),
-        this.classBuilder.createJarFromName("DeployCommandsDUnitC")});
-    deployCommands.deploy(null, "DeployCommandsDUnit3.jar", null);
-    CommandExecutionContext.setBytesFromShell(new byte[][] {"DeployCommandsDUnit4.jar".getBytes(),
-        this.classBuilder.createJarFromName("DeployCommandsDUnitD")});
-    deployCommands.deploy(null, "DeployCommandsDUnit4.jar", null);
-    CommandExecutionContext.setBytesFromShell(new byte[][] {"DeployCommandsDUnit5.jar".getBytes(),
-        this.classBuilder.createJarFromName("DeployCommandsDUnitE")});
-    deployCommands.deploy(null, "DeployCommandsDUnit5.jar", null);
-
-    // Undeploy for 1 group
-    Result result = deployCommands.undeploy(new String[] {"Group1"}, "DeployCommandsDUnit1.jar");
-    assertEquals(true, result.hasNextLine());
-    String resultString = result.nextLine();
-    assertEquals(false, resultString.contains("ERROR"));
-    assertEquals(1, countMatchesInString(resultString, "Controller"));
-    assertEquals(false, resultString.contains(vmName));
-    assertEquals(2, countMatchesInString(resultString, "DeployCommandsDUnit1.jar"));
-
-    // Multiple Undeploy for all members
-    result = deployCommands.undeploy(null, "DeployCommandsDUnit2.jar, DeployCommandsDUnit3.jar");
-    assertEquals(true, result.hasNextLine());
-    resultString = result.nextLine();
-    assertEquals(false, resultString.contains("ERROR"));
-    assertEquals(2, countMatchesInString(resultString, "Controller"));
-    assertEquals(2, countMatchesInString(resultString, vmName));
-    assertEquals(3, countMatchesInString(resultString, "DeployCommandsDUnit2.jar"));
-    assertEquals(4, countMatchesInString(resultString, "DeployCommandsDUnit3.jar"));
-
-    // Undeploy all (no JAR specified)
-    result = deployCommands.undeploy(null, null);
-    assertEquals(true, result.hasNextLine());
-    resultString = result.nextLine();
-    assertEquals(false, resultString.contains("ERROR"));
-    assertEquals(2, countMatchesInString(resultString, "Controller"));
-    assertEquals(2, countMatchesInString(resultString, vmName));
-    assertEquals(4, countMatchesInString(resultString, "DeployCommandsDUnit4.jar"));
-    assertEquals(4, countMatchesInString(resultString, "DeployCommandsDUnit5.jar"));
+    // Undeploy of multiple jars by specifying group
+    gfshConnector.executeAndVerifyCommand("undeploy --group=" + GROUP1);
+    server1.invoke(() -> {
+      assertThatCannotLoad(jarName3, class3);
+      assertThatCannotLoad(jarName4, class4);
+    });
+    server2.invoke(() -> {
+      assertThatCannotLoad(jarName3, class3);
+      assertThatCannotLoad(jarName4, class4);
+    });
   }
+
+  @Test
+  public void deployJarToAllServers() throws Exception {
+    // Deploy a jar to all servers
+    CommandResult cmdResult = gfshConnector.executeAndVerifyCommand("deploy --jar=" + jar1);
+
+    String resultString = commandResultToString(cmdResult);
+    assertThat(resultString).contains(server1.getName());
+    assertThat(resultString).contains(server2.getName());
+    assertThat(resultString).contains(jarName1);
+
+    server1.invoke(() -> assertThatCanLoad(jarName1, class1));
+    server2.invoke(() -> assertThatCanLoad(jarName1, class1));
+
+    // Undeploy of jar by specifying group
+    gfshConnector.executeAndVerifyCommand("undeploy --group=" + GROUP1);
+    server1.invoke(() -> assertThatCannotLoad(jarName1, class1));
+    server2.invoke(() -> assertThatCanLoad(jarName1, class1));
+  }
+
+  @Test
+  public void deployMultipleJarsToAllServers() throws Exception {
+    gfshConnector.executeAndVerifyCommand("deploy --dir=" + subdirWithJars3and4.getCanonicalPath());
+
+    server1.invoke(() -> {
+      assertThatCanLoad(jarName3, class3);
+      assertThatCanLoad(jarName4, class4);
+    });
+    server2.invoke(() -> {
+      assertThatCanLoad(jarName3, class3);
+      assertThatCanLoad(jarName4, class4);
+    });
+
+    gfshConnector.executeAndVerifyCommand("undeploy");
+
+    server1.invoke(() -> {
+      assertThatCannotLoad(jarName3, class3);
+      assertThatCannotLoad(jarName4, class4);
+    });
+    server2.invoke(() -> {
+      assertThatCannotLoad(jarName3, class3);
+      assertThatCannotLoad(jarName4, class4);
+    });
+  }
+
+  @Test
+  public void undeployOfMultipleJars() throws Exception {
+    gfshConnector.executeAndVerifyCommand("deploy --dir=" + subdirWithJars3and4.getCanonicalPath());
+
+    server1.invoke(() -> {
+      assertThatCanLoad(jarName3, class3);
+      assertThatCanLoad(jarName4, class4);
+    });
+    server2.invoke(() -> {
+      assertThatCanLoad(jarName3, class3);
+      assertThatCanLoad(jarName4, class4);
+    });
+
+    gfshConnector
+        .executeAndVerifyCommand("undeploy --jars=" + jar3.getName() + "," + jar4.getName());
+    server1.invoke(() -> {
+      assertThatCannotLoad(jarName3, class3);
+      assertThatCannotLoad(jarName4, class4);
+    });
+    server2.invoke(() -> {
+      assertThatCannotLoad(jarName3, class3);
+      assertThatCannotLoad(jarName4, class4);
+    });
+  }
+
+  private void assertThatCanLoad(String jarName, String className) throws ClassNotFoundException {
+    assertThat(ClassPathLoader.getLatest().getJarDeployer().findDeployedJar(jarName)).isNotNull();
+    assertThat(ClassPathLoader.getLatest().forName(className)).isNotNull();
+  }
+
+  private void assertThatCannotLoad(String jarName, String className) {
+    assertThat(ClassPathLoader.getLatest().getJarDeployer().findDeployedJar(jarName)).isNull();
+    assertThatThrownBy(() -> ClassPathLoader.getLatest().forName(className))
+        .isExactlyInstanceOf(ClassNotFoundException.class);
+  }
+
 
   @Test
   public void testListDeployed() throws Exception {
-    final Properties props = new Properties();
-    final Host host = Host.getHost(0);
-    final VM vm = host.getVM(0);
-    final String vmName = "VM" + vm.getPid();
-
-    // Create the cache in this VM
-    props.setProperty(NAME, "Controller");
-    props.setProperty(GROUPS, "Group1");
-    getSystem(props);
-    getCache();
-
-    // Create the cache in the other VM
-    vm.invoke(new SerializableRunnable() {
-      public void run() {
-        props.setProperty(NAME, vmName);
-        props.setProperty(GROUPS, "Group2");
-        getSystem(props);
-        getCache();
-      }
-    });
-
-    DeployCommands deployCommands = new DeployCommands();
-
     // Deploy a couple of JAR files which can be listed
-    CommandExecutionContext.setBytesFromShell(new byte[][] {"DeployCommandsDUnit1.jar".getBytes(),
-        this.classBuilder.createJarFromName("DeployCommandsDUnitA")});
-    deployCommands.deploy(new String[] {"Group1"}, "DeployCommandsDUnit1.jar", null);
-    CommandExecutionContext.setBytesFromShell(new byte[][] {"DeployCommandsDUnit2.jar".getBytes(),
-        this.classBuilder.createJarFromName("DeployCommandsDUnitB")});
-    deployCommands.deploy(new String[] {"Group2"}, "DeployCommandsDUnit2.jar", null);
+    gfshConnector.executeAndVerifyCommand(
+        "deploy jar --group=" + GROUP1 + " --jar=" + jar1.getCanonicalPath());
+    gfshConnector.executeAndVerifyCommand(
+        "deploy jar --group=" + GROUP2 + " --jar=" + jar2.getCanonicalPath());
 
     // List for all members
-    Result result = deployCommands.listDeployed(null);
-    assertEquals(true, result.hasNextLine());
-    String resultString = result.nextLine();
-    assertEquals(false, resultString.contains("ERROR"));
-    assertEquals(1, countMatchesInString(resultString, "Controller"));
-    assertEquals(1, countMatchesInString(resultString, vmName));
-    assertEquals(2, countMatchesInString(resultString, "DeployCommandsDUnit1.jar"));
-    assertEquals(2, countMatchesInString(resultString, "DeployCommandsDUnit2.jar"));
+    CommandResult commandResult = gfshConnector.executeAndVerifyCommand("list deployed");
+    String resultString = commandResultToString(commandResult);
+    assertThat(resultString).contains(server1.getName());
+    assertThat(resultString).contains(server2.getName());
+    assertThat(resultString).contains(jarName1);
+    assertThat(resultString).contains(jarName2);
 
     // List for members in Group1
-    result = deployCommands.listDeployed("Group1");
-    assertEquals(true, result.hasNextLine());
-    resultString = result.nextLine();
-    assertEquals(false, resultString.contains("ERROR"));
-    assertEquals(1, countMatchesInString(resultString, "Controller"));
-    assertEquals(false, resultString.contains(vmName));
-    assertEquals(2, countMatchesInString(resultString, "DeployCommandsDUnit1.jar"));
-    assertEquals(false, resultString.contains("DeployCommandsDUnit2.jar"));
+    commandResult = gfshConnector.executeAndVerifyCommand("list deployed --group=" + GROUP1);
+    resultString = commandResultToString(commandResult);
+    assertThat(resultString).contains(server1.getName());
+    assertThat(resultString).doesNotContain(server2.getName());
+
+    assertThat(resultString).contains(jarName1);
+    assertThat(resultString).doesNotContain(jarName2);
 
     // List for members in Group2
-    result = deployCommands.listDeployed("Group2");
-    assertEquals(true, result.hasNextLine());
-    resultString = result.nextLine();
-    assertEquals(false, resultString.contains("ERROR"));
-    assertEquals(false, resultString.contains("Controller"));
-    assertEquals(1, countMatchesInString(resultString, vmName));
-    assertEquals(false, resultString.contains("DeployCommandsDUnit1.jar"));
-    assertEquals(2, countMatchesInString(resultString, "DeployCommandsDUnit2.jar"));
+    commandResult = gfshConnector.executeAndVerifyCommand("list deployed --group=" + GROUP2);
+    resultString = commandResultToString(commandResult);
+    assertThat(resultString).doesNotContain(server1.getName());
+    assertThat(resultString).contains(server2.getName());
+
+    assertThat(resultString).doesNotContain(jarName1);
+    assertThat(resultString).contains(jarName2);
   }
 
-  /**
-   * Does an end-to-end test using the complete CLI framework while ensuring that the shared
-   * configuration is updated.
-   */
-  @Test
-  public void testEndToEnd() throws Exception {
-    final String groupName = getName();
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    jmxPort = ports[0];
-    httpPort = ports[1];
-    try {
-      jmxHost = InetAddress.getLocalHost().getHostName();
-    } catch (UnknownHostException ignore) {
-      jmxHost = "localhost";
+  protected static String commandResultToString(final CommandResult commandResult) {
+    assertNotNull(commandResult);
+    commandResult.resetToFirstLine();
+    StringBuilder buffer = new StringBuilder(commandResult.getHeader());
+    while (commandResult.hasNextLine()) {
+      buffer.append(commandResult.nextLine());
     }
-
-    // Start the Locator and wait for shared configuration to be available
-    final int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final String locatorLogPath = this.temporaryFolder.getRoot().getCanonicalPath() + File.separator
-        + "locator-" + locatorPort + ".log";
-
-    final Properties locatorProps = new Properties();
-    locatorProps.setProperty(NAME, "Locator");
-    locatorProps.setProperty(MCAST_PORT, "0");
-    locatorProps.setProperty(LOG_LEVEL, "fine");
-    locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
-    locatorProps.setProperty(JMX_MANAGER, "true");
-    locatorProps.setProperty(JMX_MANAGER_START, "true");
-    locatorProps.setProperty(JMX_MANAGER_BIND_ADDRESS, String.valueOf(jmxHost));
-    locatorProps.setProperty(JMX_MANAGER_PORT, String.valueOf(jmxPort));
-    locatorProps.setProperty(HTTP_SERVICE_PORT, String.valueOf(httpPort));
-
-    Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        final File locatorLogFile = new File(locatorLogPath);
-        try {
-          final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort,
-              locatorLogFile, null, locatorProps);
-
-          WaitCriterion wc = new WaitCriterion() {
-            @Override
-            public boolean done() {
-              return locator.isSharedConfigurationRunning();
-            }
-
-            @Override
-            public String description() {
-              return "Waiting for shared configuration to be started";
-            }
-          };
-          Wait.waitForCriterion(wc, 5000, 500, true);
-
-        } catch (IOException e) {
-          fail("Unable to create a locator with a shared configuration", e);
-        }
-      }
-    });
-
-    connect(jmxHost, jmxPort, httpPort, getDefaultShell());
-
-    Host.getHost(0).getVM(1).invoke(() -> {
-      Properties properties = new Properties();
-      properties.setProperty("name", "Manager");
-      properties.setProperty("groups", groupName);
-      ServerStarterRule serverStarterRule = new ServerStarterRule();
-      serverStarterRule.before();
-      serverStarterRule.startServer(properties, locatorPort);
-    });
-
-    // Create a JAR file
-    this.classBuilder.writeJarFromName("DeployCommandsDUnitA", this.newDeployableJarFile);
-
-    // Deploy the JAR
-    CommandResult cmdResult =
-        executeCommand("deploy --jar=" + this.newDeployableJarFile.getCanonicalPath());
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
-
-    String stringResult = commandResultToString(cmdResult);
-    assertEquals(3, countLinesInString(stringResult, false));
-    assertTrue(stringContainsLine(stringResult, "Member.*JAR.*JAR Location"));
-    assertTrue(stringContainsLine(stringResult, "Manager.*DeployCommandsDUnit1.jar.*"
-        + JarDeployer.JAR_PREFIX + "DeployCommandsDUnit1.jar#1"));
-
-    // Undeploy the JAR
-    cmdResult = executeCommand("undeploy --jar=DeployCommandsDUnit1.jar");
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
-
-    stringResult = commandResultToString(cmdResult);
-    assertEquals(3, countLinesInString(stringResult, false));
-    assertThat(stringContainsLine(stringResult, "Member.*JAR.*Un-Deployed From JAR Location"))
-        .describedAs(stringResult).isTrue();
-    assertThat(stringContainsLine(stringResult, "Manager.*DeployCommandsDUnit1.jar.*"
-        + JarDeployer.JAR_PREFIX + "DeployCommandsDUnit1.jar#1")).describedAs(stringResult)
-            .isTrue();;
-
-
-    // Deploy the JAR to a group
-    cmdResult = executeCommand(
-        "deploy --jar=" + this.newDeployableJarFile.getCanonicalPath() + " --group=" + groupName);
-    assertThat(cmdResult.getStatus()).describedAs(cmdResult.toString()).isEqualTo(Result.Status.OK);
-
-    stringResult = commandResultToString(cmdResult);
-    assertEquals(3, countLinesInString(stringResult, false));
-    assertThat(stringContainsLine(stringResult, "Member.*JAR.*JAR Location"))
-        .describedAs(stringResult).isTrue();
-
-    assertThat(stringContainsLine(stringResult, "Manager.*DeployCommandsDUnit1.jar.*"
-        + JarDeployer.JAR_PREFIX + "DeployCommandsDUnit1.jar#1")).describedAs(stringResult)
-            .isTrue();
-
-    // Make sure the deployed jar in the shared config
-    Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        ClusterConfigurationService sharedConfig =
-            ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
-        try {
-          assertTrue(sharedConfig.getConfiguration(groupName).getJarNames()
-              .contains("DeployCommandsDUnit1.jar"));
-        } catch (Exception e) {
-          Assert.fail("Error occurred in cluster configuration service", e);
-        }
-      }
-    });
-
-    // List deployed for group
-    cmdResult = executeCommand("list deployed --group=" + groupName);
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
-
-    stringResult = commandResultToString(cmdResult);
-    assertEquals(3, countLinesInString(stringResult, false));
-    assertTrue(stringContainsLine(stringResult, "Member.*JAR.*JAR Location"));
-    assertTrue(stringContainsLine(stringResult, "Manager.*DeployCommandsDUnit1.jar.*"
-        + JarDeployer.JAR_PREFIX + "DeployCommandsDUnit1.jar#1"));
-
-    // Undeploy for group
-    cmdResult = executeCommand("undeploy --group=" + groupName);
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
-
-    stringResult = commandResultToString(cmdResult);
-    assertEquals(3, countLinesInString(stringResult, false));
-    assertTrue(stringContainsLine(stringResult, "Member.*JAR.*Un-Deployed From JAR Location"));
-    assertTrue(stringContainsLine(stringResult, "Manager.*DeployCommandsDUnit1.jar.*"
-        + JarDeployer.JAR_PREFIX + "DeployCommandsDUnit1.jar#1"));
-
-    // Make sure the deployed jar was removed from the shared config
-    Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        ClusterConfigurationService sharedConfig =
-            ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
-        try {
-          assertFalse(sharedConfig.getConfiguration(groupName).getJarNames()
-              .contains("DeployCommandsDUnit1.jar"));
-        } catch (Exception e) {
-          Assert.fail("Error occurred in cluster configuration service", e);
-        }
-      }
-    });
-
-    // List deployed with nothing deployed
-    cmdResult = executeCommand("list deployed");
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
-    assertTrue(
-        commandResultToString(cmdResult).contains(CliStrings.LIST_DEPLOYED__NO_JARS_FOUND_MESSAGE));
-  }
-
-  private void deleteSavedJarFiles() {
-    this.newDeployableJarFile.delete();
-
-    File dirFile = new File(".");
-
-    // Find all deployed JAR files
-    File[] oldJarFiles = dirFile.listFiles(new FilenameFilter() {
-      @Override
-      public boolean accept(final File file, final String name) {
-        return DeployCommandsDUnitTest.this.pattern.matcher(name).matches();
-      }
-    });
-
-    // Now delete them
-    if (oldJarFiles != null) {
-      for (File oldJarFile : oldJarFiles) {
-        oldJarFile.delete();
-      }
-    }
+    buffer.append(commandResult.getFooter());
+    return buffer.toString();
   }
 }
