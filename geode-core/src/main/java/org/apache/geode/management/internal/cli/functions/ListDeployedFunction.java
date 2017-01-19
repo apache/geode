@@ -16,6 +16,8 @@ package org.apache.geode.management.internal.cli.functions;
 
 import java.util.List;
 
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.DeployedJar;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
@@ -26,7 +28,6 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.InternalEntity;
-import org.apache.geode.internal.JarClassLoader;
 import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.logging.LogService;
@@ -45,8 +46,7 @@ public class ListDeployedFunction implements Function, InternalEntity {
 
     try {
       Cache cache = CacheFactory.getAnyInstance();
-      final JarDeployer jarDeployer = new JarDeployer(
-          ((GemFireCacheImpl) cache).getDistributedSystem().getConfig().getDeployWorkingDir());
+      final JarDeployer jarDeployer = ClassPathLoader.getLatest().getJarDeployer();
 
       DistributedMember member = cache.getDistributedSystem().getDistributedMember();
 
@@ -56,10 +56,10 @@ public class ListDeployedFunction implements Function, InternalEntity {
         memberId = member.getName();
       }
 
-      final List<JarClassLoader> jarClassLoaders = jarDeployer.findJarClassLoaders();
+      final List<DeployedJar> jarClassLoaders = jarDeployer.findDeployedJars();
       final String[] jars = new String[jarClassLoaders.size() * 2];
       int index = 0;
-      for (JarClassLoader jarClassLoader : jarClassLoaders) {
+      for (DeployedJar jarClassLoader : jarClassLoaders) {
         jars[index++] = jarClassLoader.getJarName();
         jars[index++] = jarClassLoader.getFileCanonicalPath();
       }

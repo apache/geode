@@ -1192,7 +1192,7 @@ public class GemFireCacheImpl
       listener.cacheCreated(this);
     }
 
-    ClassPathLoader.setLatestToDefault();
+    ClassPathLoader.setLatestToDefault(this.system.getConfig().getDeployWorkingDir());
 
     // request and check cluster configuration
     ConfigurationResponse configurationResponse = requestSharedConfiguration();
@@ -1239,7 +1239,7 @@ public class GemFireCacheImpl
 
     try {
       // Deploy all the jars from the deploy working dir.
-      new JarDeployer(this.system.getConfig().getDeployWorkingDir()).loadPreviouslyDeployedJars();
+      ClassPathLoader.getLatest().getJarDeployer().loadPreviouslyDeployedJars();
       ClusterConfigurationLoader.applyClusterXmlConfiguration(this, configurationResponse,
           system.getConfig());
       initializeDeclarativeCache();

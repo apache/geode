@@ -24,7 +24,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.JarClassLoader;
+import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.lang.StringUtils;
@@ -36,6 +36,8 @@ import org.apache.geode.test.dunit.rules.Server;
 
 import java.io.File;
 import java.io.Serializable;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -137,7 +139,9 @@ public class ClusterConfig implements Serializable {
         .collect(Collectors.toSet());
     Set<String> actualJarNames = toSetIgnoringHiddenFiles(
         serverVM.getWorkingDir().list((dir, filename) -> filename.contains(".jar")));
-    assertThat(actualJarNames).isEqualTo(expectedJarNames);
+
+    // We will end up with extra jars on disk if they are deployed and then undeployed
+    assertThat(expectedJarNames).isSubsetOf(actualJarNames);
 
     // verify config exists in memory
     serverVM.invoke(() -> {
@@ -154,22 +158,21 @@ public class ClusterConfig implements Serializable {
       }
 
       for (String jar : this.getJarNames()) {
-        JarClassLoader jarClassLoader = findJarClassLoader(jar);
-        assertThat(jarClassLoader).isNotNull();
-        assertThat(Class.forName(nameOfClassContainedInJar(jar), true, jarClassLoader)).isNotNull();
+        DeployedJar deployedJar = ClassPathLoader.getLatest().getJarDeployer().findDeployedJar(jar);
+        assertThat(deployedJar).isNotNull();
+        assertThat(Class.forName(nameOfClassContainedInJar(jar), true,
+            new URLClassLoader(new URL[] {deployedJar.getFileURL()}))).isNotNull();
+      }
+
+      // If we have extra jars on disk left over from undeploy, make sure they aren't used
+      Set<String> undeployedJarNames = new HashSet<>(actualJarNames);
+      undeployedJarNames.removeAll(expectedJarNames);
+      for (String jar : undeployedJarNames) {
+        DeployedJar undeployedJar =
+            ClassPathLoader.getLatest().getJarDeployer().findDeployedJar(jar);
+        assertThat(undeployedJar).isNull();
       }
     });
-  }
-
-  private static JarClassLoader findJarClassLoader(final String jarName) {
-    Collection<ClassLoader> classLoaders = ClassPathLoader.getLatest().getClassLoaders();
-    for (ClassLoader classLoader : classLoaders) {
-      if (classLoader instanceof JarClassLoader
-          && ((JarClassLoader) classLoader).getJarName().equals(jarName)) {
-        return (JarClassLoader) classLoader;
-      }
-    }
-    return null;
   }
 
 
@@ -183,7 +186,7 @@ public class ClusterConfig implements Serializable {
   }
 
   private static String getServerJarName(String jarName) {
-    return JarDeployer.JAR_PREFIX + jarName + "#1";
+    return jarName.replace(".jar", "") + ".v1.jar";
   }
 
 

@@ -20,6 +20,22 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.geode.internal.ClassPathLoader;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.RegexFileFilter;
@@ -38,7 +54,7 @@ import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.ClassBuilder;
-import org.apache.geode.internal.JarClassLoader;
+import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.cache.persistence.BackupManager;
 import org.apache.geode.internal.util.IOUtils;
@@ -1078,15 +1094,16 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
     /*
      * Deploy a "dummy" jar to the VM.
      */
-    vm0.invoke(new SerializableCallable() {
+    File deployedJarFile = (File) vm0.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        JarDeployer deployer = new JarDeployer();
-        deployer.deploy(new String[] {jarName}, new byte[][] {classBytes});
-        return null;
+        DeployedJar deployedJar =
+            ClassPathLoader.getLatest().getJarDeployer().deploy(jarName, classBytes);
+        return deployedJar.getFile();
       }
     });
 
+    assert (deployedJarFile.exists());
     /*
      * Perform backup. Make sure it is successful.
      */
@@ -1149,10 +1166,10 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
     vm0.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        JarDeployer deployer = new JarDeployer();
-        for (JarClassLoader jarClassLoader : deployer.findJarClassLoaders()) {
+        for (DeployedJar jarClassLoader : ClassPathLoader.getLatest().getJarDeployer()
+            .findDeployedJars()) {
           if (jarClassLoader.getJarName().startsWith(jarName)) {
-            deployer.undeploy(jarClassLoader.getJarName());
+            ClassPathLoader.getLatest().getJarDeployer().undeploy(jarClassLoader.getJarName());
           }
         }
         return null;

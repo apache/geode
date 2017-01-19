@@ -14,44 +14,60 @@
  */
 package org.apache.geode.internal;
 
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.geode.GemFireException;
+import org.apache.geode.GemFireIOException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.RandomAccessFile;
 import java.io.Serializable;
-import java.nio.channels.FileLock;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public class JarDeployer implements Serializable {
   private static final long serialVersionUID = 1L;
   private static final Logger logger = LogService.getLogger();
-  public static final String JAR_PREFIX = "vf.gf#";
-  public static final String JAR_PREFIX_FOR_REGEX = "^vf\\.gf#";
+  public static final String JAR_PREFIX = "";
+  public static final String JAR_PREFIX_FOR_REGEX = "";
   private static final Lock lock = new ReentrantLock();
+
+  private final Map<String, DeployedJar> deployedJars = new ConcurrentHashMap<>();
+
 
   // Split a versioned filename into its name and version
   public static final Pattern versionedPattern =
-      Pattern.compile(JAR_PREFIX_FOR_REGEX + "(.*)#(\\d++)$");
+      Pattern.compile(JAR_PREFIX_FOR_REGEX + "(.*)\\.v(\\d++).jar$");
 
   private final File deployDirectory;
 
@@ -63,262 +79,36 @@ public class JarDeployer implements Serializable {
     this.deployDirectory = deployDirectory;
   }
 
-  /**
-   * Re-deploy all previously deployed JAR files.
-   */
-  public void loadPreviouslyDeployedJars() {
-    List<JarClassLoader> jarClassLoaders = new ArrayList<JarClassLoader>();
-
-    lock.lock();
-    try {
-      try {
-        verifyWritableDeployDirectory();
-        final Set<String> jarNames = findDistinctDeployedJars();
-        if (!jarNames.isEmpty()) {
-          for (String jarName : jarNames) {
-            final File[] jarFiles = findSortedOldVersionsOfJar(jarName);
-
-            // It's possible the JARs were deleted by another process
-            if (jarFiles.length != 0) {
-              JarClassLoader jarClassLoader = findJarClassLoader(jarName);
-
-              try {
-                final byte[] jarBytes = getJarContent(jarFiles[0]);
-                if (!JarClassLoader.isValidJarContent(jarBytes)) {
-                  logger.warn("Invalid JAR file found and deleted: {}",
-                      jarFiles[0].getAbsolutePath());
-                  jarFiles[0].delete();
-                } else {
-                  // Test to see if the exact same file is already in use
-                  if (jarClassLoader == null
-                      || !jarClassLoader.getFileName().equals(jarFiles[0].getName())) {
-                    jarClassLoader = new JarClassLoader(jarFiles[0], jarName, jarBytes);
-                    ClassPathLoader.getLatest().addOrReplaceAndSetLatest(jarClassLoader);
-                    jarClassLoaders.add(jarClassLoader);
-                  }
-                }
-              } catch (IOException ioex) {
-                // Another process deleted the file so don't bother doing anything else with it
-                if (logger.isDebugEnabled()) {
-                  logger.debug("Failed attempt to use JAR to create JarClassLoader for: {}",
-                      jarName);
-                }
-              }
-
-              // Remove any old left-behind versions of this JAR file
-              for (File jarFile : jarFiles) {
-                if (jarFile.exists() && (jarClassLoader == null
-                    || !jarClassLoader.getFileName().equals(jarFile.getName()))) {
-                  attemptFileLockAndDelete(jarFile);
-                }
-              }
-            }
-          }
-        }
-
-        for (JarClassLoader jarClassLoader : jarClassLoaders) {
-          jarClassLoader.loadClassesAndRegisterFunctions();
-        }
-      } catch (VirtualMachineError e) {
-        SystemFailure.initiateFailure(e);
-        throw e;
-      } catch (Throwable th) {
-        SystemFailure.checkFailure();
-        logger.error("Error when attempting to deploy JAR files on load.", th);
-      }
-    } finally {
-      lock.unlock();
-    }
+  public File getDeployDirectory() {
+    return this.deployDirectory;
   }
 
-  /**
-   * Deploy the given JAR files.
-   * 
-   * @param jarNames Array of names of the JAR files to deploy.
-   * @param jarBytes Array of contents of the JAR files to deploy.
-   * @return An array of newly created JAR class loaders. Entries will be null for an JARs that were
-   *         already deployed.
-   * @throws IOException When there's an error saving the JAR file to disk
-   */
-  public JarClassLoader[] deploy(final String jarNames[], final byte[][] jarBytes)
-      throws IOException, ClassNotFoundException {
-    JarClassLoader[] jarClassLoaders = new JarClassLoader[jarNames.length];
-    verifyWritableDeployDirectory();
-
-    lock.lock();
-    try {
-      for (int i = 0; i < jarNames.length; i++) {
-        if (!JarClassLoader.isValidJarContent(jarBytes[i])) {
-          throw new IllegalArgumentException(
-              "File does not contain valid JAR content: " + jarNames[i]);
-        }
-      }
-
-      for (int i = 0; i < jarNames.length; i++) {
-        jarClassLoaders[i] = deployWithoutRegistering(jarNames[i], jarBytes[i]);
-      }
-
-      for (JarClassLoader jarClassLoader : jarClassLoaders) {
-        if (jarClassLoader != null) {
-          jarClassLoader.loadClassesAndRegisterFunctions();
-        }
-      }
-    } finally {
-      lock.unlock();
-    }
-    return jarClassLoaders;
-  }
-
-  /**
-   * Deploy the given JAR file without registering functions.
-   * 
-   * @param jarName Name of the JAR file to deploy.
-   * @param jarBytes Contents of the JAR file to deploy.
-   * @return The newly created JarClassLoader or null if the JAR was already deployed
-   * @throws IOException When there's an error saving the JAR file to disk
-   */
-  private JarClassLoader deployWithoutRegistering(final String jarName, final byte[] jarBytes)
+  public DeployedJar deployWithoutRegistering(final String jarName, final byte[] jarBytes)
       throws IOException {
-    JarClassLoader oldJarClassLoader = findJarClassLoader(jarName);
-
-    final boolean isDebugEnabled = logger.isDebugEnabled();
-    if (isDebugEnabled) {
-      logger.debug("Deploying {}: {}", jarName, (oldJarClassLoader == null ? ": not yet deployed"
-          : ": already deployed as " + oldJarClassLoader.getFileCanonicalPath()));
-    }
-
-    // Test to see if the exact same file is being deployed
-    if (oldJarClassLoader != null && oldJarClassLoader.hasSameContent(jarBytes)) {
-      return null;
-    }
-
-    JarClassLoader newJarClassLoader = null;
-
-    do {
-      File[] oldJarFiles = findSortedOldVersionsOfJar(jarName);
-
-      try {
-        // If this is the first version of this JAR file we've seen ...
-        if (oldJarFiles.length == 0) {
-          if (isDebugEnabled) {
-            logger.debug("There were no pre-existing versions for JAR: {}", jarName);
-          }
-          File nextVersionJarFile = getNextVersionJarFile(jarName);
-          if (writeJarBytesToFile(nextVersionJarFile, jarBytes)) {
-            newJarClassLoader = new JarClassLoader(nextVersionJarFile, jarName, jarBytes);
-            if (isDebugEnabled) {
-              logger.debug("Successfully created initial JarClassLoader at file: {}",
-                  nextVersionJarFile.getAbsolutePath());
-            }
-          } else {
-            if (isDebugEnabled) {
-              logger.debug("Unable to write contents for first version of JAR to file: {}",
-                  nextVersionJarFile.getAbsolutePath());
-            }
-          }
-
-        } else {
-          // Most recent is at the beginning of the list, see if this JAR matches what's
-          // already on disk.
-          if (doesFileMatchBytes(oldJarFiles[0], jarBytes)) {
-            if (isDebugEnabled) {
-              logger.debug("A version on disk was an exact match for the JAR being deployed: {}",
-                  oldJarFiles[0].getAbsolutePath());
-            }
-            newJarClassLoader = new JarClassLoader(oldJarFiles[0], jarName, jarBytes);
-            if (isDebugEnabled) {
-              logger.debug("Successfully reused JAR to create JarClassLoader from file: {}",
-                  oldJarFiles[0].getAbsolutePath());
-            }
-          } else {
-            // This JAR isn't on disk
-            if (isDebugEnabled) {
-              logger.debug("Need to create a new version for JAR: {}", jarName);
-            }
-            File nextVersionJarFile = getNextVersionJarFile(oldJarFiles[0].getName());
-            if (writeJarBytesToFile(nextVersionJarFile, jarBytes)) {
-              newJarClassLoader = new JarClassLoader(nextVersionJarFile, jarName, jarBytes);
-              if (isDebugEnabled) {
-                logger.debug("Successfully created next JarClassLoader at file: {}",
-                    nextVersionJarFile.getAbsolutePath());
-              }
-            } else {
-              if (isDebugEnabled) {
-                logger.debug("Unable to write contents for next version of JAR to file: {}",
-                    nextVersionJarFile.getAbsolutePath());
-              }
-            }
-          }
-        }
-      } catch (IOException ioex) {
-        // Another process deleted the file before we could get to it, just start again
-        logger.info("Failed attempt to use JAR to create JarClassLoader for: {} : {}", jarName,
-            ioex.getMessage());
-      }
-
-      if (isDebugEnabled) {
-        if (newJarClassLoader == null) {
-          logger.debug("Unable to determine a JAR file location, will loop and try again: {}",
-              jarName);
-        } else {
-          logger.debug("Exiting loop for JarClassLoader creation using file: {}",
-              newJarClassLoader.getFileName());
-        }
-      }
-    } while (newJarClassLoader == null);
-
-    ClassPathLoader.getLatest().addOrReplaceAndSetLatest(newJarClassLoader);
-
-    // Remove the JAR file that was undeployed as part of this redeploy
-    if (oldJarClassLoader != null) {
-      attemptFileLockAndDelete(new File(this.deployDirectory, oldJarClassLoader.getFileName()));
-    }
-
-    return newJarClassLoader;
-  }
-
-  /**
-   * Undeploy the given JAR file.
-   * 
-   * @param jarName The name of the JAR file to undeploy
-   * @return The path to the location on disk where the JAR file had been deployed
-   * @throws IOException If there's a problem deleting the file
-   */
-  public String undeploy(final String jarName) throws IOException {
-    JarClassLoader jarClassLoader = null;
-    verifyWritableDeployDirectory();
-
     lock.lock();
-    try {
-      jarClassLoader = findJarClassLoader(jarName);
-      if (jarClassLoader == null) {
-        throw new IllegalArgumentException("JAR not deployed");
-      }
 
-      ClassPathLoader.getLatest().removeAndSetLatest(jarClassLoader);
-      attemptFileLockAndDelete(new File(this.deployDirectory, jarClassLoader.getFileName()));
-      return jarClassLoader.getFileCanonicalPath();
+    try {
+      verifyWritableDeployDirectory();
+
+      File newVersionedJarFile = getNextVersionedJarFile(jarName);
+      writeJarBytesToFile(newVersionedJarFile, jarBytes);
+
+      return new DeployedJar(newVersionedJarFile, jarName, jarBytes);
     } finally {
       lock.unlock();
     }
   }
 
-  /**
-   * Get a list of all currently deployed JarClassLoaders.
-   * 
-   * @return The list of JarClassLoaders
-   */
-  public List<JarClassLoader> findJarClassLoaders() {
-    List<JarClassLoader> returnList = new ArrayList<JarClassLoader>();
-    Collection<ClassLoader> classLoaders = ClassPathLoader.getLatest().getClassLoaders();
-    for (ClassLoader classLoader : classLoaders) {
-      if (classLoader instanceof JarClassLoader) {
-        returnList.add((JarClassLoader) classLoader);
-      }
-    }
 
-    return returnList;
+  /**
+   * Get a list of all currently deployed jars.
+   * 
+   * @return The list of DeployedJars
+   */
+  public List<DeployedJar> findDeployedJars() {
+    return getDeployedJars().values().stream().collect(toList());
   }
+
 
   /**
    * Suspend all deploy and undeploy operations. This is done by acquiring and holding the lock
@@ -339,26 +129,19 @@ public class JarDeployer implements Serializable {
     lock.unlock();
   }
 
-  /**
-   * Figure out the next version of a JAR file
-   * 
-   * @param latestVersionedJarName The previous most recent version of the JAR file or original name
-   *        if there wasn't one
-   * @return The file that represents the next version
-   */
-  protected File getNextVersionJarFile(final String latestVersionedJarName) {
-    String newFileName;
-    final Matcher matcher = versionedPattern.matcher(latestVersionedJarName);
-    if (matcher.find()) {
-      newFileName = JAR_PREFIX + matcher.group(1) + "#" + (Integer.parseInt(matcher.group(2)) + 1);
+  protected File getNextVersionedJarFile(String unversionedJarName) {
+    File[] oldVersions = findSortedOldVersionsOfJar(unversionedJarName);
+
+    String nextVersionedJarName;
+    if (oldVersions == null || oldVersions.length == 0) {
+      nextVersionedJarName = removeJarExtension(unversionedJarName) + ".v1.jar";
     } else {
-      newFileName = JAR_PREFIX + latestVersionedJarName + "#1";
+      String latestVersionedJarName = oldVersions[0].getName();
+      int nextVersion = extractVersionFromFilename(latestVersionedJarName) + 1;
+      nextVersionedJarName = removeJarExtension(unversionedJarName) + ".v" + nextVersion + ".jar";
     }
 
-    if (logger.isDebugEnabled()) {
-      logger.debug("Next version file name will be: {}", newFileName);
-    }
-    return new File(this.deployDirectory, newFileName);
+    return new File(deployDirectory, nextVersionedJarName);
   }
 
   /**
@@ -370,27 +153,18 @@ public class JarDeployer implements Serializable {
    * @param jarBytes Contents of the JAR file to deploy.
    * @return True if the file was successfully written, false otherwise
    */
-  private boolean writeJarBytesToFile(final File file, final byte[] jarBytes) {
+  private boolean writeJarBytesToFile(final File file, final byte[] jarBytes) throws IOException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
-    try {
-      if (file.createNewFile()) {
-        if (isDebugEnabled) {
-          logger.debug("Successfully created new JAR file: {}", file.getAbsolutePath());
-        }
-        final OutputStream outStream = new FileOutputStream(file);
-        outStream.write(jarBytes);
-        outStream.close();
-        return true;
-      }
-      return doesFileMatchBytes(file, jarBytes);
-
-    } catch (IOException ioex) {
-      // Another VM clobbered what was happening here, try again
+    if (file.createNewFile()) {
       if (isDebugEnabled) {
-        logger.debug("IOException while trying to write JAR content to file: {}", ioex);
+        logger.debug("Successfully created new JAR file: {}", file.getAbsolutePath());
       }
-      return false;
+      final OutputStream outStream = new FileOutputStream(file);
+      outStream.write(jarBytes);
+      outStream.close();
+      return true;
     }
+    return doesFileMatchBytes(file, jarBytes);
   }
 
   /**
@@ -457,86 +231,22 @@ public class JarDeployer implements Serializable {
     return true;
   }
 
-  private void attemptFileLockAndDelete(final File file) throws IOException {
-    final String absolutePath = file.getAbsolutePath();
-    FileOutputStream fileOutputStream = new FileOutputStream(file, true);
-    final boolean isDebugEnabled = logger.isDebugEnabled();
-    try {
-      FileLock fileLock = null;
-      try {
-        fileLock = fileOutputStream.getChannel().tryLock();
-
-        if (fileLock != null) {
-          if (isDebugEnabled) {
-            logger.debug("Tried and acquired exclusive lock for file: {}, w/ channel {}",
-                absolutePath, fileLock.channel());
-          }
-
-          if (file.delete()) {
-            if (isDebugEnabled) {
-              logger.debug("Deleted file with name: {}", absolutePath);
-            }
-          } else {
-            if (isDebugEnabled) {
-              logger.debug("Could not delete file, will truncate instead and delete on exit: {}",
-                  absolutePath);
-            }
-            file.deleteOnExit();
-
-            RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw");
-            try {
-              randomAccessFile.setLength(0);
-            } finally {
-              try {
-                randomAccessFile.close();
-              } catch (IOException ioex) {
-                logger.error("Could not close file when attempting to set zero length", ioex);
-              }
-            }
-          }
-        } else {
-          if (isDebugEnabled) {
-            logger.debug("Will not delete file since exclusive lock unavailable: {}", absolutePath);
-          }
-        }
-
-      } finally {
-        if (fileLock != null) {
-          try {
-            fileLock.release();
-            fileLock.channel().close();
-            if (isDebugEnabled) {
-              logger.debug("Released file lock for file: {}, w/ channel: {}", absolutePath,
-                  fileLock.channel());
-            }
-          } catch (IOException ioex) {
-            logger.error("Could not close channel on JAR lock file", ioex);
-          }
-        }
-      }
-    } finally {
-      try {
-        fileOutputStream.close();
-      } catch (IOException ioex) {
-        logger.error("Could not close output stream on JAR file", ioex);
-      }
-    }
-  }
-
   /**
    * Find the version number that's embedded in the name of this file
    * 
-   * @param file File to get the version number from
+   * @param filename Filename to get the version number from
    * @return The version number embedded in the filename
    */
-  int extractVersionFromFilename(final File file) {
-    final Matcher matcher = versionedPattern.matcher(file.getName());
-    matcher.find();
-    return Integer.parseInt(matcher.group(2));
+  public static int extractVersionFromFilename(final String filename) {
+    final Matcher matcher = versionedPattern.matcher(filename);
+    if (matcher.find()) {
+      return Integer.parseInt(matcher.group(2));
+    } else {
+      return 0;
+    }
   }
 
   protected Set<String> findDistinctDeployedJars() {
-
     // Find all deployed JAR files
     final File[] oldFiles = this.deployDirectory.listFiles(new FilenameFilter() {
       @Override
@@ -559,41 +269,32 @@ public class JarDeployer implements Serializable {
    * Find all versions of the JAR file that are currently on disk and return them sorted from newest
    * (highest version) to oldest
    * 
-   * @param jarFilename Name of the JAR file that we want old versions of
+   * @param unversionedJarName Name of the JAR file that we want old versions of
    * @return Sorted array of files that are older versions of the given JAR
    */
-  protected File[] findSortedOldVersionsOfJar(final String jarFilename) {
+  protected File[] findSortedOldVersionsOfJar(final String unversionedJarName) {
     // Find all matching files
-    final Pattern pattern = Pattern.compile(JAR_PREFIX_FOR_REGEX + jarFilename + "#\\d++$");
-    final File[] oldJarFiles = this.deployDirectory.listFiles(new FilenameFilter() {
-      @Override
-      public boolean accept(final File file, final String name) {
-        return (pattern.matcher(name).matches());
-      }
-    });
+    final Pattern pattern = Pattern.compile(
+        JAR_PREFIX_FOR_REGEX + removeJarExtension(unversionedJarName) + "\\.v\\d++\\.jar$");
+    final File[] oldJarFiles =
+        this.deployDirectory.listFiles((file, name) -> (pattern.matcher(name).matches()));
 
     // Sort them in order from newest (highest version) to oldest
-    Arrays.sort(oldJarFiles, new Comparator<File>() {
-      @Override
-      public int compare(final File file1, final File file2) {
-        int file1Version = extractVersionFromFilename(file1);
-        int file2Version = extractVersionFromFilename(file2);
-        return file2Version - file1Version;
-      }
+    Arrays.sort(oldJarFiles, (file1, file2) -> {
+      int file1Version = extractVersionFromFilename(file1.getName());
+      int file2Version = extractVersionFromFilename(file2.getName());
+      return file2Version - file1Version;
     });
 
     return oldJarFiles;
   }
 
-  private JarClassLoader findJarClassLoader(final String jarName) {
-    Collection<ClassLoader> classLoaders = ClassPathLoader.getLatest().getClassLoaders();
-    for (ClassLoader classLoader : classLoaders) {
-      if (classLoader instanceof JarClassLoader
-          && ((JarClassLoader) classLoader).getJarName().equals(jarName)) {
-        return (JarClassLoader) classLoader;
-      }
+  protected String removeJarExtension(String jarName) {
+    if (jarName != null && jarName.endsWith(".jar")) {
+      return jarName.replaceAll("\\.jar$", "");
+    } else {
+      return jarName;
     }
-    return null;
   }
 
   /**
@@ -601,7 +302,7 @@ public class JarDeployer implements Serializable {
    * 
    * @throws IOException If the directory isn't writable
    */
-  private void verifyWritableDeployDirectory() throws IOException {
+  public void verifyWritableDeployDirectory() throws IOException {
     Exception exception = null;
     int tryCount = 0;
     do {
@@ -627,20 +328,246 @@ public class JarDeployer implements Serializable {
         "Unable to write to deploy directory: " + this.deployDirectory.getCanonicalPath());
   }
 
-  private byte[] getJarContent(File jarFile) throws IOException {
-    InputStream inputStream = new FileInputStream(jarFile);
-    try {
-      final ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
-      final byte[] bytes = new byte[4096];
+  final Pattern oldNamingPattern = Pattern.compile("^vf\\.gf#(.*)\\.jar#(\\d+)$");
 
-      int bytesRead;
-      while (((bytesRead = inputStream.read(bytes)) != -1)) {
-        byteOutStream.write(bytes, 0, bytesRead);
+  /*
+   * In Geode 1.1.0, the deployed version of 'myjar.jar' would be named 'vf.gf#myjar.jar#1'. Now it
+   * is be named 'myjar.v1.jar'. We need to rename all existing deployed jars to the new convention
+   * if this is the first time starting up with the new naming format.
+   */
+  protected void renameJarsWithOldNamingConvention() throws IOException {
+    Set<File> jarsWithOldNamingConvention = findJarsWithOldNamingConvention();
+
+    if (jarsWithOldNamingConvention.isEmpty()) {
+      return;
+    }
+
+    for (File jar : jarsWithOldNamingConvention) {
+      renameJarWithOldNamingConvention(jar);
+    }
+  }
+
+  protected Set<File> findJarsWithOldNamingConvention() {
+    return Stream.of(this.deployDirectory.listFiles())
+        .filter((File file) -> isOldNamingConvention(file.getName())).collect(toSet());
+  }
+
+  protected boolean isOldNamingConvention(String fileName) {
+    return oldNamingPattern.matcher(fileName).matches();
+  }
+
+  private void renameJarWithOldNamingConvention(File oldJar) throws IOException {
+    Matcher matcher = oldNamingPattern.matcher(oldJar.getName());
+    if (!matcher.matches()) {
+      throw new IllegalArgumentException("The given jar " + oldJar.getCanonicalPath()
+          + " does not match the old naming convention");
+    }
+
+    String unversionedJarNameWithoutExtension = matcher.group(1);
+    String jarVersion = matcher.group(2);
+    String newJarName = unversionedJarNameWithoutExtension + ".v" + jarVersion + ".jar";
+
+    File newJar = new File(this.deployDirectory, newJarName);
+    logger.debug("Renaming deployed jar from " + oldJar.getCanonicalPath() + " to "
+        + newJar.getCanonicalPath());
+
+    FileUtils.moveFile(oldJar, newJar);
+    FileUtils.deleteQuietly(oldJar);
+  }
+
+  /**
+   * Re-deploy all previously deployed JAR files.
+   */
+  public void loadPreviouslyDeployedJars() {
+    lock.lock();
+    try {
+      verifyWritableDeployDirectory();
+      renameJarsWithOldNamingConvention();
+
+      final Set<String> jarNames = findDistinctDeployedJars();
+      if (jarNames.isEmpty()) {
+        return;
       }
 
-      return byteOutStream.toByteArray();
+      Map<String, DeployedJar> latestVersionOfEachJar = new LinkedHashMap<>();
+
+      for (String jarName : jarNames) {
+        final File[] jarFiles = findSortedOldVersionsOfJar(jarName);
+
+        Optional<File> latestValidDeployedJarOptional =
+            Arrays.stream(jarFiles).filter(Objects::nonNull).filter(jarFile -> {
+              try {
+                return DeployedJar.isValidJarContent(FileUtils.readFileToByteArray(jarFile));
+              } catch (IOException e) {
+                return false;
+              }
+            }).findFirst();
+
+        if (!latestValidDeployedJarOptional.isPresent()) {
+          // No valid version of this jar
+          continue;
+        }
+
+        File latestValidDeployedJar = latestValidDeployedJarOptional.get();
+        latestVersionOfEachJar.put(jarName, new DeployedJar(latestValidDeployedJar, jarName));
+
+        // Remove any old left-behind versions of this JAR file
+        for (File jarFile : jarFiles) {
+          if (!latestValidDeployedJar.equals(jarFile)) {
+            FileUtils.deleteQuietly(jarFile);
+          }
+        }
+      }
+
+      registerNewVersions(latestVersionOfEachJar.values().stream().collect(toList()));
+      // ClassPathLoader.getLatest().deploy(latestVersionOfEachJar.keySet().toArray(),
+      // latestVersionOfEachJar.values().toArray())
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     } finally {
-      inputStream.close();
+      lock.unlock();
+    }
+  }
+
+
+  public URL[] getDeployedJarURLs() {
+    return this.deployedJars.values().stream().map(DeployedJar::getFileURL).toArray(URL[]::new);
+
+  }
+
+  public List<DeployedJar> registerNewVersions(List<DeployedJar> deployedJars)
+      throws ClassNotFoundException {
+    lock.lock();
+    try {
+      for (DeployedJar deployedJar : deployedJars) {
+        if (deployedJar != null) {
+          DeployedJar oldJar = this.deployedJars.put(deployedJar.getJarName(), deployedJar);
+          if (oldJar != null) {
+            oldJar.cleanUp();
+          }
+        }
+      }
+
+      ClassPathLoader.getLatest().rebuildClassLoaderForDeployedJars();
+
+      for (DeployedJar deployedJar : deployedJars) {
+        if (deployedJar != null) {
+          deployedJar.loadClassesAndRegisterFunctions();
+        }
+      }
+    } finally {
+      lock.unlock();
+    }
+
+    return deployedJars;
+  }
+
+  /**
+   * Deploy the given JAR files.
+   * 
+   * @param jarNames Array of names of the JAR files to deploy.
+   * @param jarBytes Array of contents of the JAR files to deploy.
+   * @return An array of newly created JAR class loaders. Entries will be null for an JARs that were
+   *         already deployed.
+   * @throws IOException When there's an error saving the JAR file to disk
+   */
+  public List<DeployedJar> deploy(final String jarNames[], final byte[][] jarBytes)
+      throws IOException, ClassNotFoundException {
+    DeployedJar[] deployedJars = new DeployedJar[jarNames.length];
+
+    for (int i = 0; i < jarNames.length; i++) {
+      if (!DeployedJar.isValidJarContent(jarBytes[i])) {
+        throw new IllegalArgumentException(
+            "File does not contain valid JAR content: " + jarNames[i]);
+      }
+    }
+
+    lock.lock();
+    try {
+      for (int i = 0; i < jarNames.length; i++) {
+        String jarName = jarNames[i];
+        byte[] newJarBytes = jarBytes[i];
+
+        boolean shouldDeployNewVersion = shouldDeployNewVersion(jarName, newJarBytes);
+
+        if (shouldDeployNewVersion) {
+          deployedJars[i] = deployWithoutRegistering(jarName, newJarBytes);
+        } else {
+          deployedJars[i] = null;
+        }
+      }
+
+      return registerNewVersions(Arrays.asList(deployedJars));
+    } finally {
+      lock.unlock();
+    }
+  }
+
+  private boolean shouldDeployNewVersion(String jarName, byte[] newJarBytes) throws IOException {
+    DeployedJar oldDeployedJar = this.deployedJars.get(jarName);
+
+    if (oldDeployedJar == null) {
+      return true;
+    }
+
+    if (oldDeployedJar.hasSameContentAs(newJarBytes)) {
+      logger.warn("Jar is identical to the latest deployed version: ",
+          oldDeployedJar.getFileCanonicalPath());
+
+      return false;
+    }
+
+    return true;
+  }
+
+  public DeployedJar findDeployedJar(String jarName) {
+    return this.deployedJars.get(jarName);
+  }
+
+  public DeployedJar deploy(final String jarName, final byte[] jarBytes)
+      throws IOException, ClassNotFoundException {
+    lock.lock();
+
+    try {
+      List<DeployedJar> deployedJars = deploy(new String[] {jarName}, new byte[][] {jarBytes});
+      if (deployedJars == null || deployedJars.size() == 0) {
+        return null;
+      }
+
+      return deployedJars.get(0);
+    } finally {
+      lock.unlock();
+    }
+
+  }
+
+  public Map<String, DeployedJar> getDeployedJars() {
+    return Collections.unmodifiableMap(this.deployedJars);
+  }
+
+  /**
+   * Undeploy the given JAR file.
+   * 
+   * @param jarName The name of the JAR file to undeploy
+   * @return The path to the location on disk where the JAR file had been deployed
+   * @throws IOException If there's a problem deleting the file
+   */
+  public String undeploy(final String jarName) throws IOException {
+    lock.lock();
+
+    try {
+      DeployedJar deployedJar = deployedJars.remove(jarName);
+      if (deployedJar == null) {
+        throw new IllegalArgumentException("JAR not deployed");
+      }
+
+      ClassPathLoader.getLatest().rebuildClassLoaderForDeployedJars();
+
+      deployedJar.cleanUp();
+
+      return deployedJar.getFileCanonicalPath();
+    } finally {
+      lock.unlock();
     }
   }
 }
