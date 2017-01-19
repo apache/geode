@@ -206,7 +206,10 @@ RegionAttributes::~RegionAttributes() {
   RA_DELSTRING(m_poolName);
 }
 
-namespace gemfire_impl {
+namespace apache {
+namespace geode {
+namespace client {
+namespace impl {
 
 /**
  * lib should be in the form required by ACE_DLL, typically just like specifying
@@ -231,7 +234,10 @@ void* getFactoryFunc(const char* lib, const char* funcName) {
   }
   return func;
 }
-}  // namespace gemfire_impl
+}  // namespace impl
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 CacheLoaderPtr RegionAttributes::getCacheLoader() {
   if ((m_cacheLoader == NULLPTR) && (m_cacheLoaderLibrary != NULL)) {
@@ -242,9 +248,9 @@ CacheLoaderPtr RegionAttributes::getCacheLoader() {
           m_cacheLoaderLibrary, m_cacheLoaderFactory);
     } else {
       CacheLoader* (*funcptr)();
-      funcptr =
-          reinterpret_cast<CacheLoader* (*)()>(gemfire_impl::getFactoryFunc(
-              m_cacheLoaderLibrary, m_cacheLoaderFactory));
+      funcptr = reinterpret_cast<CacheLoader* (*)()>(
+          apache::geode::client::impl::getFactoryFunc(m_cacheLoaderLibrary,
+                                                      m_cacheLoaderFactory));
       m_cacheLoader = funcptr();
     }
   }
@@ -260,9 +266,9 @@ CacheWriterPtr RegionAttributes::getCacheWriter() {
           m_cacheWriterLibrary, m_cacheWriterFactory);
     } else {
       CacheWriter* (*funcptr)();
-      funcptr =
-          reinterpret_cast<CacheWriter* (*)()>(gemfire_impl::getFactoryFunc(
-              m_cacheWriterLibrary, m_cacheWriterFactory));
+      funcptr = reinterpret_cast<CacheWriter* (*)()>(
+          apache::geode::client::impl::getFactoryFunc(m_cacheWriterLibrary,
+                                                      m_cacheWriterFactory));
       m_cacheWriter = funcptr();
     }
   }
@@ -280,9 +286,9 @@ CacheListenerPtr RegionAttributes::getCacheListener() {
           m_cacheListenerLibrary, m_cacheListenerFactory);
     } else {
       CacheListener* (*funcptr)();
-      funcptr =
-          reinterpret_cast<CacheListener* (*)()>(gemfire_impl::getFactoryFunc(
-              m_cacheListenerLibrary, m_cacheListenerFactory));
+      funcptr = reinterpret_cast<CacheListener* (*)()>(
+          apache::geode::client::impl::getFactoryFunc(m_cacheListenerLibrary,
+                                                      m_cacheListenerFactory));
       m_cacheListener = funcptr();
     }
   }
@@ -302,8 +308,8 @@ PartitionResolverPtr RegionAttributes::getPartitionResolver() {
     } else {
       PartitionResolver* (*funcptr)();
       funcptr = reinterpret_cast<PartitionResolver* (*)()>(
-          gemfire_impl::getFactoryFunc(m_partitionResolverLibrary,
-                                       m_partitionResolverFactory));
+          apache::geode::client::impl::getFactoryFunc(
+              m_partitionResolverLibrary, m_partitionResolverFactory));
       m_partitionResolver = funcptr();
     }
   }
@@ -323,8 +329,8 @@ PersistenceManagerPtr RegionAttributes::getPersistenceManager() {
     } else {
       PersistenceManager* (*funcptr)();
       funcptr = reinterpret_cast<PersistenceManager* (*)()>(
-          gemfire_impl::getFactoryFunc(m_persistenceLibrary,
-                                       m_persistenceFactory));
+          apache::geode::client::impl::getFactoryFunc(m_persistenceLibrary,
+                                                      m_persistenceFactory));
       m_persistenceManager = funcptr();
     }
   }
@@ -431,7 +437,11 @@ int8_t RegionAttributes::typeId() const {
   return GemfireTypeIds::RegionAttributes;
 }
 
-namespace gemfire_impl {
+namespace apache {
+namespace geode {
+namespace client {
+namespace impl {
+
 void writeBool(DataOutput& out, bool field) {
   out.write(static_cast<int8_t>(field ? 1 : 0));
 }
@@ -461,7 +471,11 @@ void readCharStar(DataInput& in, char** field) {
     in.readBytesOnly(reinterpret_cast<int8_t*>(*field), memlen);
   }
 }
-}  // namespace gemfire_impl
+
+}  // namespace impl
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 void RegionAttributes::toData(DataOutput& out) const {
   out.writeInt(static_cast<int32_t>(m_regionTimeToLive));
@@ -479,24 +493,24 @@ void RegionAttributes::toData(DataOutput& out) const {
   out.writeInt(static_cast<int32_t>(m_lruEntriesLimit));
   out.writeInt(static_cast<int32_t>(m_lruEvictionAction));
 
-  gemfire_impl::writeBool(out, m_caching);
-  gemfire_impl::writeBool(out, m_clientNotificationEnabled);
+  apache::geode::client::impl::writeBool(out, m_caching);
+  apache::geode::client::impl::writeBool(out, m_clientNotificationEnabled);
 
-  gemfire_impl::writeCharStar(out, m_cacheLoaderLibrary);
-  gemfire_impl::writeCharStar(out, m_cacheLoaderFactory);
-  gemfire_impl::writeCharStar(out, m_cacheWriterLibrary);
-  gemfire_impl::writeCharStar(out, m_cacheWriterFactory);
-  gemfire_impl::writeCharStar(out, m_cacheListenerLibrary);
-  gemfire_impl::writeCharStar(out, m_cacheListenerFactory);
-  gemfire_impl::writeCharStar(out, m_partitionResolverLibrary);
-  gemfire_impl::writeCharStar(out, m_partitionResolverFactory);
+  apache::geode::client::impl::writeCharStar(out, m_cacheLoaderLibrary);
+  apache::geode::client::impl::writeCharStar(out, m_cacheLoaderFactory);
+  apache::geode::client::impl::writeCharStar(out, m_cacheWriterLibrary);
+  apache::geode::client::impl::writeCharStar(out, m_cacheWriterFactory);
+  apache::geode::client::impl::writeCharStar(out, m_cacheListenerLibrary);
+  apache::geode::client::impl::writeCharStar(out, m_cacheListenerFactory);
+  apache::geode::client::impl::writeCharStar(out, m_partitionResolverLibrary);
+  apache::geode::client::impl::writeCharStar(out, m_partitionResolverFactory);
   out.writeInt(static_cast<int32_t>(m_diskPolicy));
-  gemfire_impl::writeCharStar(out, m_endpoints);
-  gemfire_impl::writeCharStar(out, m_persistenceLibrary);
-  gemfire_impl::writeCharStar(out, m_persistenceFactory);
+  apache::geode::client::impl::writeCharStar(out, m_endpoints);
+  apache::geode::client::impl::writeCharStar(out, m_persistenceLibrary);
+  apache::geode::client::impl::writeCharStar(out, m_persistenceFactory);
   out.writeObject(m_persistenceProperties);
-  gemfire_impl::writeCharStar(out, m_poolName);
-  gemfire_impl::writeBool(out, m_isConcurrencyChecksEnabled);
+  apache::geode::client::impl::writeCharStar(out, m_poolName);
+  apache::geode::client::impl::writeBool(out, m_isConcurrencyChecksEnabled);
 }
 
 Serializable* RegionAttributes::fromData(DataInput& in) {
@@ -515,24 +529,24 @@ Serializable* RegionAttributes::fromData(DataInput& in) {
   in.readInt(reinterpret_cast<int32_t*>(&m_lruEntriesLimit));
   in.readInt(reinterpret_cast<int32_t*>(&m_lruEvictionAction));
 
-  gemfire_impl::readBool(in, &m_caching);
-  gemfire_impl::readBool(in, &m_clientNotificationEnabled);
+  apache::geode::client::impl::readBool(in, &m_caching);
+  apache::geode::client::impl::readBool(in, &m_clientNotificationEnabled);
 
-  gemfire_impl::readCharStar(in, &m_cacheLoaderLibrary);
-  gemfire_impl::readCharStar(in, &m_cacheLoaderFactory);
-  gemfire_impl::readCharStar(in, &m_cacheWriterLibrary);
-  gemfire_impl::readCharStar(in, &m_cacheWriterFactory);
-  gemfire_impl::readCharStar(in, &m_cacheListenerLibrary);
-  gemfire_impl::readCharStar(in, &m_cacheListenerFactory);
-  gemfire_impl::readCharStar(in, &m_partitionResolverLibrary);
-  gemfire_impl::readCharStar(in, &m_partitionResolverFactory);
+  apache::geode::client::impl::readCharStar(in, &m_cacheLoaderLibrary);
+  apache::geode::client::impl::readCharStar(in, &m_cacheLoaderFactory);
+  apache::geode::client::impl::readCharStar(in, &m_cacheWriterLibrary);
+  apache::geode::client::impl::readCharStar(in, &m_cacheWriterFactory);
+  apache::geode::client::impl::readCharStar(in, &m_cacheListenerLibrary);
+  apache::geode::client::impl::readCharStar(in, &m_cacheListenerFactory);
+  apache::geode::client::impl::readCharStar(in, &m_partitionResolverLibrary);
+  apache::geode::client::impl::readCharStar(in, &m_partitionResolverFactory);
   in.readInt(reinterpret_cast<int32_t*>(&m_diskPolicy));
-  gemfire_impl::readCharStar(in, &m_endpoints);
-  gemfire_impl::readCharStar(in, &m_persistenceLibrary);
-  gemfire_impl::readCharStar(in, &m_persistenceFactory);
+  apache::geode::client::impl::readCharStar(in, &m_endpoints);
+  apache::geode::client::impl::readCharStar(in, &m_persistenceLibrary);
+  apache::geode::client::impl::readCharStar(in, &m_persistenceFactory);
   in.readObject(m_persistenceProperties, true);
-  gemfire_impl::readCharStar(in, &m_poolName);
-  gemfire_impl::readBool(in, &m_isConcurrencyChecksEnabled);
+  apache::geode::client::impl::readCharStar(in, &m_poolName);
+  apache::geode::client::impl::readBool(in, &m_isConcurrencyChecksEnabled);
 
   return this;
 }

@@ -35,11 +35,19 @@
 #endif
 
 using namespace apache::geode::client;
-namespace gemfire_impl {
-void* getFactoryFunc(const char* lib, const char* funcName);
-}  // namespace gemfire_impl
+namespace apache {
+namespace geode {
+namespace client {
+namespace impl {
 
-using namespace gemfire_impl;
+void* getFactoryFunc(const char* lib, const char* funcName);
+
+}  // namespace impl
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
+
+using namespace apache::geode::client::impl;
 
 /******************************************************************************/
 
