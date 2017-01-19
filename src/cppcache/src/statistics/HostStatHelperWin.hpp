@@ -33,7 +33,9 @@
 /** @file
 */
 
-namespace gemfire_statistics {
+namespace apache {
+namespace geode {
+namespace statistics {
 
 /**
  * Windows2000 Implementation of code to fetch operating system stats.
@@ -292,7 +294,9 @@ class HostStatHelperWin {
 
 };  // class
 
-};  // namespace
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // (_WIN32)
 

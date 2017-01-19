@@ -21,7 +21,7 @@
 
 #include "ace/OS.h"
 
-using namespace gemfire_statistics;
+using namespace apache::geode::statistics;
 
 /**
  * An implementation of {@link Statistics} that stores its statistics

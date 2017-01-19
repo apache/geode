@@ -46,7 +46,7 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-          gemfire_statistics::StatisticDescriptor ** nativedescriptors = NativePtr->getStatistics();
+          apache::geode::statistics::StatisticDescriptor ** nativedescriptors = NativePtr->getStatistics();
           array<StatisticDescriptor^>^ descriptors = gcnew array<StatisticDescriptor^>(NativePtr->getDescriptorsCount());
           for (int item = 0; item < NativePtr->getDescriptorsCount(); item++)
           {

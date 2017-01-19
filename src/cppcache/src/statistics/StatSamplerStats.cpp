@@ -16,7 +16,7 @@
  */
 
 #include "StatSamplerStats.hpp"
-using namespace gemfire_statistics;
+using namespace apache::geode::statistics;
 
 /**
   * Statistics related to the statistic sampler.

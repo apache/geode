@@ -34,7 +34,7 @@
 #include "SolarisProcessStats.hpp"
 #include <ace/OS.h>
 
-using namespace gemfire_statistics;
+using namespace apache::geode::statistics;
 
 uint8_t HostStatHelperSolaris::m_logStatErrorCountDown = 5;
 uint32_t HostStatHelperSolaris::m_cpuUtilPrev[CPU_STATES] = {0};

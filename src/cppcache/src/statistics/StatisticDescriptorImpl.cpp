@@ -19,7 +19,7 @@
 
 #include <ace/OS.h>
 
-using namespace gemfire_statistics;
+using namespace apache::geode::statistics;
 
 const char* StatisticDescriptorImpl::IntTypeName = "int_t";
 const char* StatisticDescriptorImpl::LongTypeName = "Long";

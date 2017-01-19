@@ -24,7 +24,9 @@ using namespace apache::geode::client;
 /** @file
 */
 
-namespace gemfire_statistics {
+namespace apache {
+namespace geode {
+namespace statistics {
 
 /**
  * Used to describe a logical collection of StatisticDescriptors. These
@@ -87,6 +89,8 @@ class CPPCACHE_EXPORT StatisticsType {
 
 };  // class
 
-}  // namespace gemfire_statistics
+}  // namespace statistics
+}  // namespace geode
+}  // namespace apache
 
 #endif  // ifndef __GEMFIRE_STATISTICSTYPE_H__

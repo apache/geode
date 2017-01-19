@@ -21,7 +21,9 @@
 /** @file
 */
 
-namespace gemfire_statistics {
+namespace apache {
+namespace geode {
+namespace statistics {
 
 #define MAX_1BYTE_COMPACT_VALUE 127
 #define MIN_1BYTE_COMPACT_VALUE -128 + 7
@@ -46,5 +48,7 @@ typedef enum {
   GFS_OSTYPE_MACOSX = 3
 
 } GFS_OSTYPES;
-}  // namespace gemfire_statistics
+}  // namespace statistics
+}  // namespace geode
+}  // namespace apache
 #endif  // _GEMFIRE_STATISTICS_STATSDEF_HPP_

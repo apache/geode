@@ -57,7 +57,9 @@ const int64 NANOS_PER_MILLI = 1000000;
 /** @file
 */
 
-namespace gemfire_statistics {
+namespace apache {
+namespace geode {
+namespace statistics {
 /**
  * Some of the classes which are used by the StatArchiveWriter Class
  * 1. StatDataOutput // Just a wrapper around DataOutput so that the number of
@@ -148,11 +150,12 @@ class CPPCACHE_EXPORT ResourceType : private NonCopyable,
 
 /* adongre
  * CID 28735: Other violation (MISSING_COPY)
- * Class "gemfire_statistics::ResourceInst" owns resources
+ * Class "apache::geode::statistics::ResourceInst" owns resources
  * that are managed in its constructor and destructor but has no user-written
  * copy constructor.
  * CID 28721: Other violation (MISSING_ASSIGN)
- * Class "gemfire_statistics::ResourceInst" owns resources that are managed
+ * Class "apache::geode::statistics::ResourceInst" owns resources that are
+ * managed
  * in its constructor and destructor but has no user-written assignment
  * operator.
  *
@@ -259,5 +262,8 @@ class CPPCACHE_EXPORT StatArchiveWriter {
    */
   void flush();
 };
-};      // namespace gemfire_statistics
+}  // namespace statistics
+}  // namespace geode
+}  // namespace apache
+
 #endif  // _GEMFIRE_STATISTICS_STATARCHIVERITER_HPP_

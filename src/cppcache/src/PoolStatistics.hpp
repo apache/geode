@@ -28,7 +28,7 @@ namespace apache {
 namespace geode {
 namespace client {
 
-using namespace gemfire_statistics;
+using namespace apache::geode::statistics;
 
 class PoolStats {
  public:
@@ -40,7 +40,7 @@ class PoolStats {
 
   void close() {
     getStats()->close();
-    StatisticsManager::getExistingInstance()->forceSample();
+    statistics::StatisticsManager::getExistingInstance()->forceSample();
   }
 
   void setLocators(int32 curVal) { getStats()->setInt(m_locatorsId, curVal); }
@@ -123,11 +123,13 @@ class PoolStats {
   void incQueryExecutionTimeId(int64 value) {  // counter
     getStats()->incLong(m_queryExecutionTimeId, value);
   }
-  inline gemfire_statistics::Statistics* getStats() { return m_poolStats; }
+  inline apache::geode::statistics::Statistics* getStats() {
+    return m_poolStats;
+  }
 
  private:
-  // volatile gemfire_statistics::Statistics* m_poolStats;
-  gemfire_statistics::Statistics* m_poolStats;
+  // volatile apache::geode::statistics::Statistics* m_poolStats;
+  apache::geode::statistics::Statistics* m_poolStats;
 
   int32_t m_locatorsId;
   int32_t m_serversId;
@@ -167,13 +169,13 @@ class PoolStatType {
  public:
   static PoolStatType* getInstance();
 
-  StatisticsType* getStatType();
+  statistics::StatisticsType* getStatType();
 
   static void clean();
 
  private:
   PoolStatType();
-  StatisticDescriptor* m_stats[27];
+  statistics::StatisticDescriptor* m_stats[27];
 
   int32_t m_locatorsId;
   int32_t m_serversId;

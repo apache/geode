@@ -25,7 +25,9 @@
 /** @file
 */
 
-namespace gemfire_statistics {
+namespace apache {
+namespace geode {
+namespace statistics {
 
 typedef enum { INT_TYPE = 5, LONG_TYPE = 6, DOUBLE_TYPE = 8 } FieldType;
 
@@ -242,6 +244,8 @@ s
 
 };  // class
 
-}  // namespace gemfire_statistics
+}  // namespace statistics
+}  // namespace geode
+}  // namespace apache
 
 #endif  //  _GEMFIRE_STATISTICS_STATISTICDESCRIPTORIMPL_HPP_

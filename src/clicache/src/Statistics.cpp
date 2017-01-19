@@ -106,7 +106,7 @@ namespace GemStone
       void Statistics::SetInt(StatisticDescriptor^ descriptor, int32_t value)
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
-          NativePtr->setInt(GetNativePtr<gemfire_statistics::StatisticDescriptor>(descriptor),value);
+          NativePtr->setInt(GetNativePtr<apache::geode::statistics::StatisticDescriptor>(descriptor),value);
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */ 
       }
 
@@ -120,7 +120,7 @@ namespace GemStone
       void Statistics::SetLong(StatisticDescriptor^ descriptor, int64_t value)
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
-          NativePtr->setLong(GetNativePtr<gemfire_statistics::StatisticDescriptor>(descriptor),value);
+          NativePtr->setLong(GetNativePtr<apache::geode::statistics::StatisticDescriptor>(descriptor),value);
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */ 
       }
 
@@ -150,7 +150,7 @@ namespace GemStone
       void Statistics::SetDouble(StatisticDescriptor^ descriptor, double value)
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
-            NativePtr->setDouble(GetNativePtr<gemfire_statistics::StatisticDescriptor>(descriptor), value);
+            NativePtr->setDouble(GetNativePtr<apache::geode::statistics::StatisticDescriptor>(descriptor), value);
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
       }
 
@@ -164,7 +164,7 @@ namespace GemStone
       int32_t Statistics::GetInt(StatisticDescriptor^ descriptor)
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
-          return NativePtr->getInt(GetNativePtr<gemfire_statistics::StatisticDescriptor>(descriptor));
+          return NativePtr->getInt(GetNativePtr<apache::geode::statistics::StatisticDescriptor>(descriptor));
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
       }
 
@@ -185,7 +185,7 @@ namespace GemStone
        int64_t Statistics::GetLong(StatisticDescriptor^ descriptor)
        {
           _GF_MG_EXCEPTION_TRY2/* due to auto replace */
-            return NativePtr->getLong(GetNativePtr<gemfire_statistics::StatisticDescriptor>(descriptor));
+            return NativePtr->getLong(GetNativePtr<apache::geode::statistics::StatisticDescriptor>(descriptor));
           _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
        }
 
@@ -207,7 +207,7 @@ namespace GemStone
       double Statistics::GetDouble(StatisticDescriptor^ descriptor)
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
-           return NativePtr->getDouble(GetNativePtr<gemfire_statistics::StatisticDescriptor>(descriptor));
+           return NativePtr->getDouble(GetNativePtr<apache::geode::statistics::StatisticDescriptor>(descriptor));
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
       }
 
@@ -222,7 +222,7 @@ namespace GemStone
       int64_t Statistics::GetRawBits(StatisticDescriptor^ descriptor)
       {
          _GF_MG_EXCEPTION_TRY2/* due to auto replace */
-           return NativePtr->getRawBits(GetNativePtr<gemfire_statistics::StatisticDescriptor>(descriptor));
+           return NativePtr->getRawBits(GetNativePtr<apache::geode::statistics::StatisticDescriptor>(descriptor));
          _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
       }
 
@@ -236,7 +236,7 @@ namespace GemStone
       int32_t Statistics::IncInt(StatisticDescriptor^ descriptor, int32_t delta)
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
-          return NativePtr->incInt(GetNativePtr<gemfire_statistics::StatisticDescriptor>(descriptor),delta);
+          return NativePtr->incInt(GetNativePtr<apache::geode::statistics::StatisticDescriptor>(descriptor),delta);
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
       }
 
@@ -258,7 +258,7 @@ namespace GemStone
       int64_t Statistics::IncLong(StatisticDescriptor^ descriptor, int64_t delta)
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
-          return NativePtr->incLong(GetNativePtr<gemfire_statistics::StatisticDescriptor>(descriptor),delta);
+          return NativePtr->incLong(GetNativePtr<apache::geode::statistics::StatisticDescriptor>(descriptor),delta);
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
       }
 
@@ -280,7 +280,7 @@ namespace GemStone
       double Statistics::IncDouble(StatisticDescriptor^ descriptor, double delta)
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
-          return NativePtr->incDouble(GetNativePtr<gemfire_statistics::StatisticDescriptor>(descriptor),delta);
+          return NativePtr->incDouble(GetNativePtr<apache::geode::statistics::StatisticDescriptor>(descriptor),delta);
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
       }
 

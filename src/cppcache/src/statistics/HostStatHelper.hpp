@@ -40,7 +40,9 @@
 /** @file
 */
 
-namespace gemfire_statistics {
+namespace apache {
+namespace geode {
+namespace statistics {
 /**
  * Provides native methods which fetch operating system statistics.
  * accessed by calling {@link #getInstance()}.
@@ -72,5 +74,7 @@ class CPPCACHE_EXPORT HostStatHelper {
 
   static void cleanup();
 };
-}  // namespace gemfire_statistics
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 #endif  //_GEMFIRE_STATISTICS_HOSTSTATHELPER_HPP_

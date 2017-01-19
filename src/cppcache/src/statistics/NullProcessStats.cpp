@@ -20,7 +20,7 @@
 #include "NullProcessStats.hpp"
 #include "GemfireStatisticsFactory.hpp"
 #include "HostStatHelperNull.hpp"
-using namespace gemfire_statistics;
+using namespace apache::geode::statistics;
 
 /**
  * <P>This class provides the interface for statistics about a

@@ -37,7 +37,9 @@
 /** @file
 */
 
-namespace gemfire_statistics {
+namespace apache {
+namespace geode {
+namespace statistics {
 
 /**
  * Solaris Implementation to fetch operating system stats.
@@ -57,7 +59,9 @@ class HostStatHelperSolaris {
   static bool m_initialized;
   static void getKernelStats(uint32_t*);
 };
-};
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  // if def(_SOLARIS)
 

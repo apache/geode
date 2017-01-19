@@ -37,7 +37,9 @@ using namespace apache::geode::client;
 /** @file
 */
 
-namespace gemfire_statistics {
+namespace apache {
+namespace geode {
+namespace statistics {
 
 class StatisticsManager;
 
@@ -144,6 +146,8 @@ class GemfireStatisticsFactory : public StatisticsFactory {
 
 };  // class
 
-}  // namespace gemfire_statistics
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 #endif  //  _GEMFIRE_STATISTICS_GEMFIRESTATISTICSFACTORY_HPP_

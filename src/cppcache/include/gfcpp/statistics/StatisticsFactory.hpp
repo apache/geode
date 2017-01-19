@@ -25,7 +25,9 @@
 /** @file
 */
 
-namespace gemfire_statistics {
+namespace apache {
+namespace geode {
+namespace statistics {
 
 /**
  * Instances of this interface provide methods that create instances
@@ -211,6 +213,8 @@ class CPPCACHE_EXPORT StatisticsFactory {
   const StatisticsFactory& operator=(const StatisticsFactory&);
 
 };  // class
-}  // namespace gemfire_statistics
+}  // namespace statistics
+}  // namespace geode
+}  // namespace apache
 
 #endif  //  _GEMFIRE__STATISTICS_STATISTICSFACTORY_HPP_

@@ -26,7 +26,7 @@ namespace apache {
 namespace geode {
 namespace client {
 
-using namespace gemfire_statistics;
+using namespace apache::geode::statistics;
 
 /** hold statistics for cache.. */
 class CPPCACHE_EXPORT CachePerfStats {
@@ -278,7 +278,9 @@ class CPPCACHE_EXPORT CachePerfStats {
     m_cachePerfStats->incInt(m_pdxInstanceDeserializationsId, 1);
   }
 
-  inline gemfire_statistics::Statistics* getStat() { return m_cachePerfStats; }
+  inline apache::geode::statistics::Statistics* getStat() {
+    return m_cachePerfStats;
+  }
 
   inline int32_t getPdxInstanceDeserializationTimeId() {
     return m_pdxInstanceDeserializationTimeId;

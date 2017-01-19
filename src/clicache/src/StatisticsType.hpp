@@ -46,7 +46,7 @@ namespace GemStone
       /// method.
       /// </para>
       public ref class StatisticsType sealed
-        : public Internal::UMWrap<gemfire_statistics::StatisticsType>
+        : public Internal::UMWrap<apache::geode::statistics::StatisticsType>
       {
       public:
         /// <summary>
@@ -116,7 +116,7 @@ namespace GemStone
         /// the managed wrapper object, or null if the native pointer is null.
         /// </returns>
         inline static StatisticsType^ Create(
-          gemfire_statistics::StatisticsType* nativeptr )
+          apache::geode::statistics::StatisticsType* nativeptr )
         {
           return ( nativeptr != nullptr ?
             gcnew StatisticsType( nativeptr ) : nullptr );
@@ -127,7 +127,7 @@ namespace GemStone
         /// Private constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline StatisticsType( gemfire_statistics::StatisticsType* nativeptr )
+        inline StatisticsType( apache::geode::statistics::StatisticsType* nativeptr )
           : UMWrap( nativeptr, false ) { }
 
       };
