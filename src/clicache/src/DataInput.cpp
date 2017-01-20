@@ -39,13 +39,13 @@ using namespace System;
 using namespace System::IO;
 using namespace apache::geode::client;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache
+    namespace Client
     {
-      namespace Generic
+namespace Generic
       {
         DataInput::DataInput( uint8_t* buffer, int size )
         {

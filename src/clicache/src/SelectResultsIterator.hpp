@@ -24,12 +24,13 @@
 
 using namespace System;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache {
-      namespace Generic
+    namespace Client
+    {
+namespace Generic
       {
       interface class IGFSerializable;
 
@@ -39,7 +40,7 @@ namespace GemStone
       generic<class TResult>
       public ref class SelectResultsIterator sealed
         : public Internal::UMWrap<apache::geode::client::SelectResultsIterator>,
-        public System::Collections::Generic::IEnumerator</*GemStone::GemFire::Cache::Generic::IGFSerializable^*/TResult>
+        public System::Collections::Generic::IEnumerator</*Apache::Geode::Client::Generic::IGFSerializable^*/TResult>
       {
       public:
 
@@ -51,9 +52,9 @@ namespace GemStone
         /// The element in the collection at the current position
         /// of the enumerator.
         /// </returns>
-        virtual property /*GemStone::GemFire::Cache::Generic::IGFSerializable^*/TResult Current
+        virtual property /*Apache::Geode::Client::Generic::IGFSerializable^*/TResult Current
         {
-          virtual /*GemStone::GemFire::Cache::Generic::IGFSerializable^*/TResult get( );
+          virtual /*Apache::Geode::Client::Generic::IGFSerializable^*/TResult get( );
         }
 
         /// <summary>
@@ -75,7 +76,7 @@ namespace GemStone
         /// <summary>
         /// Get the current element and move to the next one.
         /// </summary>
-        /*GemStone::GemFire::Cache::Generic::IGFSerializable^*/TResult Next( );
+        /*Apache::Geode::Client::Generic::IGFSerializable^*/TResult Next( );
 
         /// <summary>
         /// Check if there is a next element.
@@ -96,11 +97,11 @@ namespace GemStone
         /// <returns>
         /// The managed wrapper object; null if the native pointer is null.
         /// </returns>
-        inline static GemStone::GemFire::Cache::Generic::SelectResultsIterator<TResult>^ Create(
+        inline static Apache::Geode::Client::Generic::SelectResultsIterator<TResult>^ Create(
           apache::geode::client::SelectResultsIterator* nativeptr )
         {
           return ( nativeptr != nullptr ?
-            gcnew GemStone::GemFire::Cache::Generic::SelectResultsIterator<TResult>( nativeptr ) : nullptr );
+            gcnew Apache::Geode::Client::Generic::SelectResultsIterator<TResult>( nativeptr ) : nullptr );
         }
 
 

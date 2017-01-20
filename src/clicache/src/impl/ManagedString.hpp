@@ -28,10 +28,13 @@
 
 using namespace System;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
-	{namespace Cache { namespace Generic{
+  namespace Geode
+  {
+    namespace Client
+    {
+namespace Generic{
 
     ref class ManagedString sealed
     {

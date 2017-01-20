@@ -19,11 +19,11 @@ using System;
 using System.Threading;
 using System.Collections.Generic;
 
-namespace GemStone.GemFire.Cache.FwkLib
+namespace Apache.Geode.Client.FwkLib
 {
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Cache.Tests.NewAPI;
-  using GemStone.GemFire.Cache.Generic;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Client.Tests.NewAPI;
+  using Apache.Geode.Client.Generic;
   public class DeltaClientValidationListener<TKey, TVal> : CacheListenerAdapter<TKey, TVal>
   {
     private IDictionary<TKey, Int32> m_latestValues;
@@ -147,11 +147,11 @@ namespace GemStone.GemFire.Cache.FwkLib
     {
     }
 
-    public void Close(GemStone.GemFire.Cache.Generic.IRegion<TKey, TVal> region)
+    public void Close(Apache.Geode.Client.Generic.IRegion<TKey, TVal> region)
     {
     }
 
-    public void AfterRegionDisconnected(GemStone.GemFire.Cache.Generic.IRegion<TKey, TVal> region)
+    public void AfterRegionDisconnected(Apache.Geode.Client.Generic.IRegion<TKey, TVal> region)
     {
     }
     public override void AfterRegionClear(RegionEvent<TKey, TVal> ev)

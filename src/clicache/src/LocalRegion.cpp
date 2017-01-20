@@ -28,11 +28,13 @@
 
 using namespace System;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
       generic<class TKey, class TValue>
       TValue LocalRegion<TKey, TValue>::Get(TKey key, Object^ callbackArg)
@@ -545,13 +547,13 @@ namespace GemStone
       }
 
       generic<class TKey, class TValue>
-      GemStone::GemFire::Cache::Generic::RegionAttributes<TKey, TValue>^ LocalRegion<TKey, TValue>::Attributes::get()
+      Apache::Geode::Client::Generic::RegionAttributes<TKey, TValue>^ LocalRegion<TKey, TValue>::Attributes::get()
       { 
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
         apache::geode::client::RegionAttributesPtr& nativeptr( NativePtr->getAttributes( ) );
 
-        return GemStone::GemFire::Cache::Generic::RegionAttributes<TKey, TValue>::Create(nativeptr.ptr());
+        return Apache::Geode::Client::Generic::RegionAttributes<TKey, TValue>::Create(nativeptr.ptr());
 
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
       } 
@@ -564,18 +566,18 @@ namespace GemStone
           apache::geode::client::AttributesMutatorPtr& nativeptr(
             NativePtr->getAttributesMutator( ) );
 
-        return GemStone::GemFire::Cache::Generic::AttributesMutator<TKey, TValue>::Create( nativeptr.ptr( ) );
+        return Apache::Geode::Client::Generic::AttributesMutator<TKey, TValue>::Create( nativeptr.ptr( ) );
 
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
       }
 
       generic<class TKey, class TValue>
-			GemStone::GemFire::Cache::Generic::CacheStatistics^ LocalRegion<TKey, TValue>::Statistics::get()
+			Apache::Geode::Client::Generic::CacheStatistics^ LocalRegion<TKey, TValue>::Statistics::get()
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
         apache::geode::client::CacheStatisticsPtr& nativeptr( NativePtr->getStatistics( ) );
-        return GemStone::GemFire::Cache::Generic::CacheStatistics::Create( nativeptr.ptr( ) );
+        return Apache::Geode::Client::Generic::CacheStatistics::Create( nativeptr.ptr( ) );
 
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
       }
@@ -599,7 +601,7 @@ namespace GemStone
 
       generic<class TKey, class TValue>
       IRegion<TKey, TValue>^ LocalRegion<TKey, TValue>::CreateSubRegion( String^ subRegionName, 
-        GemStone::GemFire::Cache::Generic::RegionAttributes<TKey, TValue>^ attributes)
+        Apache::Geode::Client::Generic::RegionAttributes<TKey, TValue>^ attributes)
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
@@ -684,11 +686,11 @@ namespace GemStone
 
           if(realCache != NULL)
           {
-						return GemStone::GemFire::Cache::Generic::Cache::Create( ((apache::geode::client::CachePtr)nativeptr).ptr( ) );
+						return Apache::Geode::Client::Generic::Cache::Create( ((apache::geode::client::CachePtr)nativeptr).ptr( ) );
           }
           else
           {
-            return GemStone::GemFire::Cache::Generic::AuthenticatedCache::Create( nativeptr.ptr( ) );
+            return Apache::Geode::Client::Generic::AuthenticatedCache::Create( nativeptr.ptr( ) );
           }
           
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */

@@ -20,11 +20,13 @@
 #include "gf_defs.hpp"
 #include "CqEvent.hpp"
 using namespace System;
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
 
       generic<class TKey, class TResult>

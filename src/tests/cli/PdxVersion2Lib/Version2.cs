@@ -19,8 +19,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using GemStone.GemFire.Cache.Generic;
-using GemStone.GemFire.Cache.Generic.Internal;
+using Apache.Geode.Client.Generic;
+using Apache.Geode.Client.Generic.Internal;
 
 namespace PdxVersionTests
 {

@@ -20,8 +20,8 @@
 #include "impl/ManagedString.hpp"
 
 using namespace System;
-using namespace GemStone::GemFire::Cache::Tests::NewAPI;
-using namespace GemStone::GemFire::Cache::Generic;
+using namespace Apache::Geode::Client::Tests::NewAPI;
+using namespace Apache::Geode::Client::Generic;
 
 PkcsAuthInit::PkcsAuthInit() 
 {
@@ -38,17 +38,17 @@ void PkcsAuthInit::Close()
 }
 
 //generic <class TPropKey, class TPropValue>
-GemStone::GemFire::Cache::Generic::Properties<String^, Object^>^
+Apache::Geode::Client::Generic::Properties<String^, Object^>^
 PkcsAuthInit::GetCredentials(
-  GemStone::GemFire::Cache::Generic::Properties<String^, String^> ^props, System::String ^server)
+  Apache::Geode::Client::Generic::Properties<String^, String^> ^props, System::String ^server)
 {
-  GemStone::GemFire::Cache::Generic::ManagedString mg_server( server );
+  Apache::Geode::Client::Generic::ManagedString mg_server( server );
   apache::geode::client::PropertiesPtr propsPtr = NULLPTR;
   if (props != nullptr) {
     propsPtr = (apache::geode::client::Properties*)props->NativeIntPtr;
   }
   apache::geode::client::PKCSAuthInitInternal* nativeptr = new apache::geode::client::PKCSAuthInitInternal(true); 
   apache::geode::client::PropertiesPtr& newPropsPtr = nativeptr->getCredentials(propsPtr, mg_server.CharPtr);     
-  return GemStone::GemFire::Cache::Generic::Properties<String^, Object^>::
+  return Apache::Geode::Client::Generic::Properties<String^, Object^>::
     CreateFromVoidPtr<String^, Object^>(newPropsPtr.ptr());
 }

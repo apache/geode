@@ -19,12 +19,12 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace GemStone.GemFire.Cache.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests.NewAPI
 {
   using NUnit.Framework;
-  using GemStone.GemFire.Cache.Tests.NewAPI;
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Cache.Generic;
+  using Apache.Geode.Client.Tests.NewAPI;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Client.Generic;
 
   [TestFixture]
   [Category("group1")]
@@ -275,7 +275,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
         Util.Log("InvalidAuthInit: For first client credentials: " +
           credentials + " : " + javaProps);
         m_client1.Call(SecurityTestUtil.CreateClient, RegionName,
-          CacheHelper.Locators, "GemStone.GemFire.Templates.Cache.Security.none",
+          CacheHelper.Locators, "Apache.Geode.Templates.Cache.Security.none",
           credentials, ExpectedResult.AuthRequiredException);
 
         m_client1.Call(Close);
@@ -651,7 +651,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
         // Trying to create the region on client with valid credentials should
         // throw an authentication failed exception
         m_client2.Call(SecurityTestUtil.CreateClient, RegionName,
-          CacheHelper.Locators, "GemStone.GemFire.Templates.Cache.Security.none",
+          CacheHelper.Locators, "Apache.Geode.Templates.Cache.Security.none",
           credentials1, 0, ExpectedResult.AuthRequiredException);
 
         // Try connection with null auth-init on clients.

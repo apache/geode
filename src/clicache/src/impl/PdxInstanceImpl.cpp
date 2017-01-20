@@ -30,13 +30,13 @@
 #include "PdxType.hpp"
 using namespace System::Text;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache
+    namespace Client
     {
-			namespace Generic
+namespace Generic
 			{ 
         namespace Internal
         {
@@ -57,8 +57,8 @@ namespace GemStone
             
             try
             {
-              GemStone::GemFire::Cache::Generic::DataOutput mg_output( &(*output), true );
-              GemStone::GemFire::Cache::Generic::Internal::PdxHelper::SerializePdx(%mg_output, this);
+              Apache::Geode::Client::Generic::DataOutput mg_output( &(*output), true );
+              Apache::Geode::Client::Generic::Internal::PdxHelper::SerializePdx(%mg_output, this);
             }
             finally
             {

@@ -12,7 +12,7 @@
     <ProjectGuid>{79DD6052-5570-30C0-8B0C-4974F50ACF12}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GemStone.GemFire.Cache.Tests</RootNamespace>
+    <RootNamespace>Apache.Geode.Client.Tests</RootNamespace>
     <AssemblyName>SecurityUtil</AssemblyName>
     <SignAssembly>${STRONG_NAME_KEY_ENABLED}</SignAssembly>
     <AssemblyOriginatorKeyFile>${STRONG_NAME_KEY}</AssemblyOriginatorKeyFile>

@@ -21,11 +21,13 @@
 #include "TransactionEvent.hpp"
 
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
       /// <summary>
       /// An application plug-in that can be installed for getting events for 

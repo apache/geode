@@ -18,10 +18,10 @@
 using System;
 using System.Collections.Generic;
 
-namespace GemStone.GemFire.Cache.FwkLib
+namespace Apache.Geode.Client.FwkLib
 {
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Cache.Generic;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Client.Generic;
 
   public class DurableListener<TKey, TVal> : CacheListenerAdapter<TKey, TVal>, IDisposable
   {
@@ -79,7 +79,7 @@ namespace GemStone.GemFire.Cache.FwkLib
       {
         current = (Int32)Util.BBGet("DURABLEBB", bbkey);
       }
-      catch (GemStone.GemFire.DUnitFramework.KeyNotFoundException)
+      catch (Apache.Geode.DUnitFramework.KeyNotFoundException)
       {
         currTest.FwkInfo("Key not found for DURABLEBB {0}", bbkey);
       }
@@ -100,7 +100,7 @@ namespace GemStone.GemFire.Cache.FwkLib
         {
           clientErrorVal = (string)Util.BBGet("DURABLEBB", clientErrorKey);
         }
-        catch (GemStone.GemFire.DUnitFramework.KeyNotFoundException)
+        catch (Apache.Geode.DUnitFramework.KeyNotFoundException)
         {
           currTest.FwkInfo("Key not found for DURABLEBB {0}", clientErrorKey);
         }
@@ -163,7 +163,7 @@ namespace GemStone.GemFire.Cache.FwkLib
       {
         m_prevValue = (Int32)Util.BBGet("DURABLEBB", clientIndexKey);
       }
-      catch (GemStone.GemFire.DUnitFramework.KeyNotFoundException)
+      catch (Apache.Geode.DUnitFramework.KeyNotFoundException)
       {
         m_prevValue = 0;
         currTest.FwkInfo("Key not found for DURABLEBB {0}", clientIndexKey);

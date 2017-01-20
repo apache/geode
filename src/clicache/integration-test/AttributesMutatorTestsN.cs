@@ -20,13 +20,13 @@ using System.Threading;
 
 #pragma warning disable 618
 
-namespace GemStone.GemFire.Cache.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests.NewAPI
 {
   using NUnit.Framework;
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Cache.Generic;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Client.Generic;
 
-  using GIRegion = GemStone.GemFire.Cache.Generic.IRegion<string, string>;
+  using GIRegion = Apache.Geode.Client.Generic.IRegion<string, string>;
 
   class ThinClientTallyLoader : TallyLoader<string, string>
   {
@@ -267,7 +267,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
         IRegion<string, int> region = CacheHelper.CreateLocalRegionWithETTL<string, int>(RegionName,
           ExpirationAction.LocalInvalidate, TimeToLive);
 
-        GemStone.GemFire.Cache.Generic.RegionAttributes<string, int> newAttrs = region.Attributes;
+        Apache.Geode.Client.Generic.RegionAttributes<string, int> newAttrs = region.Attributes;
         int ttl = newAttrs.EntryTimeToLive;
         Assert.AreEqual(TimeToLive, ttl);
 

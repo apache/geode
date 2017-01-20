@@ -36,9 +36,9 @@
 using System;
 
 // Use the GemFire namespace
-using GemStone.GemFire.Cache.Generic;
+using Apache.Geode.Client.Generic;
 
-namespace GemStone.GemFire.Cache.Generic.QuickStart
+namespace Apache.Geode.Client.Generic.QuickStart
 {
   // The PoolWithEndpoints QuickStart example.
   class PoolWithEndpoints

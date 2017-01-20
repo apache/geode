@@ -26,11 +26,13 @@
 
 using namespace System;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
 
       void CacheableString::ToData(DataOutput^ output)
@@ -142,7 +144,7 @@ namespace GemStone
         return (m_value->Length * sizeof(char));
       }
 
-      bool CacheableString::Equals(GemStone::GemFire::Cache::Generic::ICacheableKey^ other)
+      bool CacheableString::Equals(Apache::Geode::Client::Generic::ICacheableKey^ other)
       {
         if (other == nullptr || other->ClassId != ClassId) {
           return false;

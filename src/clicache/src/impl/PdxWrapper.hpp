@@ -21,13 +21,13 @@
 #include "../IPdxReader.hpp"
 #include "../IPdxSerializer.hpp"
 #include "../Serializable.hpp"
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache
+    namespace Client
     {
-			namespace Generic
+namespace Generic
 			{  
         ref class PdxWrapper : IPdxSerializable
         {

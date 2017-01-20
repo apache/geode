@@ -23,11 +23,13 @@
 #include "impl/NativeWrapper.hpp"
 #include <gfcpp/statistics/StatisticDescriptor.hpp>
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
       /// <summary>
       /// A class that describes an individual statistic whose value is updated by an

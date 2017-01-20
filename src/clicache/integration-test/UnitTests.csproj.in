@@ -12,7 +12,7 @@
     <ProjectGuid>{CC6D226A-1DFF-31D1-89D1-D99420F6AF72}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GemStone.GemFire.Cache.UnitTests</RootNamespace>
+    <RootNamespace>Apache.Geode.Client.UnitTests</RootNamespace>
     <AssemblyName>UnitTests</AssemblyName>
     <TargetFrameworkVersion>${DOTNET_TARGET_FRAMEWORK_VERSION}</TargetFrameworkVersion>
     <FileUpgradeFlags>

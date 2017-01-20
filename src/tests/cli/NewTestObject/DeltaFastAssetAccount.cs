@@ -18,9 +18,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-namespace GemStone.GemFire.Cache.Tests.NewAPI
+namespace Apache.Geode.Client.Tests.NewAPI
 {
-  using GemStone.GemFire.Cache.Generic;
+  using Apache.Geode.Client.Generic;
   public class DeltaFastAssetAccount
     : IGFSerializable, IGFDelta
   {

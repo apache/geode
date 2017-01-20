@@ -20,7 +20,7 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Runtime.Serialization;
 
-namespace GemStone.GemFire.Cache.UnitTests
+namespace Apache.Geode.Client.UnitTests
 {
   using NUnit.Framework;
 

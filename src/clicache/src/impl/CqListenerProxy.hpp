@@ -21,17 +21,19 @@
 #include "SafeConvert.hpp"
 using namespace System;
 
-//using namespace GemStone::GemFire::Cache;
+//using namespace Apache::Geode::Client;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
 
       generic<class TKey, class TResult>
-      public ref class CqListenerGeneric : GemStone::GemFire::Cache::Generic::ICqListener<Object^, Object^>
+      public ref class CqListenerGeneric : Apache::Geode::Client::Generic::ICqListener<Object^, Object^>
       {
         private:
 
@@ -44,14 +46,14 @@ namespace GemStone
             m_listener = listener;
           }
 
-          virtual void OnEvent( GemStone::GemFire::Cache::Generic::CqEvent<Object^, Object^>^ ev) 
+          virtual void OnEvent( Apache::Geode::Client::Generic::CqEvent<Object^, Object^>^ ev) 
 	        {
 						//TODO:split---Done
             CqEvent<TKey, TResult> gevent(GetNativePtr<apache::geode::client::CqEvent>(ev));
             m_listener->OnEvent(%gevent);
           }
 
-          virtual void OnError(GemStone::GemFire::Cache::Generic::CqEvent<Object^, Object^>^ ev)
+          virtual void OnError(Apache::Geode::Client::Generic::CqEvent<Object^, Object^>^ ev)
 	        {
 						//TODO::split--Done
 	          CqEvent<TKey, TResult> gevent(GetNativePtr<apache::geode::client::CqEvent>(ev));

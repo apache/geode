@@ -29,7 +29,7 @@ namespace apache {
     namespace client {
 
       /// <summary>
-      /// Wraps the managed <see cref="GemStone.GemFire.Cache.ITransactionListener" />
+      /// Wraps the managed <see cref="Apache.Geode.Client.ITransactionListener" />
       /// object and implements the native <c>apache::geode::client::TransactionListener</c> interface.
       /// </summary>
       class ManagedTransactionListenerGeneric
@@ -59,12 +59,12 @@ namespace apache {
 
         virtual void close();
 
-        inline GemStone::GemFire::Cache::ITransactionListener^ ptr( ) const
+        inline Apache::Geode::Client::ITransactionListener^ ptr( ) const
         {
           return m_managedptr;
         }
 
-        inline void setptr( GemStone::GemFire::Cache::ITransactionListener^ managedptr )
+        inline void setptr( Apache::Geode::Client::ITransactionListener^ managedptr )
         {
           m_managedptr = managedptr;
         }
@@ -82,7 +82,7 @@ namespace apache {
         /// to be called which is not what is desired when this object is destroyed. Normally this
         /// managed object may be created by the user and will be handled automatically by the GC.
         /// </summary>
-        gcroot<GemStone::GemFire::Cache::ITransactionListener^> m_managedptr;
+        gcroot<Apache::Geode::Client::ITransactionListener^> m_managedptr;
 
         gcroot<Object^> m_userptr;
       };

@@ -25,11 +25,13 @@
 
 using namespace System;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
 
       generic<class TResult>
@@ -132,10 +134,10 @@ namespace GemStone
         /// <returns>
         /// The managed wrapper object; null if the native pointer is null.
         /// </returns>
-        inline static GemStone::GemFire::Cache::Generic::QueryService<TKey, TResult>^ Create( apache::geode::client::QueryService* nativeptr )
+        inline static Apache::Geode::Client::Generic::QueryService<TKey, TResult>^ Create( apache::geode::client::QueryService* nativeptr )
         {
           return ( nativeptr != nullptr ?
-            gcnew GemStone::GemFire::Cache::Generic::QueryService<TKey, TResult>( nativeptr ) : nullptr );
+            gcnew Apache::Geode::Client::Generic::QueryService<TKey, TResult>( nativeptr ) : nullptr );
         }
 
 

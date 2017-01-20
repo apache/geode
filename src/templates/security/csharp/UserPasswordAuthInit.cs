@@ -15,22 +15,22 @@
  * limitations under the License.
  */
 
-namespace GemStone.GemFire.Templates.Cache.Security
+namespace Apache.Geode.Templates.Cache.Security
 {
 
-  using GemStone.GemFire.Cache.Generic;
+  using Apache.Geode.Client.Generic;
 
   ///<summary>
-  /// An <see cref="GemStone.GemFire.Cache.Generic.IAuthInitialize"/> implementation
+  /// An <see cref="Apache.Geode.Client.Generic.IAuthInitialize"/> implementation
   /// that obtains the user name and password as the credentials from the
   /// given set of properties.
   /// </summary>
   /// <remarks>
   /// To use this class the <c>security-client-auth-library</c> property should
-  /// be set to the name of the dll (<c>GemStone.GemFire.Templates.Cache.Security</c>)
+  /// be set to the name of the dll (<c>Apache.Geode.Templates.Cache.Security</c>)
   /// and the <c>security-client-auth-factory</c> property should be set to
   /// the fully qualified name of the static <c>Create</c> function viz.
-  /// <c>GemStone.GemFire.Templates.Cache.Security.UserPasswordAuthInit.Create</c>
+  /// <c>Apache.Geode.Templates.Cache.Security.UserPasswordAuthInit.Create</c>
   /// </remarks>
   public class UserPasswordAuthInit : IAuthInitialize
   {

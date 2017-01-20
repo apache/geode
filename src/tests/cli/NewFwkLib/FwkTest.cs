@@ -24,13 +24,13 @@ using System.Xml;
 
 #pragma warning disable 618
 
-namespace GemStone.GemFire.Cache.FwkLib
+namespace Apache.Geode.Client.FwkLib
 {
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Cache.Tests.NewAPI;
-  using GemStone.GemFire.Cache.Generic;
-  using NEWAPI = GemStone.GemFire.Cache.Tests.NewAPI;
-  //using Region = GemStone.GemFire.Cache.Generic.IRegion<Object, Object>;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Client.Tests.NewAPI;
+  using Apache.Geode.Client.Generic;
+  using NEWAPI = Apache.Geode.Client.Tests.NewAPI;
+  //using Region = Apache.Geode.Client.Generic.IRegion<Object, Object>;
 
 
   /// <summary>
@@ -1344,7 +1344,7 @@ namespace GemStone.GemFire.Cache.FwkLib
               else
                region = CacheHelper<TKey, TVal>.CreateRegion(rootRegionName, rootAttrs);
             }
-            GemStone.GemFire.Cache.Generic.RegionAttributes<TKey, TVal> regAttr = region.Attributes;
+            Apache.Geode.Client.Generic.RegionAttributes<TKey, TVal> regAttr = region.Attributes;
             FwkInfo("Region attributes for {0}: {1}", rootRegionName,
               CacheHelper<TKey, TVal>.RegionAttributesToString(regAttr));
           }

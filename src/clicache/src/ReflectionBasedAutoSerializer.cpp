@@ -21,13 +21,13 @@
 #include <msclr/lock.h>
 #include "ExceptionTypes.hpp"
 #include "impl/DotNetTypes.hpp"
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache
+    namespace Client
     {
-      namespace Generic
+namespace Generic
       {
          ref class FieldWrapper
         {
@@ -38,8 +38,8 @@ namespace GemStone
             delegate void MySetter(Object^ t1, Object^ t2);
             delegate Object^ MyGetter(Object^ t1);
 
-            static Type^ setterDelegateType = Type::GetType("GemStone.GemFire.Cache.Generic.FieldWrapper+MySetter");
-            static Type^ getterDelegateType = Type::GetType("GemStone.GemFire.Cache.Generic.FieldWrapper+MyGetter");
+            static Type^ setterDelegateType = Type::GetType("Apache.Geode.Client.Generic.FieldWrapper+MySetter");
+            static Type^ getterDelegateType = Type::GetType("Apache.Geode.Client.Generic.FieldWrapper+MyGetter");
 
             FieldInfo^ m_fi;
             String^    m_fieldName;

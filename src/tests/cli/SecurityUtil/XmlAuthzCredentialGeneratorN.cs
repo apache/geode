@@ -18,11 +18,11 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace GemStone.GemFire.Cache.Tests.NewAPI
+namespace Apache.Geode.Client.Tests.NewAPI
 {
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Templates.Cache.Security;
-  using GemStone.GemFire.Cache.Generic;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Templates.Cache.Security;
+  using Apache.Geode.Client.Generic;
 
   public class XmlAuthzCredentialGenerator : AuthzCredentialGenerator
   {

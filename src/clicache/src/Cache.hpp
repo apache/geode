@@ -32,13 +32,13 @@
 
 using namespace System;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache
+    namespace Client
     {
-      namespace Generic
+namespace Generic
       {
 
 				generic<class TKey, class TResult>
@@ -110,18 +110,18 @@ namespace GemStone
         /// This method does not throw
         /// <c>CacheClosedException</c> if the cache is closed.
         /// </remarks>
-        virtual property GemStone::GemFire::Cache::Generic::DistributedSystem^ DistributedSystem
+        virtual property Apache::Geode::Client::Generic::DistributedSystem^ DistributedSystem
         {
-          GemStone::GemFire::Cache::Generic::DistributedSystem^ get( );
+          Apache::Geode::Client::Generic::DistributedSystem^ get( );
         }
 
         /// <summary>
         /// Returns the cache transaction manager of
         /// <see cref="CacheFactory.Create" /> this cache.
         /// </summary>
-        virtual property GemStone::GemFire::Cache::Generic::CacheTransactionManager^ CacheTransactionManager
+        virtual property Apache::Geode::Client::Generic::CacheTransactionManager^ CacheTransactionManager
         {
-          GemStone::GemFire::Cache::Generic::CacheTransactionManager^ get( );
+          Apache::Geode::Client::Generic::CacheTransactionManager^ get( );
         }
 
         /// <summary>

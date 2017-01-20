@@ -26,13 +26,13 @@
 using namespace System;
 
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache
+    namespace Client
     {
-      namespace Generic
+namespace Generic
       {
       // Visitor class to get string representations of a property object
       ref class PropertyToString
@@ -46,7 +46,7 @@ namespace GemStone
         inline PropertyToString( ) : m_str( "{" )
         { }
 
-        void Visit( GemStone::GemFire::Cache::Generic::ICacheableKey^ key, IGFSerializable^ value )
+        void Visit( Apache::Geode::Client::Generic::ICacheableKey^ key, IGFSerializable^ value )
         {
           if ( m_str->Length > 1 ) {
             m_str += ",";
@@ -81,7 +81,7 @@ namespace GemStone
        // _GF_MG_EXCEPTION_CATCH_ALL2
       }
 
-      /*IGFSerializable^ Properties::Find( GemStone::GemFire::Cache::Generic::ICacheableKey^ key)
+      /*IGFSerializable^ Properties::Find( Apache::Geode::Client::Generic::ICacheableKey^ key)
       {
         CacheableString^ cStr = dynamic_cast<CacheableString ^>(key);
 
@@ -194,7 +194,7 @@ namespace GemStone
         _GF_MG_EXCEPTION_CATCH_ALL2
       }*/
 
-      /*void Properties::Insert( GemStone::GemFire::Cache::Generic::ICacheableKey^ key, IGFSerializable^ value)
+      /*void Properties::Insert( Apache::Geode::Client::Generic::ICacheableKey^ key, IGFSerializable^ value)
       {
         CacheableString^ cStr = dynamic_cast<CacheableString ^>(key);
         if (cStr != nullptr) {
@@ -266,7 +266,7 @@ namespace GemStone
       }
       */
 
-	  /*void Properties::Insert( GemStone::GemFire::Cache::Generic::ICacheableKey^ key, Serializable^ value)
+	  /*void Properties::Insert( Apache::Geode::Client::Generic::ICacheableKey^ key, Serializable^ value)
       {
         CacheableString^ cStr = dynamic_cast<CacheableString ^>(key);
         if (cStr != nullptr) {
@@ -345,7 +345,7 @@ namespace GemStone
         _GF_MG_EXCEPTION_CATCH_ALL2
       }
 
-      /*void Properties::Remove( GemStone::GemFire::Cache::Generic::ICacheableKey^ key)
+      /*void Properties::Remove( Apache::Geode::Client::Generic::ICacheableKey^ key)
       {
         CacheableString^ cStr = dynamic_cast<CacheableString ^>(key);
         if (cStr != nullptr) {

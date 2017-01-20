@@ -24,13 +24,13 @@ using namespace System;
 using namespace System::Reflection;
 using namespace System::Reflection::Emit;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache
+    namespace Client
     {
-      namespace Generic
+namespace Generic
       {
       /// <summary>
       /// Enumerated type for pdx FieldType

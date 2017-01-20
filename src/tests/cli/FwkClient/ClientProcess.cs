@@ -24,9 +24,9 @@ using System.Runtime.Remoting.Channels.Ipc;
 using System.Runtime.Remoting.Channels.Tcp;
 using System.Runtime.Serialization.Formatters;
 
-namespace GemStone.GemFire.Cache.FwkClient
+namespace Apache.Geode.Client.FwkClient
 {
-  using GemStone.GemFire.DUnitFramework;
+  using Apache.Geode.DUnitFramework;
   
   class ClientProcess
   {

@@ -17,8 +17,8 @@
 
 #include "ManagedWrapper.hpp"
 
-using namespace GemStone::GemFire::Cache;
-using namespace GemStone::GemFire::Cache::Tests;
+using namespace Apache::Geode::Client;
+using namespace Apache::Geode::Client::Tests;
 
 ManagedWrapper::ManagedWrapper(int len) : m_nativePtr(new NativeType())
 {
@@ -27,13 +27,13 @@ ManagedWrapper::ManagedWrapper(int len) : m_nativePtr(new NativeType())
 
 ManagedWrapper::~ManagedWrapper()
 {
-  GemStone::GemFire::Cache::Generic::Log::Info("Invoked Dispose of ManagedWrapper");
+  Apache::Geode::Client::Generic::Log::Info("Invoked Dispose of ManagedWrapper");
   InternalCleanup();
 }
 
 ManagedWrapper::!ManagedWrapper()
 {
-  GemStone::GemFire::Cache::Generic::Log::Info("Invoked Finalizer of ManagedWrapper");
+  Apache::Geode::Client::Generic::Log::Info("Invoked Finalizer of ManagedWrapper");
   InternalCleanup();
 }
 
@@ -45,7 +45,7 @@ void ManagedWrapper::InternalCleanup()
 
 bool ManagedWrapper::UnsafeDoOp(int size, int numOps)
 {
-  GemStone::GemFire::Cache::Generic::Log::Info("Managed string length: {0}", m_str->Length);
+  Apache::Geode::Client::Generic::Log::Info("Managed string length: {0}", m_str->Length);
   return UnsafeNativePtr->doOp(size, numOps, (numOps / 5) + 1);
 }
 

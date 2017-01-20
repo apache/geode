@@ -22,21 +22,21 @@
 
 using namespace System;
 
-using namespace GemStone::GemFire::Cache::Generic;
+using namespace Apache::Geode::Client::Generic;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache
+    namespace Client
     {
-        namespace Tests
+namespace Tests
         {
           namespace NewAPI
           {
           public ref class PkcsAuthInit sealed
           : public Internal::SBWrap<apache::geode::client::PKCSAuthInitInternal>,
-            public GemStone::GemFire::Cache::Generic::IAuthInitialize/*<String^, Object^>*/
+            public Apache::Geode::Client::Generic::IAuthInitialize/*<String^, Object^>*/
         {
         public:
           
@@ -45,9 +45,9 @@ namespace GemStone
           ~PkcsAuthInit();          
 
           //generic <class TPropKey, class TPropValue>
-          virtual GemStone::GemFire::Cache::Generic::Properties<String^, Object^> ^
+          virtual Apache::Geode::Client::Generic::Properties<String^, Object^> ^
             GetCredentials(
-            GemStone::GemFire::Cache::Generic::Properties<String^, String^>^ props, String^ server);
+            Apache::Geode::Client::Generic::Properties<String^, String^>^ props, String^ server);
 
           virtual void Close();
 

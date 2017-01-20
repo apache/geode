@@ -17,10 +17,10 @@
 
 using System;
 
-namespace GemStone.GemFire.Cache.Tests.NewAPI
+namespace Apache.Geode.Client.Tests.NewAPI
 {
-  using GemStone.GemFire.Templates.Cache.Security;
-  using GemStone.GemFire.Cache.Generic;
+  using Apache.Geode.Templates.Cache.Security;
+  using Apache.Geode.Client.Generic;
 
   public class LDAPCredentialGenerator : CredentialGenerator
   {
@@ -63,7 +63,7 @@ namespace GemStone.GemFire.Cache.Tests.NewAPI
     {
       get
       {
-        return "GemStone.GemFire.Templates.Cache.Security.UserPasswordAuthInit.Create";
+        return "Apache.Geode.Templates.Cache.Security.UserPasswordAuthInit.Create";
       }
     }
 

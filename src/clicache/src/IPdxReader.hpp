@@ -20,13 +20,13 @@
 #include "gf_defs.hpp"
 #include "IRegion.hpp"
 #include "IPdxUnreadFields.hpp"
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache
+    namespace Client
     {
-			namespace Generic
+namespace Generic
 			{
 				/// <summary>
 				/// A IPdxReader will be passed to IPdxSerializable.fromData or 

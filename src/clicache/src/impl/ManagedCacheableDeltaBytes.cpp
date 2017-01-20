@@ -36,27 +36,27 @@ namespace apache
 
       void ManagedCacheableDeltaBytesGeneric::toData(DataOutput& output) const
       {
-        GemStone::GemFire::Cache::Generic::Log::Debug("ManagedCacheableDeltaBytesGeneric::toData: current domain ID: " + System::Threading::Thread::GetDomainID() + " for object: " + System::Convert::ToString((int)this) + " with its domain ID: " + m_domainId);
+        Apache::Geode::Client::Generic::Log::Debug("ManagedCacheableDeltaBytesGeneric::toData: current domain ID: " + System::Threading::Thread::GetDomainID() + " for object: " + System::Convert::ToString((int)this) + " with its domain ID: " + m_domainId);
         try {
           output.writeBytesOnly(m_bytes, m_size);
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
       }
 
       Serializable* ManagedCacheableDeltaBytesGeneric::fromData(DataInput& input)
       {
         try {
-          GemStone::GemFire::Cache::Generic::Log::Debug("ManagedCacheableDeltaBytes::fromData: classid " + m_classId);
-          GemStone::GemFire::Cache::Generic::DataInput mg_input(&input, true);
+          Apache::Geode::Client::Generic::Log::Debug("ManagedCacheableDeltaBytes::fromData: classid " + m_classId);
+          Apache::Geode::Client::Generic::DataInput mg_input(&input, true);
           const uint8_t* objStartPos = input.currentBufferPosition();
 
-          GemStone::GemFire::Cache::Generic::IGFSerializable^ obj =
-            GemStone::GemFire::Cache::Generic::Serializable::GetTypeFactoryMethodGeneric(m_classId)();
+          Apache::Geode::Client::Generic::IGFSerializable^ obj =
+            Apache::Geode::Client::Generic::Serializable::GetTypeFactoryMethodGeneric(m_classId)();
           obj->FromData(%mg_input);
           input.advanceCursor(mg_input.BytesReadInternally);
 
@@ -66,14 +66,14 @@ namespace apache
 
           //m_size = mg_input.BytesRead;
           m_size = (uint32_t)(objEndPos - objStartPos);
-          GemStone::GemFire::Cache::Generic::Log::Debug("ManagedCacheableDeltaBytes::fromData: objectSize = " + m_size + " m_hashCode = " + m_hashCode);
+          Apache::Geode::Client::Generic::Log::Debug("ManagedCacheableDeltaBytes::fromData: objectSize = " + m_size + " m_hashCode = " + m_hashCode);
           m_bytes = input.getBufferCopyFrom(objStartPos, m_size);
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
         return this;
       }
@@ -83,11 +83,11 @@ namespace apache
         try {
           return m_size;
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
         return 0;
       }
@@ -98,11 +98,11 @@ namespace apache
         try {
           classId = m_classId;
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
         return (classId >= 0x80000000 ? 0 : classId);
       }
@@ -124,11 +124,11 @@ namespace apache
             return (int8_t)GemfireTypeIdsImpl::CacheableUserData4;
           }
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
         return 0;
       }
@@ -150,7 +150,7 @@ namespace apache
 
       bool ManagedCacheableDeltaBytesGeneric::hasDelta()
       {
-        //GemStone::GemFire::Cache::IGFDelta^ deltaObj = this->getManagedObject();
+        //Apache::Geode::Client::IGFDelta^ deltaObj = this->getManagedObject();
         //return deltaObj->HasDelta();
         return m_hasDelta;
       }
@@ -158,36 +158,36 @@ namespace apache
       void ManagedCacheableDeltaBytesGeneric::toDelta(DataOutput& output) const
       {
         try {
-          GemStone::GemFire::Cache::Generic::Log::Debug("ManagedCacheableDeltaBytes::toDelta: current domain ID: " + System::Threading::Thread::GetDomainID() + " for object: " + System::Convert::ToString((int)this) + " with its domain ID: " + m_domainId);
-          GemStone::GemFire::Cache::Generic::IGFDelta^ deltaObj = this->getManagedObject();
-          GemStone::GemFire::Cache::Generic::DataOutput mg_output(&output, true);
+          Apache::Geode::Client::Generic::Log::Debug("ManagedCacheableDeltaBytes::toDelta: current domain ID: " + System::Threading::Thread::GetDomainID() + " for object: " + System::Convert::ToString((int)this) + " with its domain ID: " + m_domainId);
+          Apache::Geode::Client::Generic::IGFDelta^ deltaObj = this->getManagedObject();
+          Apache::Geode::Client::Generic::DataOutput mg_output(&output, true);
           deltaObj->ToDelta(%mg_output);
           mg_output.WriteBytesToUMDataOutput();
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
       }
 
       void ManagedCacheableDeltaBytesGeneric::fromDelta(DataInput& input)
       {
         try {
-          GemStone::GemFire::Cache::Generic::Log::Debug("ManagedCacheableDeltaBytes::fromDelta:");
-          GemStone::GemFire::Cache::Generic::IGFDelta^ deltaObj = this->getManagedObject();
-          GemStone::GemFire::Cache::Generic::DataInput mg_input(&input, true);
+          Apache::Geode::Client::Generic::Log::Debug("ManagedCacheableDeltaBytes::fromDelta:");
+          Apache::Geode::Client::Generic::IGFDelta^ deltaObj = this->getManagedObject();
+          Apache::Geode::Client::Generic::DataInput mg_input(&input, true);
           deltaObj->FromDelta(%mg_input);
 
-          GemStone::GemFire::Cache::Generic::IGFSerializable^ managedptr =
-            dynamic_cast <GemStone::GemFire::Cache::Generic::IGFSerializable^> (deltaObj);
+          Apache::Geode::Client::Generic::IGFSerializable^ managedptr =
+            dynamic_cast <Apache::Geode::Client::Generic::IGFSerializable^> (deltaObj);
           if (managedptr != nullptr)
           {
-            GemStone::GemFire::Cache::Generic::Log::Debug("ManagedCacheableDeltaBytes::fromDelta: current domain ID: " + System::Threading::Thread::GetDomainID() + " for object: " + System::Convert::ToString((int)this) + " with its domain ID: " + m_domainId);
-            GemStone::GemFire::Cache::Generic::Log::Debug("ManagedCacheableDeltaBytes::fromDelta: classid " + managedptr->ClassId + " : " + managedptr->ToString());
+            Apache::Geode::Client::Generic::Log::Debug("ManagedCacheableDeltaBytes::fromDelta: current domain ID: " + System::Threading::Thread::GetDomainID() + " for object: " + System::Convert::ToString((int)this) + " with its domain ID: " + m_domainId);
+            Apache::Geode::Client::Generic::Log::Debug("ManagedCacheableDeltaBytes::fromDelta: classid " + managedptr->ClassId + " : " + managedptr->ToString());
             apache::geode::client::DataOutput dataOut;
-            GemStone::GemFire::Cache::Generic::DataOutput mg_output(&dataOut, true);
+            Apache::Geode::Client::Generic::DataOutput mg_output(&dataOut, true);
             managedptr->ToData(%mg_output);
 
             //move cursor
@@ -197,26 +197,26 @@ namespace apache
             GF_SAFE_DELETE(m_bytes);
             m_bytes = dataOut.getBufferCopy();
             m_size = dataOut.getBufferLength();
-            GemStone::GemFire::Cache::Generic::Log::Debug("ManagedCacheableDeltaBytes::fromDelta objectSize = " + m_size + " m_hashCode = " + m_hashCode);
+            Apache::Geode::Client::Generic::Log::Debug("ManagedCacheableDeltaBytes::fromDelta objectSize = " + m_size + " m_hashCode = " + m_hashCode);
             m_hashCode = managedptr->GetHashCode();
           }
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
       }
 
       DeltaPtr ManagedCacheableDeltaBytesGeneric::clone()
       {
         try {
-          GemStone::GemFire::Cache::Generic::IGFDelta^ deltaObj = this->getManagedObject();
-          ICloneable^ cloneable = dynamic_cast<ICloneable^>((GemStone::GemFire::Cache::Generic::IGFDelta^) deltaObj);
+          Apache::Geode::Client::Generic::IGFDelta^ deltaObj = this->getManagedObject();
+          ICloneable^ cloneable = dynamic_cast<ICloneable^>((Apache::Geode::Client::Generic::IGFDelta^) deltaObj);
           if (cloneable) {
-            GemStone::GemFire::Cache::Generic::IGFSerializable^ Mclone =
-              dynamic_cast<GemStone::GemFire::Cache::Generic::IGFSerializable^>(cloneable->Clone());
+            Apache::Geode::Client::Generic::IGFSerializable^ Mclone =
+              dynamic_cast<Apache::Geode::Client::Generic::IGFSerializable^>(cloneable->Clone());
             return DeltaPtr(static_cast<ManagedCacheableDeltaBytesGeneric*>(
               SafeMSerializableConvertGeneric(Mclone)));
           }
@@ -224,82 +224,82 @@ namespace apache
             return Delta::clone();
           }
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
         return NULLPTR;
       }
 
-      GemStone::GemFire::Cache::Generic::IGFDelta^
+      Apache::Geode::Client::Generic::IGFDelta^
         ManagedCacheableDeltaBytesGeneric::getManagedObject() const
       {
 
-        GemStone::GemFire::Cache::Generic::Log::Debug("ManagedCacheableDeltaBytes::getManagedObject");
+        Apache::Geode::Client::Generic::Log::Debug("ManagedCacheableDeltaBytes::getManagedObject");
 
         apache::geode::client::DataInput dinp(m_bytes, m_size);
-        GemStone::GemFire::Cache::Generic::DataInput mg_dinp(&dinp, true);
-        GemStone::GemFire::Cache::Generic::TypeFactoryMethodGeneric^ creationMethod =
-          GemStone::GemFire::Cache::Generic::Serializable::GetTypeFactoryMethodGeneric(m_classId);
-        GemStone::GemFire::Cache::Generic::IGFSerializable^ newObj = creationMethod();
+        Apache::Geode::Client::Generic::DataInput mg_dinp(&dinp, true);
+        Apache::Geode::Client::Generic::TypeFactoryMethodGeneric^ creationMethod =
+          Apache::Geode::Client::Generic::Serializable::GetTypeFactoryMethodGeneric(m_classId);
+        Apache::Geode::Client::Generic::IGFSerializable^ newObj = creationMethod();
 
-        GemStone::GemFire::Cache::Generic::IGFDelta^ managedDeltaptr =
-          dynamic_cast <GemStone::GemFire::Cache::Generic::IGFDelta^> (newObj->FromData(%mg_dinp));
+        Apache::Geode::Client::Generic::IGFDelta^ managedDeltaptr =
+          dynamic_cast <Apache::Geode::Client::Generic::IGFDelta^> (newObj->FromData(%mg_dinp));
         return managedDeltaptr;
       }
 
       bool ManagedCacheableDeltaBytesGeneric::operator ==(const apache::geode::client::CacheableKey& other) const
       {
         try {
-          GemStone::GemFire::Cache::Generic::Log::Debug("ManagedCacheableDeltaBytesGeneric::equal");
+          Apache::Geode::Client::Generic::Log::Debug("ManagedCacheableDeltaBytesGeneric::equal");
           // now checking classId(), typeId(), DSFID() etc. will be much more
           // expensive than just a dynamic_cast
           const ManagedCacheableDeltaBytesGeneric* p_other =
             dynamic_cast<const ManagedCacheableDeltaBytesGeneric*>(&other);
           if (p_other != NULL) {
             apache::geode::client::DataInput di(m_bytes, m_size);
-            GemStone::GemFire::Cache::Generic::DataInput mg_input(&di, true);
-            GemStone::GemFire::Cache::Generic::IGFSerializable^ obj =
-              GemStone::GemFire::Cache::Generic::Serializable::GetTypeFactoryMethodGeneric(m_classId)();
+            Apache::Geode::Client::Generic::DataInput mg_input(&di, true);
+            Apache::Geode::Client::Generic::IGFSerializable^ obj =
+              Apache::Geode::Client::Generic::Serializable::GetTypeFactoryMethodGeneric(m_classId)();
             obj->FromData(%mg_input);
             bool ret = obj->Equals(p_other->ptr());
-            GemStone::GemFire::Cache::Generic::Log::Debug("ManagedCacheableDeltaBytesGeneric::equal return VAL = " + ret);
+            Apache::Geode::Client::Generic::Log::Debug("ManagedCacheableDeltaBytesGeneric::equal return VAL = " + ret);
             return ret;
           }
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
-        GemStone::GemFire::Cache::Generic::Log::Debug("ManagedCacheableDeltaBytesGeneric::equal returns false");
+        Apache::Geode::Client::Generic::Log::Debug("ManagedCacheableDeltaBytesGeneric::equal returns false");
         return false;
       }
 
       bool ManagedCacheableDeltaBytesGeneric::operator ==(const ManagedCacheableDeltaBytesGeneric& other) const
       {
         try {
-          GemStone::GemFire::Cache::Generic::Log::Debug("ManagedCacheableDeltaBytesGeneric::equal. ");
+          Apache::Geode::Client::Generic::Log::Debug("ManagedCacheableDeltaBytesGeneric::equal. ");
           apache::geode::client::DataInput di(m_bytes, m_size);
-          GemStone::GemFire::Cache::Generic::DataInput mg_input(&di, true);
-          GemStone::GemFire::Cache::Generic::IGFSerializable^ obj =
-            GemStone::GemFire::Cache::Generic::Serializable::GetTypeFactoryMethodGeneric(m_classId)();
+          Apache::Geode::Client::Generic::DataInput mg_input(&di, true);
+          Apache::Geode::Client::Generic::IGFSerializable^ obj =
+            Apache::Geode::Client::Generic::Serializable::GetTypeFactoryMethodGeneric(m_classId)();
           obj->FromData(%mg_input);
           bool ret = obj->Equals(other.ptr());
-          GemStone::GemFire::Cache::Generic::Log::Debug("ManagedCacheableDeltaBytesGeneric::equal return VAL = " + ret);
+          Apache::Geode::Client::Generic::Log::Debug("ManagedCacheableDeltaBytesGeneric::equal return VAL = " + ret);
           return ret;
           //return obj->Equals(other.ptr());
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
-        GemStone::GemFire::Cache::Generic::Log::Debug("ManagedCacheableDeltaBytesGeneric::equal return false");
+        Apache::Geode::Client::Generic::Log::Debug("ManagedCacheableDeltaBytesGeneric::equal return false");
         return false;
       }
 
@@ -311,22 +311,22 @@ namespace apache
       size_t ManagedCacheableDeltaBytesGeneric::logString(char* buffer, size_t maxLength) const
       {
         try {
-          GemStone::GemFire::Cache::Generic::IGFDelta^ manageObject = getManagedObject();
+          Apache::Geode::Client::Generic::IGFDelta^ manageObject = getManagedObject();
           if (manageObject != nullptr)
           {
             if (maxLength > 0) {
               String^ logstr = manageObject->GetType()->Name + '(' +
                 manageObject->ToString() + ')';
-              GemStone::GemFire::Cache::Generic::ManagedString mg_str(logstr);
+              Apache::Geode::Client::Generic::ManagedString mg_str(logstr);
               return snprintf(buffer, maxLength, "%s", mg_str.CharPtr);
             }
           }
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
         return 0;
       }

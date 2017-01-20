@@ -21,11 +21,11 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 
-namespace GemStone.GemFire.Cache.FwkLib
+namespace Apache.Geode.Client.FwkLib
 {
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Cache.Tests.NewAPI;
-  using GemStone.GemFire.Cache.Generic;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Client.Tests.NewAPI;
+  using Apache.Geode.Client.Generic;
 
   public class EntryTxTask<TKey, TVal> : ClientTask
   {
@@ -372,11 +372,11 @@ namespace GemStone.GemFire.Cache.FwkLib
       {
         anObj = aRegion[key];
       }
-      catch (GemStone.GemFire.Cache.Generic.KeyNotFoundException)
+      catch (Apache.Geode.Client.Generic.KeyNotFoundException)
       {
         if (!EqualityComparer<TVal>.Default.Equals(anObj, default(TVal)))
         {
-          throw new GemStone.GemFire.Cache.Generic.KeyNotFoundException();
+          throw new Apache.Geode.Client.Generic.KeyNotFoundException();
         }
 
       }

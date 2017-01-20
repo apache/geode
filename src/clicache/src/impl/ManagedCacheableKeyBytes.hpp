@@ -26,11 +26,13 @@
 
 using namespace System;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
       interface class IGFSerializable;
     }
@@ -46,7 +48,7 @@ namespace apache
     {
 
       /// <summary>
-      /// Wraps the managed <see cref="GemStone.GemFire.Cache.IGFSerializable" />
+      /// Wraps the managed <see cref="Apache.Geode.Client.IGFSerializable" />
       /// object and implements the native <c>apache::geode::client::CacheableKey</c> interface.
       /// </summary>
       class ManagedCacheableKeyBytesGeneric
@@ -61,7 +63,7 @@ namespace apache
         /// The managed object.
         /// </param>
         inline ManagedCacheableKeyBytesGeneric(
-          GemStone::GemFire::Cache::Generic::IGFSerializable^ managedptr, bool storeBytes)
+          Apache::Geode::Client::Generic::IGFSerializable^ managedptr, bool storeBytes)
           : m_domainId(System::Threading::Thread::GetDomainID()),
           m_classId(managedptr->ClassId),
           m_bytes(NULL),
@@ -73,7 +75,7 @@ namespace apache
             if (storeBytes)//if value is from app 
             {
               apache::geode::client::DataOutput dataOut;
-              GemStone::GemFire::Cache::Generic::DataOutput mg_output(&dataOut, true);
+              Apache::Geode::Client::Generic::DataOutput mg_output(&dataOut, true);
               managedptr->ToData(%mg_output);
 
               //move cursor
@@ -84,7 +86,7 @@ namespace apache
               m_size = dataOut.getBufferLength();
 
               m_hashCode = managedptr->GetHashCode();
-              GemStone::GemFire::Cache::Generic::Log::Fine(
+              Apache::Geode::Client::Generic::Log::Fine(
                 "ManagedCacheableKeyBytes::Constructor objectSize = " + m_size + " m_hashCode = " + m_hashCode);
             }
           }
@@ -163,14 +165,14 @@ namespace apache
         /// <summary>
         /// Returns the wrapped managed object reference.
         /// </summary>
-        inline GemStone::GemFire::Cache::Generic::IGFSerializable^ ptr() const
+        inline Apache::Geode::Client::Generic::IGFSerializable^ ptr() const
         {
           return getManagedObject();
         }
 
         inline ~ManagedCacheableKeyBytesGeneric()
         {
-          GemStone::GemFire::Cache::Generic::Log::Fine(
+          Apache::Geode::Client::Generic::Log::Fine(
             "ManagedCacheableKeyBytes::Destructor current AppDomain ID: " +
             System::Threading::Thread::GetDomainID() + " for object: " +
             System::Convert::ToString((int)this) + " with its AppDomain ID: " + m_domainId);
@@ -179,7 +181,7 @@ namespace apache
 
       private:
 
-        GemStone::GemFire::Cache::Generic::IGFSerializable^ getManagedObject() const;
+        Apache::Geode::Client::Generic::IGFSerializable^ getManagedObject() const;
 
         /// <summary>
         /// Using gcroot to hold the managed delegate pointer (since it cannot be stored directly).

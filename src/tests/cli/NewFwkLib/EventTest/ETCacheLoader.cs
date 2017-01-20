@@ -17,9 +17,9 @@
 
 using System;
 
-namespace GemStone.GemFire.Cache.FwkLib
+namespace Apache.Geode.Client.FwkLib
 {
-  using GemStone.GemFire.DUnitFramework;
+  using Apache.Geode.DUnitFramework;
 
   public class ETCacheLoader : ICacheLoader
   {

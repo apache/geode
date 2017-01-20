@@ -19,16 +19,16 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-using GemStone.GemFire.Cache.Tests.NewAPI; // for Portfolio and Position classes
+using Apache.Geode.Client.Tests.NewAPI; // for Portfolio and Position classes
 
-namespace GemStone.GemFire.Cache.FwkLib
+namespace Apache.Geode.Client.FwkLib
 {
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Cache.Tests.NewAPI;
-  using GemStone.GemFire.Cache.Generic;
-  using QueryCategory = GemStone.GemFire.Cache.Tests.QueryCategory;
-  using QueryStrings = GemStone.GemFire.Cache.Tests.QueryStrings;
-  using QueryStatics = GemStone.GemFire.Cache.Tests.QueryStatics;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Client.Tests.NewAPI;
+  using Apache.Geode.Client.Generic;
+  using QueryCategory = Apache.Geode.Client.Tests.QueryCategory;
+  using QueryStrings = Apache.Geode.Client.Tests.QueryStrings;
+  using QueryStatics = Apache.Geode.Client.Tests.QueryStatics;
   using System.Threading;
   using System.Xml.Serialization;
   using System.IO;
@@ -501,8 +501,8 @@ namespace GemStone.GemFire.Cache.FwkLib
             QueryStatics.StructSetQueries[index].IsLargeResultset == isLargeSetQuery)
           {
             int [] a = new int[] {4,6,7,9,12,14,15,16};
-            if ((typeof(TVal).Equals(typeof(GemStone.GemFire.Cache.Tests.NewAPI.PortfolioPdx))||
-              (typeof(TVal).Equals(typeof(GemStone.GemFire.Cache.Tests.NewAPI.PositionPdx)))) && ((IList<int>)a).Contains(index))
+            if ((typeof(TVal).Equals(typeof(Apache.Geode.Client.Tests.NewAPI.PortfolioPdx))||
+              (typeof(TVal).Equals(typeof(Apache.Geode.Client.Tests.NewAPI.PositionPdx)))) && ((IList<int>)a).Contains(index))
             {
               FwkInfo("Skiping Query for pdx object [{0}]", QueryStatics.StructSetQueries[index].Query);
             }
@@ -665,7 +665,7 @@ namespace GemStone.GemFire.Cache.FwkLib
             }
             rootAttrs = CreatePool(rootAttrs, redundancyLevel);
             region = CacheHelper<TKey, TVal>.CreateRegion(rootRegionName, rootAttrs);
-            GemStone.GemFire.Cache.Generic.RegionAttributes<TKey, TVal> regAttr = region.Attributes;
+            Apache.Geode.Client.Generic.RegionAttributes<TKey, TVal> regAttr = region.Attributes;
             FwkInfo("Region attributes for {0}: {1}", rootRegionName,
               CacheHelper<TKey, TVal>.RegionAttributesToString(regAttr));
             if (isDC)
@@ -1398,8 +1398,8 @@ namespace GemStone.GemFire.Cache.FwkLib
           FwkInfo("Getting inside for registeration");
           Serializable.RegisterTypeGeneric(Position.CreateDeserializable);
           Serializable.RegisterTypeGeneric(Portfolio.CreateDeserializable);
-          Serializable.RegisterPdxType(GemStone.GemFire.Cache.Tests.NewAPI.PortfolioPdx.CreateDeserializable);
-          Serializable.RegisterPdxType(GemStone.GemFire.Cache.Tests.NewAPI.PositionPdx.CreateDeserializable);
+          Serializable.RegisterPdxType(Apache.Geode.Client.Tests.NewAPI.PortfolioPdx.CreateDeserializable);
+          Serializable.RegisterPdxType(Apache.Geode.Client.Tests.NewAPI.PositionPdx.CreateDeserializable);
 
         }
         IRegion<TKey, TVal> parentRegion = null;
@@ -1420,7 +1420,7 @@ namespace GemStone.GemFire.Cache.FwkLib
           else
           {
             string fullName = parentRegion.FullPath;
-            GemStone.GemFire.Cache.Generic.RegionAttributes<TKey, TVal> regattrs = parentRegion.Attributes;
+            Apache.Geode.Client.Generic.RegionAttributes<TKey, TVal> regattrs = parentRegion.Attributes;
             parentRegion.CreateSubRegion(sRegionName, regattrs);
             Util.BBSet(QueryBB, sRegionName, fullName); parentRegion.SubRegions(false);
           }
@@ -1445,7 +1445,7 @@ namespace GemStone.GemFire.Cache.FwkLib
     {
         IRegion<TKey, TVal> parentRegion = GetRegion();
         IRegion<TKey, TVal> subRegion;
-        GemStone.GemFire.Cache.Generic.RegionAttributes<TKey, TVal> regattrs = parentRegion.Attributes;
+        Apache.Geode.Client.Generic.RegionAttributes<TKey, TVal> regattrs = parentRegion.Attributes;
         subRegion = parentRegion.CreateSubRegion(regName,regattrs);
         ICollection<IRegion<TKey, TVal>> subRegions = parentRegion.SubRegions(true);
         FwkInfo("subregions are {0}",subRegions.Count);

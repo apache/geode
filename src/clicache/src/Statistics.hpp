@@ -25,11 +25,13 @@
 #include <gfcpp/statistics/StatisticDescriptor.hpp>
 #include <gfcpp/statistics/StatisticsType.hpp>
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
       ref class StatisticDescriptor;
       ref class StatisticsType;

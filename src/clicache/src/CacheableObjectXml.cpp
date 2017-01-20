@@ -30,11 +30,13 @@ using namespace System;
 using namespace System::IO;
 using namespace System::Xml::Serialization;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
       void CacheableObjectXml::ToData(DataOutput^ output)
       {

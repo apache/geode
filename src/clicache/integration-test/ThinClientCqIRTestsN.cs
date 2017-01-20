@@ -19,12 +19,12 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace GemStone.GemFire.Cache.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests.NewAPI
 {
   using NUnit.Framework;
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Cache.Tests.NewAPI;
-  using GemStone.GemFire.Cache.Generic;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Client.Tests.NewAPI;
+  using Apache.Geode.Client.Generic;
 
 
   [TestFixture]
@@ -93,7 +93,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
         null, locators, "__TESTPOOL1_", true);
 
       IRegion<object, object> region = CacheHelper.GetRegion<object, object>(QueryRegionNames[0]);
-      GemStone.GemFire.Cache.Generic.RegionAttributes<object, object> regattrs = region.Attributes;
+      Apache.Geode.Client.Generic.RegionAttributes<object, object> regattrs = region.Attributes;
       region.CreateSubRegion(QueryRegionNames[1], regattrs);
     }
 

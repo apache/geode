@@ -35,13 +35,13 @@
 
 using namespace System;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache
+    namespace Client
     {
-      namespace Generic
+namespace Generic
       {
      
 
@@ -60,7 +60,7 @@ namespace GemStone
         apache::geode::client::DistributedSystemPtr& nativeptr(
           NativePtr->getDistributedSystem( ) );
 
-        return GemStone::GemFire::Cache::Generic::DistributedSystem::Create(
+        return Apache::Geode::Client::Generic::DistributedSystem::Create(
           nativeptr.ptr( ) );
       }
 
@@ -69,7 +69,7 @@ namespace GemStone
         apache::geode::client::InternalCacheTransactionManager2PCPtr& nativeptr = static_cast<InternalCacheTransactionManager2PCPtr>(
           NativePtr->getCacheTransactionManager( ) );
 
-        return GemStone::GemFire::Cache::Generic::CacheTransactionManager::Create(
+        return Apache::Geode::Client::Generic::CacheTransactionManager::Create(
           nativeptr.ptr( ) );
       }
 
@@ -82,9 +82,9 @@ namespace GemStone
       {
         _GF_MG_EXCEPTION_TRY2
 
-          GemStone::GemFire::Cache::Generic::DistributedSystem::acquireDisconnectLock();
+          Apache::Geode::Client::Generic::DistributedSystem::acquireDisconnectLock();
 
-        GemStone::GemFire::Cache::Generic::DistributedSystem::disconnectInstance();
+        Apache::Geode::Client::Generic::DistributedSystem::disconnectInstance();
           CacheFactory::m_connected = false;
 
           NativePtr->close( keepalive );
@@ -92,16 +92,16 @@ namespace GemStone
           // If DS automatically disconnected due to the new bootstrap API, then cleanup the C++/CLI side
           //if (!apache::geode::client::DistributedSystem::isConnected())
           {
-            GemStone::GemFire::Cache::Generic::DistributedSystem::UnregisterBuiltinManagedTypes();
+            Apache::Geode::Client::Generic::DistributedSystem::UnregisterBuiltinManagedTypes();
           }
 
         _GF_MG_EXCEPTION_CATCH_ALL2
         finally
         {
-					GemStone::GemFire::Cache::Generic::Internal::PdxTypeRegistry::clear();
+					Apache::Geode::Client::Generic::Internal::PdxTypeRegistry::clear();
           Serializable::Clear();
-          GemStone::GemFire::Cache::Generic::DistributedSystem::releaseDisconnectLock();
-          GemStone::GemFire::Cache::Generic::DistributedSystem::unregisterCliCallback();
+          Apache::Geode::Client::Generic::DistributedSystem::releaseDisconnectLock();
+          Apache::Geode::Client::Generic::DistributedSystem::unregisterCliCallback();
         }
       }
 

@@ -24,11 +24,13 @@
 
 using namespace System;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
 
       generic<class TResult>
@@ -62,15 +64,15 @@ namespace GemStone
         /// <summary>
         /// Get an object at the given index.
         /// </summary>
-        property /*GemStone::GemFire::Cache::Generic::IGFSerializable^*/TResult GFINDEXER( size_t )
+        property /*Apache::Geode::Client::Generic::IGFSerializable^*/TResult GFINDEXER( size_t )
         {
-          /*GemStone::GemFire::Cache::Generic::IGFSerializable^*/TResult get( size_t index );
+          /*Apache::Geode::Client::Generic::IGFSerializable^*/TResult get( size_t index );
         }
 
         /// <summary>
         /// Get an iterator for the result set.
         /// </summary>
-        GemStone::GemFire::Cache::Generic::SelectResultsIterator<TResult>^ GetIterator( );
+        Apache::Geode::Client::Generic::SelectResultsIterator<TResult>^ GetIterator( );
       };
 
     }

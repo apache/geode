@@ -18,15 +18,15 @@
 using System;
 using System.Threading;
 
-namespace GemStone.GemFire.Cache.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests.NewAPI
 {
   using NUnit.Framework;
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Cache.Tests.NewAPI;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Client.Tests.NewAPI;
 
-  using GemStone.GemFire.Cache.Generic;
+  using Apache.Geode.Client.Generic;
 
-  using GIRegion = GemStone.GemFire.Cache.Generic.IRegion<int, object>;
+  using GIRegion = Apache.Geode.Client.Generic.IRegion<int, object>;
   using System.Collections.Generic;
 
   public class CallbackListener : CacheListenerAdapter<int, object>

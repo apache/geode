@@ -41,14 +41,16 @@
 using namespace System;
 using namespace System::Collections::Generic;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
       generic<class TKey, class TValue>
-      AttributesFactory<TKey, TValue>::AttributesFactory( GemStone::GemFire::Cache::Generic::RegionAttributes<TKey, TValue>^ regionAttributes )
+      AttributesFactory<TKey, TValue>::AttributesFactory( Apache::Geode::Client::Generic::RegionAttributes<TKey, TValue>^ regionAttributes )
         : UMWrap( )
       {
         apache::geode::client::RegionAttributesPtr attribptr(
@@ -314,13 +316,13 @@ namespace GemStone
       // FACTORY METHOD
 
       generic<class TKey, class TValue>
-      GemStone::GemFire::Cache::Generic::RegionAttributes<TKey, TValue>^ AttributesFactory<TKey, TValue>::CreateRegionAttributes()
+      Apache::Geode::Client::Generic::RegionAttributes<TKey, TValue>^ AttributesFactory<TKey, TValue>::CreateRegionAttributes()
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
           apache::geode::client::RegionAttributesPtr& nativeptr (
             NativePtr->createRegionAttributes( ) );
-          return GemStone::GemFire::Cache::Generic::RegionAttributes<TKey, TValue>::Create(nativeptr.ptr());
+          return Apache::Geode::Client::Generic::RegionAttributes<TKey, TValue>::Create(nativeptr.ptr());
 
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
       }

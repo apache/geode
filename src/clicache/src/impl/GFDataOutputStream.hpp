@@ -24,11 +24,13 @@
 using namespace System;
 using namespace System::IO;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
       ref class GFDataOutputStream : public Stream
       {

@@ -24,13 +24,15 @@
 
 using namespace System;
 
-using namespace GemStone::GemFire::Cache;
+using namespace Apache::Geode::Client;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
 
       generic<class TKey, class TValue>
@@ -47,63 +49,63 @@ namespace GemStone
             m_listener = listener;
           }
 
-          virtual void AfterUpdate(GemStone::GemFire::Cache::Generic::EntryEvent<Object^, Object^>^ event) override
+          virtual void AfterUpdate(Apache::Geode::Client::Generic::EntryEvent<Object^, Object^>^ event) override
           {
             EntryEvent<TKey, TValue> gevent(Generic::GetNativePtr<apache::geode::client::EntryEvent>(event));
             m_listener->AfterUpdate(%gevent);
           }
 
-          virtual void AfterCreate(GemStone::GemFire::Cache::Generic::EntryEvent<Object^, Object^>^ event) override
+          virtual void AfterCreate(Apache::Geode::Client::Generic::EntryEvent<Object^, Object^>^ event) override
           {
             EntryEvent<TKey, TValue> gevent(Generic::GetNativePtr<apache::geode::client::EntryEvent>(event));
             m_listener->AfterCreate(%gevent);
           }
 
-          virtual void AfterInvalidate(GemStone::GemFire::Cache::Generic::EntryEvent<Object^, Object^>^ event) override
+          virtual void AfterInvalidate(Apache::Geode::Client::Generic::EntryEvent<Object^, Object^>^ event) override
           {
             EntryEvent<TKey, TValue> gevent(Generic::GetNativePtr<apache::geode::client::EntryEvent>(event));
             m_listener->AfterInvalidate(%gevent);
           }
 
-          virtual void AfterDestroy(GemStone::GemFire::Cache::Generic::EntryEvent<Object^, Object^>^ event) override
+          virtual void AfterDestroy(Apache::Geode::Client::Generic::EntryEvent<Object^, Object^>^ event) override
           {
             EntryEvent<TKey, TValue> gevent(Generic::GetNativePtr<apache::geode::client::EntryEvent>(event));
             m_listener->AfterDestroy(%gevent);
           }
 
-          virtual void AfterRegionLive(GemStone::GemFire::Cache::Generic::RegionEvent<Object^, Object^>^ event) override
+          virtual void AfterRegionLive(Apache::Geode::Client::Generic::RegionEvent<Object^, Object^>^ event) override
           {
             RegionEvent<TKey, TValue> gevent(Generic::GetNativePtr<apache::geode::client::RegionEvent>(event));
             m_listener->AfterRegionLive(%gevent);
           }
 
-          virtual void AfterRegionClear(GemStone::GemFire::Cache::Generic::RegionEvent<Object^, Object^>^ event) override
+          virtual void AfterRegionClear(Apache::Geode::Client::Generic::RegionEvent<Object^, Object^>^ event) override
           {
             RegionEvent<TKey, TValue> gevent(Generic::GetNativePtr<apache::geode::client::RegionEvent>(event));
             m_listener->AfterRegionClear(%gevent);
           }
 
-          virtual void AfterRegionDestroy(GemStone::GemFire::Cache::Generic::RegionEvent<Object^, Object^>^ event) override
+          virtual void AfterRegionDestroy(Apache::Geode::Client::Generic::RegionEvent<Object^, Object^>^ event) override
           {
             RegionEvent<TKey, TValue> gevent(Generic::GetNativePtr<apache::geode::client::RegionEvent>(event));
             m_listener->AfterRegionDestroy(%gevent);
           }
 
-          virtual void AfterRegionInvalidate(GemStone::GemFire::Cache::Generic::RegionEvent<Object^, Object^>^ event) override
+          virtual void AfterRegionInvalidate(Apache::Geode::Client::Generic::RegionEvent<Object^, Object^>^ event) override
           {
             RegionEvent<TKey, TValue> gevent(Generic::GetNativePtr<apache::geode::client::RegionEvent>(event));
             m_listener->AfterRegionInvalidate(%gevent);
           }
 
-          virtual void AfterRegionDisconnected(GemStone::GemFire::Cache::Generic::IRegion<Object^, Object^>^ event) override
+          virtual void AfterRegionDisconnected(Apache::Geode::Client::Generic::IRegion<Object^, Object^>^ event) override
           {
-            GemStone::GemFire::Cache::Generic::IRegion<TKey, TValue>^ gevent = GemStone::GemFire::Cache::Generic::Region<TKey, TValue>::Create(GemStone::GemFire::Cache::Generic::GetNativePtr<apache::geode::client::Region>(reinterpret_cast<GemStone::GemFire::Cache::Generic::Region<Object^, Object^>^>(event)));
+            Apache::Geode::Client::Generic::IRegion<TKey, TValue>^ gevent = Apache::Geode::Client::Generic::Region<TKey, TValue>::Create(Apache::Geode::Client::Generic::GetNativePtr<apache::geode::client::Region>(reinterpret_cast<Apache::Geode::Client::Generic::Region<Object^, Object^>^>(event)));
             m_listener->AfterRegionDisconnected(gevent);
           }
 
-          virtual void Close(GemStone::GemFire::Cache::Generic::IRegion<Object^, Object^>^ event) override
+          virtual void Close(Apache::Geode::Client::Generic::IRegion<Object^, Object^>^ event) override
           {
-            GemStone::GemFire::Cache::Generic::IRegion<TKey, TValue>^ gevent = GemStone::GemFire::Cache::Generic::Region<TKey, TValue>::Create(GemStone::GemFire::Cache::Generic::GetNativePtr<apache::geode::client::Region>(reinterpret_cast<GemStone::GemFire::Cache::Generic::Region<Object^, Object^>^>(event)));
+            Apache::Geode::Client::Generic::IRegion<TKey, TValue>^ gevent = Apache::Geode::Client::Generic::Region<TKey, TValue>::Create(Apache::Geode::Client::Generic::GetNativePtr<apache::geode::client::Region>(reinterpret_cast<Apache::Geode::Client::Generic::Region<Object^, Object^>^>(event)));
             m_listener->Close(gevent);
           }
       };

@@ -31,13 +31,13 @@
 
 using namespace System;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache
+    namespace Client
     {
-      namespace Generic
+namespace Generic
       {
       CacheFactory^ CacheFactory::CreateCacheFactory()
       {
@@ -87,7 +87,7 @@ namespace GemStone
 
             Serializable::RegisterTypeGeneric(
               apache::geode::client::GemfireTypeIds::PdxType,
-              gcnew TypeFactoryMethodGeneric(GemStone::GemFire::Cache::Generic::Internal::PdxType::CreateDeserializable),
+              gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::Generic::Internal::PdxType::CreateDeserializable),
               nullptr);
 
            if(!m_connected)
@@ -105,8 +105,8 @@ namespace GemStone
           finally {
             DistributedSystem::registerCliCallback();
 						Serializable::RegisterPDXManagedCacheableKey(appDomainEnable);
-					GemStone::GemFire::Cache::Generic::Internal::PdxTypeRegistry::PdxIgnoreUnreadFields = pdxIgnoreUnreadFields; 
-          GemStone::GemFire::Cache::Generic::Internal::PdxTypeRegistry::PdxReadSerialized = pdxReadSerialized; 
+					Apache::Geode::Client::Generic::Internal::PdxTypeRegistry::PdxIgnoreUnreadFields = pdxIgnoreUnreadFields; 
+          Apache::Geode::Client::Generic::Internal::PdxTypeRegistry::PdxReadSerialized = pdxReadSerialized; 
           DistributedSystem::releaseDisconnectLock();
         }
       }

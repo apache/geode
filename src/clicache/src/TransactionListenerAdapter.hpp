@@ -21,11 +21,13 @@
 #include "ITransactionListener.hpp"
 
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
 
       /// <summary>
@@ -35,18 +37,18 @@ namespace GemStone
       /// </summary>
       generic<class TKey, class TValue>
       public ref class TransactionListenerAdapter
-        : public GemStone::GemFire::Cache::Generic::ITransactionListener<TKey, TValue>
+        : public Apache::Geode::Client::Generic::ITransactionListener<TKey, TValue>
       {
       public:
-        virtual void AfterCommit(GemStone::GemFire::Cache::Generic::TransactionEvent<TKey, TValue>^ te)
+        virtual void AfterCommit(Apache::Geode::Client::Generic::TransactionEvent<TKey, TValue>^ te)
         {
         }
 
-	      virtual void AfterFailedCommit(GemStone::GemFire::Cache::Generic::TransactionEvent<TKey, TValue>^ te)
+	      virtual void AfterFailedCommit(Apache::Geode::Client::Generic::TransactionEvent<TKey, TValue>^ te)
         {
         }
 
-	      virtual void AfterRollback(GemStone::GemFire::Cache::Generic::TransactionEvent<TKey, TValue>^ te)
+	      virtual void AfterRollback(Apache::Geode::Client::Generic::TransactionEvent<TKey, TValue>^ te)
         {
         }
     

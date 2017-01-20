@@ -28,7 +28,7 @@ namespace apache {
     namespace client {
 
       /// <summary>
-      /// Wraps the managed <see cref="GemStone.GemFire.Cache.IFixedPartitionResolver" />
+      /// Wraps the managed <see cref="Apache.Geode.Client.IFixedPartitionResolver" />
       /// object and implements the native <c>apache::geode::client::FixedPartitionResolver</c> interface.
       /// </summary>
       class ManagedFixedPartitionResolverGeneric
@@ -111,12 +111,12 @@ namespace apache {
         /// <summary>
         /// Returns the wrapped managed object reference.
         /// </summary>
-        inline GemStone::GemFire::Cache::Generic::IFixedPartitionResolverProxy^ ptr() const
+        inline Apache::Geode::Client::Generic::IFixedPartitionResolverProxy^ ptr() const
         {
           return m_managedptr;
         }
 
-        inline void setptr(GemStone::GemFire::Cache::Generic::IFixedPartitionResolverProxy^ managedptr)
+        inline void setptr(Apache::Geode::Client::Generic::IFixedPartitionResolverProxy^ managedptr)
         {
           m_managedptr = managedptr;
         }
@@ -134,7 +134,7 @@ namespace apache {
         /// to be called which is not what is desired when this object is destroyed. Normally this
         /// managed object may be created by the user and will be handled automatically by the GC.
         /// </summary>
-        gcroot<GemStone::GemFire::Cache::Generic::IFixedPartitionResolverProxy^> m_managedptr;
+        gcroot<Apache::Geode::Client::Generic::IFixedPartitionResolverProxy^> m_managedptr;
 
         gcroot<Object^> m_userptr;
       };

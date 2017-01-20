@@ -131,7 +131,7 @@ std::string CppCacheLibrary::getProductLibDir() {
   if (dllNamePtr == NULL) {
     dllNamePtr = strstr(path, "gfcppcache_g.dll");
     if (dllNamePtr == NULL) {
-      dllNamePtr = strstr(path, "gemstone.gemfire.cache.dll");
+      dllNamePtr = strstr(path, "Apache.Geode.Client.dll");
     }
   }
 #else

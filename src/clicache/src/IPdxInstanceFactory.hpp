@@ -19,13 +19,13 @@
 #include "IPdxInstance.hpp"
 using namespace System;
 using namespace System::Collections::Generic;
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache
+    namespace Client
     {
-		  namespace Generic
+namespace Generic
 			{         
 			
         /// <summary>

@@ -23,11 +23,13 @@
 
 using namespace System;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
 
       generic<class TResult>
@@ -43,7 +45,7 @@ namespace GemStone
       }
 
       generic<class TResult>
-      /*GemStone::GemFire::Cache::Generic::IGFSerializable^*/ TResult StructSet<TResult>::default::get( size_t index )
+      /*Apache::Geode::Client::Generic::IGFSerializable^*/ TResult StructSet<TResult>::default::get( size_t index )
       {
         //return SafeUMSerializableConvertGeneric((NativePtr->operator[](static_cast<int32_t>(index))).ptr());
         return Serializable::GetManagedValueGeneric<TResult>((NativePtr->operator[](static_cast<int32_t>(index))));
@@ -58,7 +60,7 @@ namespace GemStone
       }
 
       generic<class TResult>
-      System::Collections::Generic::IEnumerator</*GemStone::GemFire::Cache::Generic::IGFSerializable^*/TResult>^
+      System::Collections::Generic::IEnumerator</*Apache::Geode::Client::Generic::IGFSerializable^*/TResult>^
         StructSet<TResult>::GetEnumerator( )
       {
         return GetIterator( );

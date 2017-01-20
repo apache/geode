@@ -21,13 +21,15 @@
 
 using namespace System;
 //using namespace System::Collections::Generic;
-//using namespace GemStone::GemFire::Cache;
+//using namespace Apache::Geode::Client;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
       public interface class ResultCollectorG
       {

@@ -23,13 +23,13 @@
 
 using namespace System;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache
+    namespace Client
     {
-      namespace Tests
+namespace Tests
       {
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace GemStone
         /// Encapsulates a query string.
         /// </summary>
         public ref class QueryStrings sealed
-          : public GemStone::GemFire::Cache::Generic::Internal::UMWrap<testData::QueryStrings>
+          : public Apache::Geode::Client::Generic::Internal::UMWrap<testData::QueryStrings>
         {
         public:
 

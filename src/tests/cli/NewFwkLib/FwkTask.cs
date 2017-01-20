@@ -21,9 +21,9 @@ using System.Reflection;
 using System.Text;
 using System.Xml;
 
-namespace GemStone.GemFire.Cache.FwkLib
+namespace Apache.Geode.Client.FwkLib
 {
-  using GemStone.GemFire.DUnitFramework;
+  using Apache.Geode.DUnitFramework;
 
   public class FwkTask
   {
@@ -296,7 +296,7 @@ namespace GemStone.GemFire.Cache.FwkLib
             }
             else
             {
-              //typeAttrib = "GemStone.GemFire.Cache.Tests.ArrayOfByte,GemStone.GemFire.Cache.Tests.ArrayOfByte";
+              //typeAttrib = "Apache.Geode.Client.Tests.ArrayOfByte,Apache.Geode.Client.Tests.ArrayOfByte";
               //typeAttrib = "System.int,System.Int32";
               string[] typeNames = typeAttrib.Split(',');
               string mangledName = typeName + "`" + typeNames.Length.ToString();
@@ -328,7 +328,7 @@ namespace GemStone.GemFire.Cache.FwkLib
                 }
                 else
                 {
-                  typName = "GemStone.GemFire.Cache.Tests.NewAPI." + typName;
+                  typName = "Apache.Geode.Client.Tests.NewAPI." + typName;
                   types[index] = loadAssmb.GetType(typName.Trim(), true, true);
                   //Util.Log("rjk: FwkTask: typeAttrib for userobject 34 argname {0}", typName);
                 }

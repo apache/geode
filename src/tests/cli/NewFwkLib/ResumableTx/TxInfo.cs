@@ -21,13 +21,14 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 
-namespace GemStone.GemFire.Cache.FwkLib  
+namespace Apache.Geode.Client.FwkLib  
 {
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Cache.Tests.NewAPI;
-  using GemStone.GemFire.Cache.Generic;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Client.Tests.NewAPI;
+  using Apache.Geode.Client.Generic;
   
-//[Serializable]
+
+//[Serializable]
 //  public class TxInfo<Tkey,TVal>
 //  {
 //    TransactionId txId;

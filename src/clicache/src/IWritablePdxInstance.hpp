@@ -18,13 +18,13 @@
 #pragma once
 
 using namespace System;
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache
+    namespace Client
     {
-			namespace Generic
+namespace Generic
 			{     
 				/// <summary>
 	      /// WritablePdxInstance is a <see cref="IPdxInstance" /> that also supports field modification 

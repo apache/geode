@@ -18,7 +18,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace GemStone.GemFire.DUnitFramework
+namespace Apache.Geode.DUnitFramework
 {
   /// <summary>
   /// Exception thrown when 'Call' is invoked on a client thread/process/...

@@ -22,13 +22,13 @@
 #include "ICqListener.hpp"
 
 using namespace System;
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache 
-    { 
-      namespace Generic
+    namespace Client
+    {
+namespace Generic
       {
 
         /// <summary>

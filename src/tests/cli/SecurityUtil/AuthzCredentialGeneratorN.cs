@@ -16,11 +16,11 @@
  */
 
 using System;
-using GemStone.GemFire.DUnitFramework;
+using Apache.Geode.DUnitFramework;
 
-namespace GemStone.GemFire.Cache.Tests.NewAPI
+namespace Apache.Geode.Client.Tests.NewAPI
 {
-  using GemStone.GemFire.Cache.Generic;
+  using Apache.Geode.Client.Generic;
   /// <summary>
   /// Enumeration for the various client server operations.
   /// </summary>
@@ -454,7 +454,7 @@ namespace GemStone.GemFire.Cache.Tests.NewAPI
         }
         else
         {
-          library = "GemStone.GemFire.Templates.Cache.Security";
+          library = "Apache.Geode.Templates.Cache.Security";
           factory = authInit;
         }
         props.Insert("security-client-auth-library", library);

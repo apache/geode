@@ -17,10 +17,10 @@
 
 
 using System;
-using GemStone.GemFire.Cache;
-namespace GemStone.GemFire.Cache.Tests
+using Apache.Geode.Client;
+namespace Apache.Geode.Client.Tests
 {
-    public class DeltaEx : GemStone.GemFire.Cache.Generic.IGFDelta, GemStone.GemFire.Cache.Generic.IGFSerializable, ICloneable
+    public class DeltaEx : Apache.Geode.Client.Generic.IGFDelta, Apache.Geode.Client.Generic.IGFSerializable, ICloneable
     {
         private int counter;
         private bool IsDelta;
@@ -44,30 +44,30 @@ namespace GemStone.GemFire.Cache.Tests
         {
             return IsDelta;
         }
-        public void ToDelta(GemStone.GemFire.Cache.Generic.DataOutput DataOut)
+        public void ToDelta(Apache.Geode.Client.Generic.DataOutput DataOut)
         {
             DataOut.WriteInt32(counter);
             ToDeltaCount++;
         }
 
-        public void FromDelta(GemStone.GemFire.Cache.Generic.DataInput DataIn)
+        public void FromDelta(Apache.Geode.Client.Generic.DataInput DataIn)
         {
             int val = DataIn.ReadInt32();
             if( FromDeltaCount == 1 )
             {
                 FromDeltaCount++;
-                throw new GemStone.GemFire.Cache.Generic.InvalidDeltaException();
+                throw new Apache.Geode.Client.Generic.InvalidDeltaException();
             }
             counter+=val;
             FromDeltaCount++;
         }
 
-        public void ToData(GemStone.GemFire.Cache.Generic.DataOutput DataOut)
+        public void ToData(Apache.Geode.Client.Generic.DataOutput DataOut)
         {
             DataOut.WriteInt32( counter );
             ToDataCount++;
         }
-        public GemStone.GemFire.Cache.Generic.IGFSerializable FromData(GemStone.GemFire.Cache.Generic.DataInput DataIn)
+        public Apache.Geode.Client.Generic.IGFSerializable FromData(Apache.Geode.Client.Generic.DataInput DataIn)
         {
             counter = DataIn.ReadInt32();
             FromDataCount++;
@@ -96,7 +96,7 @@ namespace GemStone.GemFire.Cache.Tests
             IsDelta = isDelta;
         }
 
-        public static GemStone.GemFire.Cache.Generic.IGFSerializable create()
+        public static Apache.Geode.Client.Generic.IGFSerializable create()
         {
             return new DeltaEx();
         }

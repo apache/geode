@@ -23,12 +23,13 @@
 
 using namespace System;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache {
-			namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
 
       void CacheTransactionManager::Begin( )
@@ -72,23 +73,23 @@ namespace GemStone
         _GF_MG_EXCEPTION_CATCH_ALL2
       }
 
-      GemStone::GemFire::Cache::Generic::TransactionId^ CacheTransactionManager::Suspend( )
+      Apache::Geode::Client::Generic::TransactionId^ CacheTransactionManager::Suspend( )
       {
         _GF_MG_EXCEPTION_TRY2
        
-          return GemStone::GemFire::Cache::Generic::TransactionId::Create( NativePtr->suspend().ptr() );
+          return Apache::Geode::Client::Generic::TransactionId::Create( NativePtr->suspend().ptr() );
        
         _GF_MG_EXCEPTION_CATCH_ALL2
       }
-			GemStone::GemFire::Cache::Generic::TransactionId^ CacheTransactionManager::TransactionId::get( )
+			Apache::Geode::Client::Generic::TransactionId^ CacheTransactionManager::TransactionId::get( )
       {
         _GF_MG_EXCEPTION_TRY2
 
-          return GemStone::GemFire::Cache::Generic::TransactionId::Create( NativePtr->getTransactionId().ptr() );
+          return Apache::Geode::Client::Generic::TransactionId::Create( NativePtr->getTransactionId().ptr() );
 
         _GF_MG_EXCEPTION_CATCH_ALL2
       }
-      void CacheTransactionManager::Resume(GemStone::GemFire::Cache::Generic::TransactionId^ transactionId)
+      void CacheTransactionManager::Resume(Apache::Geode::Client::Generic::TransactionId^ transactionId)
       {
         _GF_MG_EXCEPTION_TRY2
         
@@ -96,7 +97,7 @@ namespace GemStone
 
         _GF_MG_EXCEPTION_CATCH_ALL2
       }
-      bool CacheTransactionManager::IsSuspended(GemStone::GemFire::Cache::Generic::TransactionId^ transactionId)
+      bool CacheTransactionManager::IsSuspended(Apache::Geode::Client::Generic::TransactionId^ transactionId)
       {
         _GF_MG_EXCEPTION_TRY2
 
@@ -104,7 +105,7 @@ namespace GemStone
 
         _GF_MG_EXCEPTION_CATCH_ALL2
       }
-      bool CacheTransactionManager::TryResume(GemStone::GemFire::Cache::Generic::TransactionId^ transactionId)
+      bool CacheTransactionManager::TryResume(Apache::Geode::Client::Generic::TransactionId^ transactionId)
       {
         _GF_MG_EXCEPTION_TRY2
 
@@ -112,7 +113,7 @@ namespace GemStone
 
         _GF_MG_EXCEPTION_CATCH_ALL2
       }
-      bool CacheTransactionManager::TryResume(GemStone::GemFire::Cache::Generic::TransactionId^ transactionId, int32_t waitTimeInMilliSec)
+      bool CacheTransactionManager::TryResume(Apache::Geode::Client::Generic::TransactionId^ transactionId, int32_t waitTimeInMilliSec)
       {
         _GF_MG_EXCEPTION_TRY2
 
@@ -120,7 +121,7 @@ namespace GemStone
 
         _GF_MG_EXCEPTION_CATCH_ALL2
       }
-      bool CacheTransactionManager::Exists(GemStone::GemFire::Cache::Generic::TransactionId^ transactionId)
+      bool CacheTransactionManager::Exists(Apache::Geode::Client::Generic::TransactionId^ transactionId)
       {
         _GF_MG_EXCEPTION_TRY2
 

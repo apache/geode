@@ -20,13 +20,13 @@ using System.Collections.Generic;
 
 #pragma warning disable 618
 
-namespace GemStone.GemFire.Cache.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests.NewAPI
 {
   using NUnit.Framework;
-  using GemStone.GemFire.Cache.Tests.NewAPI;
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Cache.Generic;
-  using AssertionException = GemStone.GemFire.Cache.Generic.AssertionException;
+  using Apache.Geode.Client.Tests.NewAPI;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Client.Generic;
+  using AssertionException = Apache.Geode.Client.Generic.AssertionException;
 
   /// <summary>
   /// Enumeration to indicate the result expected of an operation.

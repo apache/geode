@@ -22,11 +22,13 @@
 #include "impl/ManagedString.hpp"
 
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
 
       int32_t StatisticDescriptor::ID::get( )

@@ -19,14 +19,14 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace GemStone.GemFire.Cache.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests.NewAPI
 {
   using NUnit.Framework;
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Cache.Tests.NewAPI;
-  using GemStone.GemFire.Cache.Generic;
-  //using Region = GemStone.GemFire.Cache.Generic.IRegion<Object, Object>;
-  using AssertionException = GemStone.GemFire.Cache.Generic.AssertionException;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Client.Tests.NewAPI;
+  using Apache.Geode.Client.Generic;
+  //using Region = Apache.Geode.Client.Generic.IRegion<Object, Object>;
+  using AssertionException = Apache.Geode.Client.Generic.AssertionException;
   public abstract class ThinClientSecurityAuthzTestBase : ThinClientRegionSteps
   {
     #region Protected members
@@ -445,7 +445,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
                 //FunctionService fs = CacheHelper.getMultiuserCache(creds).GetFunctionService();
                 //Execution exe =  fs.OnServer();
                 IRegionService userCache = CacheHelper.getMultiuserCache(creds);
-                GemStone.GemFire.Cache.Generic.Execution<object> exe = Generic.FunctionService<object>.OnServer(userCache);
+                Apache.Geode.Client.Generic.Execution<object> exe = Generic.FunctionService<object>.OnServer(userCache);
                 exe.Execute("securityTest");
                 exe = Generic.FunctionService<object>.OnServers(userCache);
                 Generic.FunctionService<object>.OnRegion<object, object>(region);

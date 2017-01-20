@@ -29,11 +29,13 @@ using namespace System;
 using namespace System::Collections::Generic;
 #pragma managed
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
       namespace Internal
       {
@@ -525,7 +527,7 @@ namespace GemStone
       }
 
 #define _GFCLI_CACHEABLEHASHSET_DEF_GENERIC(m, HSTYPE)                               \
-	public ref class m : public Internal::CacheableHashSetType<GemStone::GemFire::Cache::Generic::GemFireClassIds::m, HSTYPE>      \
+	public ref class m : public Internal::CacheableHashSetType<Apache::Geode::Client::Generic::GemFireClassIds::m, HSTYPE>      \
       {                                                                       \
       public:                                                                 \
         /** <summary>
@@ -533,7 +535,7 @@ namespace GemStone
          *  </summary>
          */                                                                   \
         inline m()                                                            \
-        : Internal::CacheableHashSetType<GemStone::GemFire::Cache::Generic::GemFireClassIds::m, HSTYPE>() {}                      \
+        : Internal::CacheableHashSetType<Apache::Geode::Client::Generic::GemFireClassIds::m, HSTYPE>() {}                      \
                                                                               \
         /** <summary>
          *  Allocates a new instance with the given size.
@@ -541,7 +543,7 @@ namespace GemStone
          *  <param name="size">the intial size of the new instance</param>
          */                                                                   \
         inline m(int32_t size)                                                 \
-        : Internal::CacheableHashSetType<GemStone::GemFire::Cache::Generic::GemFireClassIds::m, HSTYPE>(size) {}                  \
+        : Internal::CacheableHashSetType<Apache::Geode::Client::Generic::GemFireClassIds::m, HSTYPE>(size) {}                  \
                                                                               \
         /** <summary>
          *  Static function to create a new empty instance.
@@ -578,7 +580,7 @@ namespace GemStone
                                                                               \
       private:                                                                \
         inline m(apache::geode::client::Serializable* nativeptr)                            \
-        : Internal::CacheableHashSetType<GemStone::GemFire::Cache::Generic::GemFireClassIds::m, HSTYPE>(nativeptr) { }             \
+        : Internal::CacheableHashSetType<Apache::Geode::Client::Generic::GemFireClassIds::m, HSTYPE>(nativeptr) { }             \
       };
 
       /// <summary>

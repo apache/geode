@@ -36,16 +36,16 @@ namespace apache
     {
       void ManagedCacheableKeyBytesGeneric::toData(apache::geode::client::DataOutput& output) const
       {
-        GemStone::GemFire::Cache::Generic::Log::Debug("ManagedCacheableKeyBytesGeneric::toData: current domain ID: " + System::Threading::Thread::GetDomainID() + " for object: " + System::Convert::ToString((int)this) + " with its domain ID: " + m_domainId);
+        Apache::Geode::Client::Generic::Log::Debug("ManagedCacheableKeyBytesGeneric::toData: current domain ID: " + System::Threading::Thread::GetDomainID() + " for object: " + System::Convert::ToString((int)this) + " with its domain ID: " + m_domainId);
         try {
           //TODO: I think this should work as it is
           output.writeBytesOnly(m_bytes, m_size);
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
       }
 
@@ -53,11 +53,11 @@ namespace apache
       {
         try {
 
-          GemStone::GemFire::Cache::Generic::Log::Debug("ManagedCacheableKeyBytesGeneric::fromData: classid " + m_classId + "aid = " + +System::Threading::Thread::GetDomainID());
-          GemStone::GemFire::Cache::Generic::DataInput mg_input(&input, true);
+          Apache::Geode::Client::Generic::Log::Debug("ManagedCacheableKeyBytesGeneric::fromData: classid " + m_classId + "aid = " + +System::Threading::Thread::GetDomainID());
+          Apache::Geode::Client::Generic::DataInput mg_input(&input, true);
           const uint8_t* objStartPos = input.currentBufferPosition();
 
-          GemStone::GemFire::Cache::Generic::IGFSerializable^ obj = GemStone::GemFire::Cache::Generic::Serializable::GetTypeFactoryMethodGeneric(m_classId)();
+          Apache::Geode::Client::Generic::IGFSerializable^ obj = Apache::Geode::Client::Generic::Serializable::GetTypeFactoryMethodGeneric(m_classId)();
           obj->FromData(%mg_input);
 
           input.advanceCursor(mg_input.BytesReadInternally);
@@ -68,15 +68,15 @@ namespace apache
 
           //m_size = mg_input.BytesRead;
           m_size = (uint32_t)(objEndPos - objStartPos);
-          GemStone::GemFire::Cache::Generic::Log::Debug("ManagedCacheableKeyBytesGeneric::fromData: objectSize = " + m_size + " m_hashCode = " + m_hashCode);
+          Apache::Geode::Client::Generic::Log::Debug("ManagedCacheableKeyBytesGeneric::fromData: objectSize = " + m_size + " m_hashCode = " + m_hashCode);
           m_bytes = input.getBufferCopyFrom(objStartPos, m_size);
 
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
         return this;
       }
@@ -87,11 +87,11 @@ namespace apache
           //return m_managedptr->ObjectSize;
           return m_size;
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
         return 0;
       }
@@ -103,11 +103,11 @@ namespace apache
           //classId = m_managedptr->ClassId;
           classId = m_classId;
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
         return (classId >= 0x80000000 ? 0 : classId);
       }
@@ -130,11 +130,11 @@ namespace apache
             return (int8_t)apache::geode::client::GemfireTypeIdsImpl::CacheableUserData4;
           }
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
         return 0;
       }
@@ -158,20 +158,20 @@ namespace apache
       apache::geode::client::CacheableStringPtr ManagedCacheableKeyBytesGeneric::toString() const
       {
         try {
-          GemStone::GemFire::Cache::Generic::IGFSerializable^ manageObject = getManagedObject();
+          Apache::Geode::Client::Generic::IGFSerializable^ manageObject = getManagedObject();
           if (manageObject != nullptr)
           {
             apache::geode::client::CacheableStringPtr cStr;
-            GemStone::GemFire::Cache::Generic::CacheableString::GetCacheableString(
+            Apache::Geode::Client::Generic::CacheableString::GetCacheableString(
               manageObject->ToString(), cStr);
             return cStr;
           }
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
         return NULLPTR;
       }
@@ -179,53 +179,53 @@ namespace apache
       bool ManagedCacheableKeyBytesGeneric::operator ==(const apache::geode::client::CacheableKey& other) const
       {
         try {
-          GemStone::GemFire::Cache::Generic::Log::Debug("ManagedCacheableKeyBytesGeneric::equal");
+          Apache::Geode::Client::Generic::Log::Debug("ManagedCacheableKeyBytesGeneric::equal");
           // now checking classId(), typeId(), DSFID() etc. will be much more
           // expensive than just a dynamic_cast
           const ManagedCacheableKeyBytesGeneric* p_other =
             dynamic_cast<const ManagedCacheableKeyBytesGeneric*>(&other);
           if (p_other != NULL) {
             apache::geode::client::DataInput di(m_bytes, m_size);
-            GemStone::GemFire::Cache::Generic::DataInput mg_input(&di, true);
-            GemStone::GemFire::Cache::Generic::IGFSerializable^ obj =
-              GemStone::GemFire::Cache::Generic::Serializable::GetTypeFactoryMethodGeneric(m_classId)();
+            Apache::Geode::Client::Generic::DataInput mg_input(&di, true);
+            Apache::Geode::Client::Generic::IGFSerializable^ obj =
+              Apache::Geode::Client::Generic::Serializable::GetTypeFactoryMethodGeneric(m_classId)();
             obj->FromData(%mg_input);
             bool ret = obj->Equals(p_other->ptr());
-            GemStone::GemFire::Cache::Generic::Log::Debug("ManagedCacheableKeyBytesGeneric::equal return VAL = " + ret);
+            Apache::Geode::Client::Generic::Log::Debug("ManagedCacheableKeyBytesGeneric::equal return VAL = " + ret);
             return ret;
           }
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
-        GemStone::GemFire::Cache::Generic::Log::Debug("ManagedCacheableKeyBytesGeneric::equal returns false");
+        Apache::Geode::Client::Generic::Log::Debug("ManagedCacheableKeyBytesGeneric::equal returns false");
         return false;
       }
 
       bool ManagedCacheableKeyBytesGeneric::operator ==(const ManagedCacheableKeyBytesGeneric& other) const
       {
         try {
-          GemStone::GemFire::Cache::Generic::Log::Debug("ManagedCacheableKeyBytesGeneric::equal. ");
+          Apache::Geode::Client::Generic::Log::Debug("ManagedCacheableKeyBytesGeneric::equal. ");
           apache::geode::client::DataInput di(m_bytes, m_size);
-          GemStone::GemFire::Cache::Generic::DataInput mg_input(&di, true);
-          GemStone::GemFire::Cache::Generic::IGFSerializable^ obj =
-            GemStone::GemFire::Cache::Generic::Serializable::GetTypeFactoryMethodGeneric(m_classId)();
+          Apache::Geode::Client::Generic::DataInput mg_input(&di, true);
+          Apache::Geode::Client::Generic::IGFSerializable^ obj =
+            Apache::Geode::Client::Generic::Serializable::GetTypeFactoryMethodGeneric(m_classId)();
           obj->FromData(%mg_input);
           bool ret = obj->Equals(other.ptr());
-          GemStone::GemFire::Cache::Generic::Log::Debug("ManagedCacheableKeyBytesGeneric::equal return VAL = " + ret);
+          Apache::Geode::Client::Generic::Log::Debug("ManagedCacheableKeyBytesGeneric::equal return VAL = " + ret);
           return ret;
           //return obj->Equals(other.ptr());
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
-        GemStone::GemFire::Cache::Generic::Log::Debug("ManagedCacheableKeyBytesGeneric::equal return false");
+        Apache::Geode::Client::Generic::Log::Debug("ManagedCacheableKeyBytesGeneric::equal return false");
         return false;
       }
 
@@ -237,31 +237,31 @@ namespace apache
       size_t ManagedCacheableKeyBytesGeneric::logString(char* buffer, size_t maxLength) const
       {
         try {
-          GemStone::GemFire::Cache::Generic::IGFSerializable^ manageObject = getManagedObject();
+          Apache::Geode::Client::Generic::IGFSerializable^ manageObject = getManagedObject();
           if (manageObject != nullptr)
           {
             if (maxLength > 0) {
               String^ logstr = manageObject->GetType()->Name + '(' +
                 manageObject->ToString() + ')';
-              GemStone::GemFire::Cache::Generic::ManagedString mg_str(logstr);
+              Apache::Geode::Client::Generic::ManagedString mg_str(logstr);
               return snprintf(buffer, maxLength, "%s", mg_str.CharPtr);
             }
           }
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
         return 0;
       }
 
-      GemStone::GemFire::Cache::Generic::IGFSerializable^
+      Apache::Geode::Client::Generic::IGFSerializable^
         ManagedCacheableKeyBytesGeneric::getManagedObject() const
       {
 
-        GemStone::GemFire::Cache::Generic::Log::Debug("ManagedCacheableKeyBytesGeneric::getManagedObject " + m_size);
+        Apache::Geode::Client::Generic::Log::Debug("ManagedCacheableKeyBytesGeneric::getManagedObject " + m_size);
 
         //System::Text::StringBuilder^ sb = gcnew System::Text::StringBuilder(2000);
         //for(uint32_t i = 0; i<m_size; i++)
@@ -271,12 +271,12 @@ namespace apache
         //	//sb->Append(' ');
         //}
 
-        //  GemStone::GemFire::Cache::Generic::Log::Debug("ManagedCacheableKeyBytesGeneric::getManagedObject " + sb);
+        //  Apache::Geode::Client::Generic::Log::Debug("ManagedCacheableKeyBytesGeneric::getManagedObject " + sb);
         apache::geode::client::DataInput dinp(m_bytes, m_size);
-        GemStone::GemFire::Cache::Generic::DataInput mg_dinp(&dinp, true);
-        GemStone::GemFire::Cache::Generic::TypeFactoryMethodGeneric^ creationMethod =
-          GemStone::GemFire::Cache::Generic::Serializable::GetTypeFactoryMethodGeneric(m_classId);
-        GemStone::GemFire::Cache::Generic::IGFSerializable^ newObj = creationMethod();
+        Apache::Geode::Client::Generic::DataInput mg_dinp(&dinp, true);
+        Apache::Geode::Client::Generic::TypeFactoryMethodGeneric^ creationMethod =
+          Apache::Geode::Client::Generic::Serializable::GetTypeFactoryMethodGeneric(m_classId);
+        Apache::Geode::Client::Generic::IGFSerializable^ newObj = creationMethod();
         return newObj->FromData(%mg_dinp);
       }
     }  // namespace client

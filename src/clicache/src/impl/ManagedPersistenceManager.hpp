@@ -27,7 +27,7 @@ namespace apache {
     namespace client {
 
       /// <summary>
-      /// Wraps the managed <see cref="GemStone.GemFire.Cache.IPersistenceManager" />
+      /// Wraps the managed <see cref="Apache.Geode.Client.IPersistenceManager" />
       /// object and implements the native <c>apache::geode::client::PersistenceManager</c> interface.
       /// </summary>
       class ManagedPersistenceManagerGeneric : public apache::geode::client::PersistenceManager
@@ -50,7 +50,7 @@ namespace apache {
         virtual void destroy(const CacheableKeyPtr& key, void *& PersistenceInfo);
         virtual void close();
 
-        inline void setptr(GemStone::GemFire::Cache::Generic::IPersistenceManagerProxy^ managedptr)
+        inline void setptr(Apache::Geode::Client::Generic::IPersistenceManagerProxy^ managedptr)
         {
           m_managedptr = managedptr;
         }
@@ -69,7 +69,7 @@ namespace apache {
         /// to be called which is not what is desired when this object is destroyed. Normally this
         /// managed object may be created by the user and will be handled automatically by the GC.
         /// </summary>
-        gcroot<GemStone::GemFire::Cache::Generic::IPersistenceManagerProxy^> m_managedptr;
+        gcroot<Apache::Geode::Client::Generic::IPersistenceManagerProxy^> m_managedptr;
 
         gcroot<Object^> m_userptr;
 

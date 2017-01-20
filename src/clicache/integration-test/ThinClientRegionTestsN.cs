@@ -22,11 +22,11 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Threading;
 
-namespace GemStone.GemFire.Cache.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests.NewAPI
 {
   using NUnit.Framework;
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Cache.Generic;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Client.Generic;
 
   [Serializable]
   public class CustomPartitionResolver<TValue> : IPartitionResolver<int, TValue>
@@ -574,7 +574,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
       {
         Assert.Fail("Expected region size 0");
       }
-      GemStone.GemFire.Cache.Generic.RegionAttributes<object, object> attr = region0.Attributes;
+      Apache.Geode.Client.Generic.RegionAttributes<object, object> attr = region0.Attributes;
       TallyListener<object, object> listener = attr.CacheListener as TallyListener<object, object>;
       TallyWriter<object, object> writer = attr.CacheWriter as TallyWriter<object, object>;
       if (listener.Clears != 1)

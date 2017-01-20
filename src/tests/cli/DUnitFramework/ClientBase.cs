@@ -19,7 +19,7 @@ using System;
 using System.Reflection;
 using System.Threading;
 
-namespace GemStone.GemFire.DUnitFramework
+namespace Apache.Geode.DUnitFramework
 {
   /// <summary>
   /// Delegate to be invoked on the client side. This one is for

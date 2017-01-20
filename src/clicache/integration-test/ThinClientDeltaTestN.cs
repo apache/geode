@@ -22,13 +22,13 @@ using System.Threading;
 
 #pragma warning disable 618
 
-namespace GemStone.GemFire.Cache.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests.NewAPI
 {
   using NUnit.Framework;
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Cache.Tests.NewAPI;
-  using GemStone.GemFire.Cache.Generic;
-  using DeltaEx = GemStone.GemFire.Cache.Tests.DeltaEx;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Client.Tests.NewAPI;
+  using Apache.Geode.Client.Generic;
+  using DeltaEx = Apache.Geode.Client.Tests.DeltaEx;
 
   public class CqDeltaListener<TKey, TResult> : ICqListener<TKey, TResult>
   {
@@ -245,7 +245,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
     }
     public void CreateRegion(string name, bool enableNotification, bool cloningEnabled)
     {
-      GemStone.GemFire.Cache.Generic.RegionAttributes<object, object> attrs;
+      Apache.Geode.Client.Generic.RegionAttributes<object, object> attrs;
       AttributesFactory<object, object> attrFac = new AttributesFactory<object, object>();
       attrFac.SetCacheListener(new SimpleCacheListener<object, object>());
       attrFac.SetCloningEnabled(cloningEnabled);

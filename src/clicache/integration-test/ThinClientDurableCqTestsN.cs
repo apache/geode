@@ -16,12 +16,12 @@
  */
 
 using NUnit.Framework;
-using GemStone.GemFire.DUnitFramework;
-using GemStone.GemFire.Cache.Tests.NewAPI;
-using GemStone.GemFire.Cache.Generic;
+using Apache.Geode.DUnitFramework;
+using Apache.Geode.Client.Tests.NewAPI;
+using Apache.Geode.Client.Generic;
 using System;
 
-namespace GemStone.GemFire.Cache.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests.NewAPI
 {
 
   [TestFixture]

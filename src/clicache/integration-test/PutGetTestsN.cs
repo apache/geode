@@ -18,13 +18,13 @@
 using System;
 using System.Collections.Generic;
 
-namespace GemStone.GemFire.Cache.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests.NewAPI
 {
   using NUnit.Framework;
-  using GemStone.GemFire.DUnitFramework;
-  // using GemStone.GemFire.Cache; 
-  using GemStone.GemFire.Cache.Generic;
-  //using Region = GemStone.GemFire.Cache.Generic.IRegion<Object, Object>;
+  using Apache.Geode.DUnitFramework;
+  // using Apache.Geode.Client; 
+  using Apache.Geode.Client.Generic;
+  //using Region = Apache.Geode.Client.Generic.IRegion<Object, Object>;
 
   [TestFixture]
   [Category("group1")]
@@ -598,7 +598,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
       }
 
       Util.Log("Executing onRegion FE with custom key and custom partitionResolver");
-      GemStone.GemFire.Cache.Generic.Execution<object> exc = Generic.FunctionService<object>.OnRegion<TradeKey, object>(region);
+      Apache.Geode.Client.Generic.Execution<object> exc = Generic.FunctionService<object>.OnRegion<TradeKey, object>(region);
       Assert.IsTrue(exc != null, "onRegion Returned NULL");
 
       TradeKey[] filter = new TradeKey[901];
