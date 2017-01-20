@@ -25,6 +25,7 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.internal.cache.execute.NoResult;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.rest.internal.web.exception.GemfireRestException;
 import org.apache.geode.rest.internal.web.util.ArrayUtils;
@@ -225,12 +226,16 @@ public class FunctionAccessController extends AbstractBaseController {
     }
 
     try {
-      Object functionResult = results.getResult();
+      final HttpHeaders headers = new HttpHeaders();
+      headers.setLocation(toUri("functions", functionId));
+
+      Object functionResult = null;
+      if (results instanceof NoResult)
+        return new ResponseEntity<>("", headers, HttpStatus.OK);
+
+      functionResult = results.getResult();
 
       if (functionResult instanceof List<?>) {
-        final HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(toUri("functions", functionId));
-
         try {
           @SuppressWarnings("unchecked")
           String functionResultAsJson =

@@ -324,6 +324,9 @@ public class RestAPIsQueryAndFEJUnitTest {
       + "\"itemNo\": \"599\"," + "\"description\": \"Part X Free on Bumper Offer\","
       + "\"quantity\": \"2\"," + "\"unitprice\": \"5\"," + "\"totalprice\": \"10.00\"" + "}" + "]";
 
+  final String FUNCTION_NO_ARGS = "{ }";
+  final String FUNCTION_NO_ARGS_ARRAY = "[{ }]";
+
   public final int METHOD_INDEX = 0;
   public final int URL_INDEX = 1;
   public final int REQUEST_BODY_INDEX = 2;
@@ -517,7 +520,13 @@ public class RestAPIsQueryAndFEJUnitTest {
           HttpMethod.PUT, "/queries/" + PARAMETERIZED_QUERIES[3][0], PARAMETERIZED_QUERIES[4][1],
           HttpStatus.OK, null, false, false},
       { // 52.5. update parameterized named query "testQuery"
-          HttpMethod.GET, "/queries", null, HttpStatus.OK, null, true, false},};
+          HttpMethod.GET, "/queries", null, HttpStatus.OK, null, true, false},
+      { // 53
+          HttpMethod.POST, "/functions/NoArgFunction", FUNCTION_NO_ARGS, HttpStatus.OK, null, false,
+          false},
+      { // 53
+          HttpMethod.POST, "/functions/NoArgFunction", FUNCTION_NO_ARGS_ARRAY, HttpStatus.OK, null,
+          false, false}};
   // TEST_DATA_END
 
   final int LIST_ALL_NAMED_QUERIES_INDEX = 45;
@@ -644,6 +653,7 @@ public class RestAPIsQueryAndFEJUnitTest {
     FunctionService.registerFunction(new PutKeyFunction());
     FunctionService.registerFunction(new GetDeliveredOrders());
     FunctionService.registerFunction(new AddFreeItemToOrders());
+    FunctionService.registerFunction(new NoArgumentFunction());
   }
 
   @After
@@ -818,9 +828,9 @@ public class RestAPIsQueryAndFEJUnitTest {
         // index=11, put- 500, [While doing R.put, CacheWriter.beforeCreate() has thrown
         // CacheWriterException]
         // .... and more test cases
-        assertEquals(se.getStatusCode(), TEST_DATA[index][STATUS_CODE_INDEX]);
-        assertEquals(StringUtils.hasText(se.getResponseBodyAsString()),
-            ((Boolean) TEST_DATA[index][RESPONSE_HAS_BODY_INDEX]).booleanValue());
+        assertEquals(TEST_DATA[index][STATUS_CODE_INDEX], se.getStatusCode());
+        assertEquals(TEST_DATA[index][RESPONSE_HAS_BODY_INDEX],
+            StringUtils.hasText(se.getResponseBodyAsString()));
 
       } catch (Exception e) {
         caught("caught Exception in executeQueryTestCases " + "Index:" + index + " "

@@ -133,9 +133,8 @@ public class RestSecurityIntegrationTest {
     response = restClient.doPost("/queries/id", "stranger", "1234567", "{\"id\" : \"foo\"}");
     assertEquals(403, restClient.getCode(response));
     response = restClient.doPost("/queries/id", "dataReader", "1234567", "{\"id\" : \"foo\"}");
-    // because we're only testing the security of the endpoint, not the endpoint functionality, a
-    // 500 is acceptable
-    assertEquals(500, restClient.getCode(response));
+    // We should get a 404 because we're trying to update a query that doesn't exist
+    assertEquals(404, restClient.getCode(response));
   }
 
   @Test

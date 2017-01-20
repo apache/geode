@@ -709,9 +709,10 @@ public abstract class AbstractBaseController {
         return (T) rawDataBinding;
       } else {
         final String typeValue = (String) rawDataBinding.get(TYPE_META_DATA_PROPERTY);
-
+        if (typeValue == null)
+          return (T) new JSONObject();
         // Added for the primitive types put. Not supporting primitive types
-        if (NumberUtils.isPrimitiveOrObject(typeValue.toString())) {
+        if (NumberUtils.isPrimitiveOrObject(typeValue)) {
           final Object primitiveValue = rawDataBinding.get("@value");
           try {
             return (T) NumberUtils.convertToActualType(primitiveValue.toString(), typeValue);
