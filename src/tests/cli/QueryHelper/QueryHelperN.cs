@@ -17,11 +17,11 @@
 
 using System;
 
-namespace GemStone.GemFire.Cache.Tests.NewAPI
+namespace Apache.Geode.Client.Tests.NewAPI
 {
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Cache.Generic;
-  //using Region = GemStone.GemFire.Cache.Generic.IRegion<TKey, TVal>;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Client.Generic;
+  //using Region = Apache.Geode.Client.Generic.IRegion<TKey, TVal>;
 
   /// <summary>
   /// Helper class to populate regions and verify query results.

@@ -21,13 +21,13 @@
 #include "TransactionEvent.hpp"
 
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache 
-		{ 
-			namespace Generic
+    namespace Client
+    {
+namespace Generic
 			{
 				/// <summary>
 				/// A callback that is allowed to veto a transaction. Only one TransactionWriter can exist

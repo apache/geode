@@ -20,13 +20,13 @@
 #include "gfcli/Utils.hpp"
 #include <Utils.hpp>
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-	 namespace Cache
-		{
-			namespace Generic
+    namespace Client
+    {
+namespace Generic
 			{
 
     MethodInfo^ Utils::LoadMethod( String^ assemblyName,

@@ -20,10 +20,10 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 
-namespace GemStone.GemFire.Cache.FwkLib
+namespace Apache.Geode.Client.FwkLib
 {
-  using GemStone.GemFire.Cache.Tests;
-  using GemStone.GemFire.DUnitFramework;
+  using Apache.Geode.Client.Tests;
+  using Apache.Geode.DUnitFramework;
 
   public class Security : PerfTests
   {

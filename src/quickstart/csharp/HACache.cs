@@ -36,9 +36,9 @@ using System;
 using System.Threading;
 
 // Use the GemFire namespace
-using GemStone.GemFire.Cache.Generic;
+using Apache.Geode.Client.Generic;
 
-namespace GemStone.GemFire.Cache.Generic.QuickStart
+namespace Apache.Geode.Client.Generic.QuickStart
 {
   // The HA QuickStart example.
   class HA
@@ -48,7 +48,7 @@ namespace GemStone.GemFire.Cache.Generic.QuickStart
       try
       {
         // Create a GemFire Cache.
-        GemStone.GemFire.Cache.Generic.CacheFactory cacheFactory = CacheFactory.CreateCacheFactory();
+        Apache.Geode.Client.Generic.CacheFactory cacheFactory = CacheFactory.CreateCacheFactory();
 
         Cache cache = cacheFactory.Set("cache-xml-file", "XMLs/clientHACache.xml")
                   .AddServer("localhost", 40404)

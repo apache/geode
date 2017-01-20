@@ -28,11 +28,13 @@
 using namespace System;
 using namespace System::Collections::Generic;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
       generic<class TKey, class TValue>
       ref class RegionEntry;
@@ -164,12 +166,12 @@ namespace GemStone
 
           virtual property AttributesMutator<TKey, TValue>^ AttributesMutator
           {
-            GemStone::GemFire::Cache::Generic::AttributesMutator<TKey, TValue>^ get();
+            Apache::Geode::Client::Generic::AttributesMutator<TKey, TValue>^ get();
           }
 
-          virtual property GemStone::GemFire::Cache::Generic::CacheStatistics^ Statistics 
+          virtual property Apache::Geode::Client::Generic::CacheStatistics^ Statistics 
           {
-            GemStone::GemFire::Cache::Generic::CacheStatistics^ get();
+            Apache::Geode::Client::Generic::CacheStatistics^ get();
           }
 
           virtual IRegion<TKey, TValue>^ GetSubRegion( String^ path );
@@ -183,9 +185,9 @@ namespace GemStone
 
           virtual System::Collections::Generic::ICollection<RegionEntry<TKey,TValue>^>^ GetEntries(bool recursive);
 
-          virtual property GemStone::GemFire::Cache::Generic::IRegionService^ RegionService
+          virtual property Apache::Geode::Client::Generic::IRegionService^ RegionService
           {
-            GemStone::GemFire::Cache::Generic::IRegionService^ get( );
+            Apache::Geode::Client::Generic::IRegionService^ get( );
           }
 
           virtual bool ContainsValueForKey( TKey key );

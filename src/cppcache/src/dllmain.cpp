@@ -68,7 +68,7 @@ LIBEXP void DllMainGetPath(char *result, int maxLen) {
   if (libgfcppcache_module == 0) {
     libgfcppcache_module = GetModuleHandle("gfcppcache_g.dll");
     if (libgfcppcache_module == 0) {
-      libgfcppcache_module = GetModuleHandle("Gemstone.Gemfire.Cache.dll");
+      libgfcppcache_module = GetModuleHandle("Apache.Geode.Client.dll");
     }
   }
   if (libgfcppcache_module != 0) {

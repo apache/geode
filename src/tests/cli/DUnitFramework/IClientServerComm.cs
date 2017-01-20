@@ -19,7 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Xml;
 
-namespace GemStone.GemFire.DUnitFramework
+namespace Apache.Geode.DUnitFramework
 {
   /// <summary>
   /// Interface for sending commands from server to client.

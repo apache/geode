@@ -48,8 +48,8 @@ foreach(FILE ${SOURCES})
 	  if (NOT IsDeprecated)
 
 		  # Get the namespace
-		  file(STRINGS ${FILE} NameSpaceLine REGEX "namespace GemStone.GemFire.Cache.UnitTests")
-		  string(REGEX REPLACE "namespace.*GemStone" "GemStone" NAMESPACE ${NameSpaceLine})
+		  file(STRINGS ${FILE} NameSpaceLine REGEX "namespace Apache.Geode.Client.UnitTests")
+		  string(REGEX REPLACE "namespace.*Apache" "Apache" NAMESPACE ${NameSpaceLine})
 
           string(REGEX REPLACE "\\.cs" "" TEST ${FILE})        
           set(TESTS ${TESTS} ${TEST})

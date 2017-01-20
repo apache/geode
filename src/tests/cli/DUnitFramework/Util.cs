@@ -30,7 +30,7 @@ using System.Security.Principal;
 
 #pragma warning disable 618
 
-namespace GemStone.GemFire.DUnitFramework
+namespace Apache.Geode.DUnitFramework
 {
   using NUnit.Framework;
   

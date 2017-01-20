@@ -25,24 +25,14 @@
 //#include "Cache.hpp"
 
 using namespace System;
-//namespace GemStone
-//{
-//  namespace GemFire
-//  {
-//    namespace Cache 
-//    {
-//      ref class Cache;
-//    }
-//  }
-//}
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache 
+    namespace Client
     {
-      namespace Generic
+namespace Generic
       {
 				ref class TransactionId;
 				ref class Cache;
@@ -61,9 +51,9 @@ namespace GemStone
             /// <summary>
             /// Gets the transaction id for this transaction.
             /// </summary>
-						property GemStone::GemFire::Cache::Generic::TransactionId^ TransactionId
+						property Apache::Geode::Client::Generic::TransactionId^ TransactionId
             {
-							GemStone::GemFire::Cache::Generic::TransactionId^ get( );
+							Apache::Geode::Client::Generic::TransactionId^ get( );
             }
 
          		/// <summary>
@@ -79,9 +69,9 @@ namespace GemStone
             /// <summary>
             /// Gets the Cache for this transaction event
             /// </summary>
-						property GemStone::GemFire::Cache::Generic::Cache^ Cache
+						property Apache::Geode::Client::Generic::Cache^ Cache
             {
-              GemStone::GemFire::Cache::Generic::Cache^ get( );
+              Apache::Geode::Client::Generic::Cache^ get( );
             }
 
           internal:

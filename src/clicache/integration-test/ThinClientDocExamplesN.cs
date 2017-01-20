@@ -21,13 +21,13 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Diagnostics;
 
-namespace GemStone.GemFire.Cache.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests.NewAPI
 {
   using NUnit.Framework;
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Cache.Tests.NewAPI;
-  using GemStone.GemFire.Cache.Examples;
-  using GemStone.GemFire.Cache.Generic;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Client.Tests.NewAPI;
+  using Apache.Geode.Client.Examples;
+  using Apache.Geode.Client.Generic;
 
   namespace gemfire.cliwrap.Examples
   {
@@ -849,8 +849,8 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
     {
       Properties<string, string> secProp = Properties<string, string>.Create<string, string>();
       secProp.Insert("security-client-auth-factory",
-      "GemStone.GemFire.Templates.Cache.Security.UserPasswordAuthInit.Create");
-      secProp.Insert("security-client-auth-library", "GemStone.GemFire.Templates.Cache.Security");
+      "Apache.Geode.Templates.Cache.Security.UserPasswordAuthInit.Create");
+      secProp.Insert("security-client-auth-library", "Apache.Geode.Templates.Cache.Security");
       secProp.Insert("security-username", " gemfire6");
       secProp.Insert("security-password", " gemfire6Pass");
       CacheFactory cacheFactory = CacheFactory.CreateCacheFactory(secProp);
@@ -1125,7 +1125,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
       bool args0 = true;
       //test data dependant function execution
       //     test get function with result
-      GemStone.GemFire.Cache.Generic.Execution<object> exc = GemStone.GemFire.Cache.Generic.FunctionService<object>.OnRegion<object, object>(region);
+      Apache.Geode.Client.Generic.Execution<object> exc = Apache.Geode.Client.Generic.FunctionService<object>.OnRegion<object, object>(region);
       IResultCollector<object> rc = exc.WithArgs<bool>(args0).WithFilter<object>(routingObj).Execute(
       getFuncName);
       ICollection<object> executeFunctionResult = rc.GetResult();
@@ -1165,7 +1165,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
       Console.WriteLine("routingObj count= {0}.", routingObj.Length);
       //test date independant fucntion execution on one server
       //     test get function with result
-      GemStone.GemFire.Cache.Generic.Execution<object> exc = GemStone.GemFire.Cache.Generic.FunctionService<object>.OnServer(cache);
+      Apache.Geode.Client.Generic.Execution<object> exc = Apache.Geode.Client.Generic.FunctionService<object>.OnServer(cache);
       //TODO::split
       //CacheableVector args1 = new CacheableVector();
       System.Collections.ArrayList args1 = new System.Collections.ArrayList();

@@ -23,14 +23,14 @@ using System.Threading;
 using System.Reflection;
 using System.IO;
 using PdxTests;
-namespace GemStone.GemFire.Cache.FwkLib
+namespace Apache.Geode.Client.FwkLib
 {
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Cache.Tests.NewAPI;
-  using GemStone.GemFire.Cache.Generic;
-  using QueryCategory = GemStone.GemFire.Cache.Tests.QueryCategory;
-  using QueryStrings = GemStone.GemFire.Cache.Tests.QueryStrings;
-  using QueryStatics = GemStone.GemFire.Cache.Tests.QueryStatics;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Client.Tests.NewAPI;
+  using Apache.Geode.Client.Generic;
+  using QueryCategory = Apache.Geode.Client.Tests.QueryCategory;
+  using QueryStrings = Apache.Geode.Client.Tests.QueryStrings;
+  using QueryStatics = Apache.Geode.Client.Tests.QueryStatics;
 
   public class SilenceListener<TKey, TVal> : CacheListenerAdapter<TKey, TVal>
   {
@@ -1137,8 +1137,8 @@ namespace GemStone.GemFire.Cache.FwkLib
         remoteQuery(currentQuery, isLargeSetQuery, isUnsupportedPRQuery, i,false,false);
         i = Util.Rand(QueryStrings.SSsize);
         int[] a = new int[] { 4, 6, 7, 9, 12, 14, 15, 16 };
-        if ((typeof(TVal).Equals(typeof(GemStone.GemFire.Cache.Tests.NewAPI.PortfolioPdx)) ||
-          (typeof(TVal).Equals(typeof(GemStone.GemFire.Cache.Tests.NewAPI.PositionPdx)))) && ((IList<int>)a).Contains(i))
+        if ((typeof(TVal).Equals(typeof(Apache.Geode.Client.Tests.NewAPI.PortfolioPdx)) ||
+          (typeof(TVal).Equals(typeof(Apache.Geode.Client.Tests.NewAPI.PositionPdx)))) && ((IList<int>)a).Contains(i))
         {
           FwkInfo("Skiping Query for pdx object [{0}]", QueryStatics.StructSetQueries[i]);
         }
@@ -1151,8 +1151,8 @@ namespace GemStone.GemFire.Cache.FwkLib
         currentQuery = QueryStatics.ResultSetParamQueries[i];
         remoteQuery(currentQuery, isLargeSetQuery, isUnsupportedPRQuery, i,true,false);
         i = Util.Rand(QueryStrings.SSPsize);
-        if ((typeof(TVal).Equals(typeof(GemStone.GemFire.Cache.Tests.NewAPI.PortfolioPdx)) ||
-          (typeof(TVal).Equals(typeof(GemStone.GemFire.Cache.Tests.NewAPI.PositionPdx)))) && ((IList<int>)a).Contains(i))
+        if ((typeof(TVal).Equals(typeof(Apache.Geode.Client.Tests.NewAPI.PortfolioPdx)) ||
+          (typeof(TVal).Equals(typeof(Apache.Geode.Client.Tests.NewAPI.PositionPdx)))) && ((IList<int>)a).Contains(i))
         {
           FwkInfo("Skiping Query for pdx object [{0}]", QueryStatics.StructSetParamQueries[i]);
         }
@@ -1710,11 +1710,11 @@ namespace GemStone.GemFire.Cache.FwkLib
       {
         anObj = aRegion[key];
       }
-      catch (GemStone.GemFire.Cache.Generic.KeyNotFoundException)
+      catch (Apache.Geode.Client.Generic.KeyNotFoundException)
       {
         if (!EqualityComparer<TVal>.Default.Equals(anObj, default(TVal)))
         {
-          throw new GemStone.GemFire.Cache.Generic.KeyNotFoundException();
+          throw new Apache.Geode.Client.Generic.KeyNotFoundException();
         }
 
       }
@@ -2284,7 +2284,7 @@ namespace GemStone.GemFire.Cache.FwkLib
             }
             //}
           }
-          catch (GemStone.GemFire.Cache.Generic.KeyNotFoundException)
+          catch (Apache.Geode.Client.Generic.KeyNotFoundException)
           {
           }
           catch (Exception e)
@@ -2372,7 +2372,7 @@ namespace GemStone.GemFire.Cache.FwkLib
                 }
               //}
             }
-            catch (GemStone.GemFire.Cache.Generic.KeyNotFoundException)
+            catch (Apache.Geode.Client.Generic.KeyNotFoundException)
             {
             }
             catch (Exception e)
@@ -2435,7 +2435,7 @@ namespace GemStone.GemFire.Cache.FwkLib
           try
           {
               value = aRegion[key];
-          }catch(GemStone.GemFire.Cache.Generic.KeyNotFoundException){
+          }catch(Apache.Geode.Client.Generic.KeyNotFoundException){
               value = default(TVal);
           }
           regionSnapshot[key] = value;
@@ -2630,7 +2630,7 @@ namespace GemStone.GemFire.Cache.FwkLib
                 FwkInfo("CacheServer.DoEntryOperations() Caught non-fatal " +
                   "exception in read: {0}", ex.Message);
               }
-              catch (GemStone.GemFire.Cache.Generic.KeyNotFoundException ex) {
+              catch (Apache.Geode.Client.Generic.KeyNotFoundException ex) {
                 FwkInfo("CacheServer.DoEntryOperations() Caught non-fatal " +
                   "exception in read: {0}", ex.Message);
               }
@@ -2867,7 +2867,7 @@ namespace GemStone.GemFire.Cache.FwkLib
           addOps = -1;
           UpdateOperationsMap(opCode, addOps);
         }
-        catch (GemStone.GemFire.Cache.Generic.KeyNotFoundException)
+        catch (Apache.Geode.Client.Generic.KeyNotFoundException)
         {
           addOps = -1;
           UpdateOperationsMap(opCode, addOps);
@@ -3770,7 +3770,7 @@ public void doVerifyRegionContentsAfterLateOps()
                           TVal value = regionPtr[key];
                           checkValue(key, value);
                       }
-                      catch (GemStone.GemFire.Cache.Generic.KeyNotFoundException)
+                      catch (Apache.Geode.Client.Generic.KeyNotFoundException)
                       { }
 
                   }
@@ -3886,7 +3886,7 @@ public void doVerifyRegionContentsAfterLateOps()
                       }
                   }
               }
-              catch (GemStone.GemFire.Cache.Generic.KeyNotFoundException)
+              catch (Apache.Geode.Client.Generic.KeyNotFoundException)
               {}
           }
       }
@@ -3903,7 +3903,7 @@ public void doVerifyRegionContentsAfterLateOps()
                   TVal value = regionPtr[key];
                   checkValue(key, value);
               }
-              catch (GemStone.GemFire.Cache.Generic.KeyNotFoundException)
+              catch (Apache.Geode.Client.Generic.KeyNotFoundException)
               { }
           }
       }
@@ -3931,7 +3931,7 @@ public void doVerifyRegionContentsAfterLateOps()
                       }
                   }
               }
-              catch (GemStone.GemFire.Cache.Generic.KeyNotFoundException)
+              catch (Apache.Geode.Client.Generic.KeyNotFoundException)
               { }
           }
       }
@@ -4213,7 +4213,7 @@ private void checkUpdatedValue(TKey key, TVal value)
             rootAttrs = CreatePool(rootAttrs, redundancyLevel);
             FwkInfo("Entering CacheHelper.CreateRegion()");
             region = CacheHelper<TKey, TVal>.CreateRegion(rootRegionName, rootAttrs);
-            GemStone.GemFire.Cache.Generic.RegionAttributes<TKey, TVal> regAttr = region.Attributes;
+            Apache.Geode.Client.Generic.RegionAttributes<TKey, TVal> regAttr = region.Attributes;
             FwkInfo("Region attributes for {0}: {1}", rootRegionName,
               CacheHelper<TKey, TVal>.RegionAttributesToString(regAttr));
             if (isDC)
@@ -4679,7 +4679,7 @@ private void checkUpdatedValue(TKey key, TVal value)
                     FwkInfo("MultiUser.DoEntryOperationsForMU() Caught non-fatal " +
                       "ex-ception in read: {0}", ex.Message);
                 }
-                catch (GemStone.GemFire.Cache.Generic.KeyNotFoundException ex)
+                catch (Apache.Geode.Client.Generic.KeyNotFoundException ex)
                 {
                     FwkInfo("MultiUser.DoEntryOperationsForMU() Caught non-fatal " +
                       "ex-ception in read: {0}", ex.Message);
@@ -4717,7 +4717,7 @@ private void checkUpdatedValue(TKey key, TVal value)
               string funcName = null;
               Random rdn = new Random();
               int num = rdn.Next(3);
-              GemStone.GemFire.Cache.Generic.Execution<object> exc = null;
+              Apache.Geode.Client.Generic.Execution<object> exc = null;
               ICollection<object> executeFunctionResult = null;
               ArrayList args = new ArrayList();
               Object[] filterObj = new Object[1];

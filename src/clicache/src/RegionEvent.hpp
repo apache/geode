@@ -26,11 +26,13 @@
 
 using namespace System;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
 
       //ref class Region;
@@ -86,8 +88,8 @@ namespace GemStone
         /// Internal constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline GemStone::GemFire::Cache::Generic::RegionEvent<TKey, TValue>( const apache::geode::client::RegionEvent* nativeptr )
-          : GemStone::GemFire::Cache::Generic::Internal::UMWrap<apache::geode::client::RegionEvent>(
+        inline Apache::Geode::Client::Generic::RegionEvent<TKey, TValue>( const apache::geode::client::RegionEvent* nativeptr )
+          : Apache::Geode::Client::Generic::Internal::UMWrap<apache::geode::client::RegionEvent>(
             const_cast<apache::geode::client::RegionEvent*>( nativeptr ), false ) { }
       };
 

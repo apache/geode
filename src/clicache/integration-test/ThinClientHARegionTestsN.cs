@@ -19,14 +19,14 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace GemStone.GemFire.Cache.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests.NewAPI
 {
   using NUnit.Framework;
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Cache.Tests.NewAPI;
-  using GemStone.GemFire.Cache.Generic;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Client.Tests.NewAPI;
+  using Apache.Geode.Client.Generic;
 
-  using Region = GemStone.GemFire.Cache.Generic.IRegion<Object, Object>;
+  using Region = Apache.Geode.Client.Generic.IRegion<Object, Object>;
 
   [TestFixture]
   [Category("group4")]

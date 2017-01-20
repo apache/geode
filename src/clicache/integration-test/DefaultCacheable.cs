@@ -19,9 +19,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-using GemStone.GemFire.Cache.Generic;
+using Apache.Geode.Client.Generic;
 
-namespace GemStone.GemFire.Cache.UnitTests
+namespace Apache.Geode.Client.UnitTests
 {
   [Serializable]
   class CustomSerializableObject
@@ -35,19 +35,19 @@ namespace GemStone.GemFire.Cache.UnitTests
       value = "value";
     }
   }
-  class DefaultCacheable : GemStone.GemFire.Cache.Generic.IGFSerializable
+  class DefaultCacheable : Apache.Geode.Client.Generic.IGFSerializable
   {
-    GemStone.GemFire.Cache.Generic.CacheableBoolean m_cacheableBoolean = null;
-    GemStone.GemFire.Cache.Generic.CacheableInt32 m_cacheableInt32 = null;
-    GemStone.GemFire.Cache.Generic.CacheableInt32Array m_cacheableInt32Array = null;
-    GemStone.GemFire.Cache.Generic.CacheableFileName m_cacheableFileName = null;
-    GemStone.GemFire.Cache.Generic.CacheableString m_CacheableStringASCII = null;
-    GemStone.GemFire.Cache.Generic.CacheableStringArray m_cacheableStringArray = null;
-    GemStone.GemFire.Cache.Generic.CacheableHashSet m_cacheableHashSet = null;
-    GemStone.GemFire.Cache.Generic.CacheableHashMap m_cacheableHashMap = null;
-    GemStone.GemFire.Cache.Generic.CacheableDate m_cacheableDate = null;
-    GemStone.GemFire.Cache.Generic.CacheableVector m_cacheableVector = null;
-    GemStone.GemFire.Cache.Generic.CacheableObject m_cacheableObject = null;
+    Apache.Geode.Client.Generic.CacheableBoolean m_cacheableBoolean = null;
+    Apache.Geode.Client.Generic.CacheableInt32 m_cacheableInt32 = null;
+    Apache.Geode.Client.Generic.CacheableInt32Array m_cacheableInt32Array = null;
+    Apache.Geode.Client.Generic.CacheableFileName m_cacheableFileName = null;
+    Apache.Geode.Client.Generic.CacheableString m_CacheableStringASCII = null;
+    Apache.Geode.Client.Generic.CacheableStringArray m_cacheableStringArray = null;
+    Apache.Geode.Client.Generic.CacheableHashSet m_cacheableHashSet = null;
+    Apache.Geode.Client.Generic.CacheableHashMap m_cacheableHashMap = null;
+    Apache.Geode.Client.Generic.CacheableDate m_cacheableDate = null;
+    Apache.Geode.Client.Generic.CacheableVector m_cacheableVector = null;
+    Apache.Geode.Client.Generic.CacheableObject m_cacheableObject = null;
 
     bool m_initialized = false;
 
@@ -60,86 +60,86 @@ namespace GemStone.GemFire.Cache.UnitTests
     {
       if (initialized)
       {
-        GemStone.GemFire.Cache.Generic.Log.Fine(" in constructor");
+        Apache.Geode.Client.Generic.Log.Fine(" in constructor");
         m_initialized = true;
 
-        m_cacheableBoolean = GemStone.GemFire.Cache.Generic.CacheableBoolean.Create(true);
+        m_cacheableBoolean = Apache.Geode.Client.Generic.CacheableBoolean.Create(true);
 
-        m_cacheableInt32 = GemStone.GemFire.Cache.Generic.CacheableInt32.Create(1000);
+        m_cacheableInt32 = Apache.Geode.Client.Generic.CacheableInt32.Create(1000);
 
-        m_cacheableInt32Array = GemStone.GemFire.Cache.Generic.CacheableInt32Array.Create(new Int32[] { 1, 2, 3 });
+        m_cacheableInt32Array = Apache.Geode.Client.Generic.CacheableInt32Array.Create(new Int32[] { 1, 2, 3 });
 
-        m_cacheableFileName = GemStone.GemFire.Cache.Generic.CacheableFileName.Create("gemstone.txt");
+        m_cacheableFileName = Apache.Geode.Client.Generic.CacheableFileName.Create("gemstone.txt");
 
-        m_CacheableStringASCII = GemStone.GemFire.Cache.Generic.CacheableString.Create("asciistring");
+        m_CacheableStringASCII = Apache.Geode.Client.Generic.CacheableString.Create("asciistring");
 
-        m_cacheableStringArray = GemStone.GemFire.Cache.Generic.CacheableStringArray.Create(new string[] { "one", "two" });
+        m_cacheableStringArray = Apache.Geode.Client.Generic.CacheableStringArray.Create(new string[] { "one", "two" });
 
-        m_cacheableHashSet = GemStone.GemFire.Cache.Generic.CacheableHashSet.Create(2);
-        m_cacheableHashSet.Add(GemStone.GemFire.Cache.Generic.CacheableString.Create("first"));
-        m_cacheableHashSet.Add(GemStone.GemFire.Cache.Generic.CacheableString.Create("second"));
+        m_cacheableHashSet = Apache.Geode.Client.Generic.CacheableHashSet.Create(2);
+        m_cacheableHashSet.Add(Apache.Geode.Client.Generic.CacheableString.Create("first"));
+        m_cacheableHashSet.Add(Apache.Geode.Client.Generic.CacheableString.Create("second"));
 
-        m_cacheableHashMap = new GemStone.GemFire.Cache.Generic.CacheableHashMap(new Dictionary<string, string>() {{ "key-hm", "value-hm" }});
+        m_cacheableHashMap = new Apache.Geode.Client.Generic.CacheableHashMap(new Dictionary<string, string>() {{ "key-hm", "value-hm" }});
 
         m_cacheableDate = (CacheableDate)CacheableDate.Create(DateTime.Now);
 
-        m_cacheableVector = new GemStone.GemFire.Cache.Generic.CacheableVector(new List<string>() { "one-vec", "two-vec" });
+        m_cacheableVector = new Apache.Geode.Client.Generic.CacheableVector(new List<string>() { "one-vec", "two-vec" });
 
-        m_cacheableObject = GemStone.GemFire.Cache.Generic.CacheableObject.Create(new CustomSerializableObject());
+        m_cacheableObject = Apache.Geode.Client.Generic.CacheableObject.Create(new CustomSerializableObject());
       } 
     }
 
-    public GemStone.GemFire.Cache.Generic.CacheableBoolean CBool
+    public Apache.Geode.Client.Generic.CacheableBoolean CBool
     {
       get { return m_cacheableBoolean; }
     }
 
-    public GemStone.GemFire.Cache.Generic.CacheableInt32 CInt
+    public Apache.Geode.Client.Generic.CacheableInt32 CInt
     {
       get { return m_cacheableInt32; }
     }
 
-    public GemStone.GemFire.Cache.Generic.CacheableInt32Array CIntArray
+    public Apache.Geode.Client.Generic.CacheableInt32Array CIntArray
     {
       get { return m_cacheableInt32Array; }
     }
 
-    public GemStone.GemFire.Cache.Generic.CacheableFileName CFileName
+    public Apache.Geode.Client.Generic.CacheableFileName CFileName
     {
       get { return m_cacheableFileName; }
     }
 
-    public GemStone.GemFire.Cache.Generic.CacheableString CString
+    public Apache.Geode.Client.Generic.CacheableString CString
     {
       get { return m_CacheableStringASCII; }
     }
 
-    public GemStone.GemFire.Cache.Generic.CacheableStringArray CStringArray
+    public Apache.Geode.Client.Generic.CacheableStringArray CStringArray
     {
       get { return m_cacheableStringArray; }
     }
 
-    public GemStone.GemFire.Cache.Generic.CacheableHashSet CHashSet
+    public Apache.Geode.Client.Generic.CacheableHashSet CHashSet
     {
       get { return m_cacheableHashSet; }
     }
 
-    public GemStone.GemFire.Cache.Generic.CacheableHashMap CHashMap
+    public Apache.Geode.Client.Generic.CacheableHashMap CHashMap
     {
       get { return m_cacheableHashMap; }
     }
 
-    public GemStone.GemFire.Cache.Generic.CacheableDate CDate
+    public Apache.Geode.Client.Generic.CacheableDate CDate
     {
       get { return m_cacheableDate; }
     }
 
-    public GemStone.GemFire.Cache.Generic.CacheableVector CVector
+    public Apache.Geode.Client.Generic.CacheableVector CVector
     {
       get { return m_cacheableVector; }
     }
 
-    public GemStone.GemFire.Cache.Generic.CacheableObject CObject
+    public Apache.Geode.Client.Generic.CacheableObject CObject
     {
       get { return m_cacheableObject; }
     }
@@ -151,21 +151,21 @@ namespace GemStone.GemFire.Cache.UnitTests
       get { return 0x04; }
     }
 
-    public GemStone.GemFire.Cache.Generic.IGFSerializable FromData(GemStone.GemFire.Cache.Generic.DataInput input)
+    public Apache.Geode.Client.Generic.IGFSerializable FromData(Apache.Geode.Client.Generic.DataInput input)
     {
       if (!m_initialized)
       {
-        m_cacheableBoolean = (GemStone.GemFire.Cache.Generic.CacheableBoolean)CacheableBoolean.CreateDeserializable();
-        m_cacheableInt32 = (GemStone.GemFire.Cache.Generic.CacheableInt32)CacheableInt32.CreateDeserializable();
-        m_cacheableInt32Array = (GemStone.GemFire.Cache.Generic.CacheableInt32Array)CacheableInt32Array.CreateDeserializable();
+        m_cacheableBoolean = (Apache.Geode.Client.Generic.CacheableBoolean)CacheableBoolean.CreateDeserializable();
+        m_cacheableInt32 = (Apache.Geode.Client.Generic.CacheableInt32)CacheableInt32.CreateDeserializable();
+        m_cacheableInt32Array = (Apache.Geode.Client.Generic.CacheableInt32Array)CacheableInt32Array.CreateDeserializable();
        // m_cacheableFileName = (CacheableFileName)CacheableFileName.CreateDeserializable();
         //m_CacheableStringASCII = (CacheableString)CacheableString.CreateDeserializable();
-        m_cacheableStringArray = (GemStone.GemFire.Cache.Generic.CacheableStringArray)CacheableStringArray.CreateDeserializable();
-        m_cacheableHashSet = (GemStone.GemFire.Cache.Generic.CacheableHashSet)CacheableHashSet.CreateDeserializable();
-        m_cacheableHashMap = (GemStone.GemFire.Cache.Generic.CacheableHashMap)CacheableHashMap.CreateDeserializable();
+        m_cacheableStringArray = (Apache.Geode.Client.Generic.CacheableStringArray)CacheableStringArray.CreateDeserializable();
+        m_cacheableHashSet = (Apache.Geode.Client.Generic.CacheableHashSet)CacheableHashSet.CreateDeserializable();
+        m_cacheableHashMap = (Apache.Geode.Client.Generic.CacheableHashMap)CacheableHashMap.CreateDeserializable();
         m_cacheableDate = (CacheableDate)CacheableDate.CreateDeserializable();
-        m_cacheableVector = (GemStone.GemFire.Cache.Generic.CacheableVector)CacheableVector.CreateDeserializable();
-        m_cacheableObject = (GemStone.GemFire.Cache.Generic.CacheableObject)CacheableObject.CreateDeserializable();
+        m_cacheableVector = (Apache.Geode.Client.Generic.CacheableVector)CacheableVector.CreateDeserializable();
+        m_cacheableObject = (Apache.Geode.Client.Generic.CacheableObject)CacheableObject.CreateDeserializable();
       }
 
       m_cacheableBoolean.FromData(input);
@@ -187,7 +187,7 @@ namespace GemStone.GemFire.Cache.UnitTests
       get { return 100; }//need to implement
     }
 
-    public void ToData(GemStone.GemFire.Cache.Generic.DataOutput output)
+    public void ToData(Apache.Geode.Client.Generic.DataOutput output)
     {
       if (m_initialized)
       {
@@ -207,7 +207,7 @@ namespace GemStone.GemFire.Cache.UnitTests
 
     #endregion
 
-    public static GemStone.GemFire.Cache.Generic.IGFSerializable CreateDeserializable()
+    public static Apache.Geode.Client.Generic.IGFSerializable CreateDeserializable()
     {
       return new DefaultCacheable();
     }

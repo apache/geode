@@ -19,10 +19,10 @@ using System;
 using System.Text;
 using System.Threading;
 
-namespace GemStone.GemFire.Cache.FwkLib
+namespace Apache.Geode.Client.FwkLib
 {
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Cache.Generic;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Client.Generic;
 
   public class DurableClientTests<TKey,TVal> : PerfTests<TKey,TVal>
   {
@@ -237,7 +237,7 @@ namespace GemStone.GemFire.Cache.FwkLib
               SetRegionAttributes(rootAttrs, rootRegionData, ref m_isPool);
               rootAttrs = CreatePool(rootAttrs, redundancyLevel);
               region = CacheHelper<TKey, TVal>.CreateRegion(rootRegionName, rootAttrs);
-              GemStone.GemFire.Cache.Generic.RegionAttributes<TKey, TVal> regAttr = region.Attributes;
+              Apache.Geode.Client.Generic.RegionAttributes<TKey, TVal> regAttr = region.Attributes;
               FwkInfo("Region attributes for {0}: {1}", rootRegionName,
                 CacheHelper<TKey, TVal>.RegionAttributesToString(regAttr));
 
@@ -328,7 +328,7 @@ namespace GemStone.GemFire.Cache.FwkLib
         {
           currcnt = (Int32)Util.BBGet("DURABLEBB", operkey);
         }
-        catch (GemStone.GemFire.DUnitFramework.KeyNotFoundException)
+        catch (Apache.Geode.DUnitFramework.KeyNotFoundException)
         {
           FwkInfo("Key not found for DURABLEBB {0}", operkey);
         }
@@ -337,7 +337,7 @@ namespace GemStone.GemFire.Cache.FwkLib
         {
           feedcnt = (Int32)Util.BBGet("DURABLEBB", feedkey);
         }
-        catch (GemStone.GemFire.DUnitFramework.KeyNotFoundException)
+        catch (Apache.Geode.DUnitFramework.KeyNotFoundException)
         {
           FwkInfo("Key not found for DURABLEBB {0}", feedkey);
         }
@@ -354,7 +354,7 @@ namespace GemStone.GemFire.Cache.FwkLib
           {
             errorMsg = (string)Util.BBGet("DURABLEBB", clientErrorKey);
           }
-          catch (GemStone.GemFire.DUnitFramework.KeyNotFoundException)
+          catch (Apache.Geode.DUnitFramework.KeyNotFoundException)
           {
             errorMsg = "unknown";
             FwkInfo("Key not found for DURABLEBB {0}", clientErrorKey);

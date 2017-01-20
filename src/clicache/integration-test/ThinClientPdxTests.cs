@@ -24,12 +24,12 @@ using System.Threading;
 using PdxTests;
 using System.Reflection;
 
-namespace GemStone.GemFire.Cache.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests.NewAPI
 {
   using NUnit.Framework;
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Cache.Generic;
-  using Region = GemStone.GemFire.Cache.Generic.IRegion<Object, Object>;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Client.Generic;
+  using Region = Apache.Geode.Client.Generic.IRegion<Object, Object>;
 
   
   [TestFixture]
@@ -1556,7 +1556,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
          {
              object retVal = localregion[p1];
          }
-         catch (GemStone.GemFire.Cache.Generic.KeyNotFoundException)
+         catch (Apache.Geode.Client.Generic.KeyNotFoundException)
          {
              Util.Log("Got expected KeyNotFoundException exception");
          }
@@ -1911,7 +1911,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
        {
          pRet = region0.GetLocalView()[key];
        }
-       catch (GemStone.GemFire.Cache.Generic.KeyNotFoundException )
+       catch (Apache.Geode.Client.Generic.KeyNotFoundException )
        {
          isKNFE = true;
        }
@@ -2990,7 +2990,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
        ret = region0[2];
        Util.Log("Put from pool-2 completed");
 
-       int pdxIds = GemStone.GemFire.Cache.Generic.Internal.PdxTypeRegistry.testGetNumberOfPdxIds();
+       int pdxIds = Apache.Geode.Client.Generic.Internal.PdxTypeRegistry.testGetNumberOfPdxIds();
 
        Assert.AreEqual(3, pdxIds);
      }
@@ -7163,7 +7163,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
 
 namespace javaobject
 {
-  using GemStone.GemFire.Cache.Generic;
+  using Apache.Geode.Client.Generic;
   #region Pdx Delta class
   public class PdxDelta : IPdxSerializable, IGFDelta, ICloneable
   {

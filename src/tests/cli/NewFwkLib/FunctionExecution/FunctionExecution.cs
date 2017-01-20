@@ -21,10 +21,10 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 
-namespace GemStone.GemFire.Cache.FwkLib
+namespace Apache.Geode.Client.FwkLib
 {
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Cache.Generic;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Client.Generic;
 
     //----------------------------------- DoOpsTask start ------------------------
     public class DoFETask<TKey, TVal> : ClientTask
@@ -211,7 +211,7 @@ namespace GemStone.GemFire.Cache.FwkLib
             if (pdxobject)
                 args.Add(pdxobject);    
             args.Add(filterObj[0]); 
-            GemStone.GemFire.Cache.Generic.Execution<object> exc =
+            Apache.Geode.Client.Generic.Execution<object> exc =
                 Generic.FunctionService<object>.OnRegion<TKey, TVal>(m_region);
             //FwkTest<TKey, TVal>.CurrentTest.FwkInfo("Going to do addKey execute");
             ICollection<object> executeFunctionResult = null;
@@ -252,7 +252,7 @@ namespace GemStone.GemFire.Cache.FwkLib
             if (pdxobject)
                 args.Add(pdxobject);
             args.Add(filterObj[0]);
-            GemStone.GemFire.Cache.Generic.Execution<object> exc =
+            Apache.Geode.Client.Generic.Execution<object> exc =
                 Generic.FunctionService<object>.OnRegion<TKey, TVal>(m_region);
             //FwkTest<TKey, TVal>.CurrentTest.FwkInfo("Going to do addKey execute");
             ICollection<object> executeFunctionResult = null;
@@ -287,7 +287,7 @@ namespace GemStone.GemFire.Cache.FwkLib
             if(pdxobject)
                 args.Add(pdxobject);      
             args.Add(filterObj[0]); 
-            GemStone.GemFire.Cache.Generic.Execution<object> exc =
+            Apache.Geode.Client.Generic.Execution<object> exc =
                 Generic.FunctionService<object>.OnRegion<TKey, TVal>(m_region);
             //FwkTest<TKey, TVal>.CurrentTest.FwkInfo("Going to do invalidate execute");
              ICollection<object> executeFunctionResult = null;
@@ -323,7 +323,7 @@ namespace GemStone.GemFire.Cache.FwkLib
                 args.Add(pdxobject);
             args.Add(filterObj[0]); 
             
-            GemStone.GemFire.Cache.Generic.Execution<object> exc =
+            Apache.Geode.Client.Generic.Execution<object> exc =
                 Generic.FunctionService<object>.OnRegion<TKey, TVal>(m_region);
             //FwkTest<TKey, TVal>.CurrentTest.FwkInfo("Going to do locally invalidate execute");
              ICollection<object> executeFunctionResult = null;
@@ -359,7 +359,7 @@ namespace GemStone.GemFire.Cache.FwkLib
                 args.Add(pdxobject);
             args.Add(filterObj[0]); 
            
-            GemStone.GemFire.Cache.Generic.Execution<object> exc =
+            Apache.Geode.Client.Generic.Execution<object> exc =
                 Generic.FunctionService<object>.OnRegion<TKey, TVal>(m_region);
             //FwkTest<TKey, TVal>.CurrentTest.FwkInfo("Going to do destroy execute");
              ICollection<object> executeFunctionResult = null;
@@ -395,7 +395,7 @@ namespace GemStone.GemFire.Cache.FwkLib
                 args.Add(pdxobject);
             args.Add(filterObj[0]); 
            
-            GemStone.GemFire.Cache.Generic.Execution<object> exc =
+            Apache.Geode.Client.Generic.Execution<object> exc =
                 Generic.FunctionService<object>.OnRegion<TKey, TVal>(m_region);
             //FwkTest<TKey, TVal>.CurrentTest.FwkInfo("Going to do local destroy execute");
              ICollection<object> executeFunctionResult = null;
@@ -433,7 +433,7 @@ namespace GemStone.GemFire.Cache.FwkLib
                 args.Add(pdxobject);
             args.Add(filterObj[0]); 
             
-            GemStone.GemFire.Cache.Generic.Execution<object> exc =
+            Apache.Geode.Client.Generic.Execution<object> exc =
                 Generic.FunctionService<object>.OnRegion<TKey, TVal>(m_region);
             //FwkTest<TKey, TVal>.CurrentTest.FwkInfo("Going to do update execute");
              ICollection<object> executeFunctionResult = null;
@@ -470,7 +470,7 @@ namespace GemStone.GemFire.Cache.FwkLib
                 args.Add(pdxobject);
             args.Add(filterObj[0]); 
             
-            GemStone.GemFire.Cache.Generic.Execution<object> exc =
+            Apache.Geode.Client.Generic.Execution<object> exc =
                 Generic.FunctionService<object>.OnRegion<TKey, TVal>(m_region);
             //FwkTest<TKey, TVal>.CurrentTest.FwkInfo("Going to do get execute");
              ICollection<object> executeFunctionResult = null;
@@ -515,7 +515,7 @@ namespace GemStone.GemFire.Cache.FwkLib
                 args.Add(pdxobject);
             args.Add(filterObj[0]); 
             
-            GemStone.GemFire.Cache.Generic.Execution<object> exc =
+            Apache.Geode.Client.Generic.Execution<object> exc =
                 Generic.FunctionService<object>.OnRegion<TKey, TVal>(m_region);
             //FwkTest<TKey, TVal>.CurrentTest.FwkInfo("Going to do query execute");
              ICollection<object> executeFunctionResult = null;
@@ -726,7 +726,7 @@ namespace GemStone.GemFire.Cache.FwkLib
           }
         }
         //Execution<object> exc = null;
-        GemStone.GemFire.Cache.Generic.Execution<object> exc = null;
+        Apache.Geode.Client.Generic.Execution<object> exc = null;
         //Execution exc = null;
         Pool/*<TKey, TVal>*/ pptr = null;
         IRegion<TKey, TVal> region = GetRegion();
@@ -829,7 +829,7 @@ namespace GemStone.GemFire.Cache.FwkLib
           }
         }
       }
-      catch (GemStone.GemFire.Cache.Generic.KeyNotFoundException ex)
+      catch (Apache.Geode.Client.Generic.KeyNotFoundException ex)
       {
         FwkInfo("VerifyAddNewResult() caught exception: {0}", ex);
       }
@@ -866,7 +866,7 @@ namespace GemStone.GemFire.Cache.FwkLib
               {
                 value = region[key].ToString();
               }
-              catch (GemStone.GemFire.Cache.Generic.KeyNotFoundException)
+              catch (Apache.Geode.Client.Generic.KeyNotFoundException)
               {
                 if(ops.Equals("destroy") && destroyedKeys.Remove(key))
                 {
@@ -1033,7 +1033,7 @@ namespace GemStone.GemFire.Cache.FwkLib
     public void DoParitionedRegionFunctionExecution()
     {
       FwkInfo("In DoParitionedRegionFunctionExecution()");
-      GemStone.GemFire.Cache.Generic.Execution<object> exc = null;
+      Apache.Geode.Client.Generic.Execution<object> exc = null;
       IRegion<TKey, TVal> region = GetRegion("partitionedRegion");
       try
       {
@@ -1064,11 +1064,11 @@ namespace GemStone.GemFire.Cache.FwkLib
          Generic.IResultCollector<object> rc = exc.Execute("ExceptionHandlingFunction", 30);
 
       }
-      catch (GemFire.Cache.Generic.FunctionExecutionException)
+      catch (Apache.Geode.Client.Generic.FunctionExecutionException)
       {
         //expected exception
       }
-      catch (GemFire.Cache.Generic.TimeoutException)
+      catch (Apache.Geode.Client.Generic.TimeoutException)
       {
         //expected exception
       }
@@ -1077,7 +1077,7 @@ namespace GemStone.GemFire.Cache.FwkLib
     public void DoReplicatedRegionFunctionExecution()
     {
       FwkInfo("In DoReplicatedRegionFunctionExecution()");
-      GemStone.GemFire.Cache.Generic.Execution<object> exc = null;
+      Apache.Geode.Client.Generic.Execution<object> exc = null;
       IRegion<TKey, TVal> region = GetRegion("replicatedRegion");
       try
       {
@@ -1087,11 +1087,11 @@ namespace GemStone.GemFire.Cache.FwkLib
         // execute function
         Generic.IResultCollector<object> rc = exc.Execute("ExceptionHandlingFunction", 30);
       }
-      catch (GemFire.Cache.Generic.FunctionExecutionException)
+      catch (Apache.Geode.Client.Generic.FunctionExecutionException)
       {
         //expected exception
       }
-      catch (GemFire.Cache.Generic.TimeoutException)
+      catch (Apache.Geode.Client.Generic.TimeoutException)
       {
         //expected exception
       }
@@ -1115,15 +1115,15 @@ namespace GemStone.GemFire.Cache.FwkLib
       try
       {
         MyResultCollector<object> myRC = new MyResultCollector<object>();
-        GemStone.GemFire.Cache.Generic.Execution<object> exc = Generic.FunctionService<object>.OnRegion<TKey, TVal>(region).WithCollector(myRC);
+        Apache.Geode.Client.Generic.Execution<object> exc = Generic.FunctionService<object>.OnRegion<TKey, TVal>(region).WithCollector(myRC);
         // execute function
         Generic.IResultCollector<object> rc = exc.Execute("FireNForget", 30);
       }
-      catch (GemFire.Cache.Generic.FunctionExecutionException)
+      catch (Apache.Geode.Client.Generic.FunctionExecutionException)
       {
         //expected exception
       }
-      catch (GemFire.Cache.Generic.TimeoutException)
+      catch (Apache.Geode.Client.Generic.TimeoutException)
       {
         //expected exception
       }
@@ -1134,7 +1134,7 @@ namespace GemStone.GemFire.Cache.FwkLib
       FwkInfo("In DoOnServersFunctionExcecution()");
       ResetKey("poolName");
       string poolname = GetStringValue("poolName");
-      GemStone.GemFire.Cache.Generic.Execution<object> exc = null;
+      Apache.Geode.Client.Generic.Execution<object> exc = null;
       try
       {
         Pool/*<TKey, TVal>*/ pptr = PoolManager/*<TKey, TVal>*/.Find(poolname);
@@ -1143,11 +1143,11 @@ namespace GemStone.GemFire.Cache.FwkLib
         // execute function
         Generic.IResultCollector<object> rc = exc.Execute("ExceptionHandlingFunction", 30);
       }
-      catch (GemFire.Cache.Generic.FunctionExecutionException)
+      catch (Apache.Geode.Client.Generic.FunctionExecutionException)
       {
         //expected exception
       }
-      catch (GemFire.Cache.Generic.TimeoutException)
+      catch (Apache.Geode.Client.Generic.TimeoutException)
       {
         //expected exception
       }
@@ -1163,7 +1163,7 @@ namespace GemStone.GemFire.Cache.FwkLib
       IRegion<TKey, TVal> region = GetRegion();
       ICollection<object> executeFunctionResult = null;
       string funcName = "GetFunctionExeHA";
-      GemStone.GemFire.Cache.Generic.Execution<object> exc = Generic.FunctionService<object>.OnRegion<TKey, TVal>(region);
+      Apache.Geode.Client.Generic.Execution<object> exc = Generic.FunctionService<object>.OnRegion<TKey, TVal>(region);
       MyResultCollectorHA<object> myRC = new MyResultCollectorHA<object>();
       exc = exc.WithCollector(myRC);
       Generic.IResultCollector<object>  rc = exc.Execute(funcName, 120);
@@ -1233,7 +1233,7 @@ namespace GemStone.GemFire.Cache.FwkLib
               for (int i = 0; i < keys.Length; i++)
                   args.Add(keys[i]);
               string funcName = GetStringValue("funcName");
-              GemStone.GemFire.Cache.Generic.Execution<object> exc =
+              Apache.Geode.Client.Generic.Execution<object> exc =
                   Generic.FunctionService<object>.OnRegion<TKey, TVal>(region);
               //FwkInfo("Going to do get execute");
               ICollection<object> executeFunctionResult = null;
@@ -1284,7 +1284,7 @@ namespace GemStone.GemFire.Cache.FwkLib
               for (int i = 0; i < keys.Length; i++)
                   args.Add(keys[i]);
               string funcName = GetStringValue("funcName");
-              GemStone.GemFire.Cache.Generic.Execution<object> exc =
+              Apache.Geode.Client.Generic.Execution<object> exc =
                   Generic.FunctionService<object>.OnRegion<TKey, TVal>(region);
               //FwkInfo("Going to do get execute");
               ICollection<object> executeFunctionResult = null;

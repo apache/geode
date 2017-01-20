@@ -22,13 +22,13 @@
 #include <gfcpp/CacheListener.hpp>
 #include "../ICacheListener.hpp"
 
-namespace GemStone {
-
-  namespace GemFire {
-
-    namespace Cache {
-
-      interface class ICacheListener;
+namespace Apache
+{
+  namespace Geode
+  {
+    namespace Client
+    {
+interface class ICacheListener;
     }
   }
 }
@@ -38,7 +38,7 @@ namespace apache {
     namespace client {
 
       /// <summary>
-      /// Wraps the managed <see cref="GemStone.GemFire.Cache.ICacheListener" />
+      /// Wraps the managed <see cref="Apache.Geode.Client.ICacheListener" />
       /// object and implements the native <c>apache::geode::client::CacheListener</c> interface.
       /// </summary>
       class ManagedCacheListenerGeneric
@@ -53,7 +53,7 @@ namespace apache {
         /// The managed object.
         /// </param>
         inline ManagedCacheListenerGeneric(
-          /*GemStone::GemFire::Cache::ICacheListener^ managedptr,*/ Object^ userptr)
+          /*Apache::Geode::Client::ICacheListener^ managedptr,*/ Object^ userptr)
           : /*m_managedptr( managedptr ),*/ m_userptr(userptr) { }
 
         /// <summary>
@@ -94,9 +94,9 @@ namespace apache {
         /// <param name="ev">
         /// Denotes the event object associated with the entry creation.
         /// </param>
-        /// <seealso cref="GemStone.GemFire.Cache.Region.Create" />
-        /// <seealso cref="GemStone.GemFire.Cache.Region.Put" />
-        /// <seealso cref="GemStone.GemFire.Cache.Region.Get" />
+        /// <seealso cref="Apache.Geode.Client.Region.Create" />
+        /// <seealso cref="Apache.Geode.Client.Region.Put" />
+        /// <seealso cref="Apache.Geode.Client.Region.Get" />
         virtual void afterCreate(const apache::geode::client::EntryEvent& ev);
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace apache {
         /// <param name="ev">
         /// EntryEvent denotes the event object associated with updating the entry.
         /// </param>
-        /// <seealso cref="GemStone.GemFire.Cache.Region.Put" />
+        /// <seealso cref="Apache.Geode.Client.Region.Put" />
         virtual void afterUpdate(const apache::geode::client::EntryEvent& ev);
 
         /// <summary>
@@ -126,7 +126,7 @@ namespace apache {
         /// <param name="ev">
         /// EntryEvent denotes the event object associated with the entry destruction.
         /// </param>
-        /// <seealso cref="GemStone.GemFire.Cache.Region.Destroy" />
+        /// <seealso cref="Apache.Geode.Client.Region.Destroy" />
         virtual void afterDestroy(const apache::geode::client::EntryEvent& ev);
 
         /// <summary>
@@ -145,7 +145,7 @@ namespace apache {
         /// <param name="ev">
         /// RegionEvent denotes the event object associated with the region invalidation.
         /// </param>
-        /// <seealso cref="GemStone.GemFire.Cache.Region.InvalidateRegion" />
+        /// <seealso cref="Apache.Geode.Client.Region.InvalidateRegion" />
         virtual void afterRegionInvalidate(const apache::geode::client::RegionEvent& ev);
 
         /// <summary>
@@ -159,7 +159,7 @@ namespace apache {
         /// <param name="ev">
         /// RegionEvent denotes the event object associated with the region destruction.
         /// </param>
-        /// <seealso cref="GemStone.GemFire.Cache.Region.DestroyRegion" />
+        /// <seealso cref="Apache.Geode.Client.Region.DestroyRegion" />
         virtual void afterRegionDestroy(const apache::geode::client::RegionEvent& ev);
 
         /// <summary>
@@ -171,7 +171,7 @@ namespace apache {
         /// <param name="ev">
         /// RegionEvent denotes the event object associated with the region going live.
         /// </param>
-        /// <seealso cref="GemStone.GemFire.Cache.Cache.ReadyForEvents" />
+        /// <seealso cref="Apache.Geode.Client.Cache.ReadyForEvents" />
         virtual void afterRegionLive(const apache::geode::client::RegionEvent& ev);
 
         /// <summary>
@@ -187,8 +187,8 @@ namespace apache {
         /// callback instance, so implementations must be tolerant of this.
         /// </para>
         /// </remarks>
-        /// <seealso cref="GemStone.GemFire.Cache.Cache.Close" />
-        /// <seealso cref="GemStone.GemFire.Cache.Region.DestroyRegion" />
+        /// <seealso cref="Apache.Geode.Client.Cache.Close" />
+        /// <seealso cref="Apache.Geode.Client.Region.DestroyRegion" />
         virtual void close(const apache::geode::client::RegionPtr& region);
 
         ///<summary>
@@ -207,12 +207,12 @@ namespace apache {
         /// <summary>
         /// Returns the wrapped managed object reference.
         /// </summary>
-        inline GemStone::GemFire::Cache::Generic::ICacheListener<Object^, Object^>^ ptr() const
+        inline Apache::Geode::Client::Generic::ICacheListener<Object^, Object^>^ ptr() const
         {
           return m_managedptr;
         }
 
-        inline void setptr(GemStone::GemFire::Cache::Generic::ICacheListener<Object^, Object^>^ managedptr)
+        inline void setptr(Apache::Geode::Client::Generic::ICacheListener<Object^, Object^>^ managedptr)
         {
           m_managedptr = managedptr;
         }
@@ -230,7 +230,7 @@ namespace apache {
         /// to be called which is not what is desired when this object is destroyed. Normally this
         /// managed object may be created by the user and will be handled automatically by the GC.
         /// </summary>
-        gcroot<GemStone::GemFire::Cache::Generic::ICacheListener<Object^, Object^>^> m_managedptr;
+        gcroot<Apache::Geode::Client::Generic::ICacheListener<Object^, Object^>^> m_managedptr;
 
         gcroot<Object^> m_userptr;
       };

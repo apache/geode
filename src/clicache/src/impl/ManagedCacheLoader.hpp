@@ -32,7 +32,7 @@ namespace apache
     {
 
       /// <summary>
-      /// Wraps the managed <see cref="GemStone.GemFire.Cache.ICacheLoader" />
+      /// Wraps the managed <see cref="Apache.Geode.Client.ICacheLoader" />
       /// object and implements the native <c>apache::geode::client::CacheLoader</c> interface.
       /// </summary>
       class ManagedCacheLoaderGeneric
@@ -80,7 +80,7 @@ namespace apache
         /// This method is called by the caching service when the requested
         /// value is not in the cache. Any exception thrown by this method
         /// is propagated back to and thrown by the invocation of
-        /// <see cref="GemStone.GemFire.Cache.Region.Get" /> that triggered this load.
+        /// <see cref="Apache.Geode.Client.Region.Get" /> that triggered this load.
         /// </remarks>
         /// <param name="region">a Region Pointer for which this is called.</param>
         /// <param name="key">the key for the cacheable</param>
@@ -89,10 +89,10 @@ namespace apache
         /// the value supplied for this key, or null if no value can be
         /// supplied. 
         /// If every available loader returns
-        /// a null value, <see cref="GemStone.GemFire.Cache.Region.Get" />
+        /// a null value, <see cref="Apache.Geode.Client.Region.Get" />
         /// will return null.
         /// </returns>
-        /// <seealso cref="GemStone.GemFire.Cache.Region.Get" />
+        /// <seealso cref="Apache.Geode.Client.Region.Get" />
         virtual CacheablePtr load(const RegionPtr& region,
           const CacheableKeyPtr& key, const UserDataPtr& aCallbackArgument);
 
@@ -110,21 +110,21 @@ namespace apache
         /// </para>
         /// </remarks>
         /// <param name="region">the region pointer</param>
-        /// <seealso cref="GemStone.GemFire.Cache.Cache.Close" />
-        /// <seealso cref="GemStone.GemFire.Cache.Region.DestroyRegion" />
+        /// <seealso cref="Apache.Geode.Client.Cache.Close" />
+        /// <seealso cref="Apache.Geode.Client.Region.DestroyRegion" />
         virtual void close(const RegionPtr& region);
 
         /*
         /// <summary>
         /// Returns the wrapped managed object reference.
         /// </summary>
-        inline GemStone::GemFire::Cache::ICacheLoader^ ptr( ) const
+        inline Apache::Geode::Client::ICacheLoader^ ptr( ) const
         {
         return m_managedptr;
         }
         */
 
-        inline void setptr(GemStone::GemFire::Cache::Generic::ICacheLoaderProxy^ managedptr)
+        inline void setptr(Apache::Geode::Client::Generic::ICacheLoaderProxy^ managedptr)
         {
           m_managedptr = managedptr;
         }
@@ -143,7 +143,7 @@ namespace apache
         /// to be called which is not what is desired when this object is destroyed. Normally this
         /// managed object may be created by the user and will be handled automatically by the GC.
         /// </summary>
-        gcroot<GemStone::GemFire::Cache::Generic::ICacheLoaderProxy^> m_managedptr;
+        gcroot<Apache::Geode::Client::Generic::ICacheLoaderProxy^> m_managedptr;
 
         gcroot<Object^> m_userptr;
 

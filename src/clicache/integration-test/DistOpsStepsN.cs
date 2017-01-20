@@ -21,12 +21,12 @@ using System.Threading;
 using System.Reflection;
 using System.Collections;
 
-namespace GemStone.GemFire.Cache.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests.NewAPI
 {
   using NUnit.Framework;
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Cache.Generic;
-  //using Region = GemStone.GemFire.Cache.Generic.IRegion<Object, Object>;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Client.Generic;
+  //using Region = Apache.Geode.Client.Generic.IRegion<Object, Object>;
 
   public abstract class DistOpsSteps : UnitTests
   {
@@ -201,7 +201,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
       {
         CreateEntry(regionName, key, val);
       }
-      catch (GemStone.GemFire.Cache.Generic.NotConnectedException ex)
+      catch (Apache.Geode.Client.Generic.NotConnectedException ex)
       {
         if (ex.InnerException is NoAvailableLocatorsException)
         {
@@ -269,7 +269,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
       {
         checkVal = (string)region[key];
       }
-      catch (GemStone.GemFire.Cache.Generic.KeyNotFoundException)
+      catch (Apache.Geode.Client.Generic.KeyNotFoundException)
       {
         // expected?
         //checkVal = (string)region[key];
@@ -485,11 +485,11 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
       m_firstAppDomain = AppDomain.CreateDomain("FIRST_APPDOMAIN");
       m_secondAppDomain = AppDomain.CreateDomain("SECOND_APPDOMAIN");
 
-      m_chw_forFirstAppDomain = (CacheHelperWrapper)m_firstAppDomain.CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, "GemStone.GemFire.Cache.UnitTests.NewAPI.CacheHelperWrapper");
-      m_chw_forSecondAppDomain = (CacheHelperWrapper)m_secondAppDomain.CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, "GemStone.GemFire.Cache.UnitTests.NewAPI.CacheHelperWrapper");
+      m_chw_forFirstAppDomain = (CacheHelperWrapper)m_firstAppDomain.CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, "Apache.Geode.Client.UnitTests.NewAPI.CacheHelperWrapper");
+      m_chw_forSecondAppDomain = (CacheHelperWrapper)m_secondAppDomain.CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, "Apache.Geode.Client.UnitTests.NewAPI.CacheHelperWrapper");
 
-      m_putGetTests_forFirstAppDomain = (PutGetTestsAD)m_firstAppDomain.CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, "GemStone.GemFire.Cache.UnitTests.NewAPI.PutGetTestsAD");
-      m_putGetTests_forSecondAppDomain = (PutGetTestsAD)m_secondAppDomain.CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, "GemStone.GemFire.Cache.UnitTests.NewAPI.PutGetTestsAD");
+      m_putGetTests_forFirstAppDomain = (PutGetTestsAD)m_firstAppDomain.CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, "Apache.Geode.Client.UnitTests.NewAPI.PutGetTestsAD");
+      m_putGetTests_forSecondAppDomain = (PutGetTestsAD)m_secondAppDomain.CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, "Apache.Geode.Client.UnitTests.NewAPI.PutGetTestsAD");
     }
 
     public void CloseCacheAD()
@@ -1331,7 +1331,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
         Object val = region[1];
         Assert.Fail("Should have got KeyNotFoundException");
       }
-      catch (GemStone.GemFire.Cache.Generic.KeyNotFoundException ex)
+      catch (Apache.Geode.Client.Generic.KeyNotFoundException ex)
       {
         Util.Log("Got expected KeyNotFoundException {0} ", ex);
       }
@@ -1347,7 +1347,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
           Assert.Fail("Should have got KeyNotFoundException");
         }
       }
-      catch (GemStone.GemFire.Cache.Generic.KeyNotFoundException ex)
+      catch (Apache.Geode.Client.Generic.KeyNotFoundException ex)
       {
         Util.Log("Got expected KeyNotFoundException {0} ", ex);
       }
@@ -1359,7 +1359,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
         Object val = region[1];
         Assert.Fail("Should have got KeyNotFoundException");
       }
-      catch (GemStone.GemFire.Cache.Generic.KeyNotFoundException ex)
+      catch (Apache.Geode.Client.Generic.KeyNotFoundException ex)
       {
         Util.Log("Got expected KeyNotFoundException {0} ", ex);
       }

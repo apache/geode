@@ -22,13 +22,13 @@ using namespace System;
 using namespace System::Reflection;
 
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache
+    namespace Client
     {
-			namespace Generic
+namespace Generic
 			{    
         ///<summary>        
         /// PdxIdentityField attribute one can specify on member fields.

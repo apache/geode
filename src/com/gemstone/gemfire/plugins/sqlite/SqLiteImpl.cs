@@ -18,10 +18,10 @@
 ﻿using System;
 using System.Data;
 using System.Data.SQLite;
-using GemStone.GemFire.Cache.Generic;
+using Apache.Geode.Client.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
-namespace GemStone.GemFire.Plugins.SQLite
+namespace Apache.Geode.Plugins.SQLite
 {
 
   public class SqLiteImpl<TKey, TValue> : IPersistenceManager<TKey, TValue>

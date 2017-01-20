@@ -18,10 +18,10 @@
 using System;
 using System.Threading;
 
-namespace GemStone.GemFire.Cache.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests.NewAPI
 {
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Cache.Generic;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Client.Generic;
   class TallyWriter<TKey, TVal> : CacheWriterAdapter<TKey, TVal>
   {
     #region Private members

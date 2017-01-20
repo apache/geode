@@ -29,7 +29,7 @@ namespace apache {
     namespace client {
 
       /// <summary>
-      /// Wraps the managed <see cref="GemStone.GemFire.Cache.ICacheListener" />
+      /// Wraps the managed <see cref="Apache.Geode.Client.ICacheListener" />
       /// object and implements the native <c>apache::geode::client::CacheListener</c> interface.
       /// </summary>
       class ManagedCqListenerGeneric
@@ -84,9 +84,9 @@ namespace apache {
         /// <param name="ev">
         /// Denotes the event object associated with the entry creation.
         /// </param>
-        /// <seealso cref="GemStone.GemFire.Cache.Region.Create" />
-        /// <seealso cref="GemStone.GemFire.Cache.Region.Put" />
-        /// <seealso cref="GemStone.GemFire.Cache.Region.Get" />
+        /// <seealso cref="Apache.Geode.Client.Region.Create" />
+        /// <seealso cref="Apache.Geode.Client.Region.Put" />
+        /// <seealso cref="Apache.Geode.Client.Region.Get" />
         virtual void onEvent(const apache::geode::client::CqEvent& ev);
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace apache {
         /// <param name="ev">
         /// EntryEvent denotes the event object associated with updating the entry.
         /// </param>
-        /// <seealso cref="GemStone.GemFire.Cache.Region.Put" />
+        /// <seealso cref="Apache.Geode.Client.Region.Put" />
         virtual void onError(const apache::geode::client::CqEvent& ev);
 
         /// <summary>
@@ -111,12 +111,12 @@ namespace apache {
         /// <summary>
         /// Returns the wrapped managed object reference.
         /// </summary>
-        inline GemStone::GemFire::Cache::Generic::ICqListener<Object^, Object^>^ ptr() const
+        inline Apache::Geode::Client::Generic::ICqListener<Object^, Object^>^ ptr() const
         {
           return m_managedptr;
         }
 
-        inline void setptr(GemStone::GemFire::Cache::Generic::ICqListener<Object^, Object^>^ managedptr)
+        inline void setptr(Apache::Geode::Client::Generic::ICqListener<Object^, Object^>^ managedptr)
         {
           m_managedptr = managedptr;
         }
@@ -134,7 +134,7 @@ namespace apache {
         /// to be called which is not what is desired when this object is destroyed. Normally this
         /// managed object may be created by the user and will be handled automatically by the GC.
         /// </summary>
-        gcroot<GemStone::GemFire::Cache::Generic::ICqListener<Object^, Object^>^> m_managedptr;
+        gcroot<Apache::Geode::Client::Generic::ICqListener<Object^, Object^>^> m_managedptr;
 
         gcroot<Object^> m_userptr;
       };

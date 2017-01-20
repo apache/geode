@@ -18,13 +18,13 @@
 #pragma once
 
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache
+    namespace Client
     {
-			namespace Generic
+namespace Generic
 			{     
 				/// <summary>
 				/// Serialize the data in gemfire Portable Data eXchange(Pdx) Format.

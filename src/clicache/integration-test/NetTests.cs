@@ -18,10 +18,10 @@
 using System;
 using System.Threading;
 
-namespace GemStone.GemFire.Cache.UnitTests
+namespace Apache.Geode.Client.UnitTests
 {
   using NUnit.Framework;
-  using GemStone.GemFire.DUnitFramework;
+  using Apache.Geode.DUnitFramework;
 
   [TestFixture]
   public class NetTests : UnitTests

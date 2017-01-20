@@ -26,13 +26,13 @@ using namespace System;
 using namespace System::Collections::Generic;
 using namespace System::Runtime::Serialization;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache
+    namespace Client
     {
-      namespace Generic
+namespace Generic
       {
 
       ref class GemFireException;
@@ -273,7 +273,7 @@ namespace GemStone
 #define _GF_MG_EXCEPTION_CATCH_ALL2  \
       } \
       catch (const apache::geode::client::Exception& ex) { \
-      throw GemStone::GemFire::Cache::Generic::GemFireException::Get(ex); \
+      throw Apache::Geode::Client::Generic::GemFireException::Get(ex); \
       } \
       catch (System::AccessViolationException^ ex) { \
         throw ex; \

@@ -20,11 +20,13 @@
 #include <gfcpp/gfcpp_globals.hpp>
 #include <ExpiryTaskManager.hpp>
 
-namespace GemStone {
-
-  namespace GemFire {
-
-    namespace Cache { namespace Generic {
+namespace Apache
+{
+  namespace Geode
+  {
+    namespace Client
+    {
+namespace Generic {
 
       class MemoryPressureHandler
         : public ACE_Event_Handler

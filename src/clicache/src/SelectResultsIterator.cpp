@@ -21,15 +21,17 @@
 #include "impl/SafeConvert.hpp"
 
 using namespace System;
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
 
       generic<class TResult>
-      /*GemStone::GemFire::Cache::Generic::IGFSerializable^*/TResult SelectResultsIterator<TResult>::Current::get( )
+      /*Apache::Geode::Client::Generic::IGFSerializable^*/TResult SelectResultsIterator<TResult>::Current::get( )
       {
         //return SafeUMSerializableConvertGeneric( NativePtr->current( ).ptr( ) ); 
         return Serializable::GetManagedValueGeneric<TResult>(NativePtr->current( ));
@@ -48,7 +50,7 @@ namespace GemStone
       }
 
       generic<class TResult>
-      /*GemStone::GemFire::Cache::Generic::IGFSerializable^*/TResult SelectResultsIterator<TResult>::Next( )
+      /*Apache::Geode::Client::Generic::IGFSerializable^*/TResult SelectResultsIterator<TResult>::Next( )
       {
         //return SafeUMSerializableConvertGeneric( NativePtr->next( ).ptr( ) );
         return Serializable::GetManagedValueGeneric<TResult>(NativePtr->next( ));

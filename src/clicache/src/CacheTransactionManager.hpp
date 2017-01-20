@@ -26,12 +26,13 @@
 //#include "impl/TransactionListener.hpp"
 
 using namespace System;
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { 
-			namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
       
       /// <summary>
@@ -103,7 +104,7 @@ namespace GemStone
         /// </summary>
         /// <returns>the transaction identifier of the suspended transaction or null if
         /// the thread was not associated with a transaction</returns>
-        GemStone::GemFire::Cache::Generic::TransactionId^ Suspend();
+        Apache::Geode::Client::Generic::TransactionId^ Suspend();
 
         /// <summary>
         /// On the current thread, resumes a transaction that was previously suspended
@@ -116,7 +117,7 @@ namespace GemStone
         /// <exception cref="IllegalStateException">if the thread is associated with a transaction or if
         /// would return false for the given transactionId</exception>
         /// <see cref="TransactionId"/> 
-        void Resume(GemStone::GemFire::Cache::Generic::TransactionId^ transactionId);
+        void Resume(Apache::Geode::Client::Generic::TransactionId^ transactionId);
 
         /// <summary>
         /// This method can be used to determine if a transaction with the given
@@ -129,7 +130,7 @@ namespace GemStone
         /// <param name="transactionId"></param>
         /// <returns>true if the transaction is in suspended state, false otherwise</returns>
         /// <see cref="TransactionId"/>
-        bool IsSuspended(GemStone::GemFire::Cache::Generic::TransactionId^ transactionId);
+        bool IsSuspended(Apache::Geode::Client::Generic::TransactionId^ transactionId);
 
 
         /// <summary>
@@ -148,7 +149,7 @@ namespace GemStone
         /// </summary>
         /// <param name="transactionId">the transaction to resume</param>
         /// <returns>true if the transaction was resumed, false otherwise</returns>
-        bool TryResume(GemStone::GemFire::Cache::Generic::TransactionId^ transactionId);
+        bool TryResume(Apache::Geode::Client::Generic::TransactionId^ transactionId);
 
 
         /// <summary>
@@ -172,7 +173,7 @@ namespace GemStone
         /// <param name="transactionId">the transaction to resume</param>
         /// <param name="waitTimeInMilliSec">the maximum milliseconds to wait </param>
         /// <returns>true if the transaction was resumed, false otherwise</returns>
-        bool TryResume(GemStone::GemFire::Cache::Generic::TransactionId^ transactionId, int32_t waitTimeInMilliSec);
+        bool TryResume(Apache::Geode::Client::Generic::TransactionId^ transactionId, int32_t waitTimeInMilliSec);
 
 
 
@@ -187,7 +188,7 @@ namespace GemStone
         /// <param name="transactionId">the given transaction identifier</param>
         /// <returns>true if the transaction is in progress, false otherwise.</returns>
         /// <see cref="isSuspended"/> 
-        bool Exists(GemStone::GemFire::Cache::Generic::TransactionId^ transactionId);
+        bool Exists(Apache::Geode::Client::Generic::TransactionId^ transactionId);
 
 
         /// <summary>
@@ -197,10 +198,10 @@ namespace GemStone
         /// </para>
         /// </summary>
         /// <returns>the transaction identifier or null if no transaction exists</returns>
-        property GemStone::GemFire::Cache::Generic::TransactionId^ TransactionId
+        property Apache::Geode::Client::Generic::TransactionId^ TransactionId
         {
         //TODO::split
-        GemStone::GemFire::Cache::Generic::TransactionId^ get( );
+        Apache::Geode::Client::Generic::TransactionId^ get( );
         }        
 
 #ifdef CSTX_COMMENTED

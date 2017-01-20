@@ -22,13 +22,13 @@
 #include "../DataInput.hpp"
 #include "PdxLocalWriter.hpp"
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache
+    namespace Client
     {
-			namespace Generic
+namespace Generic
 			{     
         namespace Internal
         {

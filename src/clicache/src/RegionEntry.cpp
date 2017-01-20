@@ -23,11 +23,13 @@
 
 using namespace System;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
 
       generic<class TKey, class TValue>
@@ -52,16 +54,16 @@ namespace GemStone
         apache::geode::client::RegionPtr rptr;
 
         NativePtr->getRegion( rptr );
-        return GemStone::GemFire::Cache::Generic::Region<TKey, TValue>::Create( rptr.ptr( ) );
+        return Apache::Geode::Client::Generic::Region<TKey, TValue>::Create( rptr.ptr( ) );
       }
 
       generic<class TKey, class TValue>
-      GemStone::GemFire::Cache::Generic::CacheStatistics^ RegionEntry<TKey, TValue>::Statistics::get( )
+      Apache::Geode::Client::Generic::CacheStatistics^ RegionEntry<TKey, TValue>::Statistics::get( )
       {
         apache::geode::client::CacheStatisticsPtr nativeptr;
 
         NativePtr->getStatistics( nativeptr );
-        return GemStone::GemFire::Cache::Generic::CacheStatistics::Create( nativeptr.ptr( ) );
+        return Apache::Geode::Client::Generic::CacheStatistics::Create( nativeptr.ptr( ) );
       }
 
       generic<class TKey, class TValue>

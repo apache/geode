@@ -21,7 +21,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 
-namespace GemStone.GemFire.DUnitFramework
+namespace Apache.Geode.DUnitFramework
 {
   public class DriverComm : MarshalByRefObject, IDriverComm
   {

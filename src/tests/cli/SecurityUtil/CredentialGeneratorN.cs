@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-namespace GemStone.GemFire.Cache.Tests.NewAPI
+namespace Apache.Geode.Client.Tests.NewAPI
 {
-  using GemStone.GemFire.Cache.Generic;
+  using Apache.Geode.Client.Generic;
   /// <summary>
   /// Encapsulates obtaining valid and invalid credentials. Implementations will be
   /// for different kinds of authentication schemes.
@@ -36,7 +36,7 @@ namespace GemStone.GemFire.Cache.Tests.NewAPI
     /// To add a new authentication scheme the following needs to be done:
     /// <list type="number">
     /// <item><description>
-    /// Add implementation for <see cref="GemStone.GemFire.Cache.IAuthInitialize"/>
+    /// Add implementation for <see cref="Apache.Geode.Client.IAuthInitialize"/>
     /// or the C++ <c>gemfire::AuthInitialize</c> interface.
     /// </description></item>
     /// <item><description>

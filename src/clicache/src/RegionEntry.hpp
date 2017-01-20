@@ -25,12 +25,13 @@
 
 using namespace System;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache {
-      namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
 
       //ref class Region;
@@ -111,9 +112,9 @@ namespace GemStone
         /// <exception cref="StatisticsDisabledException">
         /// if statistics have been disabled for this region
         /// </exception>
-        property GemStone::GemFire::Cache::Generic::CacheStatistics^ Statistics
+        property Apache::Geode::Client::Generic::CacheStatistics^ Statistics
         {
-          GemStone::GemFire::Cache::Generic::CacheStatistics^ get( );
+          Apache::Geode::Client::Generic::CacheStatistics^ get( );
         }
 
         ///// <summary>

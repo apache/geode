@@ -26,14 +26,16 @@
 
 
 using namespace System;
-using namespace GemStone::GemFire::Cache::Generic;
+using namespace Apache::Geode::Client::Generic;
 
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
       generic<class TKey, class TValue>
       Cache^ TransactionEvent<TKey, TValue>::Cache::get( )
@@ -41,17 +43,17 @@ namespace GemStone
         apache::geode::client::CachePtr & nativeptr(
           NativePtr->getCache( ) );
 
-				return GemStone::GemFire::Cache::Generic::Cache::Create(
+				return Apache::Geode::Client::Generic::Cache::Create(
           nativeptr.ptr( ) );
       }
       
       generic<class TKey, class TValue>
-			GemStone::GemFire::Cache::Generic::TransactionId^ TransactionEvent<TKey, TValue>::TransactionId::get( )
+			Apache::Geode::Client::Generic::TransactionId^ TransactionEvent<TKey, TValue>::TransactionId::get( )
       {
         apache::geode::client::TransactionIdPtr & nativeptr(
           NativePtr->getTransactionId( ) );
 
-				return GemStone::GemFire::Cache::Generic::TransactionId::Create(
+				return Apache::Geode::Client::Generic::TransactionId::Create(
           nativeptr.ptr( ) );
       }
     

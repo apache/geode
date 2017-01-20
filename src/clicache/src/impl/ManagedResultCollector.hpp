@@ -33,7 +33,7 @@ namespace apache {
     namespace client {
 
       /// <summary>
-      /// Wraps the managed <see cref="GemStone.GemFire.Cache.IResultCollector" />
+      /// Wraps the managed <see cref="Apache.Geode.Client.IResultCollector" />
       /// object and implements the native <c>apache::geode::client::ResultCollector</c> interface.
       /// </summary>
       class ManagedResultCollectorGeneric
@@ -47,7 +47,7 @@ namespace apache {
         /// <param name="userptr">
         /// The managed object.
         /// </param>
-        inline ManagedResultCollectorGeneric(GemStone::GemFire::Cache::Generic::ResultCollectorG^ userptr)
+        inline ManagedResultCollectorGeneric(Apache::Geode::Client::Generic::ResultCollectorG^ userptr)
           : m_managedptr(userptr) { }
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace apache {
         /// <summary>
         /// Returns the wrapped managed object reference.
         /// </summary>
-        inline GemStone::GemFire::Cache::Generic::ResultCollectorG^ ptr() const
+        inline Apache::Geode::Client::Generic::ResultCollectorG^ ptr() const
         {
           return m_managedptr;
         }
@@ -97,8 +97,8 @@ namespace apache {
         /// to be called which is not what is desired when this object is destroyed. Normally this
         /// managed object may be created by the user and will be handled automatically by the GC.
         /// </summary>
-        gcroot<GemStone::GemFire::Cache::Generic::ResultCollectorG^> m_managedptr;
-        //GemStone::GemFire::Cache::IResultCollector^ m_managedptr;
+        gcroot<Apache::Geode::Client::Generic::ResultCollectorG^> m_managedptr;
+        //Apache::Geode::Client::IResultCollector^ m_managedptr;
         //gcroot<Object^> m_userptr;
       };
 

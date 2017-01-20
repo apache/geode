@@ -17,11 +17,11 @@
 
 using System;
 
-namespace GemStone.GemFire.Cache.FwkLib
+namespace Apache.Geode.Client.FwkLib
 {
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Cache.Generic;
-  //using Region = GemStone.GemFire.Cache.Generic.IRegion<Object, Object>;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Client.Generic;
+  //using Region = Apache.Geode.Client.Generic.IRegion<Object, Object>;
 
   public class LatencyListener<TKey, TVal> : CacheListenerAdapter<TKey, TVal>, IDisposable
   {
@@ -88,7 +88,7 @@ namespace GemStone.GemFire.Cache.FwkLib
           "LatencyBB", "LatencyTag");
         tag = taskData.GetLogString();
       }
-      catch (GemStone.GemFire.DUnitFramework.KeyNotFoundException)
+      catch (Apache.Geode.DUnitFramework.KeyNotFoundException)
       {
         tag = null;
       }

@@ -18,12 +18,12 @@
 using System;
 using System.Threading;
 
-namespace GemStone.GemFire.Cache.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests.NewAPI
 {
-  using GemStone.GemFire.DUnitFramework;
+  using Apache.Geode.DUnitFramework;
 
-  using GemStone.GemFire.Cache;
-  using GemStone.GemFire.Cache.Generic;
+  using Apache.Geode.Client;
+  using Apache.Geode.Client.Generic;
 
   class TallyResolver<TKey, TVal> : IPartitionResolver<TKey, TVal>
   {

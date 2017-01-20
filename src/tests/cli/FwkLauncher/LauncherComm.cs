@@ -25,9 +25,9 @@ using System.Runtime.Remoting.Channels;
 using System.Text;
 using System.Threading;
 
-namespace GemStone.GemFire.Cache.FwkLauncher
+namespace Apache.Geode.Client.FwkLauncher
 {
-  using GemStone.GemFire.DUnitFramework;
+  using Apache.Geode.DUnitFramework;
 
   class LauncherComm : MarshalByRefObject, IClientCommV2
   {

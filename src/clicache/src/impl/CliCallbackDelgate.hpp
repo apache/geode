@@ -26,11 +26,13 @@
 
 using namespace System;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
 
       /// <summary>
@@ -46,8 +48,8 @@ namespace GemStone
 
         void Callback( )
         {
-          GemStone::GemFire::Cache::Generic::Log::Fine("CliCallbackDelgate::Callback( ) ");
-          GemStone::GemFire::Cache::Generic::Internal::PdxTypeRegistry::clear();
+          Apache::Geode::Client::Generic::Log::Fine("CliCallbackDelgate::Callback( ) ");
+          Apache::Geode::Client::Generic::Internal::PdxTypeRegistry::clear();
         }
 
 

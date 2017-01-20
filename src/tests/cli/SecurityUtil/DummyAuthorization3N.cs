@@ -19,9 +19,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace GemStone.GemFire.Cache.Tests.NewAPI
+namespace Apache.Geode.Client.Tests.NewAPI
 {
-  using GemStone.GemFire.Cache.Generic;
+  using Apache.Geode.Client.Generic;
   public class DummyAuthorization3 : CredentialGenerator
   {
     public override CredentialGenerator.ClassCode GetClassCode()

@@ -19,7 +19,7 @@ using System;
 using System.IO;
 using System.Text;
 
-namespace GemStone.GemFire.DUnitFramework
+namespace Apache.Geode.DUnitFramework
 {
   /// <summary>
   /// Class to do logging.

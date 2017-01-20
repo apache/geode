@@ -26,13 +26,13 @@
 
 using namespace System;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache
+    namespace Client
     {
-      namespace Generic
+namespace Generic
       {
       /// <summary>
       /// DistributedSystem encapsulates this applications "connection" into the
@@ -91,9 +91,9 @@ namespace GemStone
         /// <c>DistributedSystem</c>.
         /// </summary>
         /// <returns>the SystemProperties</returns>
-        static property GemStone::GemFire::Cache::Generic::SystemProperties^ SystemProperties
+        static property Apache::Geode::Client::Generic::SystemProperties^ SystemProperties
         {
-          static GemStone::GemFire::Cache::Generic::SystemProperties^ get( );
+          static Apache::Geode::Client::Generic::SystemProperties^ get( );
         }
 
         /// <summary>

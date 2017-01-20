@@ -24,11 +24,13 @@
 #include "EntryEvent.hpp"
 #include "RegionEvent.hpp"
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
       /// <summary>
       /// An application plug-in that can be installed on a region.

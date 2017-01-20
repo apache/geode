@@ -27,11 +27,13 @@
 
 using namespace System;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
       /// <summary>
       /// An immutable string wrapper that can serve as a distributable
@@ -148,7 +150,7 @@ namespace GemStone
         /// It invokes the '==' operator of the underlying
         /// <c>apache::geode::client::CacheableString</c> object.
         /// </summary>
-        virtual bool Equals(GemStone::GemFire::Cache::Generic::ICacheableKey^ other) override;
+        virtual bool Equals(Apache::Geode::Client::Generic::ICacheableKey^ other) override;
 
         /// <summary>
         /// Return true if this key matches other object.

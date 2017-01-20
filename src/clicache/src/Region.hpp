@@ -29,12 +29,13 @@ using namespace System;
 //using namespace System::Collections;
 //using namespace System::Collections::Generic;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { 
-			namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
       //generic<class TKey, class TValue>
      // ref class AttributesMutator;
@@ -165,12 +166,12 @@ namespace GemStone
 
           virtual property AttributesMutator<TKey, TValue>^ AttributesMutator
           {
-            GemStone::GemFire::Cache::Generic::AttributesMutator<TKey, TValue>^ get();
+            Apache::Geode::Client::Generic::AttributesMutator<TKey, TValue>^ get();
           }
 
-          virtual property GemStone::GemFire::Cache::Generic::CacheStatistics^ Statistics 
+          virtual property Apache::Geode::Client::Generic::CacheStatistics^ Statistics 
           {
-            GemStone::GemFire::Cache::Generic::CacheStatistics^ get();
+            Apache::Geode::Client::Generic::CacheStatistics^ get();
           }
 
           virtual IRegion<TKey, TValue>^ GetSubRegion( String^ path );
@@ -196,7 +197,7 @@ namespace GemStone
           {
             bool get();
           }
-          virtual GemStone::GemFire::Cache::Generic::ISubscriptionService<TKey>^ GetSubscriptionService();
+          virtual Apache::Geode::Client::Generic::ISubscriptionService<TKey>^ GetSubscriptionService();
 
           virtual IRegion<TKey, TValue>^ GetLocalView();
 
@@ -270,7 +271,7 @@ namespace GemStone
         /// The managed wrapper object; null if the native pointer is null.
         /// </returns>
         //generic<class TKey, class TValue>
-        inline static GemStone::GemFire::Cache::Generic::IRegion<TKey, TValue>^
+        inline static Apache::Geode::Client::Generic::IRegion<TKey, TValue>^
         Create( apache::geode::client::Region* nativeptr )
         {
           return ( nativeptr != nullptr ?

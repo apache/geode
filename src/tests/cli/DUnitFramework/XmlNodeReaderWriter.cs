@@ -23,7 +23,7 @@ using System.Reflection;
 using System.Text;
 using System.Xml;
 
-namespace GemStone.GemFire.DUnitFramework
+namespace Apache.Geode.DUnitFramework
 {
   public class XmlNodeReaderWriter
   {

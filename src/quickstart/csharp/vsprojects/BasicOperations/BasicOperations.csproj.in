@@ -75,9 +75,9 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="GemStone.GemFire.Cache, Version=9.0.0.0, Culture=neutral, PublicKeyToken=126e6338d9f55e0c, processorArchitecture=x64">
+    <Reference Include="Apache.Geode.Client, Version=9.0.0.0, Culture=neutral, PublicKeyToken=126e6338d9f55e0c, processorArchitecture=x64">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>${NATIVECLIENT_BINARIES_DIR}/GemStone.GemFire.Cache.dll</HintPath>     
+      <HintPath>${NATIVECLIENT_BINARIES_DIR}/Apache.Geode.Client.dll</HintPath>     
     </Reference>
     <Reference Include="System" />
   </ItemGroup>

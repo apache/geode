@@ -38,21 +38,21 @@
 
 using namespace System;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache {
-
-      namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
 
       generic <class TKey, class TValue>
       void Generic::RegionAttributes<TKey, TValue>::ToData(
-        GemStone::GemFire::Cache::Generic::DataOutput^ output )
+        Apache::Geode::Client::Generic::DataOutput^ output )
       {
         apache::geode::client::DataOutput* nativeOutput =
-          GemStone::GemFire::Cache::Generic::GetNativePtrFromUMWrapGeneric<apache::geode::client::DataOutput>( output );
+          Apache::Geode::Client::Generic::GetNativePtrFromUMWrapGeneric<apache::geode::client::DataOutput>( output );
         if (nativeOutput != nullptr)
         {
           NativePtr->toData( *nativeOutput );
@@ -60,11 +60,11 @@ namespace GemStone
       }
 
       generic <class TKey, class TValue>
-      GemStone::GemFire::Cache::Generic::IGFSerializable^ Generic::RegionAttributes<TKey, TValue>::FromData(
-        GemStone::GemFire::Cache::Generic::DataInput^ input )
+      Apache::Geode::Client::Generic::IGFSerializable^ Generic::RegionAttributes<TKey, TValue>::FromData(
+        Apache::Geode::Client::Generic::DataInput^ input )
       {
         apache::geode::client::DataInput* nativeInput =
-          GemStone::GemFire::Cache::Generic::GetNativePtrFromUMWrapGeneric<apache::geode::client::DataInput>( input );
+          Apache::Geode::Client::Generic::GetNativePtrFromUMWrapGeneric<apache::geode::client::DataInput>( input );
         if (nativeInput != nullptr)
         {
           AssignPtr( static_cast<apache::geode::client::RegionAttributes*>(

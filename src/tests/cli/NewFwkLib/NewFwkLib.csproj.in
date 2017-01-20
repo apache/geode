@@ -12,7 +12,7 @@
     <ProjectGuid>{3DAA5FF5-9FA3-3543-9293-7197636A16C3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GemStone.GemFire.Cache.FwkLib</RootNamespace>
+    <RootNamespace>Apache.Geode.Client.FwkLib</RootNamespace>
     <AssemblyName>NewFwkLib</AssemblyName>
     <SignAssembly>${STRONG_NAME_KEY_ENABLED}</SignAssembly>
     <AssemblyOriginatorKeyFile>${STRONG_NAME_KEY}</AssemblyOriginatorKeyFile>

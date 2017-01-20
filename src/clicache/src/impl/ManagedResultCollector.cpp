@@ -45,9 +45,9 @@ namespace apache
         try
         {
           String^ mg_assemblyPath =
-            GemStone::GemFire::Cache::Generic::ManagedString::Get(assemblyPath);
+            Apache::Geode::Client::Generic::ManagedString::Get(assemblyPath);
           String^ mg_factoryFunctionName =
-            GemStone::GemFire::Cache::Generic::ManagedString::Get(factoryFunctionName);
+            Apache::Geode::Client::Generic::ManagedString::Get(factoryFunctionName);
           String^ mg_typeName = nullptr;
           Int32 dotIndx = -1;
 
@@ -85,18 +85,18 @@ namespace apache
               BindingFlags::Public | BindingFlags::Static | BindingFlags::IgnoreCase);
             if (mInfo != nullptr)
             {
-              //GemStone::GemFire::Cache::Generic::ResultCollector<Object^>^ managedptr = nullptr;
+              //Apache::Geode::Client::Generic::ResultCollector<Object^>^ managedptr = nullptr;
               Object^ userptr = nullptr;
               try
               {
                 throw apache::geode::client::UnsupportedOperationException("Not supported");
-                /*managedptr = dynamic_cast<GemStone::GemFire::Cache::Generic::ResultCollector<Object^>^>(
+                /*managedptr = dynamic_cast<Apache::Geode::Client::Generic::ResultCollector<Object^>^>(
                   mInfo->Invoke( typeInst, nullptr ) );*/
                 userptr = mInfo->Invoke(typeInst, nullptr);
               }
               catch (System::Exception^ ex)
               {
-                GemStone::GemFire::Cache::Generic::Log::Debug("{0}: {1}", ex->GetType()->Name, ex->Message);
+                Apache::Geode::Client::Generic::Log::Debug("{0}: {1}", ex->GetType()->Name, ex->Message);
                 userptr = nullptr;
               }
               if (userptr == nullptr)
@@ -109,7 +109,7 @@ namespace apache
                 throw apache::geode::client::IllegalArgumentException(ex_str.c_str());
               }
               //TODO::need to pass proper pointer here
-              return new ManagedResultCollectorGeneric(/*(GemStone::GemFire::Cache::Generic::ResultCollector<Object^>^) managedptr*/nullptr);
+              return new ManagedResultCollectorGeneric(/*(Apache::Geode::Client::Generic::ResultCollector<Object^>^) managedptr*/nullptr);
             }
             else
             {
@@ -123,7 +123,7 @@ namespace apache
           }
           else
           {
-            GemStone::GemFire::Cache::Generic::ManagedString typeName(mg_typeName);
+            Apache::Geode::Client::Generic::ManagedString typeName(mg_typeName);
             std::string ex_str = "ManagedResultCollector: Could not load type [";
             ex_str += typeName.CharPtr;
             ex_str += "] in assembly: ";
@@ -137,7 +137,7 @@ namespace apache
         }
         catch (System::Exception^ ex)
         {
-          GemStone::GemFire::Cache::Generic::ManagedString mg_exStr(ex->ToString());
+          Apache::Geode::Client::Generic::ManagedString mg_exStr(ex->ToString());
           std::string ex_str = "ManagedResultCollector: Got an exception while "
             "loading managed library: ";
           ex_str += mg_exStr.CharPtr;
@@ -149,16 +149,16 @@ namespace apache
       void ManagedResultCollectorGeneric::addResult(CacheablePtr& result)
       {
         try {
-          //GemStone::GemFire::Cache::IGFSerializable^ res = SafeUMSerializableConvertGeneric(result.ptr());
-          Object^ rs = GemStone::GemFire::Cache::Generic::Serializable::GetManagedValueGeneric<Object^>(result);
+          //Apache::Geode::Client::IGFSerializable^ res = SafeUMSerializableConvertGeneric(result.ptr());
+          Object^ rs = Apache::Geode::Client::Generic::Serializable::GetManagedValueGeneric<Object^>(result);
           m_managedptr->AddResult(rs);
           //m_managedptr->AddResult( SafeUMSerializableConvert( result.ptr( ) ) );
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::ManagedString mg_exStr(ex->ToString());
+          Apache::Geode::Client::Generic::ManagedString mg_exStr(ex->ToString());
           std::string ex_str = "ManagedResultCollector: Got an exception in"
             "addResult: ";
           ex_str += mg_exStr.CharPtr;
@@ -173,18 +173,18 @@ namespace apache
           //apache::geode::client::CacheableVectorPtr rsptr = apache::geode::client::CacheableVector::create();
           //for( int index = 0; index < rs->Length; index++ )
           //{
-          //  //apache::geode::client::CacheablePtr valueptr(GemStone::GemFire::Cache::Generic::Serializable::GetUnmanagedValueGeneric<IGFSerializable^>(rs[ index]));
+          //  //apache::geode::client::CacheablePtr valueptr(Apache::Geode::Client::Generic::Serializable::GetUnmanagedValueGeneric<IGFSerializable^>(rs[ index]));
           //  apache::geode::client::CacheablePtr valueptr (SafeMSerializableConvert(rs[ index]));
           //  rsptr->push_back(valueptr);
           //}
           //return rsptr;
           throw apache::geode::client::IllegalStateException("This should not be get callled.");
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::ManagedString mg_exStr(ex->ToString());
+          Apache::Geode::Client::Generic::ManagedString mg_exStr(ex->ToString());
           std::string ex_str = "ManagedResultCollector: Got an exception in"
             "getResult: ";
           ex_str += mg_exStr.CharPtr;
@@ -197,11 +197,11 @@ namespace apache
         try {
           m_managedptr->EndResults();
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::ManagedString mg_exStr(ex->ToString());
+          Apache::Geode::Client::Generic::ManagedString mg_exStr(ex->ToString());
           std::string ex_str = "ManagedResultCollector: Got an exception in"
             "endResults: ";
           ex_str += mg_exStr.CharPtr;
@@ -213,11 +213,11 @@ namespace apache
         try {
           m_managedptr->ClearResults(/*false*/);
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::ManagedString mg_exStr(ex->ToString());
+          Apache::Geode::Client::Generic::ManagedString mg_exStr(ex->ToString());
           std::string ex_str = "ManagedResultCollector: Got an exception in"
             "clearResults: ";
           ex_str += mg_exStr.CharPtr;

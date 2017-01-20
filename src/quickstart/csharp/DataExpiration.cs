@@ -37,12 +37,12 @@ using System;
 using System.Threading;
 
 // Use the GemFire namespace
-using GemStone.GemFire.Cache.Generic;
+using Apache.Geode.Client.Generic;
 
 // Use the .NET generics namespace
 using System.Collections.Generic;
 
-namespace GemStone.GemFire.Cache.Generic.QuickStart
+namespace Apache.Geode.Client.Generic.QuickStart
 {
   // The DataExpiration QuickStart example.
   class DataExpiration

@@ -23,13 +23,13 @@
 
 using namespace System;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache
+    namespace Client
     {
-      namespace Internal
+namespace Internal
       {
 
         /// <summary>
@@ -147,12 +147,12 @@ namespace GemStone
           /// object is in progress since the temporary <c>ManagedPtrWrap</c>
           /// object holds a reference to the managed object.
           /// </summary>
-          property GemStone::GemFire::Cache::Generic::Internal::ManagedPtrWrap<NativeType, ManagedWrapper>
+          property Apache::Geode::Client::Generic::Internal::ManagedPtrWrap<NativeType, ManagedWrapper>
             SafeNativePtr2
           {
-            inline GemStone::GemFire::Cache::Generic::Internal::ManagedPtrWrap<NativeType, ManagedWrapper> get()
+            inline Apache::Geode::Client::Generic::Internal::ManagedPtrWrap<NativeType, ManagedWrapper> get()
             {
-              return GemStone::GemFire::Cache::Generic::Internal::ManagedPtrWrap<NativeType, ManagedWrapper>(
+              return Apache::Geode::Client::Generic::Internal::ManagedPtrWrap<NativeType, ManagedWrapper>(
                 m_nativePtr, this);
             }
           }

@@ -19,13 +19,13 @@
 #include "impl/ManagedString.hpp"
 
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache
+    namespace Client
     {
-      namespace Tests
+namespace Tests
       {
 
         // Region: QueryStrings method definitions
@@ -33,7 +33,7 @@ namespace GemStone
         void QueryStrings::Init( QueryCategory pcategory, String^ pquery,
           Boolean pisLargeResultset )
         {
-          GemStone::GemFire::Cache::Generic::ManagedString mg_pquery( pquery );
+          Apache::Geode::Client::Generic::ManagedString mg_pquery( pquery );
 
           testData::QueryStrings* nativeptr = new testData::QueryStrings(
             static_cast<testData::queryCategory>( pcategory ),
@@ -78,7 +78,7 @@ namespace GemStone
 
         String^ QueryStrings::Query::get( )
         {
-          return GemStone::GemFire::Cache::Generic::ManagedString::Get( NativePtr->query( ) );
+          return Apache::Geode::Client::Generic::ManagedString::Get( NativePtr->query( ) );
         }
 
         bool QueryStrings::IsLargeResultset::get( )

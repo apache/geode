@@ -26,18 +26,17 @@ using namespace System;
 using namespace System::Collections::Generic;
 
 /*
-using namespace GemStone::GemFire::Cache;
-using namespace GemStone::GemFire::Cache::Generic;
+using namespace Apache::Geode::Client;
+using namespace Apache::Geode::Client::Generic;
 */
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache 
-		{
-    
-    namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
       ref class Cache;
       ref class CacheStatistics;
@@ -1656,7 +1655,7 @@ namespace GemStone
           /// </exception>
           property AttributesMutator<TKey, TValue>^ AttributesMutator
           {
-            GemStone::GemFire::Cache::Generic::AttributesMutator<TKey, TValue>^ get();
+            Apache::Geode::Client::Generic::AttributesMutator<TKey, TValue>^ get();
           }
 
           /// <summary>
@@ -1726,9 +1725,9 @@ namespace GemStone
           /// Gets the RegionService for this region.
           /// </summary>
           /// <returns>RegionService</returns>
-          property GemStone::GemFire::Cache::Generic::IRegionService^ RegionService
+          property Apache::Geode::Client::Generic::IRegionService^ RegionService
           {
-            GemStone::GemFire::Cache::Generic::IRegionService^ get( );
+            Apache::Geode::Client::Generic::IRegionService^ get( );
           }
 
           /// <summary>

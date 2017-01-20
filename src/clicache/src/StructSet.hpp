@@ -25,12 +25,13 @@
 
 using namespace System;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { 
-      namespace Generic
+    namespace Client
+    {
+namespace Generic
       {
       interface class IGFSerializable;
 
@@ -73,9 +74,9 @@ namespace GemStone
         /// if the index is out of bounds.
         /// </exception>
         /// <returns>Item at the given index.</returns>
-        virtual property /*GemStone::GemFire::Cache::Generic::IGFSerializable^*/TResult GFINDEXER( size_t )
+        virtual property /*Apache::Geode::Client::Generic::IGFSerializable^*/TResult GFINDEXER( size_t )
         {
-          virtual /*GemStone::GemFire::Cache::Generic::IGFSerializable^*/TResult get( size_t index );
+          virtual /*Apache::Geode::Client::Generic::IGFSerializable^*/TResult get( size_t index );
         }
 
         /// <summary>
@@ -122,7 +123,7 @@ namespace GemStone
         /// A <c>System.Collections.Generic.IEnumerator</c> that
         /// can be used to iterate through the <c>StructSet</c>.
         /// </returns>
-        virtual System::Collections::Generic::IEnumerator</*GemStone::GemFire::Cache::Generic::IGFSerializable^*/TResult>^
+        virtual System::Collections::Generic::IEnumerator</*Apache::Geode::Client::Generic::IGFSerializable^*/TResult>^
           GetEnumerator( );
 
         // End Region: IEnumerable<IGFSerializable^> Members

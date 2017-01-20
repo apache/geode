@@ -31,7 +31,7 @@ using System.Runtime.Serialization.Formatters;
 using System.Text;
 using System.Threading;
 
-namespace GemStone.GemFire.DUnitFramework
+namespace Apache.Geode.DUnitFramework
 {
   using NUnit.Framework;
 

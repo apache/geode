@@ -25,9 +25,9 @@ using System.Runtime.Remoting.Channels;
 using System.Text;
 using System.Threading;
 
-namespace GemStone.GemFire.Cache.FwkClient
+namespace Apache.Geode.Client.FwkClient
 {
-  using GemStone.GemFire.DUnitFramework;
+  using Apache.Geode.DUnitFramework;
 
   class ClientComm : MarshalByRefObject, IClientComm
   {
@@ -77,7 +77,7 @@ namespace GemStone.GemFire.Cache.FwkClient
             domain = AppDomain.CreateDomain(appDomain);
             CreateBBServerConnection urlConn = (CreateBBServerConnection)domain.
               CreateInstanceAndUnwrap("FwkClient",
-              "GemStone.GemFire.Cache.FwkClient.CreateBBServerConnection");
+              "Apache.Geode.Client.FwkClient.CreateBBServerConnection");
             urlConn.OpenBBServerConnection(ClientProcess.bbUrl);
             urlConn.SetLogFile(Util.LogFile);
             Util.Log("Created app domain {0}",domain);
@@ -87,7 +87,7 @@ namespace GemStone.GemFire.Cache.FwkClient
             domain = m_appDomainMap[appDomain];
             CreateBBServerConnection urlConn = (CreateBBServerConnection)domain.
               CreateInstanceAndUnwrap("FwkClient",
-              "GemStone.GemFire.Cache.FwkClient.CreateBBServerConnection");
+              "Apache.Geode.Client.FwkClient.CreateBBServerConnection");
             urlConn.SetLogFile(Util.LogFile);
           }
           try {

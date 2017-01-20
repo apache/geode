@@ -24,13 +24,13 @@
 
 using namespace System;
 //using namespace apache::geode::client;
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache
+    namespace Client
     {
-      interface class ICacheWriter;
+interface class ICacheWriter;
     }
   }
 }
@@ -43,7 +43,7 @@ namespace apache
     {
 
       /// <summary>
-      /// Wraps the managed <see cref="GemStone.GemFire.Cache.ICacheWriter" />
+      /// Wraps the managed <see cref="Apache.Geode.Client.ICacheWriter" />
       /// object and implements the native <c>apache::geode::client::CacheWriter</c> interface.
       /// </summary>
       class ManagedCacheWriterGeneric
@@ -94,8 +94,8 @@ namespace apache
         /// <param name="ev">
         /// EntryEvent denotes the event object associated with updating the entry
         /// </param>
-        /// <seealso cref="GemStone.GemFire.Cache.Region.Put" />
-        /// <seealso cref="GemStone.GemFire.Cache.Region.Get" />
+        /// <seealso cref="Apache.Geode.Client.Region.Put" />
+        /// <seealso cref="Apache.Geode.Client.Region.Get" />
         bool beforeUpdate(const EntryEvent& ev);
 
         /// <summary>
@@ -111,9 +111,9 @@ namespace apache
         /// <param name="ev">
         /// EntryEvent denotes the event object associated with creating the entry
         /// </param>
-        /// <seealso cref="GemStone.GemFire.Cache.Region.Create" />
-        /// <seealso cref="GemStone.GemFire.Cache.Region.Put" />
-        /// <seealso cref="GemStone.GemFire.Cache.Region.Get" />
+        /// <seealso cref="Apache.Geode.Client.Region.Create" />
+        /// <seealso cref="Apache.Geode.Client.Region.Put" />
+        /// <seealso cref="Apache.Geode.Client.Region.Get" />
         bool beforeCreate(const EntryEvent& ev);
 
         /// <summary>
@@ -123,12 +123,12 @@ namespace apache
         /// The entry being destroyed may or may
         /// not exist in the local cache where the CacheWriter is installed. This method
         /// is <em>not</em> called as a result of expiration or
-        /// <see cref="GemStone.GemFire.Cache.Region.LocalDestroyRegion" />.
+        /// <see cref="Apache.Geode.Client.Region.LocalDestroyRegion" />.
         /// </remarks>
         /// <param name="ev">
         /// EntryEvent denotes the event object associated with destroying the entry
         /// </param>
-        /// <seealso cref="GemStone.GemFire.Cache.Region.Destroy" />
+        /// <seealso cref="Apache.Geode.Client.Region.Destroy" />
         bool beforeDestroy(const EntryEvent& ev);
 
         /// <summary>
@@ -142,7 +142,7 @@ namespace apache
         /// <param name="ev">
         /// RegionEvent denotes the event object associated with destroying the region
         /// </param>
-        /// <seealso cref="GemStone.GemFire.Cache.Region.DestroyRegion" />
+        /// <seealso cref="Apache.Geode.Client.Region.DestroyRegion" />
         bool beforeRegionDestroy(const RegionEvent& ev);
 
         /// <summary>
@@ -158,19 +158,19 @@ namespace apache
         /// callback instance, so implementations must be tolerant of this.
         /// </para>
         /// </remarks>
-        /// <seealso cref="GemStone.GemFire.Cache.Cache.Close" />
-        /// <seealso cref="GemStone.GemFire.Cache.Region.DestroyRegion" />
+        /// <seealso cref="Apache.Geode.Client.Cache.Close" />
+        /// <seealso cref="Apache.Geode.Client.Region.DestroyRegion" />
         void close(const RegionPtr& rp);
 
         /// <summary>
         /// Returns the wrapped managed object reference.
         /// </summary>
-        inline GemStone::GemFire::Cache::Generic::ICacheWriter<Object^, Object^>^ ptr() const
+        inline Apache::Geode::Client::Generic::ICacheWriter<Object^, Object^>^ ptr() const
         {
           return m_managedptr;
         }
 
-        inline void setptr(GemStone::GemFire::Cache::Generic::ICacheWriter<Object^, Object^>^ managedptr)
+        inline void setptr(Apache::Geode::Client::Generic::ICacheWriter<Object^, Object^>^ managedptr)
         {
           m_managedptr = managedptr;
         }
@@ -189,7 +189,7 @@ namespace apache
         /// to be called which is not what is desired when this object is destroyed. Normally this
         /// managed object may be created by the user and will be handled automatically by the GC.
         /// </summary>
-        gcroot<GemStone::GemFire::Cache::Generic::ICacheWriter<Object^, Object^>^> m_managedptr;
+        gcroot<Apache::Geode::Client::Generic::ICacheWriter<Object^, Object^>^> m_managedptr;
 
         gcroot<Object^> m_userptr;
       };

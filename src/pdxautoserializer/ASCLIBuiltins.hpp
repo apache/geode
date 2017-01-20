@@ -26,9 +26,12 @@
 using namespace System;
 using namespace System::Collections::Generic;
 
-namespace GemStone {
-namespace GemFire {
-namespace Cache {
+namespace Apache
+{
+  namespace Geode
+  {
+    namespace Client
+    {
 namespace Serializer {
 
 /**

@@ -17,7 +17,7 @@
 
 using System;
 
-namespace GemStone.GemFire.DUnitFramework
+namespace Apache.Geode.DUnitFramework
 {
   public static class ServerConnection<TComm>
   {

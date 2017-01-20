@@ -33,13 +33,13 @@
 //TODO::split
 #include "../CqEvent.hpp"
 #include "../UserFunctionExecutionException.hpp"
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache
+    namespace Client
     {
-      namespace Generic
+namespace Generic
       {
 				interface class IPdxSerializable;
       public ref class SafeConvertClassGeneric
@@ -49,7 +49,7 @@ namespace GemStone
   
         static void SetAppDomainEnabled(bool isAppDomainEnable)
         {
-          GemStone::GemFire::Cache::Generic::Log::Fine("AppDomain support enabled: " + isAppDomainEnable);
+          Apache::Geode::Client::Generic::Log::Fine("AppDomain support enabled: " + isAppDomainEnable);
           isAppDomainEnabled = isAppDomainEnable;
         }
       };
@@ -58,7 +58,7 @@ namespace GemStone
       /// Helper function to convert native <c>apache::geode::client::Serializable</c> object
       /// to managed <see cref="IGFSerializable" /> object.
       /// </summary>
-      inline static GemStone::GemFire::Cache::Generic::IGFSerializable^
+      inline static Apache::Geode::Client::Generic::IGFSerializable^
         SafeUMSerializableConvertGeneric( apache::geode::client::Serializable* obj )
       {
 
@@ -92,11 +92,11 @@ namespace GemStone
           
           if( mg_obj_delta != nullptr )
           {
-            return dynamic_cast<GemStone::GemFire::Cache::Generic::IGFSerializable^>(mg_obj_delta->ptr( ));
+            return dynamic_cast<Apache::Geode::Client::Generic::IGFSerializable^>(mg_obj_delta->ptr( ));
           }
           else if(mg_bytesObj_delta != nullptr)
           {
-            return dynamic_cast<GemStone::GemFire::Cache::Generic::IGFSerializable^>(mg_bytesObj_delta->ptr( ));
+            return dynamic_cast<Apache::Geode::Client::Generic::IGFSerializable^>(mg_bytesObj_delta->ptr( ));
           }
           else
           {
@@ -111,13 +111,13 @@ namespace GemStone
             }
 
             WrapperDelegateGeneric^ wrapperMethod =
-              GemStone::GemFire::Cache::Generic::Serializable::GetWrapperGeneric( obj->typeId( ) );
+              Apache::Geode::Client::Generic::Serializable::GetWrapperGeneric( obj->typeId( ) );
             if (wrapperMethod != nullptr)
             {
               return wrapperMethod( obj );
             }            
 
-            return gcnew GemStone::GemFire::Cache::Generic::Serializable( obj );
+            return gcnew Apache::Geode::Client::Generic::Serializable( obj );
           }
         }
       }
@@ -165,8 +165,8 @@ namespace GemStone
         //}
         //else 
         {
-          GemStone::GemFire::Cache::Generic::IGFDelta^ sDelta =
-            dynamic_cast<GemStone::GemFire::Cache::Generic::IGFDelta^> (mg_obj);
+          Apache::Geode::Client::Generic::IGFDelta^ sDelta =
+            dynamic_cast<Apache::Geode::Client::Generic::IGFDelta^> (mg_obj);
           if(sDelta != nullptr){
             if(!SafeConvertClassGeneric::isAppDomainEnabled)
               return new apache::geode::client::ManagedCacheableDeltaGeneric( sDelta);
@@ -242,12 +242,12 @@ namespace GemStone
             }
 
             WrapperDelegateGeneric^ wrapperMethod =
-              GemStone::GemFire::Cache::Generic::Serializable::GetWrapperGeneric( obj->typeId( ) );             
+              Apache::Geode::Client::Generic::Serializable::GetWrapperGeneric( obj->typeId( ) );             
             if (wrapperMethod != nullptr)
             {
               return safe_cast<TValue>(wrapperMethod( obj ));
             }
-            return safe_cast<TValue>(gcnew GemStone::GemFire::Cache::Generic::Serializable( obj ));
+            return safe_cast<TValue>(gcnew Apache::Geode::Client::Generic::Serializable( obj ));
           }
         }
       }
@@ -258,12 +258,12 @@ namespace GemStone
       /// <c>SafeM2UMConvert</c>.
       /// </summary>
       inline static apache::geode::client::Serializable* SafeMSerializableConvertGeneric(
-        GemStone::GemFire::Cache::Generic::IGFSerializable^ mg_obj )
+        Apache::Geode::Client::Generic::IGFSerializable^ mg_obj )
       {
         //it is called for cacheables types  only
-        return SafeM2UMConvertGeneric<GemStone::GemFire::Cache::Generic::IGFSerializable,
+        return SafeM2UMConvertGeneric<Apache::Geode::Client::Generic::IGFSerializable,
           apache::geode::client::ManagedCacheableKeyGeneric, apache::geode::client::Serializable,
-          GemStone::GemFire::Cache::Generic::Serializable>( mg_obj );
+          Apache::Geode::Client::Generic::Serializable>( mg_obj );
       }
 
       generic<class TValue>
@@ -294,8 +294,8 @@ namespace GemStone
 						return new apache::geode::client::PdxManagedCacheableKeyBytes(pdxType, true);
         }
       
-				GemStone::GemFire::Cache::Generic::IGFDelta^ sDelta =
-            dynamic_cast<GemStone::GemFire::Cache::Generic::IGFDelta^> (mg_obj);
+				Apache::Geode::Client::Generic::IGFDelta^ sDelta =
+            dynamic_cast<Apache::Geode::Client::Generic::IGFDelta^> (mg_obj);
           if(sDelta != nullptr)
 					{
             if(!SafeConvertClassGeneric::isAppDomainEnabled)
@@ -305,8 +305,8 @@ namespace GemStone
           }
           else
 					{
-						GemStone::GemFire::Cache::Generic::IGFSerializable^ tmpIGFS = 
-							dynamic_cast<GemStone::GemFire::Cache::Generic::IGFSerializable^>(mg_obj);
+						Apache::Geode::Client::Generic::IGFSerializable^ tmpIGFS = 
+							dynamic_cast<Apache::Geode::Client::Generic::IGFSerializable^>(mg_obj);
 						if(tmpIGFS != nullptr)
 						{
 							if(!SafeConvertClassGeneric::isAppDomainEnabled)
@@ -327,7 +327,7 @@ namespace GemStone
 					    else
 						    return new apache::geode::client::PdxManagedCacheableKeyBytes(gcnew PdxWrapper(mg_obj), true);
             }
-            throw gcnew GemStone::GemFire::Cache::Generic::IllegalStateException(String::Format("Unable to map object type {0}. Possible Object type may not be registered or PdxSerializer is not registered. ", mg_obj->GetType()));
+            throw gcnew Apache::Geode::Client::Generic::IllegalStateException(String::Format("Unable to map object type {0}. Possible Object type may not be registered or PdxSerializer is not registered. ", mg_obj->GetType()));
           }	
       }
 
@@ -382,7 +382,7 @@ namespace GemStone
         else
         {
           WrapperDelegateGeneric^ wrapperMethod =
-            GemStone::GemFire::Cache::Generic::Serializable::GetWrapperGeneric( obj->typeId( ) );
+            Apache::Geode::Client::Generic::Serializable::GetWrapperGeneric( obj->typeId( ) );
           if (wrapperMethod != nullptr)
           {
             return (Generic::ICacheableKey^)wrapperMethod( obj );
@@ -395,7 +395,7 @@ namespace GemStone
       inline static apache::geode::client::CacheableKey* SafeGenericMKeyConvert( TKey mg_obj )
       {
         if (mg_obj == nullptr) return NULL;
-        apache::geode::client::CacheableKey* obj = GemStone::GemFire::Cache::Generic::Serializable::GetUnmanagedValueGeneric<TKey>( mg_obj ).ptr();
+        apache::geode::client::CacheableKey* obj = Apache::Geode::Client::Generic::Serializable::GetUnmanagedValueGeneric<TKey>( mg_obj ).ptr();
         if (obj != nullptr)
         {
           return obj;
@@ -425,26 +425,26 @@ namespace GemStone
 
       template<typename NativeType> //where NativeType : apache::geode::client::SharedPtr<NativeType>
       //generic<typename ManagedType> where ManagedType : Internal::SBWrap<apache::geode::client::RegionAttributes>
-      inline static NativeType* GetNativePtrFromSBWrap( GemStone::GemFire::Cache::Generic::Internal::SBWrap<NativeType>^ mg_obj )
+      inline static NativeType* GetNativePtrFromSBWrap( Apache::Geode::Client::Generic::Internal::SBWrap<NativeType>^ mg_obj )
       {
         return (mg_obj != nullptr ? mg_obj->_NativePtr : NULL);
       }
 
 			 template<typename NativeType> //where NativeType : apache::geode::client::SharedPtr<NativeType>
       //generic<typename ManagedType> where ManagedType : Internal::SBWrap<apache::geode::client::RegionAttributes>
-			 inline static NativeType* GetNativePtrFromSBWrapGeneric( GemStone::GemFire::Cache::Generic::Internal::SBWrap<NativeType>^ mg_obj )
+			 inline static NativeType* GetNativePtrFromSBWrapGeneric( Apache::Geode::Client::Generic::Internal::SBWrap<NativeType>^ mg_obj )
       {
         return (mg_obj != nullptr ? mg_obj->_NativePtr : NULL);
       }
 
       template<typename NativeType>
-      inline static NativeType* GetNativePtrFromUMWrap( GemStone::GemFire::Cache::Generic::Internal::UMWrap<NativeType>^ mg_obj )
+      inline static NativeType* GetNativePtrFromUMWrap( Apache::Geode::Client::Generic::Internal::UMWrap<NativeType>^ mg_obj )
       {
         return (mg_obj != nullptr ? mg_obj->_NativePtr : NULL);
       }
 
 			template<typename NativeType>
-			inline static NativeType* GetNativePtrFromUMWrapGeneric( GemStone::GemFire::Cache::Generic::Internal::UMWrap<NativeType>^ mg_obj )
+			inline static NativeType* GetNativePtrFromUMWrapGeneric( Apache::Geode::Client::Generic::Internal::UMWrap<NativeType>^ mg_obj )
       {
         return (mg_obj != nullptr ? mg_obj->_NativePtr : NULL);
       }

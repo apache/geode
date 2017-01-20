@@ -21,9 +21,12 @@
 #include <vcclr.h>
 #include <AppDomainContext.hpp>
 
-namespace GemStone {
-namespace GemFire {
-namespace Cache {
+namespace Apache
+{
+  namespace Geode
+  {
+    namespace Client
+    {
 namespace Generic {
 
 using namespace System;

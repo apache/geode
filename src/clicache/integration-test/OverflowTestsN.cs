@@ -23,11 +23,11 @@ using System.Diagnostics;
 
 #pragma warning disable 618
 
-namespace GemStone.GemFire.Cache.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests.NewAPI
 {
   using NUnit.Framework;
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Cache.Generic;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Client.Generic;
 
   [TestFixture]
   [Category("group4")]
@@ -114,7 +114,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
     // Testing for attibute validation.
     private void ValidateAttributes(IRegion<object, object> region)
     {
-      GemStone.GemFire.Cache.Generic.RegionAttributes<object, object> regAttr = region.Attributes;
+      Apache.Geode.Client.Generic.RegionAttributes<object, object> regAttr = region.Attributes;
       int initialCapacity = regAttr.InitialCapacity;
       Assert.AreEqual(1000, initialCapacity, "Expected initial capacity to be 1000");
       Assert.AreEqual(DiskPolicyType.Overflows, regAttr.DiskPolicy,
@@ -288,8 +288,8 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
     [Test]
     public void OverflowPutGetManaged()
     {
-      IRegion<object, object> region = CreateOverflowRegion("OverFlowRegion", "Gemstone.Gemfire.Plugins.SqLite",
-        "Gemstone.Gemfire.Plugins.SqLite.SqLiteImpl<System.Object,System.Object>.Create");
+      IRegion<object, object> region = CreateOverflowRegion("OverFlowRegion", "Apache.Geode.Plugins.SqLite",
+        "Apache.Geode.Plugins.SqLite.SqLiteImpl<System.Object,System.Object>.Create");
       ValidateAttributes(region);
 
       //Console.WriteLine("TEST-2");
@@ -315,8 +315,8 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
       String sqlite_dir = "SqLiteDir" + Process.GetCurrentProcess().Id.ToString();
       for (int i = 0; i < 10; i++)
       {
-        subRegion = CreateSubRegion(region, "SubRegion", "Gemstone.Gemfire.Plugins.SqLite",
-          "Gemstone.Gemfire.Plugins.SqLite.SqLiteImpl<System.Object,System.Object>.Create");
+        subRegion = CreateSubRegion(region, "SubRegion", "Apache.Geode.Plugins.SqLite",
+          "Apache.Geode.Plugins.SqLite.SqLiteImpl<System.Object,System.Object>.Create");
         subRegion.DestroyRegion();
         Assert.IsTrue(subRegion.IsDestroyed, "Expected region to be destroyed");
         Assert.IsFalse(File.Exists(GetSqLiteFileName(sqlite_dir, "SubRegion")), "Persistence file present after region destroy");
@@ -327,8 +327,8 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
     [Test]
     public void OverflowPutGetManagedMT()
     {
-      IRegion<object, object> region = CreateOverflowRegion("OverFlowRegion", "Gemstone.Gemfire.Plugins.SqLite",
-        "Gemstone.Gemfire.Plugins.SqLite.SqLiteImpl<System.Object,System.Object>.Create");
+      IRegion<object, object> region = CreateOverflowRegion("OverFlowRegion", "Apache.Geode.Plugins.SqLite",
+        "Apache.Geode.Plugins.SqLite.SqLiteImpl<System.Object,System.Object>.Create");
       ValidateAttributes(region);
 
       List<Thread> threadsList = new List<Thread>();
@@ -374,7 +374,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
       String sqlite_dir = "SqLiteDir" + Process.GetCurrentProcess().Id.ToString();
       sqliteProperties.Insert("PersistenceDirectory", sqlite_dir);
 
-      //rf.SetPersistenceManager(new GemStone.GemFire.Plugins.SQLite.SqLiteImpl<object, object>(), sqliteProperties);
+      //rf.SetPersistenceManager(new Apache.Geode.Plugins.SQLite.SqLiteImpl<object, object>(), sqliteProperties);
       rf.SetPersistenceManager("SqLiteImpl", "createSqLiteInstance", sqliteProperties);
 
       CacheHelper.Init();
@@ -410,7 +410,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
       IRegion<object, object> subRegion;
       for (int i = 0; i < 1; i++)
       {
-        subRegion = CreateSubRegion(region, "SubRegion", "Gemstone.Gemfire.Plugins.SqLite", "SqLiteImpl<object,object>.Create()");
+        subRegion = CreateSubRegion(region, "SubRegion", "Apache.Geode.Plugins.SqLite", "SqLiteImpl<object,object>.Create()");
         subRegion.DestroyRegion();
         Assert.IsTrue(subRegion.IsDestroyed, "Expected region to be destroyed");
         Assert.IsFalse(File.Exists(GetSqLiteFileName(sqlite_dir, "SubRegion")), "Persistence file present after region destroy");
@@ -490,7 +490,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
           Util.Log('\t' + rg.Name);
         }
 
-        GemStone.GemFire.Cache.Generic.RegionAttributes<object, object> attrs = region1.Attributes;
+        Apache.Geode.Client.Generic.RegionAttributes<object, object> attrs = region1.Attributes;
         //Util.Log("Attributes of root region Root1 are: ");
 
         bool cachingEnabled = attrs.CachingEnabled;
@@ -532,7 +532,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
         Assert.AreNotEqual(0, pageSize.Length, "Persistence PageSize should not be empty.");
         Util.Log("****Attributes of Root1 are correctly set****");
 
-        GemStone.GemFire.Cache.Generic.RegionAttributes<object, object> attrs2 = region2.Attributes;
+        Apache.Geode.Client.Generic.RegionAttributes<object, object> attrs2 = region2.Attributes;
         string lib2 = attrs2.PersistenceLibrary;
         string libFun2 = attrs2.PersistenceFactory;
         Util.Log(" persistence library2 = " + lib2);
@@ -551,7 +551,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
 
         Util.Log("****Attributes of Root2 are correctly set****");
 
-        GemStone.GemFire.Cache.Generic.RegionAttributes<object, object> attrs3 = region3.Attributes;
+        Apache.Geode.Client.Generic.RegionAttributes<object, object> attrs3 = region3.Attributes;
         //Util.Log("Attributes of root region Root1 are: ");
 
         Assert.IsTrue(attrs3.CachingEnabled);

@@ -25,18 +25,6 @@
 
 using namespace System;
 
-//namespace GemStone
-//{
-//  namespace GemFire
-//  {
-//    namespace Cache  { namespace Generic
-//    {
-//      interface class IGFSerializable;
-//    }
-//  }
-//}
-//}
-
 namespace apache
 {
   namespace geode
@@ -45,7 +33,7 @@ namespace apache
     {
 
       /// <summary>
-      /// Wraps the managed <see cref="GemStone.GemFire.Cache.IGFSerializable" />
+      /// Wraps the managed <see cref="Apache.Geode.Client.IGFSerializable" />
       /// object and implements the native <c>apache::geode::client::CacheableKey</c> interface.
       /// </summary>
       class ManagedCacheableKeyGeneric
@@ -58,7 +46,7 @@ namespace apache
       public:
 
         inline ManagedCacheableKeyGeneric(
-          GemStone::GemFire::Cache::Generic::IGFSerializable^ managedptr, int hashcode, int classId)
+          Apache::Geode::Client::Generic::IGFSerializable^ managedptr, int hashcode, int classId)
           : m_managedptr(managedptr) {
           m_hashcode = hashcode;
           m_classId = classId;
@@ -70,7 +58,7 @@ namespace apache
         /// <param name="managedptr">
         /// The managed object.
         /// </param>
-        inline ManagedCacheableKeyGeneric(GemStone::GemFire::Cache::Generic::IGFSerializable^ managedptr)
+        inline ManagedCacheableKeyGeneric(Apache::Geode::Client::Generic::IGFSerializable^ managedptr)
           : m_managedptr(managedptr) {
           // m_hashcode = managedptr->GetHashCode();
           m_hashcode = 0;
@@ -151,7 +139,7 @@ namespace apache
         /// <summary>
         /// Returns the wrapped managed object reference.
         /// </summary>
-        inline GemStone::GemFire::Cache::Generic::IGFSerializable^ ptr() const
+        inline Apache::Geode::Client::Generic::IGFSerializable^ ptr() const
         {
           return m_managedptr;
         }
@@ -165,7 +153,7 @@ namespace apache
         /// to be called which is not what is desired when this object is destroyed. Normally this
         /// managed object may be created by the user and will be handled automatically by the GC.
         /// </summary>
-        gcroot<GemStone::GemFire::Cache::Generic::IGFSerializable^> m_managedptr;
+        gcroot<Apache::Geode::Client::Generic::IGFSerializable^> m_managedptr;
 
         // Disable the copy and assignment constructors
         ManagedCacheableKeyGeneric(const ManagedCacheableKeyGeneric&);

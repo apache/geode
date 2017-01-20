@@ -22,13 +22,13 @@
 #include <cppcache/TransactionWriter.hpp>
 #include "../ITransactionWriter.hpp"
 
-namespace GemStone {
-
-  namespace GemFire {
-
-    namespace Cache {
-
-      interface class ITransactionWriter;
+namespace Apache
+{
+  namespace Geode
+  {
+    namespace Client
+    {
+interface class ITransactionWriter;
     }
   }
 }
@@ -38,7 +38,7 @@ namespace apache {
     namespace client {
 
       /// <summary>
-      /// Wraps the managed <see cref="GemStone.GemFire.Cache.ITransactionWriter" />
+      /// Wraps the managed <see cref="Apache.Geode.Client.ITransactionWriter" />
       /// object and implements the native <c>apache::geode::client::TransactionWriter</c> interface.
       /// </summary>
       class ManagedTransactionWriterGeneric
@@ -62,12 +62,12 @@ namespace apache {
 
         virtual void beforeCommit(apache::geode::client::TransactionEventPtr& te);
 
-        inline GemStone::GemFire::Cache::ITransactionWriter^ ptr( ) const
+        inline Apache::Geode::Client::ITransactionWriter^ ptr( ) const
         {
           return m_managedptr;
         }
 
-        inline void setptr( GemStone::GemFire::Cache::ITransactionWriter^ managedptr )
+        inline void setptr( Apache::Geode::Client::ITransactionWriter^ managedptr )
         {
           m_managedptr = managedptr;
         }
@@ -85,7 +85,7 @@ namespace apache {
         /// to be called which is not what is desired when this object is destroyed. Normally this
         /// managed object may be created by the user and will be handled automatically by the GC.
         /// </summary>
-        gcroot<GemStone::GemFire::Cache::ITransactionWriter^> m_managedptr;
+        gcroot<Apache::Geode::Client::ITransactionWriter^> m_managedptr;
 
         gcroot<Object^> m_userptr;
       };

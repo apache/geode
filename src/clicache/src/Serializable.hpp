@@ -32,13 +32,13 @@ using namespace System::Reflection;
 using namespace System;
 using namespace System::Collections::Generic;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache
+    namespace Client
     {
-      namespace Generic
+namespace Generic
       {
 				interface class IPdxSerializable;
         interface class IPdxSerializer;
@@ -61,7 +61,7 @@ namespace GemStone
       /// <c>DelegateWrapper.NativeDelegate</c> method by a call to
       /// <see cref="IGFSerializable.FromData" />.
       /// </summary>
-      public delegate GemStone::GemFire::Cache::Generic::IGFSerializable^ TypeFactoryMethodGeneric();
+      public delegate Apache::Geode::Client::Generic::IGFSerializable^ TypeFactoryMethodGeneric();
       /// <summary>
       /// Delegate to wrap a native <c>apache::geode::client::Serializable</c> type.
       /// </summary>
@@ -69,7 +69,7 @@ namespace GemStone
       /// This delegate should return an object of type <c>IGFSerializable</c>
       /// given a native object.
       /// </remarks>
-      delegate GemStone::GemFire::Cache::Generic::IGFSerializable^ WrapperDelegateGeneric(apache::geode::client::Serializable* obj);
+      delegate Apache::Geode::Client::Generic::IGFSerializable^ WrapperDelegateGeneric(apache::geode::client::Serializable* obj);
 
 			/// <summary>
       /// Signature of function delegates passed to
@@ -78,15 +78,15 @@ namespace GemStone
       /// New instance will be created during de-serialization of Pdx Types
       /// <see cref="IPdxSerializable" />.
       /// </summary>
-      public delegate GemStone::GemFire::Cache::Generic::IPdxSerializable^ PdxTypeFactoryMethod();
+      public delegate Apache::Geode::Client::Generic::IPdxSerializable^ PdxTypeFactoryMethod();
       
       /// <summary>
       /// This class wraps the native C++ <c>apache::geode::client::Serializable</c> objects
       /// as managed <see cref="IGFSerializable" /> objects.
       /// </summary>
       public ref class Serializable
-        : public GemStone::GemFire::Cache::Generic::Internal::SBWrap<apache::geode::client::Serializable>,
-        public GemStone::GemFire::Cache::Generic::IGFSerializable
+        : public Apache::Geode::Client::Generic::Internal::SBWrap<apache::geode::client::Serializable>,
+        public Apache::Geode::Client::Generic::IGFSerializable
       {
       public:
         /// <summary>
@@ -95,7 +95,7 @@ namespace GemStone
         /// <param name="output">
         /// the DataOutput object to use for serializing the object
         /// </param>
-        virtual void ToData(GemStone::GemFire::Cache::Generic::DataOutput^ output);
+        virtual void ToData(Apache::Geode::Client::Generic::DataOutput^ output);
 
         /// <summary>
         /// Deserializes the native (C++) object -- returns an instance of the
@@ -105,8 +105,8 @@ namespace GemStone
         /// the DataInput stream to use for reading the object data
         /// </param>
         /// <returns>the deserialized object</returns>
-        virtual GemStone::GemFire::Cache::Generic::IGFSerializable^
-          FromData(GemStone::GemFire::Cache::Generic::DataInput^ input);
+        virtual Apache::Geode::Client::Generic::IGFSerializable^
+          FromData(Apache::Geode::Client::Generic::DataInput^ input);
         
         /// <summary>
         /// return the size of this object in bytes
@@ -141,109 +141,109 @@ namespace GemStone
         /// Implicit conversion operator from a boolean
         /// to a <c>Serializable</c>.
         /// </summary>
-        static operator GemStone::GemFire::Cache::Generic::Serializable^ (bool value);
+        static operator Apache::Geode::Client::Generic::Serializable^ (bool value);
 
         /// <summary>
         /// Implicit conversion operator from a byte
         /// to a <c>Serializable</c>.
         /// </summary>
-        static operator GemStone::GemFire::Cache::Generic::Serializable^ (Byte value);
+        static operator Apache::Geode::Client::Generic::Serializable^ (Byte value);
 
         /// <summary>
         /// Implicit conversion operator from an array of bytes
         /// to a <c>Serializable</c>.
         /// </summary>
-        static operator GemStone::GemFire::Cache::Generic::Serializable^ (array<Byte>^ value);
+        static operator Apache::Geode::Client::Generic::Serializable^ (array<Byte>^ value);
 
         /// <summary>
         /// Implicit conversion operator from an boolean array
         /// to a <c>Serializable</c>.
         /// </summary>
-        static operator GemStone::GemFire::Cache::Generic::Serializable^ (array<bool>^ value);
+        static operator Apache::Geode::Client::Generic::Serializable^ (array<bool>^ value);
 
         /// <summary>
         /// Implicit conversion operator from a double
         /// to a <c>Serializable</c>.
         /// </summary>
-        static operator GemStone::GemFire::Cache::Generic::Serializable^ (Double value);
+        static operator Apache::Geode::Client::Generic::Serializable^ (Double value);
 
         /// <summary>
         /// Implicit conversion operator from a double array
         /// to a <c>Serializable</c>.
         /// </summary>
-        static operator GemStone::GemFire::Cache::Generic::Serializable^ (array<Double>^ value);
+        static operator Apache::Geode::Client::Generic::Serializable^ (array<Double>^ value);
 
         /// <summary>
         /// Implicit conversion operator from a float
         /// to a <c>Serializable</c>.
         /// </summary>
-        static operator GemStone::GemFire::Cache::Generic::Serializable^ (Single value);
+        static operator Apache::Geode::Client::Generic::Serializable^ (Single value);
 
         /// <summary>
         /// Implicit conversion operator from a float array
         /// to a <c>Serializable</c>.
         /// </summary>
-        static operator GemStone::GemFire::Cache::Generic::Serializable^ (array<Single>^ value);
+        static operator Apache::Geode::Client::Generic::Serializable^ (array<Single>^ value);
 
         /// <summary>
         /// Implicit conversion operator from a 16-bit integer
         /// to a <c>Serializable</c>.
         /// </summary>
-        static operator GemStone::GemFire::Cache::Generic::Serializable^ (int16_t value);
+        static operator Apache::Geode::Client::Generic::Serializable^ (int16_t value);
 
         /// <summary>
         /// Implicit conversion operator from a character
         /// to a <c>Serializable</c>.
         /// </summary>
-        static operator GemStone::GemFire::Cache::Generic::Serializable^ (Char value);
+        static operator Apache::Geode::Client::Generic::Serializable^ (Char value);
 
         /// <summary>
         /// Implicit conversion operator from a character array
         /// to a <c>Serializable</c>.
         /// </summary>
-        static operator GemStone::GemFire::Cache::Generic::Serializable^ (array<Char>^ value);
+        static operator Apache::Geode::Client::Generic::Serializable^ (array<Char>^ value);
 
         /// <summary>
         /// Implicit conversion operator from a 16-bit integer array
         /// to a <c>Serializable</c>.
         /// </summary>
-        static operator GemStone::GemFire::Cache::Generic::Serializable^ (array<int16_t>^ value);
+        static operator Apache::Geode::Client::Generic::Serializable^ (array<int16_t>^ value);
 
         /// <summary>
         /// Implicit conversion operator from a 32-bit integer
         /// to a <c>Serializable</c>.
         /// </summary>
-        static operator GemStone::GemFire::Cache::Generic::Serializable^ (int32_t value);
+        static operator Apache::Geode::Client::Generic::Serializable^ (int32_t value);
 
         /// <summary>
         /// Implicit conversion operator from a 32-bit integer array
         /// to a <c>Serializable</c>.
         /// </summary>
-        static operator GemStone::GemFire::Cache::Generic::Serializable^ (array<int32_t>^ value);
+        static operator Apache::Geode::Client::Generic::Serializable^ (array<int32_t>^ value);
 
         /// <summary>
         /// Implicit conversion operator from a 64-bit integer
         /// to a <c>Serializable</c>.
         /// </summary>
-        static operator /*GemStone::GemFire::Cache::*/Serializable^ (int64_t value);
+        static operator /*Apache::Geode::Client::*/Serializable^ (int64_t value);
 
         /// <summary>
         /// Implicit conversion operator from a 64-bit integer array
         /// to a <c>Serializable</c>.
         /// </summary>
-        static operator GemStone::GemFire::Cache::Generic::Serializable^ (array<int64_t>^ value);
+        static operator Apache::Geode::Client::Generic::Serializable^ (array<int64_t>^ value);
 
         /// <summary>
         /// Implicit conversion operator from a string
         /// to a <c>Serializable</c>.
         /// </summary>
-        static operator GemStone::GemFire::Cache::Generic::Serializable^ (String^ value);
+        static operator Apache::Geode::Client::Generic::Serializable^ (String^ value);
 
         /// <summary>
         /// Implicit conversion operator from a string array
         /// to a <c>Serializable</c>.
         /// </summary>
-        static operator GemStone::GemFire::Cache::Generic::Serializable^ (array<String^>^ value);
+        static operator Apache::Geode::Client::Generic::Serializable^ (array<String^>^ value);
 
         /// <summary>
         /// Register an instance factory method for a given type.
@@ -415,14 +415,14 @@ namespace GemStone
         /// <summary>
         /// Default constructor.
         /// </summary>
-        inline GemStone::GemFire::Cache::Generic::Serializable()
-          : GemStone::GemFire::Cache::Generic::Internal::SBWrap<apache::geode::client::Serializable>() { }
+        inline Apache::Geode::Client::Generic::Serializable()
+          : Apache::Geode::Client::Generic::Internal::SBWrap<apache::geode::client::Serializable>() { }
 
         /// <summary>
         /// Internal constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline GemStone::GemFire::Cache::Generic::Serializable(apache::geode::client::Serializable* nativeptr)
+        inline Apache::Geode::Client::Generic::Serializable(apache::geode::client::Serializable* nativeptr)
           : Generic::Internal::SBWrap<apache::geode::client::Serializable>(nativeptr) { }
 
         /// <summary>
@@ -574,8 +574,8 @@ namespace GemStone
         
         static array<Type^>^ singleIntTypeA = gcnew array<Type^>{ Int32::typeid };
 
-        static Type^ createNewObjectDelegateType = Type::GetType("GemStone.GemFire.Cache.Generic.Serializable+CreateNewObjectDelegate");
-        static Type^ createNewObjectArrayDelegateType = Type::GetType("GemStone.GemFire.Cache.Generic.Serializable+CreateNewObjectArrayDelegate");
+        static Type^ createNewObjectDelegateType = Type::GetType("Apache.Geode.Client.Generic.Serializable+CreateNewObjectDelegate");
+        static Type^ createNewObjectArrayDelegateType = Type::GetType("Apache.Geode.Client.Generic.Serializable+CreateNewObjectArrayDelegate");
 
         static array<Type^>^ singleIntType = gcnew array<Type^>(1){Int32::typeid};
 

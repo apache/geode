@@ -12,7 +12,7 @@
     <ProjectGuid>{B2F8AE2D-3E73-3A99-BFD2-FF0B7B55C780}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GemStone.GemFire.DUnitFramework</RootNamespace>
+    <RootNamespace>Apache.Geode.DUnitFramework</RootNamespace>
     <AssemblyName>DUnitFramework</AssemblyName>
     <SignAssembly>${STRONG_NAME_KEY_ENABLED}</SignAssembly>
     <AssemblyOriginatorKeyFile>${STRONG_NAME_KEY}</AssemblyOriginatorKeyFile>

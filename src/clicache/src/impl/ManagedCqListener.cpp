@@ -45,9 +45,9 @@ namespace apache
         try
         {
           String^ mg_assemblyPath =
-            GemStone::GemFire::Cache::Generic::ManagedString::Get(assemblyPath);
+            Apache::Geode::Client::Generic::ManagedString::Get(assemblyPath);
           String^ mg_factoryFunctionName =
-            GemStone::GemFire::Cache::Generic::ManagedString::Get(factoryFunctionName);
+            Apache::Geode::Client::Generic::ManagedString::Get(factoryFunctionName);
           String^ mg_typeName = nullptr;
           int32_t dotIndx = -1;
 
@@ -85,10 +85,10 @@ namespace apache
               BindingFlags::Public | BindingFlags::Static | BindingFlags::IgnoreCase);
             if (mInfo != nullptr)
             {
-              GemStone::GemFire::Cache::Generic::ICqListener<Object^, Object^>^ managedptr = nullptr;
+              Apache::Geode::Client::Generic::ICqListener<Object^, Object^>^ managedptr = nullptr;
               try
               {
-                managedptr = dynamic_cast<GemStone::GemFire::Cache::Generic::ICqListener<Object^, Object^>^>(
+                managedptr = dynamic_cast<Apache::Geode::Client::Generic::ICqListener<Object^, Object^>^>(
                   mInfo->Invoke(typeInst, nullptr));
               }
               catch (System::Exception^)
@@ -104,7 +104,7 @@ namespace apache
                 ex_str += assemblyPath;
                 throw IllegalArgumentException(ex_str.c_str());
               }
-              return new ManagedCqListenerGeneric((GemStone::GemFire::Cache::Generic::ICqListener<Object^, Object^>^)managedptr);
+              return new ManagedCqListenerGeneric((Apache::Geode::Client::Generic::ICqListener<Object^, Object^>^)managedptr);
             }
             else
             {
@@ -118,7 +118,7 @@ namespace apache
           }
           else
           {
-            GemStone::GemFire::Cache::Generic::ManagedString typeName(mg_typeName);
+            Apache::Geode::Client::Generic::ManagedString typeName(mg_typeName);
             std::string ex_str = "ManagedCqListener: Could not load type [";
             ex_str += typeName.CharPtr;
             ex_str += "] in assembly: ";
@@ -132,7 +132,7 @@ namespace apache
         }
         catch (System::Exception^ ex)
         {
-          GemStone::GemFire::Cache::Generic::ManagedString mg_exStr(ex->ToString());
+          Apache::Geode::Client::Generic::ManagedString mg_exStr(ex->ToString());
           std::string ex_str = "ManagedCqListener: Got an exception while "
             "loading managed library: ";
           ex_str += mg_exStr.CharPtr;
@@ -145,14 +145,14 @@ namespace apache
       {
         try {
 
-          GemStone::GemFire::Cache::Generic::CqEvent<Object^, Object^> mevent(&ev);
+          Apache::Geode::Client::Generic::CqEvent<Object^, Object^> mevent(&ev);
           m_managedptr->OnEvent(%mevent);
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::ManagedString mg_exStr(ex->ToString());
+          Apache::Geode::Client::Generic::ManagedString mg_exStr(ex->ToString());
           std::string ex_str = "ManagedCqListener: Got an exception in"
             "onEvent: ";
           ex_str += mg_exStr.CharPtr;
@@ -162,7 +162,7 @@ namespace apache
 
       void ManagedCqListenerGeneric::onError(const CqEvent& ev)
       {
-        GemStone::GemFire::Cache::Generic::CqEvent<Object^, Object^> mevent(&ev);
+        Apache::Geode::Client::Generic::CqEvent<Object^, Object^> mevent(&ev);
         m_managedptr->OnError(%mevent);
       }
 
@@ -171,11 +171,11 @@ namespace apache
         try {
           m_managedptr->Close();
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::ManagedString mg_exStr(ex->ToString());
+          Apache::Geode::Client::Generic::ManagedString mg_exStr(ex->ToString());
           std::string ex_str = "ManagedCqListener: Got an exception in"
             "close: ";
           ex_str += mg_exStr.CharPtr;

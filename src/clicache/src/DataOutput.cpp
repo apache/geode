@@ -28,13 +28,13 @@ using namespace System;
 using namespace System::Runtime::InteropServices;
 using namespace apache::geode::client;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache
+    namespace Client
     {
-      namespace Generic
+namespace Generic
       {
 
 				void DataOutput::WriteByte( Byte value )
@@ -457,9 +457,9 @@ namespace GemStone
            return;
          }
 
-					//GemStone::GemFire::Cache::Generic::Log::Debug("DataOutput::WriteObject " + obj);
+					//Apache::Geode::Client::Generic::Log::Debug("DataOutput::WriteObject " + obj);
 
-					Byte typeId = GemStone::GemFire::Cache::Generic::Serializable::GetManagedTypeMappingGeneric(obj->GetType());
+					Byte typeId = Apache::Geode::Client::Generic::Serializable::GetManagedTypeMappingGeneric(obj->GetType());
 
 					switch(typeId)
 					{

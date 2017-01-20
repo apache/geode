@@ -21,11 +21,13 @@
 #include "psapi.h"
 #include "../Log.hpp"
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
       int64_t g_prevUnmanagedSize = 0;
 

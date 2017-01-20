@@ -23,10 +23,10 @@ using System.Xml;
 
 #pragma warning disable 618
 
-namespace GemStone.GemFire.Cache.FwkLib
+namespace Apache.Geode.Client.FwkLib
 {
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Cache.Tests;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Client.Tests;
 
   [Serializable]
   public enum DataKind
@@ -226,7 +226,7 @@ namespace GemStone.GemFire.Cache.FwkLib
 
               // Now collect the region atributes
               XmlNode attrnode = xmlNode.FirstChild.FirstChild.FirstChild;
-              GemStone.GemFire.Cache.Generic.Properties<string, string> rattr = GemStone.GemFire.Cache.Generic.Properties<string, string>.Create<string, string>();
+              Apache.Geode.Client.Generic.Properties<string, string> rattr = Apache.Geode.Client.Generic.Properties<string, string>.Create<string, string>();
               //AttributesFactory af = new AttributesFactory();
               if (attrnode.Name == "region-attributes")
               {
@@ -247,7 +247,7 @@ namespace GemStone.GemFire.Cache.FwkLib
                     //SetThisAttribute(tmpnode.Name, tmpnode, af);
                   }
                 }
-                GemStone.GemFire.Cache.Generic.DataOutput dout = new GemStone.GemFire.Cache.Generic.DataOutput();
+                Apache.Geode.Client.Generic.DataOutput dout = new Apache.Geode.Client.Generic.DataOutput();
                 //RegionAttributes rattr = af.CreateRegionAttributes();
                 rattr.ToData(dout);
                 // Console.WriteLine("Going to construct FwkData with region = " + regionName +
@@ -265,7 +265,7 @@ namespace GemStone.GemFire.Cache.FwkLib
               XmlAttribute nameattr = xmlNode.FirstChild.FirstChild.Attributes["name"];
               String poolName = nameattr.Value;
               // Now collect the pool atributes
-              GemStone.GemFire.Cache.Generic.Properties<string, string> prop = GemStone.GemFire.Cache.Generic.Properties<string, string>.Create<string, string>();
+              Apache.Geode.Client.Generic.Properties<string, string> prop = Apache.Geode.Client.Generic.Properties<string, string>.Create<string, string>();
               XmlAttributeCollection attrcoll = xmlNode.FirstChild.FirstChild.Attributes;
               if (attrcoll != null)
               {
@@ -273,7 +273,7 @@ namespace GemStone.GemFire.Cache.FwkLib
                 {
                   prop.Insert(eachattr.Name, eachattr.Value);
                 }
-                GemStone.GemFire.Cache.Generic.DataOutput dout = new GemStone.GemFire.Cache.Generic.DataOutput();
+                Apache.Geode.Client.Generic.DataOutput dout = new Apache.Geode.Client.Generic.DataOutput();
                 prop.ToData(dout);
                 FwkData td = new FwkData(poolName, dout.GetBuffer(), DataKind.Pool);
                 dataNodes[name] = td;
@@ -357,7 +357,7 @@ namespace GemStone.GemFire.Cache.FwkLib
       return null;
     }
 
-    public static void SetThisAttribute(string name, XmlNode node, GemStone.GemFire.Cache.Generic.AttributesFactory<string, string> af)
+    public static void SetThisAttribute(string name, XmlNode node, Apache.Geode.Client.Generic.AttributesFactory<string, string> af)
     {
       string value = node.Value;
       switch (name)
@@ -396,11 +396,11 @@ namespace GemStone.GemFire.Cache.FwkLib
         case "disk-policy":
           if (value == "none")
           {
-              af.SetDiskPolicy(GemStone.GemFire.Cache.Generic.DiskPolicyType.None);
+              af.SetDiskPolicy(Apache.Geode.Client.Generic.DiskPolicyType.None);
           }
           else if (value == "overflows")
           {
-              af.SetDiskPolicy(GemStone.GemFire.Cache.Generic.DiskPolicyType.Overflows);
+              af.SetDiskPolicy(Apache.Geode.Client.Generic.DiskPolicyType.Overflows);
           }
           else
           {
@@ -426,7 +426,7 @@ namespace GemStone.GemFire.Cache.FwkLib
           if (nlrttl.Name == "expiration-attributes")
           {
             XmlAttributeCollection exAttrColl = nlrttl.Attributes;
-            GemStone.GemFire.Cache.Generic.ExpirationAction action = StrToExpirationAction(exAttrColl["action"].Value);
+            Apache.Geode.Client.Generic.ExpirationAction action = StrToExpirationAction(exAttrColl["action"].Value);
             string rttl = exAttrColl["timeout"].Value;
             af.SetRegionTimeToLive(action, uint.Parse(rttl));
           }
@@ -441,7 +441,7 @@ namespace GemStone.GemFire.Cache.FwkLib
           if (nlrit.Name == "expiration-attributes")
           {
             XmlAttributeCollection exAttrColl = nlrit.Attributes;
-            GemStone.GemFire.Cache.Generic.ExpirationAction action = StrToExpirationAction(exAttrColl["action"].Value);
+            Apache.Geode.Client.Generic.ExpirationAction action = StrToExpirationAction(exAttrColl["action"].Value);
             string rit = exAttrColl["timeout"].Value;
             af.SetRegionIdleTimeout(action, uint.Parse(rit));
           }
@@ -456,7 +456,7 @@ namespace GemStone.GemFire.Cache.FwkLib
           if (nlettl.Name == "expiration-attributes")
           {
             XmlAttributeCollection exAttrColl = nlettl.Attributes;
-            GemStone.GemFire.Cache.Generic.ExpirationAction action = StrToExpirationAction(exAttrColl["action"].Value);
+            Apache.Geode.Client.Generic.ExpirationAction action = StrToExpirationAction(exAttrColl["action"].Value);
             string ettl = exAttrColl["timeout"].Value;
             af.SetEntryTimeToLive(action, uint.Parse(ettl));
           }
@@ -471,7 +471,7 @@ namespace GemStone.GemFire.Cache.FwkLib
           if (nleit.Name == "expiration-attributes")
           {
             XmlAttributeCollection exAttrColl = nleit.Attributes;
-            GemStone.GemFire.Cache.Generic.ExpirationAction action = StrToExpirationAction(exAttrColl["action"].Value);
+            Apache.Geode.Client.Generic.ExpirationAction action = StrToExpirationAction(exAttrColl["action"].Value);
             string eit = exAttrColl["timeout"].Value;
             af.SetEntryIdleTimeout(action, uint.Parse(eit));
           }
@@ -581,7 +581,7 @@ namespace GemStone.GemFire.Cache.FwkLib
         case "persistence-manager":
           string pmlibrary = null;
           string pmfunction = null;
-          GemStone.GemFire.Cache.Generic.Properties<string, string> prop = new GemStone.GemFire.Cache.Generic.Properties<string, string>();
+          Apache.Geode.Client.Generic.Properties<string, string> prop = new Apache.Geode.Client.Generic.Properties<string, string>();
           XmlAttributeCollection pmattrs = node.Attributes;
           foreach (XmlAttribute attr in pmattrs)
           {
@@ -627,9 +627,9 @@ namespace GemStone.GemFire.Cache.FwkLib
       }
     }
 
-    private static GemStone.GemFire.Cache.Generic.ExpirationAction StrToExpirationAction(string str)
+    private static Apache.Geode.Client.Generic.ExpirationAction StrToExpirationAction(string str)
     {
-        return (GemStone.GemFire.Cache.Generic.ExpirationAction)Enum.Parse(typeof(GemStone.GemFire.Cache.Generic.ExpirationAction),
+        return (Apache.Geode.Client.Generic.ExpirationAction)Enum.Parse(typeof(Apache.Geode.Client.Generic.ExpirationAction),
         str.Replace("-", string.Empty), true);
     }
   }
@@ -892,34 +892,34 @@ namespace GemStone.GemFire.Cache.FwkLib
     /// </summary>
     /// <param name="key">The key of the region to read.</param>
     /// <returns>The attributes of the region.</returns>
-    public GemStone.GemFire.Cache.Generic.RegionAttributes<string, string> GetRegionAttributes(string key)
+    public Apache.Geode.Client.Generic.RegionAttributes<string, string> GetRegionAttributes(string key)
     {
       FwkData data = ReadData(key);
       if (data != null && data.Kind == DataKind.Region)
       {
-        GemStone.GemFire.Cache.Generic.AttributesFactory<string, string> af = new GemStone.GemFire.Cache.Generic.AttributesFactory<string, string>();
-        GemStone.GemFire.Cache.Generic.RegionAttributes<string, string> attrs = af.CreateRegionAttributes();
+        Apache.Geode.Client.Generic.AttributesFactory<string, string> af = new Apache.Geode.Client.Generic.AttributesFactory<string, string>();
+        Apache.Geode.Client.Generic.RegionAttributes<string, string> attrs = af.CreateRegionAttributes();
         byte[] attrsArr = data.Data2 as byte[];
         if (attrsArr != null && attrsArr.Length > 0)
         {
-          GemStone.GemFire.Cache.Generic.DataInput dinp = new GemStone.GemFire.Cache.Generic.DataInput(attrsArr);
+          Apache.Geode.Client.Generic.DataInput dinp = new Apache.Geode.Client.Generic.DataInput(attrsArr);
           attrs.FromData(dinp);
         }
         return attrs;
       }
       return null;
     }
-    public GemStone.GemFire.Cache.Generic.Properties<string, string> GetPoolAttributes(string key)
+    public Apache.Geode.Client.Generic.Properties<string, string> GetPoolAttributes(string key)
     {
       FwkData data = ReadData(key);
       if (data != null && data.Kind == DataKind.Pool)
       {
-        GemStone.GemFire.Cache.Generic.Properties<string, string> prop = GemStone.GemFire.Cache.Generic.Properties<string, string>.Create<string, string>();
+        Apache.Geode.Client.Generic.Properties<string, string> prop = Apache.Geode.Client.Generic.Properties<string, string>.Create<string, string>();
         //RegionAttributes attrs = af.CreateRegionAttributes();
         byte[] attrsArr = data.Data2 as byte[];
         if (attrsArr != null && attrsArr.Length > 0)
         {
-          GemStone.GemFire.Cache.Generic.DataInput dinp = new GemStone.GemFire.Cache.Generic.DataInput(attrsArr);
+          Apache.Geode.Client.Generic.DataInput dinp = new Apache.Geode.Client.Generic.DataInput(attrsArr);
           prop.FromData(dinp);
         }
         return prop;

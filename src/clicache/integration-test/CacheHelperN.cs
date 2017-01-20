@@ -25,11 +25,11 @@ using System.Xml;
 
 #pragma warning disable 618
 
-namespace GemStone.GemFire.Cache.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests.NewAPI
 {
   using NUnit.Framework;
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Cache.Generic;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Client.Generic;
   using System.Management;
 
   public class PropsStringToObject
@@ -711,7 +711,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
 
     #region Functions to create or destroy a region
 
-    public static IRegion<TKey, TValue> CreateRegion<TKey, TValue>(string name, GemStone.GemFire.Cache.Generic.RegionAttributes<TKey, TValue> attrs)
+    public static IRegion<TKey, TValue> CreateRegion<TKey, TValue>(string name, Apache.Geode.Client.Generic.RegionAttributes<TKey, TValue> attrs)
     {
       Init();
       IRegion<TKey, TValue> region = GetRegion<TKey, TValue>(name);
@@ -829,7 +829,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
       AttributesFactory<TKey, TValue> af = new AttributesFactory<TKey, TValue>();
       af.SetLruEntriesLimit(0);
       af.SetInitialCapacity(size);
-      GemStone.GemFire.Cache.Generic.RegionAttributes<TKey, TValue> rattrs = af.CreateRegionAttributes();
+      Apache.Geode.Client.Generic.RegionAttributes<TKey, TValue> rattrs = af.CreateRegionAttributes();
       IRegion<TKey, TValue> region = ((Region<TKey, TValue>)m_currRegion).CreateSubRegion(name, rattrs);
       Assert.IsNotNull(region, "SubRegion {0} was not created.", name);
       return region;
@@ -2447,7 +2447,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
       }
     }
 
-    public static string RegionAttributesToString<TKey, TVal>(GemStone.GemFire.Cache.Generic.RegionAttributes<TKey, TVal> attrs)
+    public static string RegionAttributesToString<TKey, TVal>(Apache.Geode.Client.Generic.RegionAttributes<TKey, TVal> attrs)
     {
       string poolName = "RegionWithoutPool";
 
