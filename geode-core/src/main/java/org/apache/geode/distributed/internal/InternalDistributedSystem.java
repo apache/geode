@@ -570,6 +570,8 @@ public class InternalDistributedSystem extends DistributedSystem
     try {
       SocketCreatorFactory.setDistributionConfig(config);
 
+      AlertAppender.getInstance().onConnect(this);
+
       // LOG: create LogWriterAppender(s) if log-file or security-log-file is specified
       final boolean hasLogFile =
           this.config.getLogFile() != null && !this.config.getLogFile().equals(new File(""));

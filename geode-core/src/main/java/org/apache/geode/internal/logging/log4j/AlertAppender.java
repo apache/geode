@@ -18,6 +18,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Date;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
@@ -44,7 +45,7 @@ import org.apache.geode.internal.tcp.ReenteredConnectException;
 public final class AlertAppender extends AbstractAppender implements PropertyChangeListener {
   private static final String APPENDER_NAME = AlertAppender.class.getName();
   private static final Logger logger = LogService.getLogger();
-  private static final AlertAppender instance = new AlertAppender();
+  private static final AlertAppender instance = createAlertAppender();
 
   /** Is this thread in the process of alerting? */
   private static final ThreadLocal<Boolean> alerting = new ThreadLocal<Boolean>() {
@@ -59,12 +60,23 @@ public final class AlertAppender extends AbstractAppender implements PropertyCha
 
   private final AppenderContext appenderContext = LogService.getAppenderContext();
 
+  private final AtomicReference<InternalDistributedSystem> systemRef = new AtomicReference<>();
+
   // This can be set by a loner distributed sytem to disable alerting
   private volatile boolean alertingDisabled = false;
 
+  private static AlertAppender createAlertAppender() {
+    AlertAppender alertAppender = new AlertAppender();
+    alertAppender.start();
+    return alertAppender;
+  }
+
   private AlertAppender() {
     super(APPENDER_NAME, null, PatternLayout.createDefaultLayout());
-    start();
+  }
+
+  public void onConnect(final InternalDistributedSystem system) {
+    this.systemRef.set(system);
   }
 
   public static AlertAppender getInstance() {
@@ -114,7 +126,7 @@ public final class AlertAppender extends AbstractAppender implements PropertyCha
         logger.debug("Delivering an alert event: {}", event);
       }
 
-      InternalDistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
+      InternalDistributedSystem ds = this.systemRef.get();
       if (ds == null) {
         // Use info level to avoid triggering another alert
         logger.info("Did not append alert event because the distributed system is set to null.");
@@ -307,6 +319,7 @@ public final class AlertAppender extends AbstractAppender implements PropertyCha
     this.listeners.clear();
     this.appenderContext.getLoggerContext().removePropertyChangeListener(this);
     this.appenderContext.getLoggerConfig().removeAppender(APPENDER_NAME);
+    this.systemRef.set(null);
   }
 
   /**
