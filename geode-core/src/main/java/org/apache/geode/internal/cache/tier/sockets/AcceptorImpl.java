@@ -1575,6 +1575,7 @@ public class AcceptorImpl extends Acceptor implements Runnable {
             this.pool.shutdownNow();
           }
         } catch (InterruptedException ignore) {
+          Thread.currentThread().interrupt();
           this.pool.shutdownNow();
         }
         this.hsPool.shutdownNow();
