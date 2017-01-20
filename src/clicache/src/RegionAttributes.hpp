@@ -33,14 +33,13 @@
 
 using namespace System;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache {
-      
-    
-    namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
       //interface class ICacheLoader;
       //interface class ICacheWriter;
@@ -80,9 +79,9 @@ namespace GemStone
         /// <returns>
         /// region's <c>ICacheLoader</c> or null if none
         /// </returns>
-        property GemStone::GemFire::Cache::Generic::ICacheLoader<TKey, TValue>^ CacheLoader
+        property Apache::Geode::Client::Generic::ICacheLoader<TKey, TValue>^ CacheLoader
         {
-          GemStone::GemFire::Cache::Generic::ICacheLoader<TKey, TValue>^ get( );
+          Apache::Geode::Client::Generic::ICacheLoader<TKey, TValue>^ get( );
         }
 
         /// <summary>

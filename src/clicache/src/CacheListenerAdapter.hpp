@@ -21,11 +21,13 @@
 #include "ICacheListener.hpp"
 
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
 
       /// <summary>
@@ -70,10 +72,10 @@ namespace GemStone
         {
         }
 
-        virtual void Close(GemStone::GemFire::Cache::Generic::IRegion<TKey, TValue>^ region)
+        virtual void Close(Apache::Geode::Client::Generic::IRegion<TKey, TValue>^ region)
         {
         }
-		virtual void AfterRegionDisconnected(GemStone::GemFire::Cache::Generic::IRegion<TKey, TValue>^ region)
+		virtual void AfterRegionDisconnected(Apache::Geode::Client::Generic::IRegion<TKey, TValue>^ region)
         {
         }
       };

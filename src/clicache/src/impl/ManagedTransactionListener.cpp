@@ -43,9 +43,9 @@ namespace apache
         try
         {
           String^ mg_assemblyPath =
-            GemStone::GemFire::Cache::Generic::ManagedString::Get( assemblyPath );
+            Apache::Geode::Client::Generic::ManagedString::Get( assemblyPath );
           String^ mg_factoryFunctionName =
-            GemStone::GemFire::Cache::Generic::ManagedString::Get( factoryFunctionName );
+            Apache::Geode::Client::Generic::ManagedString::Get( factoryFunctionName );
           String^ mg_typeName = nullptr;
 
           String^ mg_genericKey = nullptr;
@@ -99,7 +99,7 @@ namespace apache
           mg_genericVal = mg_genericVal->Trim();
           mg_factoryFunctionName = mg_factoryFunctionName->Substring( dotIndx + 1 );
 
-          GemStone::GemFire::Cache::Generic::Log::Fine("Attempting to instantiate a [{0}<{1}, {2}>] via the [{3}] factory method.",
+          Apache::Geode::Client::Generic::Log::Fine("Attempting to instantiate a [{0}<{1}, {2}>] via the [{3}] factory method.",
             mg_typeName, mg_genericKey, mg_genericVal, mg_factoryFunctionName);
 
           typeBuilder->Append("`2");
@@ -121,7 +121,7 @@ namespace apache
             throw apache::geode::client::IllegalArgumentException( ex_str.c_str( ) );
           }
 
-          GemStone::GemFire::Cache::Generic::Log::Debug("Loading type: [{0}]", mg_typeName);
+          Apache::Geode::Client::Generic::Log::Debug("Loading type: [{0}]", mg_typeName);
 
           Type^ typeInst = assmb->GetType(mg_typeName, false, true);
 
@@ -138,7 +138,7 @@ namespace apache
             }
 
             typeInst = typeInst->MakeGenericType(types);
-            GemStone::GemFire::Cache::Generic::Log::Info("Loading function: [{0}]", mg_factoryFunctionName);
+            Apache::Geode::Client::Generic::Log::Info("Loading function: [{0}]", mg_factoryFunctionName);
 
             MethodInfo^ mInfo = typeInst->GetMethod( mg_factoryFunctionName,
               BindingFlags::Public | BindingFlags::Static | BindingFlags::IgnoreCase );
@@ -152,7 +152,7 @@ namespace apache
               }
               catch (System::Exception^ ex)
               {
-                GemStone::GemFire::Cache::Generic::Log::Debug("{0}: {1}", ex->GetType()->Name, ex->Message);
+                Apache::Geode::Client::Generic::Log::Debug("{0}: {1}", ex->GetType()->Name, ex->Message);
                 userptr = nullptr;
               }
               if (userptr == nullptr)
@@ -178,7 +178,7 @@ namespace apache
           }
           else
           {
-            GemStone::GemFire::Cache::Generic::ManagedString typeName( mg_typeName );
+            Apache::Geode::Client::Generic::ManagedString typeName( mg_typeName );
             std::string ex_str = "ManagedTransactionListenerGeneric: Could not load type [";
             ex_str += typeName.CharPtr;
             ex_str += "] in assembly: ";
@@ -192,7 +192,7 @@ namespace apache
         }
         catch (System::Exception^ ex)
         {
-          GemStone::GemFire::Cache::Generic::ManagedString mg_exStr( ex->ToString( ) );
+          Apache::Geode::Client::Generic::ManagedString mg_exStr( ex->ToString( ) );
           std::string ex_str = "ManagedTransactionListenerGeneric: Got an exception while "
             "loading managed library: ";
           ex_str += mg_exStr.CharPtr;
@@ -203,43 +203,43 @@ namespace apache
       void ManagedTransactionListenerGeneric::afterCommit(apache::geode::client::TransactionEventPtr& te )
       {
         try {
-          GemStone::GemFire::Cache::Generic::Log::Error("ManagedTransactionListenerGeneric::afterCommit in" );
-          GemStone::GemFire::Cache::TransactionEvent  mevent( te.ptr() );
+          Apache::Geode::Client::Generic::Log::Error("ManagedTransactionListenerGeneric::afterCommit in" );
+          Apache::Geode::Client::TransactionEvent  mevent( te.ptr() );
           m_managedptr->AfterCommit( %mevent );
-          GemStone::GemFire::Cache::Generic::Log::Error("ManagedTransactionListenerGeneric::afterCommit in" );
+          Apache::Geode::Client::Generic::Log::Error("ManagedTransactionListenerGeneric::afterCommit in" );
 
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
       }
       void ManagedTransactionListenerGeneric::afterFailedCommit(apache::geode::client::TransactionEventPtr& te )
       {
         try {
-          GemStone::GemFire::Cache::TransactionEvent mevent( te.ptr()  );
+          Apache::Geode::Client::TransactionEvent mevent( te.ptr()  );
           m_managedptr->AfterFailedCommit( %mevent );
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
       }
       void ManagedTransactionListenerGeneric::afterRollback(apache::geode::client::TransactionEventPtr& te )
       {
         try {
-          GemStone::GemFire::Cache::TransactionEvent mevent( te.ptr()  );
+          Apache::Geode::Client::TransactionEvent mevent( te.ptr()  );
           m_managedptr->AfterRollback( %mevent );
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
       }
       void ManagedTransactionListenerGeneric::close()
@@ -247,11 +247,11 @@ namespace apache
         try {
           m_managedptr->Close();
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
       }
 

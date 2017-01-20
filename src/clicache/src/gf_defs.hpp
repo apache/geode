@@ -35,19 +35,19 @@
 
 // These provide Doxygen with namespace and file descriptions.
 
-/// @namespace GemStone::GemFire
+/// @namespace Apache::Geode
 /// This namespace contains all the GemFire .NET classes and utility classes.
 
-/// @namespace GemStone::GemFire::Cache
+/// @namespace Apache::Geode::Client
 /// This namespace contains all the GemFire .NET API classes and enumerations.
 
-/// @namespace GemStone::GemFire::Cache::Generic
+/// @namespace Apache::Geode::Client::Generic
 /// This namespace contains all the GemFire .NET Generics API classes and enumerations.
 
-/// @namespace GemStone::GemFire::Cache::Internal
+/// @namespace Apache::Geode::Client::Internal
 /// This namespace contains internal GemFire non-public .NET classes.
 
-/// @namespace GemStone::GemFire::Cache::Template
+/// @namespace Apache::Geode::Client::Template
 /// This namespace contains internal GemFire .NET template classes.
 
 /// @file gf_includes.hpp

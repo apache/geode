@@ -21,12 +21,12 @@ using System.Text;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
-using GemStone.GemFire.Cache.Tests.NewAPI;
-namespace GemStone.GemFire.Cache.FwkLib
+using Apache.Geode.Client.Tests.NewAPI;
+namespace Apache.Geode.Client.FwkLib
 {
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Cache.Generic;
-  //using Region = GemStone.GemFire.Cache.Generic.IRegion<Object, Object>;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Client.Generic;
+  //using Region = Apache.Geode.Client.Generic.IRegion<Object, Object>;
   public class PerfCacheListener<TKey, TVal> : CacheListenerAdapter<TKey, TVal>, IDisposable
   {
     public static Int64 LAT_MARK = 0x55667788;
@@ -148,11 +148,11 @@ namespace GemStone.GemFire.Cache.FwkLib
 
     // VJR: added dummy load/close placeholders.
     /*
-    public IGFSerializable Load( GemStone.GemFire.Cache.Region region, ICacheableKey key, IGFSerializable helper)
+    public IGFSerializable Load( Apache.Geode.Client.Region region, ICacheableKey key, IGFSerializable helper)
     {
       return new CacheableInt32(m_loads++);
     }
-    public virtual void Close( GemStone.GemFire.Cache.Region region) { }
+    public virtual void Close( Apache.Geode.Client.Region region) { }
     */
   }
 
@@ -189,7 +189,7 @@ namespace GemStone.GemFire.Cache.FwkLib
       {
         current = (int)Util.BBGet("DURABLEBB", bbkey);
       }
-      catch (GemStone.GemFire.DUnitFramework.KeyNotFoundException)
+      catch (Apache.Geode.DUnitFramework.KeyNotFoundException)
       {
         currTest.FwkInfo("Key not found for DURABLEBB {0}", bbkey);
       }
@@ -525,7 +525,7 @@ namespace GemStone.GemFire.Cache.FwkLib
       {
         return Util.BBGet(bb, key);
       }
-      catch (GemStone.GemFire.DUnitFramework.KeyNotFoundException)
+      catch (Apache.Geode.DUnitFramework.KeyNotFoundException)
       {
         return null;
       }
@@ -578,7 +578,7 @@ namespace GemStone.GemFire.Cache.FwkLib
       {
         trim_Time = (long)Util.BBGet("Trim_BB", TemptrTime);
       }
-      catch (GemStone.GemFire.DUnitFramework.KeyNotFoundException)
+      catch (Apache.Geode.DUnitFramework.KeyNotFoundException)
       {
         FwkInfo("Key not found for Trim_BB {0}", TemptrTime);
       }

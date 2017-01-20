@@ -17,13 +17,13 @@
 
 using System;
 
-namespace GemStone.GemFire.Cache.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests.NewAPI
 {
   using NUnit.Framework;
-  using GemStone.GemFire.DUnitFramework;
+  using Apache.Geode.DUnitFramework;
   using System.Threading;
 
-  using GemStone.GemFire.Cache.Generic;
+  using Apache.Geode.Client.Generic;
 
   public class TestStatisticsType
   {

@@ -18,11 +18,11 @@
 using System;
 using System.Threading;
 
-namespace GemStone.GemFire.Cache.UnitTests
+namespace Apache.Geode.Client.UnitTests
 {
-  using GemStone.GemFire.DUnitFramework;
+  using Apache.Geode.DUnitFramework;
 
-  class TallyListener : GemStone.GemFire.Cache.Generic.CacheListenerAdapter<Object, Object>
+  class TallyListener : Apache.Geode.Client.Generic.CacheListenerAdapter<Object, Object>
   {
     #region Private members
 
@@ -31,9 +31,9 @@ namespace GemStone.GemFire.Cache.UnitTests
     private int m_invalidates = 0;
     private int m_destroys = 0;
     private int m_clears = 0;
-    private GemStone.GemFire.Cache.Generic.ICacheableKey m_lastKey = null;
-    private GemStone.GemFire.Cache.Generic.IGFSerializable m_lastValue = null;
-    private GemStone.GemFire.Cache.Generic.IGFSerializable m_callbackArg = null;
+    private Apache.Geode.Client.Generic.ICacheableKey m_lastKey = null;
+    private Apache.Geode.Client.Generic.IGFSerializable m_lastValue = null;
+    private Apache.Geode.Client.Generic.IGFSerializable m_callbackArg = null;
     private bool m_ignoreTimeout = false;
     private bool m_quiet = false;
     private bool isListenerInvoke = false;
@@ -83,7 +83,7 @@ namespace GemStone.GemFire.Cache.UnitTests
       }
     }
 
-    public GemStone.GemFire.Cache.Generic.IGFSerializable LastKey
+    public Apache.Geode.Client.Generic.IGFSerializable LastKey
     {
       get
       {
@@ -107,7 +107,7 @@ namespace GemStone.GemFire.Cache.UnitTests
       }
     }
 
-    public GemStone.GemFire.Cache.Generic.IGFSerializable LastValue
+    public Apache.Geode.Client.Generic.IGFSerializable LastValue
     {
       get
       {
@@ -131,7 +131,7 @@ namespace GemStone.GemFire.Cache.UnitTests
       }
     }
 
-     public void SetCallBackArg(GemStone.GemFire.Cache.Generic.IGFSerializable callbackArg)
+     public void SetCallBackArg(Apache.Geode.Client.Generic.IGFSerializable callbackArg)
     {
       m_callbackArg = callbackArg;
     }
@@ -139,13 +139,13 @@ namespace GemStone.GemFire.Cache.UnitTests
 
     #endregion
 
-    public void CheckcallbackArg(GemStone.GemFire.Cache.Generic.EntryEvent<Object, Object> ev)
+    public void CheckcallbackArg(Apache.Geode.Client.Generic.EntryEvent<Object, Object> ev)
     {
       if (!isListenerInvoke)
         isListenerInvoke = true;
       if (m_callbackArg != null)
       {
-        GemStone.GemFire.Cache.Generic.IGFSerializable callbkArg = (GemStone.GemFire.Cache.Generic.IGFSerializable)ev.CallbackArgument;
+        Apache.Geode.Client.Generic.IGFSerializable callbkArg = (Apache.Geode.Client.Generic.IGFSerializable)ev.CallbackArgument;
         if (m_callbackArg.Equals(callbkArg))
           isCallbackCalled = true;
       }
@@ -234,11 +234,11 @@ namespace GemStone.GemFire.Cache.UnitTests
 
     #region ICacheListener Members
 
-    public override void AfterCreate(GemStone.GemFire.Cache.Generic.EntryEvent<Object, Object> ev)
+    public override void AfterCreate(Apache.Geode.Client.Generic.EntryEvent<Object, Object> ev)
     {
       m_creates++;
-      m_lastKey = (GemStone.GemFire.Cache.Generic.ICacheableKey)ev.Key;
-      m_lastValue = (GemStone.GemFire.Cache.Generic.IGFSerializable)ev.NewValue;
+      m_lastKey = (Apache.Geode.Client.Generic.ICacheableKey)ev.Key;
+      m_lastValue = (Apache.Geode.Client.Generic.IGFSerializable)ev.NewValue;
       CheckcallbackArg(ev);
 
       string keyString = m_lastKey.ToString();
@@ -253,11 +253,11 @@ namespace GemStone.GemFire.Cache.UnitTests
       }
     }
 
-    public override void AfterUpdate(GemStone.GemFire.Cache.Generic.EntryEvent<Object, Object> ev)
+    public override void AfterUpdate(Apache.Geode.Client.Generic.EntryEvent<Object, Object> ev)
     {
       m_updates++;
-      m_lastKey = (GemStone.GemFire.Cache.Generic.ICacheableKey)ev.Key;
-      m_lastValue = (GemStone.GemFire.Cache.Generic.IGFSerializable)ev.NewValue;
+      m_lastKey = (Apache.Geode.Client.Generic.ICacheableKey)ev.Key;
+      m_lastValue = (Apache.Geode.Client.Generic.IGFSerializable)ev.NewValue;
       CheckcallbackArg(ev);
      
       string keyString = m_lastKey.ToString();
@@ -271,29 +271,29 @@ namespace GemStone.GemFire.Cache.UnitTests
         WriteLog("TallyListener: done sleeping..");
       }
     }
-    public override void AfterDestroy(GemStone.GemFire.Cache.Generic.EntryEvent<Object, Object> ev)
+    public override void AfterDestroy(Apache.Geode.Client.Generic.EntryEvent<Object, Object> ev)
     {
       m_destroys++;
       CheckcallbackArg(ev);
     }
-    public override void AfterInvalidate(GemStone.GemFire.Cache.Generic.EntryEvent<Object, Object> ev)
+    public override void AfterInvalidate(Apache.Geode.Client.Generic.EntryEvent<Object, Object> ev)
     {
       m_invalidates++;
       CheckcallbackArg(ev);
     }
 
-    public override void AfterRegionDestroy(GemStone.GemFire.Cache.Generic.RegionEvent<Object, Object> ev) { }
+    public override void AfterRegionDestroy(Apache.Geode.Client.Generic.RegionEvent<Object, Object> ev) { }
 
-    public override void AfterRegionClear(GemStone.GemFire.Cache.Generic.RegionEvent<Object, Object> ev) 
+    public override void AfterRegionClear(Apache.Geode.Client.Generic.RegionEvent<Object, Object> ev) 
     { 
         m_clears++;
     }
 
-    public override void AfterRegionInvalidate(GemStone.GemFire.Cache.Generic.RegionEvent<Object, Object> ev) { }
+    public override void AfterRegionInvalidate(Apache.Geode.Client.Generic.RegionEvent<Object, Object> ev) { }
 
-    public override void AfterRegionLive(GemStone.GemFire.Cache.Generic.RegionEvent<Object, Object> ev) { }
+    public override void AfterRegionLive(Apache.Geode.Client.Generic.RegionEvent<Object, Object> ev) { }
 
-    public override void Close(GemStone.GemFire.Cache.Generic.IRegion<Object, Object> region) { }
+    public override void Close(Apache.Geode.Client.Generic.IRegion<Object, Object> region) { }
 
     #endregion
   }

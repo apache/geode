@@ -23,13 +23,13 @@
 
 using namespace System;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache 
+    namespace Client
     {
-      namespace Generic
+namespace Generic
       {
         /// <summary>
         /// This class encapsulates Id of a transaction.

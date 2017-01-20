@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-namespace GemStone.GemFire.Cache.Tests.NewAPI
+namespace Apache.Geode.Client.Tests.NewAPI
 {
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Cache.Generic;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Client.Generic;
 
   public class PKCSCredentialGenerator : CredentialGenerator
   {
@@ -29,7 +29,7 @@ namespace GemStone.GemFire.Cache.Tests.NewAPI
     public const string KeyStorePasswordProp = "security-keystorepass";
     private const string UserPrefix = "gemfire";
     private bool IsMultiUserMode = false;
-    GemStone.GemFire.Cache.Tests.NewAPI.PkcsAuthInit Pkcs = null;
+    Apache.Geode.Client.Tests.NewAPI.PkcsAuthInit Pkcs = null;
 
     public PKCSCredentialGenerator(bool isMultiUser)
     {

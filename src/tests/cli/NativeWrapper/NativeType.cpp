@@ -33,7 +33,7 @@ NativeType::NativeType()
 NativeType::~NativeType()
 {
 #ifdef _MANAGED
-  GemStone::GemFire::Cache::Generic::Log::Info("Invoked destructor of NativeType");
+  Apache::Geode::Client::Generic::Log::Info("Invoked destructor of NativeType");
 #endif
   g_nativeTypeDestroyed = true;
 }
@@ -51,7 +51,7 @@ bool NativeType::doOp(int size, int numOps, int numGCOps)
   std::vector<std::string> vec;
   for (int i = 1; i <= numOps; ++i) {
 #ifdef _MANAGED
-	  GemStone::GemFire::Cache::Generic::Log::Info("Allocating string number {0} with "
+	  Apache::Geode::Client::Generic::Log::Info("Allocating string number {0} with "
       "size {1}", i, size);
 #endif
     std::string s(size, 'A' + i);
@@ -60,10 +60,10 @@ bool NativeType::doOp(int size, int numOps, int numGCOps)
 #ifdef _MANAGED
     System::GC::AddMemoryPressure(size);
     if ((i % numGCOps) == 0) {
-      GemStone::GemFire::Cache::Generic::Log::Info("Started GC collection.");
+      Apache::Geode::Client::Generic::Log::Info("Started GC collection.");
       System::GC::Collect();
       System::GC::WaitForPendingFinalizers();
-	  GemStone::GemFire::Cache::Generic::Log::Info("Completed GC collection.");
+	  Apache::Geode::Client::Generic::Log::Info("Completed GC collection.");
     }
     System::Threading::Thread::Sleep(500);
 #else

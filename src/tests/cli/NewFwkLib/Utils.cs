@@ -23,13 +23,13 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
 
-namespace GemStone.GemFire.Cache.FwkLib
+namespace Apache.Geode.Client.FwkLib
 {
 
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Cache.Tests.NewAPI;
-  using GemStone.GemFire.Cache.Generic;
-  using NEWAPI = GemStone.GemFire.Cache.Tests.NewAPI;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Client.Tests.NewAPI;
+  using Apache.Geode.Client.Generic;
+  using NEWAPI = Apache.Geode.Client.Tests.NewAPI;
   [Serializable]
   struct HostInfo
   {
@@ -639,7 +639,7 @@ namespace GemStone.GemFire.Cache.FwkLib
         globalEndPoints = Util.BBGet(string.Empty,
           FwkTest<TKey, TVal>.EndPointTag) as string;
       }
-      catch (GemStone.GemFire.DUnitFramework.KeyNotFoundException)
+      catch (Apache.Geode.DUnitFramework.KeyNotFoundException)
       {
         globalEndPoints = null;
       }

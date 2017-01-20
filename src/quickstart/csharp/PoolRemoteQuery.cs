@@ -34,12 +34,12 @@
 using System;
 
 // Use the GemFire namespace
-using GemStone.GemFire.Cache.Generic;
+using Apache.Geode.Client.Generic;
 
 // Use the "Tests" namespace for the query objects.
-using GemStone.GemFire.Cache.Tests.NewAPI;
+using Apache.Geode.Client.Tests.NewAPI;
 
-namespace GemStone.GemFire.Cache.Generic.QuickStart
+namespace Apache.Geode.Client.Generic.QuickStart
 {
   // The PoolRemoteQuery QuickStart example.
   class PoolRemoteQuery

@@ -36,12 +36,12 @@
 using System;
 
 // Use the GemFire namespace
-using GemStone.GemFire.Cache.Generic;
+using Apache.Geode.Client.Generic;
 
 // Use the "Tests" namespace for the query objects.
 using PdxTests;
 
-namespace GemStone.GemFire.Cache.Generic.QuickStart
+namespace Apache.Geode.Client.Generic.QuickStart
 {
   // The PdxRemoteQuery QuickStart example.
   class PdxRemoteQuery

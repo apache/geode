@@ -40,9 +40,9 @@ namespace apache
         try
         {
           String^ mg_assemblyPath =
-            GemStone::GemFire::Cache::Generic::ManagedString::Get(assemblyPath);
+            Apache::Geode::Client::Generic::ManagedString::Get(assemblyPath);
           String^ mg_factoryFunctionName =
-            GemStone::GemFire::Cache::Generic::ManagedString::Get(factoryFunctionName);
+            Apache::Geode::Client::Generic::ManagedString::Get(factoryFunctionName);
           String^ mg_typeName = nullptr;
           int32_t dotIndx = -1;
 
@@ -102,7 +102,7 @@ namespace apache
             */
 
             //typeInst = typeInst->GetType()->MakeGenericType(types);
-            GemStone::GemFire::Cache::Generic::Log::Info("Loading function: [{0}]", mg_factoryFunctionName);
+            Apache::Geode::Client::Generic::Log::Info("Loading function: [{0}]", mg_factoryFunctionName);
 
             /*
             MethodInfo^ mInfo = typeInst->GetMethod( mg_factoryFunctionName,
@@ -132,7 +132,7 @@ namespace apache
                 ex_str += assemblyPath;
                 throw AuthenticationRequiredException(ex_str.c_str());
               }
-              ManagedAuthInitializeGeneric * maig = new ManagedAuthInitializeGeneric(safe_cast<GemStone::GemFire::Cache::Generic::IAuthInitialize^>(userptr));
+              ManagedAuthInitializeGeneric * maig = new ManagedAuthInitializeGeneric(safe_cast<Apache::Geode::Client::Generic::IAuthInitialize^>(userptr));
               return maig;
             }
             else
@@ -147,7 +147,7 @@ namespace apache
           }
           else
           {
-            GemStone::GemFire::Cache::Generic::ManagedString typeName(mg_typeName);
+            Apache::Geode::Client::Generic::ManagedString typeName(mg_typeName);
             std::string ex_str = "ManagedAuthInitializeGeneric: Could not load type [";
             ex_str += typeName.CharPtr;
             ex_str += "] in assembly: ";
@@ -170,7 +170,7 @@ namespace apache
         }
         catch (System::Exception^ ex)
         {
-          GemStone::GemFire::Cache::Generic::ManagedString mg_exStr(ex->ToString());
+          Apache::Geode::Client::Generic::ManagedString mg_exStr(ex->ToString());
           std::string ex_str = "ManagedAuthInitializeGeneric: Got an exception while "
             "loading managed library: ";
           ex_str += mg_exStr.CharPtr;
@@ -183,17 +183,17 @@ namespace apache
         securityprops, const char* server)
       {
         try {
-          GemStone::GemFire::Cache::Generic::Properties<String^, String^>^ mprops =
-            GemStone::GemFire::Cache::Generic::Properties<String^, String^>::Create<String^, String^>(securityprops.ptr());
-          String^ mg_server = GemStone::GemFire::Cache::Generic::ManagedString::Get(server);
+          Apache::Geode::Client::Generic::Properties<String^, String^>^ mprops =
+            Apache::Geode::Client::Generic::Properties<String^, String^>::Create<String^, String^>(securityprops.ptr());
+          String^ mg_server = Apache::Geode::Client::Generic::ManagedString::Get(server);
 
           return PropertiesPtr(m_managedptr->GetCredentials(mprops, mg_server)->NativePtr());
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
         return NULLPTR;
       }
@@ -203,11 +203,11 @@ namespace apache
         try {
           m_managedptr->Close();
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
       }
 

@@ -21,7 +21,7 @@ using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
 
-namespace GemStone.GemFire.DUnitFramework
+namespace Apache.Geode.DUnitFramework
 {
   public delegate object ClientResultAggregator(List<object> objList);
 

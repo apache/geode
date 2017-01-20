@@ -24,13 +24,13 @@
 using namespace System;
 using namespace System::Collections::Generic;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache
+    namespace Client
     {
-      namespace Generic
+namespace Generic
       {
       /// <summary>
       /// GemFireCache represents the singleton cache that must be created
@@ -83,16 +83,16 @@ namespace GemStone
         /// </remarks>
         property DistributedSystem^ DistributedSystem
         {
-          GemStone::GemFire::Cache::Generic::DistributedSystem^ get( );
+          Apache::Geode::Client::Generic::DistributedSystem^ get( );
         } 
 
         /// <summary>
         /// Returns the cache transaction manager of
         /// <see cref="CacheFactory.Create" /> this cache.
         /// </summary>
-        property GemStone::GemFire::Cache::Generic::CacheTransactionManager^ CacheTransactionManager
+        property Apache::Geode::Client::Generic::CacheTransactionManager^ CacheTransactionManager
         {
-          GemStone::GemFire::Cache::Generic::CacheTransactionManager^ get( );
+          Apache::Geode::Client::Generic::CacheTransactionManager^ get( );
         }
 
 				///<summary>

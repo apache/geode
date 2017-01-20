@@ -19,13 +19,13 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
-using GemStone.GemFire.Cache.Tests.NewAPI;
-using GemStone.GemFire.DUnitFramework;
+using Apache.Geode.Client.Tests.NewAPI;
+using Apache.Geode.DUnitFramework;
 
-namespace GemStone.GemFire.Cache.FwkLib
+namespace Apache.Geode.Client.FwkLib
 {
-  using GemStone.GemFire.Cache.Generic;
-  //using Region = GemStone.GemFire.Cache.Generic.IRegion<Object, Object>;
+  using Apache.Geode.Client.Generic;
+  //using Region = Apache.Geode.Client.Generic.IRegion<Object, Object>;
   public class InitPerfStat : ClientTask
   {
     public Int32 m_cnt;

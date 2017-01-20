@@ -41,9 +41,9 @@ namespace apache
         try
         {
           String^ mg_assemblyPath =
-            GemStone::GemFire::Cache::Generic::ManagedString::Get(assemblyPath);
+            Apache::Geode::Client::Generic::ManagedString::Get(assemblyPath);
           String^ mg_factoryFunctionName =
-            GemStone::GemFire::Cache::Generic::ManagedString::Get(factoryFunctionName);
+            Apache::Geode::Client::Generic::ManagedString::Get(factoryFunctionName);
           String^ mg_typeName = nullptr;
 
           String^ mg_genericKey = nullptr;
@@ -97,7 +97,7 @@ namespace apache
           mg_genericVal = mg_genericVal->Trim();
           mg_factoryFunctionName = mg_factoryFunctionName->Substring(dotIndx + 1);
 
-          GemStone::GemFire::Cache::Generic::Log::Fine(
+          Apache::Geode::Client::Generic::Log::Fine(
             "Attempting to instantiate a [{0}<{1}, {2}>] via the [{3}] factory method.",
             mg_typeName, mg_genericKey, mg_genericVal, mg_factoryFunctionName);
 
@@ -120,7 +120,7 @@ namespace apache
             throw IllegalArgumentException(ex_str.c_str());
           }
 
-          GemStone::GemFire::Cache::Generic::Log::Debug("Loading type: [{0}]", mg_typeName);
+          Apache::Geode::Client::Generic::Log::Debug("Loading type: [{0}]", mg_typeName);
 
           Type^ typeInst = assmb->GetType(mg_typeName, false, true);
 
@@ -137,7 +137,7 @@ namespace apache
             }
 
             typeInst = typeInst->MakeGenericType(types);
-            GemStone::GemFire::Cache::Generic::Log::Info("Loading function: [{0}]", mg_factoryFunctionName);
+            Apache::Geode::Client::Generic::Log::Info("Loading function: [{0}]", mg_factoryFunctionName);
 
             MethodInfo^ mInfo = typeInst->GetMethod(mg_factoryFunctionName,
               BindingFlags::Public | BindingFlags::Static | BindingFlags::IgnoreCase);
@@ -151,7 +151,7 @@ namespace apache
               }
               catch (System::Exception^ ex)
               {
-                GemStone::GemFire::Cache::Generic::Log::Debug("{0}: {1}", ex->GetType()->Name, ex->Message);
+                Apache::Geode::Client::Generic::Log::Debug("{0}: {1}", ex->GetType()->Name, ex->Message);
                 managedptr = nullptr;
               }
               if (managedptr == nullptr)
@@ -166,7 +166,7 @@ namespace apache
 
               ManagedFixedPartitionResolverGeneric * mgpr = new ManagedFixedPartitionResolverGeneric(managedptr);
 
-              Type^ prgType = Type::GetType("GemStone.GemFire.Cache.Generic.FixedPartitionResolverGeneric`2");
+              Type^ prgType = Type::GetType("Apache.Geode.Client.Generic.FixedPartitionResolverGeneric`2");
               prgType = prgType->MakeGenericType(types);
               Object^ prg = Activator::CreateInstance(prgType);
 
@@ -175,7 +175,7 @@ namespace apache
               params[0] = managedptr;
               mInfo->Invoke(prg, params);
 
-              mgpr->setptr((GemStone::GemFire::Cache::Generic::IFixedPartitionResolverProxy^)prg);
+              mgpr->setptr((Apache::Geode::Client::Generic::IFixedPartitionResolverProxy^)prg);
 
               return mgpr;
             }
@@ -191,7 +191,7 @@ namespace apache
           }
           else
           {
-            GemStone::GemFire::Cache::Generic::ManagedString typeName(mg_typeName);
+            Apache::Geode::Client::Generic::ManagedString typeName(mg_typeName);
             std::string ex_str = "ManagedFixedPartitionResolverGeneric: Could not load type [";
             ex_str += typeName.CharPtr;
             ex_str += "] in assembly: ";
@@ -205,7 +205,7 @@ namespace apache
         }
         catch (System::Exception^ ex)
         {
-          GemStone::GemFire::Cache::Generic::ManagedString mg_exStr(ex->ToString());
+          Apache::Geode::Client::Generic::ManagedString mg_exStr(ex->ToString());
           std::string ex_str = "ManagedFixedPartitionResolverGeneric: Got an exception while "
             "loading managed library: ";
           ex_str += mg_exStr.CharPtr;
@@ -219,11 +219,11 @@ namespace apache
         try {
           return m_managedptr->getRoutingObject(key);
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
         return NULLPTR;
       }
@@ -233,11 +233,11 @@ namespace apache
         try {
           return m_managedptr->getName();
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
         return NULL;
       }
@@ -247,11 +247,11 @@ namespace apache
         try {
           return m_managedptr->getPartitionName(opDetails);
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
         return NULL;
       }

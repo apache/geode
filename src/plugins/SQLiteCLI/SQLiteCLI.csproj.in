@@ -12,8 +12,8 @@
     <ProjectGuid>{FF9597E3-A4DD-4FDE-871D-B0C66088762F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Gemstone.Gemfire.Plugins.SQLite</RootNamespace>
-    <AssemblyName>Gemstone.Gemfire.Plugins.SQLite</AssemblyName>
+    <RootNamespace>Apache.Geode.Plugins.SQLite</RootNamespace>
+    <AssemblyName>Apache.Geode.Plugins.SQLite</AssemblyName>
     <SignAssembly>${STRONG_NAME_KEY_ENABLED}</SignAssembly>
     <AssemblyOriginatorKeyFile>${STRONG_NAME_KEY}</AssemblyOriginatorKeyFile>
     <TargetFrameworkVersion>${DOTNET_TARGET_FRAMEWORK_VERSION}</TargetFrameworkVersion>

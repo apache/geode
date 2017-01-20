@@ -21,13 +21,13 @@
 #include "IPdxWriter.hpp"
 #include "IPdxReader.hpp"
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache
+    namespace Client
     {
-			namespace Generic
+namespace Generic
 			{      
 				/// <summary>
 				/// The IPdxSerializer interface allows domain classes to be 

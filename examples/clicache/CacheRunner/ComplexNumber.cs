@@ -18,12 +18,12 @@
 using System;
 using System.Text.RegularExpressions;
 
-namespace GemStone.GemFire.Cache.Examples
+namespace Apache.Geode.Client.Examples
 {
   /// <summary>
   /// A complex number -- no operations defined yet.
   /// </summary>
-  public class ComplexNumber : GemStone.GemFire.Cache.Generic.ICacheableKey
+  public class ComplexNumber : Apache.Geode.Client.Generic.ICacheableKey
   {
     #region Public Accessors
 
@@ -83,7 +83,7 @@ namespace GemStone.GemFire.Cache.Examples
     /// Factory function to be registered using
     /// <see cref="Serializable.registerType" />.
     /// </summary>
-    public static GemStone.GemFire.Cache.Generic.IGFSerializable Create()
+    public static Apache.Geode.Client.Generic.IGFSerializable Create()
     {
       return new ComplexNumber(0.0, 0.0);
     }
@@ -97,7 +97,7 @@ namespace GemStone.GemFire.Cache.Examples
     /// </summary>
     /// <param name="input">The <c>DataInput</c> stream.</param>
     /// <returns>A reference to <c>this</c> object.</returns>
-    public GemStone.GemFire.Cache.Generic.IGFSerializable FromData(GemStone.GemFire.Cache.Generic.DataInput input)
+    public Apache.Geode.Client.Generic.IGFSerializable FromData(Apache.Geode.Client.Generic.DataInput input)
     {
       m_real = input.ReadDouble();
       m_imaginary = input.ReadDouble();
@@ -108,7 +108,7 @@ namespace GemStone.GemFire.Cache.Examples
     /// Write the complex number to the <see cref="DataOutput" /> stream.
     /// </summary>
     /// <param name="output">The <c>DataOutput</c> stream.</param>
-    public void ToData(GemStone.GemFire.Cache.Generic.DataOutput output)
+    public void ToData(Apache.Geode.Client.Generic.DataOutput output)
     {
       output.WriteDouble(m_real);
       output.WriteDouble(m_imaginary);
@@ -141,7 +141,7 @@ namespace GemStone.GemFire.Cache.Examples
 
     #region ICacheableKey Members
 
-    public bool Equals(GemStone.GemFire.Cache.Generic.ICacheableKey other)
+    public bool Equals(Apache.Geode.Client.Generic.ICacheableKey other)
     {
       ComplexNumber cOther = other as ComplexNumber;
       if (cOther != null)

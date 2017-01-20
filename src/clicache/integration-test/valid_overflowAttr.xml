@@ -119,7 +119,7 @@
        <entry-time-to-live>
          <expiration-attributes timeout="0" action="local-invalidate"/>
        </entry-time-to-live>
-       <persistence-manager library-name="Gemstone.Gemfire.Plugins.SqLite" library-function-name="GemStone.GemFire.Plugins.SqLite.SqLiteImpl&lt;System.Object, System.Object&gt;.Create" >
+       <persistence-manager library-name="Apache.Geode.Plugins.SqLite" library-function-name="Apache.Geode.Plugins.SqLite.SqLiteImpl&lt;System.Object, System.Object&gt;.Create" >
        
          <properties>
            <property name="PersistenceDirectory" value="SqLite"/>
@@ -131,7 +131,7 @@
 
     <region name="SubRegion31">
          <region-attributes scope="local" caching-enabled="true" initial-capacity="23" load-factor="0.89" concurrency-level="52" lru-entries-limit = "35" disk-policy="overflows">
-         <persistence-manager library-name="Gemstone.Gemfire.Plugins.SqLite" library-function-name="GemStone.GemFire.Plugins.SqLite.SqLiteImpl&lt;System.Object, System.Object&gt;.Create" >
+         <persistence-manager library-name="Apache.Geode.Plugins.SqLite" library-function-name="Apache.Geode.Plugins.SqLite.SqLiteImpl&lt;System.Object, System.Object&gt;.Create" >
           <properties>
            <property name="PersistenceDirectory" value="SqLiteSubRegion"/>
            <property name="MaxPageCount" value="1073741823"/>
@@ -144,7 +144,7 @@
 
     <region name="SubRegion32">
          <region-attributes scope="local" caching-enabled="true" initial-capacity="23" load-factor="0.89" concurrency-level="52" lru-entries-limit = "35" disk-policy="overflows">
-         <persistence-manager library-name="Gemstone.Gemfire.Plugins.SqLite" library-function-name="GemStone.GemFire.Plugins.SqLite.SqLiteImpl&lt;System.Object, System.Object&gt;.Create" >
+         <persistence-manager library-name="Apache.Geode.Plugins.SqLite" library-function-name="Apache.Geode.Plugins.SqLite.SqLiteImpl&lt;System.Object, System.Object&gt;.Create" >
          <properties>
            <property name="PersistenceDirectory" value="SqLiteSubRegion"/>
            <property name="MaxPageCount" value="1073741823"/>

@@ -26,13 +26,13 @@
 #include "../IGFDelta.hpp"
 using namespace System;
 using namespace apache::geode::client;
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache
+    namespace Client
     {
-      namespace Generic
+namespace Generic
       {
 				interface class IPdxSerializable;
 			}
@@ -65,10 +65,10 @@ namespace apache
         }
 
         inline PdxManagedCacheableKey(
-          GemStone::GemFire::Cache::Generic::IPdxSerializable^ managedptr, int hashcode)
+          Apache::Geode::Client::Generic::IPdxSerializable^ managedptr, int hashcode)
           : m_managedptr(managedptr), m_objectSize(0) {
           m_hashcode = hashcode;
-          m_managedDeltaptr = dynamic_cast<GemStone::GemFire::Cache::Generic::IGFDelta^>(managedptr);
+          m_managedDeltaptr = dynamic_cast<Apache::Geode::Client::Generic::IGFDelta^>(managedptr);
         }
         /// <summary>
         /// Constructor to initialize with the provided managed object.
@@ -77,10 +77,10 @@ namespace apache
         /// The managed object.
         /// </param>
         inline PdxManagedCacheableKey(
-          GemStone::GemFire::Cache::Generic::IPdxSerializable^ managedptr)
+          Apache::Geode::Client::Generic::IPdxSerializable^ managedptr)
           : m_managedptr(managedptr), m_objectSize(0) {
           m_hashcode = 0;//it can be zero while initializing the object
-          m_managedDeltaptr = dynamic_cast<GemStone::GemFire::Cache::Generic::IGFDelta^>(managedptr);
+          m_managedDeltaptr = dynamic_cast<Apache::Geode::Client::Generic::IGFDelta^>(managedptr);
         }
 
         /// <summary>
@@ -163,7 +163,7 @@ namespace apache
         /// <summary>
         /// Returns the wrapped managed object reference.
         /// </summary>
-        inline GemStone::GemFire::Cache::Generic::IPdxSerializable^ ptr() const
+        inline Apache::Geode::Client::Generic::IPdxSerializable^ ptr() const
         {
           return m_managedptr;
         }
@@ -181,8 +181,8 @@ namespace apache
         /// to be called which is not what is desired when this object is destroyed. Normally this
         /// managed object may be created by the user and will be handled automatically by the GC.
         /// </summary>
-        gcroot<GemStone::GemFire::Cache::Generic::IPdxSerializable^> m_managedptr;
-        gcroot<GemStone::GemFire::Cache::Generic::IGFDelta^> m_managedDeltaptr;
+        gcroot<Apache::Geode::Client::Generic::IPdxSerializable^> m_managedptr;
+        gcroot<Apache::Geode::Client::Generic::IGFDelta^> m_managedDeltaptr;
 
         // Disable the copy and assignment constructors
         PdxManagedCacheableKey(const PdxManagedCacheableKey&);

@@ -26,11 +26,13 @@
 
 using namespace System;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
 
       /// <summary>
@@ -39,35 +41,35 @@ namespace GemStone
       /// forward the calls to the generic objects
       /// </summary>
       generic<class TKey, class TValue>
-			public ref class TransactionListenerGeneric : GemStone::GemFire::Cache::TransactionListenerAdapter
+			public ref class TransactionListenerGeneric : Apache::Geode::Client::TransactionListenerAdapter
       {
         private:
 
-					GemStone::GemFire::Cache::Generic::ITransactionListener<TKey, TValue>^ m_listener;
+					Apache::Geode::Client::Generic::ITransactionListener<TKey, TValue>^ m_listener;
 
         public:
 
-          void SetTransactionListener(GemStone::GemFire::Cache::Generic::ITransactionListener<TKey, TValue>^ listener)
+          void SetTransactionListener(Apache::Geode::Client::Generic::ITransactionListener<TKey, TValue>^ listener)
           {
             m_listener = listener;
           }
 
-					virtual void AfterCommit(GemStone::GemFire::Cache::TransactionEvent^ event) override 
+					virtual void AfterCommit(Apache::Geode::Client::TransactionEvent^ event) override 
           {
-            GemStone::GemFire::Cache::Generic::TransactionEvent<TKey, TValue> gevent(GetNativePtr<apache::geode::client::TransactionEvent>(event));
+            Apache::Geode::Client::Generic::TransactionEvent<TKey, TValue> gevent(GetNativePtr<apache::geode::client::TransactionEvent>(event));
             m_listener->AfterCommit(%gevent);
             
           }
 
-          virtual void AfterFailedCommit(GemStone::GemFire::Cache::TransactionEvent^ event) override 
+          virtual void AfterFailedCommit(Apache::Geode::Client::TransactionEvent^ event) override 
           {
-            GemStone::GemFire::Cache::Generic::TransactionEvent<TKey, TValue> gevent(GetNativePtr<apache::geode::client::TransactionEvent>(event));
+            Apache::Geode::Client::Generic::TransactionEvent<TKey, TValue> gevent(GetNativePtr<apache::geode::client::TransactionEvent>(event));
             m_listener->AfterFailedCommit(%gevent);
           }
 
-          virtual void AfterRollback(GemStone::GemFire::Cache::TransactionEvent^ event) override 
+          virtual void AfterRollback(Apache::Geode::Client::TransactionEvent^ event) override 
           {
-            GemStone::GemFire::Cache::Generic::TransactionEvent<TKey, TValue> gevent(GetNativePtr<apache::geode::client::TransactionEvent>(event));
+            Apache::Geode::Client::Generic::TransactionEvent<TKey, TValue> gevent(GetNativePtr<apache::geode::client::TransactionEvent>(event));
             m_listener->AfterRollback(%gevent);
           }
 

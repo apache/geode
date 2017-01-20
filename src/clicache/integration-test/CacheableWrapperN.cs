@@ -20,11 +20,11 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Runtime.Serialization;
 
-namespace GemStone.GemFire.Cache.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests.NewAPI
 {
   
   using NUnit.Framework;
-  using GemStone.GemFire.Cache.Generic;
+  using Apache.Geode.Client.Generic;
   /// <summary>
   /// Interface class for wrappers of gemfire cacheable types.
   /// </summary>

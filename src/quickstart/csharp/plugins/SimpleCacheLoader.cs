@@ -16,9 +16,9 @@
  */
 
 using System;
-using GemStone.GemFire.Cache.Generic;
+using Apache.Geode.Client.Generic;
 
-namespace GemStone.GemFire.Cache.Generic.QuickStart
+namespace Apache.Geode.Client.Generic.QuickStart
 {
   /// <summary>
   /// Capture and display cache events.

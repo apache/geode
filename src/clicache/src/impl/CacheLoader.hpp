@@ -28,13 +28,15 @@
 
 using namespace System;
 
-//using namespace GemStone::GemFire::Cache::Generic;
+//using namespace Apache::Geode::Client::Generic;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
 
       public interface class ICacheLoaderProxy
@@ -47,7 +49,7 @@ namespace GemStone
       };
 
       generic<class TKey, class TValue>
-      public ref class CacheLoaderGeneric : ICacheLoaderProxy // : GemStone::GemFire::Cache::ICacheLoader /*<Object^, Object^>*/
+      public ref class CacheLoaderGeneric : ICacheLoaderProxy // : Apache::Geode::Client::ICacheLoader /*<Object^, Object^>*/
       {
         private:
 

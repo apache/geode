@@ -21,12 +21,13 @@
 
 #include "ICacheableKey.hpp"
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache {
-            //ref class CqOperationType;
+    namespace Client
+    {
+//ref class CqOperationType;
       namespace Generic
     {
 			 interface class IGFSerializable;

@@ -24,17 +24,19 @@
 
 using namespace System;
 
-using namespace GemStone::GemFire::Cache;
+using namespace Apache::Geode::Client;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
 
       generic<class TKey, class TValue>
-      public ref class CacheWriterGeneric : GemStone::GemFire::Cache::Generic::CacheWriterAdapter<Object^, Object^>
+      public ref class CacheWriterGeneric : Apache::Geode::Client::Generic::CacheWriterAdapter<Object^, Object^>
       {
         private:
 
@@ -47,39 +49,39 @@ namespace GemStone
             m_writer = writer;
           }
 
-          virtual bool BeforeUpdate( GemStone::GemFire::Cache::Generic::EntryEvent<Object^, Object^>^ ev ) override
+          virtual bool BeforeUpdate( Apache::Geode::Client::Generic::EntryEvent<Object^, Object^>^ ev ) override
           {
             EntryEvent<TKey, TValue> gevent(Generic::GetNativePtr<apache::geode::client::EntryEvent>(ev));
             return m_writer->BeforeUpdate(%gevent);
           }
 
-          virtual bool BeforeCreate(GemStone::GemFire::Cache::Generic::EntryEvent<Object^, Object^>^ ev) override
+          virtual bool BeforeCreate(Apache::Geode::Client::Generic::EntryEvent<Object^, Object^>^ ev) override
           {
             EntryEvent<TKey, TValue> gevent(Generic::GetNativePtr<apache::geode::client::EntryEvent>(ev));
             return m_writer->BeforeCreate(%gevent);
           }
 
-          virtual bool BeforeDestroy(GemStone::GemFire::Cache::Generic::EntryEvent<Object^, Object^>^ ev) override
+          virtual bool BeforeDestroy(Apache::Geode::Client::Generic::EntryEvent<Object^, Object^>^ ev) override
           {
             EntryEvent<TKey, TValue> gevent(Generic::GetNativePtr<apache::geode::client::EntryEvent>(ev));
             return m_writer->BeforeDestroy(%gevent);
           }
 
-          virtual bool BeforeRegionClear( GemStone::GemFire::Cache::Generic::RegionEvent<Object^, Object^>^ ev ) override
+          virtual bool BeforeRegionClear( Apache::Geode::Client::Generic::RegionEvent<Object^, Object^>^ ev ) override
           {
             RegionEvent<TKey, TValue> gevent(Generic::GetNativePtr<apache::geode::client::RegionEvent>(ev));
             return m_writer->BeforeRegionClear(%gevent);
           }
 
-          virtual bool BeforeRegionDestroy(GemStone::GemFire::Cache::Generic::RegionEvent<Object^, Object^>^ ev) override
+          virtual bool BeforeRegionDestroy(Apache::Geode::Client::Generic::RegionEvent<Object^, Object^>^ ev) override
           {
             RegionEvent<TKey, TValue> gevent(Generic::GetNativePtr<apache::geode::client::RegionEvent>(ev));
             return m_writer->BeforeRegionDestroy(%gevent);
           }
           
-          virtual void Close(GemStone::GemFire::Cache::Generic::Region<Object^, Object^>^ region) override
+          virtual void Close(Apache::Geode::Client::Generic::Region<Object^, Object^>^ region) override
           {
-            IRegion<TKey, TValue>^ gregion = GemStone::GemFire::Cache::Generic::Region<TKey, TValue>::Create(Generic::GetNativePtr<apache::geode::client::Region>(region));
+            IRegion<TKey, TValue>^ gregion = Apache::Geode::Client::Generic::Region<TKey, TValue>::Create(Generic::GetNativePtr<apache::geode::client::Region>(region));
             m_writer->Close(gregion);
           }
       };

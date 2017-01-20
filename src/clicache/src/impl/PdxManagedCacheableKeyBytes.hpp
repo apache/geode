@@ -27,11 +27,13 @@
 
 using namespace System;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
       interface class IPdxSerializable;
     }
@@ -47,7 +49,7 @@ namespace apache
     {
 
   /// <summary>
-  /// Wraps the managed <see cref="GemStone.GemFire.Cache.IGFSerializable" />
+  /// Wraps the managed <see cref="Apache.Geode.Client.IGFSerializable" />
   /// object and implements the native <c>apache::geode::client::CacheableKey</c> interface.
   /// </summary>
   class PdxManagedCacheableKeyBytes
@@ -62,7 +64,7 @@ namespace apache
     /// The managed object.
     /// </param>
     inline PdxManagedCacheableKeyBytes(
-      GemStone::GemFire::Cache::Generic::IPdxSerializable^ managedptr, bool storeBytes )
+      Apache::Geode::Client::Generic::IPdxSerializable^ managedptr, bool storeBytes )
       : m_domainId(System::Threading::Thread::GetDomainID()),
         m_bytes(NULL),
         m_size(0),
@@ -71,7 +73,7 @@ namespace apache
       m_hasDelta = false;
       if(storeBytes)
       {
-        GemStone::GemFire::Cache::Generic::IGFDelta^ deltaObj = dynamic_cast<GemStone::GemFire::Cache::Generic::IGFDelta^>(managedptr);
+        Apache::Geode::Client::Generic::IGFDelta^ deltaObj = dynamic_cast<Apache::Geode::Client::Generic::IGFDelta^>(managedptr);
 
         if(deltaObj != nullptr)
           m_hasDelta = deltaObj->HasDelta();
@@ -81,8 +83,8 @@ namespace apache
         if(storeBytes)//if value is from app 
         {
           apache::geode::client::DataOutput dataOut;
-          GemStone::GemFire::Cache::Generic::DataOutput mg_output( &dataOut, true);
-					 GemStone::GemFire::Cache::Generic::Internal::PdxHelper::SerializePdx(%mg_output, managedptr);
+          Apache::Geode::Client::Generic::DataOutput mg_output( &dataOut, true);
+					 Apache::Geode::Client::Generic::Internal::PdxHelper::SerializePdx(%mg_output, managedptr);
         //  managedptr->ToData( %mg_output );
           
           //move cursor
@@ -93,7 +95,7 @@ namespace apache
           m_size = dataOut.getBufferLength();
           
           m_hashCode = managedptr->GetHashCode(); 
-          GemStone::GemFire::Cache::Generic::Log::Fine(
+          Apache::Geode::Client::Generic::Log::Fine(
            "PdxManagedCacheableKeyBytes::Constructor objectSize = " + m_size + " m_hashCode = " + m_hashCode);
         }
       }
@@ -188,7 +190,7 @@ namespace apache
     /// <summary>
     /// Returns the wrapped managed object reference.
     /// </summary>
-    inline GemStone::GemFire::Cache::Generic::IPdxSerializable^ ptr( ) const
+    inline Apache::Geode::Client::Generic::IPdxSerializable^ ptr( ) const
     {
       return getManagedObject();
     }
@@ -200,7 +202,7 @@ namespace apache
 
     inline ~PdxManagedCacheableKeyBytes()
     {
-      GemStone::GemFire::Cache::Generic::Log::Fine(
+      Apache::Geode::Client::Generic::Log::Fine(
         "ManagedCacheableKeyBytes::Destructor current AppDomain ID: " +
         System::Threading::Thread::GetDomainID() + " for object: " +
         System::Convert::ToString((int)this) + " with its AppDomain ID: " + m_domainId);
@@ -209,7 +211,7 @@ namespace apache
 
   private:
 
-    GemStone::GemFire::Cache::Generic::IPdxSerializable^ getManagedObject() const;
+    Apache::Geode::Client::Generic::IPdxSerializable^ getManagedObject() const;
     
     /// <summary>
     /// Using gcroot to hold the managed delegate pointer (since it cannot be stored directly).

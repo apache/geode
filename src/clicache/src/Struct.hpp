@@ -24,12 +24,13 @@
 
 using namespace System;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache {
-      namespace Generic
+    namespace Client
+    {
+namespace Generic
       {
       generic<class TResult>
       ref class StructSet;
@@ -44,7 +45,7 @@ namespace GemStone
       /// </remarks>
       //generic<class TResult>
       public ref class Struct sealed
-        : public GemStone::GemFire::Cache::Generic::Serializable
+        : public Apache::Geode::Client::Generic::Serializable
       {
       public:
 
@@ -54,9 +55,9 @@ namespace GemStone
         /// <returns>
         /// The value of the field or null if index is out of bounds.
         /// </returns>
-        property /*GemStone::GemFire::Cache::Generic::IGFSerializable^*//*TResult*/ Object^ GFINDEXER( size_t )
+        property /*Apache::Geode::Client::Generic::IGFSerializable^*//*TResult*/ Object^ GFINDEXER( size_t )
         {
-          /*GemStone::GemFire::Cache::Generic::IGFSerializable^*/ /*TResult*/ Object^ get( size_t index );
+          /*Apache::Geode::Client::Generic::IGFSerializable^*/ /*TResult*/ Object^ get( size_t index );
         }
 
         /// <summary>
@@ -66,9 +67,9 @@ namespace GemStone
         /// <exception cref="IllegalArgumentException">
         /// if the field name is not found.
         /// </exception>
-        property /*GemStone::GemFire::Cache::Generic::IGFSerializable^*//*TResult*/Object^ GFINDEXER( String^ )
+        property /*Apache::Geode::Client::Generic::IGFSerializable^*//*TResult*/Object^ GFINDEXER( String^ )
         {
-          /*GemStone::GemFire::Cache::Generic::IGFSerializable^*//*TResult*/Object^ get( String^ fieldName );
+          /*Apache::Geode::Client::Generic::IGFSerializable^*//*TResult*/Object^ get( String^ fieldName );
         }
 
         /// <summary>
@@ -77,9 +78,9 @@ namespace GemStone
         /// <returns>
         /// A reference to the parent <c>StructSet</c> of this <c>Struct</c>.
         /// </returns>
-        property GemStone::GemFire::Cache::Generic::StructSet</*TResult*/Object^>^ Set
+        property Apache::Geode::Client::Generic::StructSet</*TResult*/Object^>^ Set
         {
-          GemStone::GemFire::Cache::Generic::StructSet</*TResult*/Object^>^ get( );
+          Apache::Geode::Client::Generic::StructSet</*TResult*/Object^>^ get( );
         }
 
         /// <summary>
@@ -105,7 +106,7 @@ namespace GemStone
         /// A reference to the next item in the <c>Struct</c>
         /// or null if no more available.
         /// </returns>
-        /*GemStone::GemFire::Cache::Generic::IGFSerializable^*//*TResult*/Object^ Next( );
+        /*Apache::Geode::Client::Generic::IGFSerializable^*//*TResult*/Object^ Next( );
 
 
       private:
@@ -114,28 +115,28 @@ namespace GemStone
         /// Private constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline GemStone::GemFire::Cache::Generic::Struct/*<TResult>*/( ::apache::geode::client::Serializable* nativeptr )
-          : GemStone::GemFire::Cache::Generic::Serializable( nativeptr ) { }
+        inline Apache::Geode::Client::Generic::Struct/*<TResult>*/( ::apache::geode::client::Serializable* nativeptr )
+          : Apache::Geode::Client::Generic::Serializable( nativeptr ) { }
 
-        inline GemStone::GemFire::Cache::Generic::Struct/*<TResult>*/(  )
-          : GemStone::GemFire::Cache::Generic::Serializable( ::apache::geode::client::Struct::createDeserializable()) { }
+        inline Apache::Geode::Client::Generic::Struct/*<TResult>*/(  )
+          : Apache::Geode::Client::Generic::Serializable( ::apache::geode::client::Struct::createDeserializable()) { }
 
       internal:
 
         /// <summary>
         /// Factory function to register wrapper
         /// </summary>
-        inline static GemStone::GemFire::Cache::Generic::IGFSerializable^ /*Struct^*/ /*<TResult>*/ Create( ::apache::geode::client::Serializable* obj )
+        inline static Apache::Geode::Client::Generic::IGFSerializable^ /*Struct^*/ /*<TResult>*/ Create( ::apache::geode::client::Serializable* obj )
         {
           return ( obj != nullptr ?
-            gcnew GemStone::GemFire::Cache::Generic::Struct/*<TResult>*/( obj ) : nullptr );
+            gcnew Apache::Geode::Client::Generic::Struct/*<TResult>*/( obj ) : nullptr );
           /*return ( obj != nullptr ?
             gcnew Struct( obj ) : nullptr );*/
         }
 
-        inline static GemStone::GemFire::Cache::Generic::IGFSerializable^ CreateDeserializable( )
+        inline static Apache::Geode::Client::Generic::IGFSerializable^ CreateDeserializable( )
         {
-          return gcnew GemStone::GemFire::Cache::Generic::Struct/*<TResult>*/(  ) ;
+          return gcnew Apache::Geode::Client::Generic::Struct/*<TResult>*/(  ) ;
           //return gcnew Struct(  ) ;
         }
       };

@@ -22,14 +22,13 @@
 
 //using System::Collections::Generics;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache
+    namespace Client
     {
-
-      ref class EntryEvent;
+ref class EntryEvent;
       interface class IGFSerializable;
       namespace Generic
       {

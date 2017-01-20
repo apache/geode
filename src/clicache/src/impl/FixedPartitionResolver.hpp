@@ -24,11 +24,13 @@ using namespace System;
 using namespace System::Collections::Generic;
 using namespace System::Threading;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
 
       public interface class IFixedPartitionResolverProxy

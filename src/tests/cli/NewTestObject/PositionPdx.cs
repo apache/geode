@@ -16,9 +16,9 @@
  */
 
 using System;
-using GemStone.GemFire.Cache.Generic;
+using Apache.Geode.Client.Generic;
 
-namespace GemStone.GemFire.Cache.Tests.NewAPI
+namespace Apache.Geode.Client.Tests.NewAPI
 {
   public class PositionPdx
     : IPdxSerializable

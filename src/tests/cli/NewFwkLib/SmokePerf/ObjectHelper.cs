@@ -19,11 +19,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
-using GemStone.GemFire.Cache.Tests.NewAPI;
-namespace GemStone.GemFire.Cache.FwkLib
+using Apache.Geode.Client.Tests.NewAPI;
+namespace Apache.Geode.Client.FwkLib
 {
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Cache.Generic;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Client.Generic;
   public class ObjectHelper<TKey, TVal>
   {
     public static TVal CreateObject(string objectname, Int32 size, bool encodeKey, bool encodeTimestamp,

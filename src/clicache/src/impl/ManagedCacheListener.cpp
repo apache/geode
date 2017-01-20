@@ -44,9 +44,9 @@ namespace apache
         try
         {
           String^ mg_assemblyPath =
-            GemStone::GemFire::Cache::Generic::ManagedString::Get(assemblyPath);
+            Apache::Geode::Client::Generic::ManagedString::Get(assemblyPath);
           String^ mg_factoryFunctionName =
-            GemStone::GemFire::Cache::Generic::ManagedString::Get(factoryFunctionName);
+            Apache::Geode::Client::Generic::ManagedString::Get(factoryFunctionName);
           String^ mg_typeName = nullptr;
 
           String^ mg_genericKey = nullptr;
@@ -100,7 +100,7 @@ namespace apache
           mg_genericVal = mg_genericVal->Trim();
           mg_factoryFunctionName = mg_factoryFunctionName->Substring(dotIndx + 1);
 
-          GemStone::GemFire::Cache::Generic::Log::Fine("Attempting to instantiate a [{0}<{1}, {2}>] via the [{3}] factory method.",
+          Apache::Geode::Client::Generic::Log::Fine("Attempting to instantiate a [{0}<{1}, {2}>] via the [{3}] factory method.",
             mg_typeName, mg_genericKey, mg_genericVal, mg_factoryFunctionName);
 
           typeBuilder->Append("`2");
@@ -122,7 +122,7 @@ namespace apache
             throw apache::geode::client::IllegalArgumentException(ex_str.c_str());
           }
 
-          GemStone::GemFire::Cache::Generic::Log::Debug("Loading type: [{0}]", mg_typeName);
+          Apache::Geode::Client::Generic::Log::Debug("Loading type: [{0}]", mg_typeName);
 
           Type^ typeInst = assmb->GetType(mg_typeName, false, true);
 
@@ -139,7 +139,7 @@ namespace apache
             }
 
             typeInst = typeInst->MakeGenericType(types);
-            GemStone::GemFire::Cache::Generic::Log::Info("Loading function: [{0}]", mg_factoryFunctionName);
+            Apache::Geode::Client::Generic::Log::Info("Loading function: [{0}]", mg_factoryFunctionName);
 
             MethodInfo^ mInfo = typeInst->GetMethod(mg_factoryFunctionName,
               BindingFlags::Public | BindingFlags::Static | BindingFlags::IgnoreCase);
@@ -153,7 +153,7 @@ namespace apache
               }
               catch (System::Exception^ ex)
               {
-                GemStone::GemFire::Cache::Generic::Log::Debug("{0}: {1}", ex->GetType()->Name, ex->Message);
+                Apache::Geode::Client::Generic::Log::Debug("{0}: {1}", ex->GetType()->Name, ex->Message);
                 userptr = nullptr;
               }
               if (userptr == nullptr)
@@ -168,7 +168,7 @@ namespace apache
 
               ManagedCacheListenerGeneric * mgcl = new ManagedCacheListenerGeneric(userptr);
 
-              Type^ clgType = Type::GetType("GemStone.GemFire.Cache.Generic.CacheListenerGeneric`2");
+              Type^ clgType = Type::GetType("Apache.Geode.Client.Generic.CacheListenerGeneric`2");
               clgType = clgType->MakeGenericType(types);
               Object^ clg = Activator::CreateInstance(clgType);
 
@@ -177,7 +177,7 @@ namespace apache
               params[0] = userptr;
               mInfo->Invoke(clg, params);
 
-              mgcl->setptr((GemStone::GemFire::Cache::Generic::ICacheListener<Object^, Object^>^)clg);
+              mgcl->setptr((Apache::Geode::Client::Generic::ICacheListener<Object^, Object^>^)clg);
 
               return mgcl;
             }
@@ -193,7 +193,7 @@ namespace apache
           }
           else
           {
-            GemStone::GemFire::Cache::Generic::ManagedString typeName(mg_typeName);
+            Apache::Geode::Client::Generic::ManagedString typeName(mg_typeName);
             std::string ex_str = "ManagedCacheListenerGeneric: Could not load type [";
             ex_str += typeName.CharPtr;
             ex_str += "] in assembly: ";
@@ -207,7 +207,7 @@ namespace apache
         }
         catch (System::Exception^ ex)
         {
-          GemStone::GemFire::Cache::Generic::ManagedString mg_exStr(ex->ToString());
+          Apache::Geode::Client::Generic::ManagedString mg_exStr(ex->ToString());
           std::string ex_str = "ManagedCacheListenerGeneric: Got an exception while "
             "loading managed library: ";
           ex_str += mg_exStr.CharPtr;
@@ -219,141 +219,141 @@ namespace apache
       void ManagedCacheListenerGeneric::afterCreate(const apache::geode::client::EntryEvent& ev)
       {
         try {
-          GemStone::GemFire::Cache::Generic::EntryEvent<Object^, Object^> mevent(&ev);
+          Apache::Geode::Client::Generic::EntryEvent<Object^, Object^> mevent(&ev);
           m_managedptr->AfterCreate(%mevent);
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
       }
 
       void ManagedCacheListenerGeneric::afterUpdate(const apache::geode::client::EntryEvent& ev)
       {
         try {
-          GemStone::GemFire::Cache::Generic::EntryEvent<Object^, Object^> mevent(&ev);
+          Apache::Geode::Client::Generic::EntryEvent<Object^, Object^> mevent(&ev);
           m_managedptr->AfterUpdate(%mevent);
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
       }
 
       void ManagedCacheListenerGeneric::afterInvalidate(const apache::geode::client::EntryEvent& ev)
       {
         try {
-          GemStone::GemFire::Cache::Generic::EntryEvent<Object^, Object^> mevent(&ev);
+          Apache::Geode::Client::Generic::EntryEvent<Object^, Object^> mevent(&ev);
           m_managedptr->AfterInvalidate(%mevent);
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
       }
 
       void ManagedCacheListenerGeneric::afterDestroy(const apache::geode::client::EntryEvent& ev)
       {
         try {
-          GemStone::GemFire::Cache::Generic::EntryEvent<Object^, Object^> mevent(&ev);
+          Apache::Geode::Client::Generic::EntryEvent<Object^, Object^> mevent(&ev);
           m_managedptr->AfterDestroy(%mevent);
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
       }
       void ManagedCacheListenerGeneric::afterRegionClear(const apache::geode::client::RegionEvent& ev)
       {
         try {
-          GemStone::GemFire::Cache::Generic::RegionEvent<Object^, Object^> mevent(&ev);
+          Apache::Geode::Client::Generic::RegionEvent<Object^, Object^> mevent(&ev);
           m_managedptr->AfterRegionClear(%mevent);
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
       }
 
       void ManagedCacheListenerGeneric::afterRegionInvalidate(const apache::geode::client::RegionEvent& ev)
       {
         try {
-          GemStone::GemFire::Cache::Generic::RegionEvent<Object^, Object^> mevent(&ev);
+          Apache::Geode::Client::Generic::RegionEvent<Object^, Object^> mevent(&ev);
           m_managedptr->AfterRegionInvalidate(%mevent);
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
       }
 
       void ManagedCacheListenerGeneric::afterRegionDestroy(const apache::geode::client::RegionEvent& ev)
       {
         try {
-          GemStone::GemFire::Cache::Generic::RegionEvent<Object^, Object^> mevent(&ev);
+          Apache::Geode::Client::Generic::RegionEvent<Object^, Object^> mevent(&ev);
           m_managedptr->AfterRegionDestroy(%mevent);
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
       }
 
       void ManagedCacheListenerGeneric::afterRegionLive(const apache::geode::client::RegionEvent& ev)
       {
         try {
-          GemStone::GemFire::Cache::Generic::RegionEvent<Object^, Object^> mevent(&ev);
+          Apache::Geode::Client::Generic::RegionEvent<Object^, Object^> mevent(&ev);
           m_managedptr->AfterRegionLive(%mevent);
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
       }
 
       void ManagedCacheListenerGeneric::close(const apache::geode::client::RegionPtr& region)
       {
         try {
-          GemStone::GemFire::Cache::Generic::IRegion<Object^, Object^>^ mregion =
-            GemStone::GemFire::Cache::Generic::Region<Object^, Object^>::Create(region.ptr());
+          Apache::Geode::Client::Generic::IRegion<Object^, Object^>^ mregion =
+            Apache::Geode::Client::Generic::Region<Object^, Object^>::Create(region.ptr());
 
           m_managedptr->Close(mregion);
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
       }
       void ManagedCacheListenerGeneric::afterRegionDisconnected(const apache::geode::client::RegionPtr& region)
       {
         try {
-          GemStone::GemFire::Cache::Generic::IRegion<Object^, Object^>^ mregion =
-            GemStone::GemFire::Cache::Generic::Region<Object^, Object^>::Create(region.ptr());
+          Apache::Geode::Client::Generic::IRegion<Object^, Object^>^ mregion =
+            Apache::Geode::Client::Generic::Region<Object^, Object^>::Create(region.ptr());
           m_managedptr->AfterRegionDisconnected(mregion);
         }
-        catch (GemStone::GemFire::Cache::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemStone::GemFire::Cache::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
         }
       }
 

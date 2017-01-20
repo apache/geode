@@ -24,14 +24,14 @@ using System.Xml;
 
 #pragma warning disable 618
 
-namespace GemStone.GemFire.Cache.FwkLib
+namespace Apache.Geode.Client.FwkLib
 {
-  using GemStone.GemFire.DUnitFramework;
-  using GemStone.GemFire.Cache.Generic;
-  //using Region = GemStone.GemFire.Cache.Generic.IRegion<Object, Object>;
-  //using IntRegion = GemStone.GemFire.Cache.Generic.IRegion<int, byte[]>;
-  //using StringRegion = GemStone.GemFire.Cache.Generic.IRegion<string, byte[]>;
-  using VMW = GemStone.GemFire.Cache;
+  using Apache.Geode.DUnitFramework;
+  using Apache.Geode.Client.Generic;
+  //using Region = Apache.Geode.Client.Generic.IRegion<Object, Object>;
+  //using IntRegion = Apache.Geode.Client.Generic.IRegion<int, byte[]>;
+  //using StringRegion = Apache.Geode.Client.Generic.IRegion<string, byte[]>;
+  using VMW = Apache.Geode.Client;
   public class PropsStringToObject
   {
     public PropsStringToObject(Properties<string, object> target)
@@ -456,7 +456,7 @@ namespace GemStone.GemFire.Cache.FwkLib
       }
     }
 
-    public static string RegionTag(GemStone.GemFire.Cache.Generic.RegionAttributes<TKey, TVal> attrs)
+    public static string RegionTag(Apache.Geode.Client.Generic.RegionAttributes<TKey, TVal> attrs)
     {
       string tag = string.Empty;
       tag += attrs.CachingEnabled ? "Caching" : "NoCache";
@@ -464,7 +464,7 @@ namespace GemStone.GemFire.Cache.FwkLib
       return tag;
     }
 
-    public static string RegionAttributesToString(GemStone.GemFire.Cache.Generic.RegionAttributes<TKey, TVal> attrs)
+    public static string RegionAttributesToString(Apache.Geode.Client.Generic.RegionAttributes<TKey, TVal> attrs)
     {
       StringBuilder attrsSB = new StringBuilder();
       attrsSB.Append(Environment.NewLine + "caching: " +

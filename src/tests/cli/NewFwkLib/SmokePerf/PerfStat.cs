@@ -19,11 +19,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
-using GemStone.GemFire.Cache.Tests;
-using GemStone.GemFire.DUnitFramework;
-namespace GemStone.GemFire.Cache.FwkLib
+using Apache.Geode.Client.Tests;
+using Apache.Geode.DUnitFramework;
+namespace Apache.Geode.Client.FwkLib
 {
-  using GemStone.GemFire.Cache.Generic;
+  using Apache.Geode.Client.Generic;
   public static class PerfOps {
     public const string PERF_CREATES = "creates";
     public const string PERF_CREATE_TIME = "createTime";

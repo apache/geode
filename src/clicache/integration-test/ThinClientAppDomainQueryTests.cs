@@ -17,15 +17,15 @@
 
 ﻿using System;
 
-namespace GemStone.GemFire.Cache.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests.NewAPI
 {
-    using GemStone.GemFire.Cache.Generic;
-    using GemStone.GemFire.Cache.Tests.NewAPI;
-    using GemStone.GemFire.DUnitFramework;
+    using Apache.Geode.Client.Generic;
+    using Apache.Geode.Client.Tests.NewAPI;
+    using Apache.Geode.DUnitFramework;
     using NUnit.Framework;
-    using QueryCategory = GemStone.GemFire.Cache.Tests.QueryCategory;
-    using QueryStatics = GemStone.GemFire.Cache.Tests.QueryStatics;
-    using QueryStrings = GemStone.GemFire.Cache.Tests.QueryStrings;
+    using QueryCategory = Apache.Geode.Client.Tests.QueryCategory;
+    using QueryStatics = Apache.Geode.Client.Tests.QueryStatics;
+    using QueryStrings = Apache.Geode.Client.Tests.QueryStrings;
 
     [TestFixture]
     [Category("group1")]
@@ -74,8 +74,8 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
         {
             Serializable.RegisterTypeGeneric(Portfolio.CreateDeserializable);
             Serializable.RegisterTypeGeneric(Position.CreateDeserializable);
-            Serializable.RegisterPdxType(GemStone.GemFire.Cache.Tests.NewAPI.PortfolioPdx.CreateDeserializable);
-            Serializable.RegisterPdxType(GemStone.GemFire.Cache.Tests.NewAPI.PositionPdx.CreateDeserializable);
+            Serializable.RegisterPdxType(Apache.Geode.Client.Tests.NewAPI.PortfolioPdx.CreateDeserializable);
+            Serializable.RegisterPdxType(Apache.Geode.Client.Tests.NewAPI.PositionPdx.CreateDeserializable);
         }
 
         public void CreateCache(string locators)
@@ -90,7 +90,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
               null, locators, "__TESTPOOL1_", true);
 
             IRegion<object, object> region = CacheHelper.GetRegion<object, object>(QueryRegionNames[0]);
-            GemStone.GemFire.Cache.Generic.RegionAttributes<object, object> regattrs = region.Attributes;
+            Apache.Geode.Client.Generic.RegionAttributes<object, object> regattrs = region.Attributes;
             region.CreateSubRegion(QueryRegionNames[1], regattrs);
         }
 

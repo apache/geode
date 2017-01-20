@@ -19,9 +19,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace GemStone.GemFire.Cache.FwkLib
+namespace Apache.Geode.Client.FwkLib
 {
-  using GemStone.GemFire.DUnitFramework;
+  using Apache.Geode.DUnitFramework;
   using System.Threading;
   using System.Xml.Serialization;
   using System.IO;

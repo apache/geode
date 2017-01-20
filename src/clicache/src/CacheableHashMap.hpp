@@ -27,11 +27,13 @@ using namespace System::Collections::Generic;
 
 
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
       /// <summary>
       /// A mutable <c>ICacheableKey</c> to <c>IGFSerializable</c> hash map

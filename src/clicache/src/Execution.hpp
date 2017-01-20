@@ -24,12 +24,13 @@
 
 using namespace System;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache {
-      //interface class IGFSerializable;
+    namespace Client
+    {
+//interface class IGFSerializable;
       namespace Generic
     {
       generic<class TResult>

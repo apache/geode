@@ -23,7 +23,7 @@ using System.Threading;
 
 #pragma warning disable 618
 
-namespace GemStone.GemFire.DUnitFramework
+namespace Apache.Geode.DUnitFramework
 {
   using NUnit.Framework;
 

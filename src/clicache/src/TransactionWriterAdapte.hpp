@@ -21,11 +21,13 @@
 #include "ITransactionWriter.hpp"
 
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
 
       /// <summary>
@@ -34,7 +36,7 @@ namespace GemStone
       /// </summary>
       generic<class TKey, class TValue>
       public ref class TransactionWriterAdapter
-        : public GemStone::GemFire::Cache::Generic::ITransactionWriter<TKey, TValue>
+        : public Apache::Geode::Client::Generic::ITransactionWriter<TKey, TValue>
       {
       public:
         virtual void BeforeCommit(TransactionEvent<TKey, TValue>^ te)

@@ -31,7 +31,7 @@ namespace apache
     {
 
       /// <summary>
-      /// Wraps the managed <see cref="GemStone.GemFire.Cache.PropertyVisitor" />
+      /// Wraps the managed <see cref="Apache.Geode.Client.PropertyVisitor" />
       /// delegate and implements the native <c>apache::geode::client::Properties::Visitor</c> interface.
       /// </summary>
       class ManagedVisitorGeneric
@@ -56,7 +56,7 @@ namespace apache
         /// </summary>
         virtual ~ManagedVisitorGeneric() { }
 
-        void setptr(GemStone::GemFire::Cache::PropertyVisitor^ visitor)
+        void setptr(Apache::Geode::Client::PropertyVisitor^ visitor)
         {
           m_visitor = visitor;
         }
@@ -69,7 +69,7 @@ namespace apache
         // managed object may be created by the user and will be handled automatically by the GC.
         gcroot<Object^> m_managedptr;
 
-        gcroot<GemStone::GemFire::Cache::PropertyVisitor^> m_visitor;
+        gcroot<Apache::Geode::Client::PropertyVisitor^> m_visitor;
 
         // Disable the copy and assignment constructors
         ManagedVisitorGeneric();

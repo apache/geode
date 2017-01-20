@@ -22,7 +22,7 @@ using System.IO;
 
 using Microsoft.Win32;
 
-namespace GemStone.GemFire
+namespace Apache.Geode
 {
   class GacInstall
   {
@@ -30,7 +30,7 @@ namespace GemStone.GemFire
 
     private const string DOTNETAssemblyFoldersKey =
       @"SOFTWARE\Microsoft\.NETFramework\AssemblyFolders";
-    private const string GemFireProductKey = "GemStone.GemFire";
+    private const string GemFireProductKey = "Apache.Geode";
 
     #endregion
 

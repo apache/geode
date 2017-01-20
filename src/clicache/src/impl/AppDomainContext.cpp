@@ -17,9 +17,12 @@
 
 #include "AppDomainContext.hpp"
 
-namespace GemStone {
-namespace GemFire {
-namespace Cache {
+namespace Apache
+{
+  namespace Geode
+  {
+    namespace Client
+    {
 namespace Generic {
 apache::geode::client::AppDomainContext* createAppDomainContext() {
   return new AppDomainContext();

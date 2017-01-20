@@ -20,13 +20,13 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Threading;
 
-namespace GemStone.GemFire.Cache.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests.NewAPI
 {
   using NUnit.Framework;
-  using GemStone.GemFire.DUnitFramework;
+  using Apache.Geode.DUnitFramework;
 
-  using GemStone.GemFire.Cache.Generic;
-  using Region = GemStone.GemFire.Cache.Generic.IRegion<Object, Object>;
+  using Apache.Geode.Client.Generic;
+  using Region = Apache.Geode.Client.Generic.IRegion<Object, Object>;
 
   public class MyResultCollector<TResult> : Generic.IResultCollector<TResult>
   {
@@ -243,7 +243,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
       //test data dependant function execution
       //     test get function with result
       
-      GemStone.GemFire.Cache.Generic.Execution<object> exc = Generic.FunctionService<object>.OnRegion<object, object>(region);
+      Apache.Geode.Client.Generic.Execution<object> exc = Generic.FunctionService<object>.OnRegion<object, object>(region);
       Generic.IResultCollector<object> rc = exc.WithArgs<object>(args).WithFilter<object>(routingObj).Execute(getFuncName);
       ICollection<object> executeFunctionResult = rc.GetResult();
       List<object> resultList = new List<object>();
@@ -441,7 +441,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
       int args1 = 0;
      
       MyResultCollector<int> myRC = new MyResultCollector<int>();
-      GemStone.GemFire.Cache.Generic.Execution<int> exc = Generic.FunctionService<int>.OnServers/*OnRegion<string, string>*/(pl/*region*/);
+      Apache.Geode.Client.Generic.Execution<int> exc = Generic.FunctionService<int>.OnServers/*OnRegion<string, string>*/(pl/*region*/);
       Generic.IResultCollector<int> rc = exc.WithArgs<int>(args1).WithCollector(myRC).Execute("SingleStrGetFunction");
       
       Util.Log("add result count= {0}.", myRC.GetAddResultCount());
@@ -492,7 +492,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
       }
 
       MyResultCollector<string> myRC = new MyResultCollector<string>();
-      GemStone.GemFire.Cache.Generic.Execution<string> exc = Generic.FunctionService<string>.OnServers/*OnRegion<string, string>*/(pl/*region*/);
+      Apache.Geode.Client.Generic.Execution<string> exc = Generic.FunctionService<string>.OnServers/*OnRegion<string, string>*/(pl/*region*/);
       Generic.IResultCollector<string> rc = exc.WithArgs<ArrayList>(args1).WithCollector(myRC).Execute("SingleStrGetFunction");
       
       Util.Log("add result count= {0}.", myRC.GetAddResultCount());
@@ -541,7 +541,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
         count++;
       }
 
-      GemStone.GemFire.Cache.Generic.Execution<string> exc = Generic.FunctionService<string>.OnServers/*OnRegion<string, string>*/(pl/*region*/);
+      Apache.Geode.Client.Generic.Execution<string> exc = Generic.FunctionService<string>.OnServers/*OnRegion<string, string>*/(pl/*region*/);
       Generic.IResultCollector<string> rc = exc.WithArgs<ArrayList>(args1).Execute("SingleStrGetFunction");
 
       Assert.IsTrue(rc.GetResult().Count == 2, "result count check failed");
@@ -588,7 +588,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
         count++;
       }
 
-      GemStone.GemFire.Cache.Generic.Execution<object> exc = Generic.FunctionService<object>.OnServers/*OnRegion<string, string>*/(pl/*region*/);
+      Apache.Geode.Client.Generic.Execution<object> exc = Generic.FunctionService<object>.OnServers/*OnRegion<string, string>*/(pl/*region*/);
       Generic.IResultCollector<object> rc = exc.WithArgs<ArrayList>(args1).Execute("PdxFunctionTest");
 
       Assert.IsTrue(rc.GetResult().Count == 2, "result count check failed");
@@ -629,7 +629,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
       bool args = true;
       //test data dependant function execution
       //     test get function with result
-      GemStone.GemFire.Cache.Generic.Execution<object> exc = Generic.FunctionService<object>.OnRegion<object, object>(region);
+      Apache.Geode.Client.Generic.Execution<object> exc = Generic.FunctionService<object>.OnRegion<object, object>(region);
       Generic.IResultCollector<object> rc = exc.WithArgs<bool>(args).WithFilter<object>(routingObj).Execute(getFuncName);
       ICollection<object> executeFunctionResult = rc.GetResult();
       List<object> resultList = new List<object>();
@@ -684,7 +684,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
 
       //test data independant function execution with result OnRegion
 
-      GemStone.GemFire.Cache.Generic.Execution<object> exc = Generic.FunctionService<object>.OnRegion<object, object>(region);
+      Apache.Geode.Client.Generic.Execution<object> exc = Generic.FunctionService<object>.OnRegion<object, object>(region);
 
       Assert.IsTrue(exc != null, "onRegion Returned NULL");
 
@@ -739,7 +739,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
 
       //test data independant function execution with result onServer
       
-      GemStone.GemFire.Cache.Generic.Execution<object> exc = Generic.FunctionService<object>.OnRegion<object, object>(region);
+      Apache.Geode.Client.Generic.Execution<object> exc = Generic.FunctionService<object>.OnRegion<object, object>(region);
 
       Assert.IsTrue(exc != null, "onRegion Returned NULL");
 
@@ -1321,7 +1321,7 @@ namespace GemStone.GemFire.Cache.UnitTests.NewAPI
       //test data independant function execution with result onServer
       Pool/*<TKey, TValue>*/ pool = PoolManager/*<TKey, TValue>*/.Find(poolName);
       
-      GemStone.GemFire.Cache.Generic.Execution<object> exc = Generic.FunctionService<object>.OnServer(pool);
+      Apache.Geode.Client.Generic.Execution<object> exc = Generic.FunctionService<object>.OnServer(pool);
       Assert.IsTrue(exc != null, "onServer Returned NULL");
 
       Generic.IResultCollector<object> rc = exc.WithArgs<ArrayList>(args1).Execute(OnServerHAExceptionFunction, 15);

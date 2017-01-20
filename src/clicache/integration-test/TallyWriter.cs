@@ -18,11 +18,11 @@
 using System;
 using System.Threading;
 
-namespace GemStone.GemFire.Cache.UnitTests
+namespace Apache.Geode.Client.UnitTests
 {
-  using GemStone.GemFire.DUnitFramework;
+  using Apache.Geode.DUnitFramework;
 
-  class TallyWriter : GemStone.GemFire.Cache.Generic.CacheWriterAdapter<Object, Object>
+  class TallyWriter : Apache.Geode.Client.Generic.CacheWriterAdapter<Object, Object>
   {
     #region Private members
 
@@ -30,10 +30,10 @@ namespace GemStone.GemFire.Cache.UnitTests
     private int m_updates = 0;
     private int m_invalidates = 0;
     private int m_destroys = 0;
-    private GemStone.GemFire.Cache.Generic.IGFSerializable m_callbackArg = null;
+    private Apache.Geode.Client.Generic.IGFSerializable m_callbackArg = null;
     private int m_clears = 0;
-    private GemStone.GemFire.Cache.Generic.IGFSerializable m_lastKey = null;
-    private GemStone.GemFire.Cache.Generic.IGFSerializable m_lastValue = null;
+    private Apache.Geode.Client.Generic.IGFSerializable m_lastKey = null;
+    private Apache.Geode.Client.Generic.IGFSerializable m_lastValue = null;
     private bool isWriterFailed = false;
     private bool isWriterInvoke = false;
     private bool isCallbackCalled = false;
@@ -82,7 +82,7 @@ namespace GemStone.GemFire.Cache.UnitTests
     }
 
 
-    public GemStone.GemFire.Cache.Generic.IGFSerializable LastKey
+    public Apache.Geode.Client.Generic.IGFSerializable LastKey
     {
       get
       {
@@ -90,7 +90,7 @@ namespace GemStone.GemFire.Cache.UnitTests
       }
     }
 
-    public GemStone.GemFire.Cache.Generic.IGFSerializable CallbackArgument
+    public Apache.Geode.Client.Generic.IGFSerializable CallbackArgument
     {
       get
       {
@@ -99,7 +99,7 @@ namespace GemStone.GemFire.Cache.UnitTests
     }
 
 
-    public GemStone.GemFire.Cache.Generic.IGFSerializable LastValue
+    public Apache.Geode.Client.Generic.IGFSerializable LastValue
     {
       get
       {
@@ -112,7 +112,7 @@ namespace GemStone.GemFire.Cache.UnitTests
     isWriterFailed = true;
    }
 
-  public void SetCallBackArg( GemStone.GemFire.Cache.Generic.IGFSerializable callbackArg )
+  public void SetCallBackArg( Apache.Geode.Client.Generic.IGFSerializable callbackArg )
   {
     m_callbackArg = callbackArg;
   }
@@ -167,14 +167,14 @@ namespace GemStone.GemFire.Cache.UnitTests
         Updates, Creates, Invalidates, Destroys);
     }
 
-    public void CheckcallbackArg(GemStone.GemFire.Cache.Generic.EntryEvent<Object, Object> ev)
+    public void CheckcallbackArg(Apache.Geode.Client.Generic.EntryEvent<Object, Object> ev)
       {
 
         if(!isWriterInvoke)
           isWriterInvoke = true;
         if (m_callbackArg != null)
         {
-          GemStone.GemFire.Cache.Generic.IGFSerializable callbkArg = (GemStone.GemFire.Cache.Generic.IGFSerializable)ev.CallbackArgument;
+          Apache.Geode.Client.Generic.IGFSerializable callbkArg = (Apache.Geode.Client.Generic.IGFSerializable)ev.CallbackArgument;
           if (m_callbackArg.Equals(callbkArg))
             isCallbackCalled = true;
         }  
@@ -187,7 +187,7 @@ namespace GemStone.GemFire.Cache.UnitTests
 
     #region ICacheWriter Members
 
-    public override bool BeforeCreate(GemStone.GemFire.Cache.Generic.EntryEvent<Object, Object> ev)
+    public override bool BeforeCreate(Apache.Geode.Client.Generic.EntryEvent<Object, Object> ev)
     {
       m_creates++;
       Util.Log("TallyWriter::BeforeCreate");
@@ -195,7 +195,7 @@ namespace GemStone.GemFire.Cache.UnitTests
       return !isWriterFailed;
     }
 
-    public override bool BeforeDestroy(GemStone.GemFire.Cache.Generic.EntryEvent<Object, Object> ev)
+    public override bool BeforeDestroy(Apache.Geode.Client.Generic.EntryEvent<Object, Object> ev)
     {
       m_destroys++;
       Util.Log("TallyWriter::BeforeDestroy");
@@ -203,14 +203,14 @@ namespace GemStone.GemFire.Cache.UnitTests
       return !isWriterFailed;
     }
 
-    public override bool BeforeRegionClear(GemStone.GemFire.Cache.Generic.RegionEvent<Object, Object> ev)
+    public override bool BeforeRegionClear(Apache.Geode.Client.Generic.RegionEvent<Object, Object> ev)
     {
       m_clears++;
       Util.Log("TallyWriter::BeforeRegionClear");
       return true;
     }
 
-    public override bool BeforeUpdate(GemStone.GemFire.Cache.Generic.EntryEvent<Object, Object> ev)
+    public override bool BeforeUpdate(Apache.Geode.Client.Generic.EntryEvent<Object, Object> ev)
     {
       m_updates++;
       Util.Log("TallyWriter::BeforeUpdate");

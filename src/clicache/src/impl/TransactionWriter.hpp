@@ -24,13 +24,15 @@
 #include "SafeConvert.hpp"
 
 using namespace System;
-using namespace GemStone::GemFire::Cache;
+using namespace Apache::Geode::Client;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
 
       /// <summary>
@@ -39,22 +41,22 @@ namespace GemStone
       /// forward the calls to the generic objects
       /// </summary>
       generic<class TKey, class TValue>
-			public ref class TransactionWriterGeneric : GemStone::GemFire::Cache::TransactionWriterAdapter
+			public ref class TransactionWriterGeneric : Apache::Geode::Client::TransactionWriterAdapter
       {
         private:
 
-          GemStone::GemFire::Cache::Generic::ITransactionWriter<TKey, TValue>^ m_writer;
+          Apache::Geode::Client::Generic::ITransactionWriter<TKey, TValue>^ m_writer;
 
         public:
 
-          void SetTransactionWriter(GemStone::GemFire::Cache::Generic::ITransactionWriter<TKey, TValue>^ writer)
+          void SetTransactionWriter(Apache::Geode::Client::Generic::ITransactionWriter<TKey, TValue>^ writer)
           {
             m_writer = writer;
           }
 
-          virtual void BeforeCommit(GemStone::GemFire::Cache::TransactionEvent^ te) override
+          virtual void BeforeCommit(Apache::Geode::Client::TransactionEvent^ te) override
           {
-            GemStone::GemFire::Cache::Generic::TransactionEvent<TKey, TValue> gevent(GetNativePtr<apache::geode::client::TransactionEvent>(te));
+            Apache::Geode::Client::Generic::TransactionEvent<TKey, TValue> gevent(GetNativePtr<apache::geode::client::TransactionEvent>(te));
             m_writer->BeforeCommit(%gevent);
           }
 

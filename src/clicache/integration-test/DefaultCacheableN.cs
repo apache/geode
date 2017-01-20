@@ -19,9 +19,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace GemStone.GemFire.Cache.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests.NewAPI
 {
-  using GemStone.GemFire.Cache.Generic;
+  using Apache.Geode.Client.Generic;
 
   [Serializable]
   class CustomSerializableObject

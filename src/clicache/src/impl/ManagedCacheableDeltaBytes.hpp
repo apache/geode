@@ -25,11 +25,13 @@
 
 using namespace System;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
       interface class IGFSerializable;
       interface class IGFDelta;
@@ -47,7 +49,7 @@ namespace apache
 
 
       /// <summary>
-      /// Wraps the managed <see cref="GemStone.GemFire.Cache.IGFDelta" />
+      /// Wraps the managed <see cref="Apache.Geode.Client.IGFDelta" />
       /// object and implements the native <c>apache::geode::client::CacheableKey</c> interface.
       /// </summary>
       class ManagedCacheableDeltaBytesGeneric
@@ -62,7 +64,7 @@ namespace apache
         /// The managed object.
         /// </param>
         inline ManagedCacheableDeltaBytesGeneric(
-          GemStone::GemFire::Cache::Generic::IGFDelta^ managedDeltaptr, bool storeBytes)
+          Apache::Geode::Client::Generic::IGFDelta^ managedDeltaptr, bool storeBytes)
           : m_domainId(System::Threading::Thread::GetDomainID()),
           m_classId(0),
           m_bytes(NULL),
@@ -72,17 +74,17 @@ namespace apache
         {
           if (storeBytes)
             m_hasDelta = managedDeltaptr->HasDelta();
-          GemStone::GemFire::Cache::Generic::IGFSerializable^ managedptr =
-            dynamic_cast <GemStone::GemFire::Cache::Generic::IGFSerializable^> (managedDeltaptr);
+          Apache::Geode::Client::Generic::IGFSerializable^ managedptr =
+            dynamic_cast <Apache::Geode::Client::Generic::IGFSerializable^> (managedDeltaptr);
           if (managedptr != nullptr)
           {
             m_classId = managedptr->ClassId;
-            GemStone::GemFire::Cache::Generic::Log::Finer("ManagedCacheableDeltaBytes::Constructor: current AppDomain ID: " + System::Threading::Thread::GetDomainID() + " for object: " + System::Convert::ToString((int)this) + " with its AppDomain ID: " + m_domainId);
-            GemStone::GemFire::Cache::Generic::Log::Finer("ManagedCacheableDeltaBytes::Constructor: class ID " + managedptr->ClassId + " : " + managedptr->ToString() + " storeBytes:" + storeBytes);
+            Apache::Geode::Client::Generic::Log::Finer("ManagedCacheableDeltaBytes::Constructor: current AppDomain ID: " + System::Threading::Thread::GetDomainID() + " for object: " + System::Convert::ToString((int)this) + " with its AppDomain ID: " + m_domainId);
+            Apache::Geode::Client::Generic::Log::Finer("ManagedCacheableDeltaBytes::Constructor: class ID " + managedptr->ClassId + " : " + managedptr->ToString() + " storeBytes:" + storeBytes);
             if (storeBytes)
             {
               apache::geode::client::DataOutput dataOut;
-              GemStone::GemFire::Cache::Generic::DataOutput mg_output(&dataOut, true);
+              Apache::Geode::Client::Generic::DataOutput mg_output(&dataOut, true);
               managedptr->ToData(%mg_output);
 
               //move cursor
@@ -92,32 +94,32 @@ namespace apache
               m_bytes = dataOut.getBufferCopy();
               m_size = dataOut.getBufferLength();
               m_hashCode = managedptr->GetHashCode();
-              GemStone::GemFire::Cache::Generic::Log::Finer("ManagedCacheableDeltaBytes::Constructor objectSize = " + m_size + " m_hashCode = " + m_hashCode);
+              Apache::Geode::Client::Generic::Log::Finer("ManagedCacheableDeltaBytes::Constructor objectSize = " + m_size + " m_hashCode = " + m_hashCode);
             }
           }
         }
         /*
             inline ManagedCacheableDeltaBytes(
-            GemStone::GemFire::Cache::IGFDelta^ managedDeltaptr,  bool storeBytes)
+            Apache::Geode::Client::IGFDelta^ managedDeltaptr,  bool storeBytes)
             : m_domainId(System::Threading::Thread::GetDomainID()),
             m_classId(0),
             m_bytes(NULL),
             m_size(0),
             m_hashCode(0)
             {
-            GemStone::GemFire::Cache::Log::Fine("ManagedCacheableDeltaBytes::Constructor: not storing bytes ");
-            GemStone::GemFire::Cache::IGFSerializable^ managedptr = dynamic_cast <GemStone::GemFire::Cache::IGFSerializable^> ( managedDeltaptr );
+            Apache::Geode::Client::Log::Fine("ManagedCacheableDeltaBytes::Constructor: not storing bytes ");
+            Apache::Geode::Client::IGFSerializable^ managedptr = dynamic_cast <Apache::Geode::Client::IGFSerializable^> ( managedDeltaptr );
             if(managedptr != nullptr)
             {
             m_classId = managedptr->ClassId;
-            GemStone::GemFire::Cache::Log::Fine("ManagedCacheableDeltaBytes::Constructor: current AppDomain ID: " + System::Threading::Thread::GetDomainID() + " for object: " + System::Convert::ToString((int)this) + " with its AppDomain ID: " + m_domainId);
-            GemStone::GemFire::Cache::Log::Fine("ManagedCacheableDeltaBytes::Constructor: class ID " + managedptr->ClassId + " : " + managedptr->ToString());
+            Apache::Geode::Client::Log::Fine("ManagedCacheableDeltaBytes::Constructor: current AppDomain ID: " + System::Threading::Thread::GetDomainID() + " for object: " + System::Convert::ToString((int)this) + " with its AppDomain ID: " + m_domainId);
+            Apache::Geode::Client::Log::Fine("ManagedCacheableDeltaBytes::Constructor: class ID " + managedptr->ClassId + " : " + managedptr->ToString());
             apache::geode::client::DataOutput dataOut;
-            GemStone::GemFire::Cache::DataOutput mg_output( &dataOut);
+            Apache::Geode::Client::DataOutput mg_output( &dataOut);
             managedptr->ToData( %mg_output );
             m_bytes = dataOut.getBufferCopy();
             m_size = dataOut.getBufferLength();
-            GemStone::GemFire::Cache::Log::Fine("ManagedCacheableDeltaBytes::Constructor objectSize = " + m_size + " m_hashCode = " + m_hashCode);
+            Apache::Geode::Client::Log::Fine("ManagedCacheableDeltaBytes::Constructor objectSize = " + m_size + " m_hashCode = " + m_hashCode);
             m_hashCode = managedptr->GetHashCode();
             }
             }*/
@@ -198,27 +200,27 @@ namespace apache
         /// <summary>
         /// Returns the wrapped managed object reference.
         /// </summary>
-        inline GemStone::GemFire::Cache::Generic::IGFDelta^ ptr() const
+        inline Apache::Geode::Client::Generic::IGFDelta^ ptr() const
         {
           return getManagedObject();
         }
 
         inline ~ManagedCacheableDeltaBytesGeneric()
         {
-          GemStone::GemFire::Cache::Generic::Log::Finer("ManagedCacheableDeltaBytes::Destructor current AppDomain ID: " + System::Threading::Thread::GetDomainID() + " for object: " + System::Convert::ToString((int)this) + " with its AppDomain ID: " + m_domainId);
+          Apache::Geode::Client::Generic::Log::Finer("ManagedCacheableDeltaBytes::Destructor current AppDomain ID: " + System::Threading::Thread::GetDomainID() + " for object: " + System::Convert::ToString((int)this) + " with its AppDomain ID: " + m_domainId);
           GF_SAFE_DELETE(m_bytes);
         }
 
       private:
-        GemStone::GemFire::Cache::Generic::IGFDelta^ getManagedObject() const;
+        Apache::Geode::Client::Generic::IGFDelta^ getManagedObject() const;
         /// <summary>
         /// Using gcroot to hold the managed delegate pointer (since it cannot be stored directly).
         /// Note: not using auto_gcroot since it will result in 'Dispose' of the IGFDelta
         /// to be called which is not what is desired when this object is destroyed. Normally this
         /// managed object may be created by the user and will be handled automatically by the GC.
         /// </summary>
-        //gcroot<GemStone::GemFire::Cache::IGFDelta^> m_managedptr;
-        //gcroot<GemStone::GemFire::Cache::IGFSerializable^> m_managedSerializableptr;
+        //gcroot<Apache::Geode::Client::IGFDelta^> m_managedptr;
+        //gcroot<Apache::Geode::Client::IGFSerializable^> m_managedSerializableptr;
 
         int m_domainId;
         UInt32 m_classId;

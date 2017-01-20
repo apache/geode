@@ -39,12 +39,12 @@
 using System;
 
 // Use the GemFire namespace
-using GemStone.GemFire.Cache.Generic;
+using Apache.Geode.Client.Generic;
 
 // Use the .NET generics namespace
 using System.Collections.Generic;
 
-namespace GemStone.GemFire.Cache.Generic.QuickStart
+namespace Apache.Geode.Client.Generic.QuickStart
 {
 
   // Cache Transactions QuickStart example.

@@ -27,11 +27,13 @@
 using namespace System;
 //using namespace apache::geode::client;
 
-namespace GemStone
+namespace Apache
 {
-  namespace GemFire
+  namespace Geode
   {
-    namespace Cache { namespace Generic
+    namespace Client
+    {
+namespace Generic
     {
       interface class IGFSerializable;
       interface class IGFDelta;
@@ -48,7 +50,7 @@ namespace apache
     {
 
       /// <summary>
-      /// Wraps the managed <see cref="GemStone.GemFire.Cache.IGFDelta" />
+      /// Wraps the managed <see cref="Apache.Geode.Client.IGFDelta" />
       /// object and implements the native <c>apache::geode::client::CacheableKey</c> interface.
       /// </summary>
       class ManagedCacheableDeltaGeneric
@@ -67,20 +69,20 @@ namespace apache
         /// The managed object.
         /// </param>
         inline ManagedCacheableDeltaGeneric(
-          GemStone::GemFire::Cache::Generic::IGFDelta^ managedptr)
+          Apache::Geode::Client::Generic::IGFDelta^ managedptr)
           : m_managedptr(managedptr)
         {
-          m_managedSerializableptr = dynamic_cast <GemStone::GemFire::Cache::Generic::IGFSerializable^> (managedptr);
+          m_managedSerializableptr = dynamic_cast <Apache::Geode::Client::Generic::IGFSerializable^> (managedptr);
           m_classId = m_managedSerializableptr->ClassId;
           m_objectSize = 0;
         }
 
         inline ManagedCacheableDeltaGeneric(
-          GemStone::GemFire::Cache::Generic::IGFDelta^ managedptr, int hashcode, int classId)
+          Apache::Geode::Client::Generic::IGFDelta^ managedptr, int hashcode, int classId)
           : m_managedptr(managedptr) {
           m_hashcode = hashcode;
           m_classId = classId;
-          m_managedSerializableptr = dynamic_cast <GemStone::GemFire::Cache::Generic::IGFSerializable^> (managedptr);
+          m_managedSerializableptr = dynamic_cast <Apache::Geode::Client::Generic::IGFSerializable^> (managedptr);
           m_objectSize = 0;
         }
 
@@ -159,7 +161,7 @@ namespace apache
         /// <summary>
         /// Returns the wrapped managed object reference.
         /// </summary>
-        inline GemStone::GemFire::Cache::Generic::IGFDelta^ ptr() const
+        inline Apache::Geode::Client::Generic::IGFDelta^ ptr() const
         {
           return m_managedptr;
         }
@@ -173,8 +175,8 @@ namespace apache
         /// to be called which is not what is desired when this object is destroyed. Normally this
         /// managed object may be created by the user and will be handled automatically by the GC.
         /// </summary>
-        gcroot<GemStone::GemFire::Cache::Generic::IGFDelta^> m_managedptr;
-        gcroot<GemStone::GemFire::Cache::Generic::IGFSerializable^> m_managedSerializableptr;
+        gcroot<Apache::Geode::Client::Generic::IGFDelta^> m_managedptr;
+        gcroot<Apache::Geode::Client::Generic::IGFSerializable^> m_managedSerializableptr;
         // Disable the copy and assignment constructors
         ManagedCacheableDeltaGeneric(const ManagedCacheableDeltaGeneric&);
         ManagedCacheableDeltaGeneric& operator = (const ManagedCacheableDeltaGeneric&);

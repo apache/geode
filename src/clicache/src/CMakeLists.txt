@@ -37,13 +37,12 @@ string(REPLACE "/RTC1" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /clr /wd4947 /doc")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${SHARED_LINKER_FLAGS_STRONG_KEY}")
 
-include_directories(${CMAKE_SOURCE_DIR}/clicache/src/legacy)
 include_directories(${CMAKE_SOURCE_DIR}/clicache/include)
 include_directories(${CMAKE_SOURCE_DIR}/clicache/src)
 include_directories(${CMAKE_SOURCE_DIR}/cppcache/src)
 
 set_target_properties(gfclicache PROPERTIES
-  OUTPUT_NAME Gemstone.Gemfire.Cache
+  OUTPUT_NAME Apache.Geode.Client
   VS_DOTNET_TARGET_FRAMEWORK_VERSION "v4.5.2"
   VS_DOTNET_REFERENCES "System;System.Xml")
 
