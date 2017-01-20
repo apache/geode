@@ -135,12 +135,12 @@ public class JSONFormatter {
     JsonParser jp = null;
     try {
       if (json instanceof String) {
-        jp = new JsonFactory().createParser((byte[]) json);
+        jp = new JsonFactory().createParser((String) json);
 
       } else if (json instanceof byte[]) {
         jp = new JsonFactory().createParser((byte[]) json);
       } else {
-        new JSONFormatterException("Could not parse the " + json.getClass() + " type");
+        throw new JSONFormatterException("Could not parse the " + json.getClass() + " type");
       }
       enableJSONParserFeature(jp);
       return new JSONFormatter().getPdxInstance(jp, states.NONE, null).getPdxInstance();

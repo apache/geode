@@ -14,16 +14,12 @@
  */
 package org.apache.geode.pdx;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
-
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.util.Properties;
-
-import org.apache.geode.test.junit.categories.SerializationTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.AttributesFactory;
@@ -55,7 +51,14 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.categories.SerializationTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.util.Properties;
 
 @Category({DistributedTest.class, SerializationTest.class})
 public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
@@ -72,18 +75,15 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
 
-
-    createServerRegion(vm0, SimpleClass.class);
+    vm0.invoke(() -> createServerRegion(SimpleClass.class));
     int port = createServerAccessor(vm3);
     createClientRegion(vm1, port);
     createClientRegion(vm2, port);
 
-    vm1.invoke(new SerializableCallable() {
-      public Object call() throws Exception {
-        Region r = getRootRegion("testSimplePdx");
-        r.put(1, new SimpleClass(57, (byte) 3));
-        return null;
-      }
+    vm1.invoke(() -> {
+      Region r = getRootRegion("testSimplePdx");
+      r.put(1, new SimpleClass(57, (byte) 3));
+      return null;
     });
     final SerializableCallable checkValue = new SerializableCallable() {
       public Object call() throws Exception {
@@ -109,34 +109,30 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
 
-    int port = createServerRegion(vm0, SimpleClass.class);
+    final int port = vm0.invoke(() -> createServerRegion(SimpleClass.class));
     createClientRegion(vm1, port, false, true);
 
     // Define a PDX type with 2 fields that will be cached on the client
-    vm1.invoke(new SerializableCallable() {
-      public Object call() throws Exception {
-        Region r = getRootRegion("testSimplePdx");
-        r.put(1, new PdxType2(1, 1));
-        r.get(1);
-        return null;
-      }
+    vm1.invoke(() -> {
+      Region r = getRootRegion("testSimplePdx");
+      r.put(1, new PdxType2(1, 1));
+      r.get(1);
+      return null;
     });
 
     closeCache(vm0);
 
     // GEODE-1037: make sure the client knows that the server
     // is gone
-    vm1.invoke(new SerializableRunnable() {
-      public void run() throws Exception {
-        Region r = getRootRegion("testSimplePdx");
-        // make sure the client has reconnected to the server
-        // by performing a get() on a key the client cache does
-        // not contain
-        try {
-          r.get(4);
-          throw new Error("expected an exception to be thrown");
-        } catch (Exception expected) {
-        }
+    vm1.invoke(() -> {
+      Region r = getRootRegion("testSimplePdx");
+      // make sure the client has reconnected to the server
+      // by performing a get() on a key the client cache does
+      // not contain
+      try {
+        r.get(4);
+        throw new Error("expected an exception to be thrown");
+      } catch (Exception expected) {
       }
     });
 
@@ -145,43 +141,37 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
 
     // Now defined a PDX type with only 1 field. This should
     // reuse the same type id because the server was restarted.
-    vm2.invoke(new SerializableCallable() {
-      public Object call() throws Exception {
-        Region r = getRootRegion("testSimplePdx");
-        r.put(3, new PdxType1(3));
-        r.get(3);
-        return null;
-      }
+    vm2.invoke(() -> {
+      Region r = getRootRegion("testSimplePdx");
+      r.put(3, new PdxType1(3));
+      r.get(3);
+      return null;
     });
 
     // See what happens when vm1 tries to read the type.
     // If it cached the type id it will try to read a PdxType2
     // and fail with a ServerOperationException having a
     // PdxSerializationException "cause"
-    vm1.invoke(new SerializableCallable() {
-      public Object call() throws Exception {
-        Region r = getRootRegion("testSimplePdx");
+    vm1.invoke(() -> {
+      Region r = getRootRegion("testSimplePdx");
 
-        // now get object 3, which was put in the server by vm2
-        PdxType1 results = (PdxType1) r.get(3);
-        assertEquals(3, results.int1);
+      // now get object 3, which was put in the server by vm2
+      PdxType1 results = (PdxType1) r.get(3);
+      assertEquals(3, results.int1);
 
-        // Add another field to make sure the write path doesn't have
-        // something cached on vm1.
-        r.put(5, new PdxType2(5, 5));
-        return null;
-      }
+      // Add another field to make sure the write path doesn't have
+      // something cached on vm1.
+      r.put(5, new PdxType2(5, 5));
+      return null;
     });
 
     // Make sure vm2 can read what vm1 has written
-    vm2.invoke(new SerializableCallable() {
-      public Object call() throws Exception {
-        Region r = getRootRegion("testSimplePdx");
-        PdxType2 results = (PdxType2) r.get(5);
-        assertEquals(5, results.int1);
-        assertEquals(5, results.int2);
-        return null;
-      }
+    vm2.invoke(() -> {
+      Region r = getRootRegion("testSimplePdx");
+      PdxType2 results = (PdxType2) r.get(5);
+      assertEquals(5, results.int1);
+      assertEquals(5, results.int2);
+      return null;
     });
   }
 
@@ -205,18 +195,16 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
     });
     try {
       String[] patterns =
-          new String[] {"org.apache.geode.pdx.PdxClientServerDUnitTest.AutoPdxType.*"};
+          new String[]{"org.apache.geode.pdx.PdxClientServerDUnitTest.AutoPdxType.*"};
       int port = createServerRegion(vm0);
       createClientRegion(vm1, port, false, true, patterns);
 
       // Define a PDX type with 2 fields that will be cached on the client
-      vm1.invoke(new SerializableCallable() {
-        public Object call() throws Exception {
-          Region r = getRootRegion("testSimplePdx");
-          r.put(1, new AutoPdxType2(1, 1));
-          r.get(1);
-          return null;
-        }
+      vm1.invoke(() -> {
+        Region r = getRootRegion("testSimplePdx");
+        r.put(1, new AutoPdxType2(1, 1));
+        r.get(1);
+        return null;
       });
 
       closeCache(vm0);
@@ -225,45 +213,39 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
 
       // Now defined a PDX type with only 1 field. This should
       // reuse the same type id because the server was restarted.
-      vm2.invoke(new SerializableCallable() {
-        public Object call() throws Exception {
-          Region r = getRootRegion("testSimplePdx");
-          r.put(3, new AutoPdxType1(3));
-          r.get(3);
-          return null;
-        }
+      vm2.invoke(() -> {
+        Region r = getRootRegion("testSimplePdx");
+        r.put(3, new AutoPdxType1(3));
+        r.get(3);
+        return null;
       });
 
       // See what happens when vm1 tries to read the type.
       // If it cached the type id it will have problems.
-      vm1.invoke(new SerializableCallable() {
-        public Object call() throws Exception {
-          Region r = getRootRegion("testSimplePdx");
-          try {
-            r.get(4);
-          } catch (Exception expected) {
-            // The client may not have noticed the server go away and come
-            // back. Let's trigger the exception so the client will retry.
-          }
-          AutoPdxType1 results = (AutoPdxType1) r.get(3);
-          assertEquals(3, results.int1);
-
-          // Add another field to make sure the write path doesn't have
-          // something cached on vm1.
-          r.put(5, new AutoPdxType2(5, 5));
-          return null;
+      vm1.invoke(() -> {
+        Region r = getRootRegion("testSimplePdx");
+        try {
+          r.get(4);
+        } catch (Exception expected) {
+          // The client may not have noticed the server go away and come
+          // back. Let's trigger the exception so the client will retry.
         }
+        AutoPdxType1 results = (AutoPdxType1) r.get(3);
+        assertEquals(3, results.int1);
+
+        // Add another field to make sure the write path doesn't have
+        // something cached on vm1.
+        r.put(5, new AutoPdxType2(5, 5));
+        return null;
       });
 
       // Make sure vm2 can read what vm1 has written
-      vm2.invoke(new SerializableCallable() {
-        public Object call() throws Exception {
-          Region r = getRootRegion("testSimplePdx");
-          AutoPdxType2 results = (AutoPdxType2) r.get(5);
-          assertEquals(5, results.int1);
-          assertEquals(5, results.int2);
-          return null;
-        }
+      vm2.invoke(() -> {
+        Region r = getRootRegion("testSimplePdx");
+        AutoPdxType2 results = (AutoPdxType2) r.get(5);
+        assertEquals(5, results.int1);
+        assertEquals(5, results.int2);
+        return null;
       });
     } finally {
       System.setProperty(
@@ -290,8 +272,6 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
 
-
-
     createServerRegionWithPersistence(vm0, false);
     int port = createServerAccessor(vm1);
     createClientRegion(vm2, port);
@@ -312,11 +292,9 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void closeCache(VM vm) {
-    vm.invoke(new SerializableCallable() {
-      public Object call() throws Exception {
-        closeCache();
-        return null;
-      }
+    vm.invoke(() -> {
+      closeCache();
+      return null;
     });
   }
 
@@ -327,18 +305,15 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
 
-
-    int port = createServerRegion(vm0, SimpleClass.class);
+    int port = vm0.invoke(() -> createServerRegion(SimpleClass.class));
     createClientRegion(vm1, port, true);
     createClientRegion(vm2, port, true);
 
-    vm1.invoke(new SerializableCallable() {
-      public Object call() throws Exception {
-        Region r = getRootRegion("testSimplePdx");
-        r.put(1, new SimpleClass(57, (byte) 3));
-        r.put(2, new SimpleClass2(57, (byte) 3));
-        return null;
-      }
+    vm1.invoke(() -> {
+      Region r = getRootRegion("testSimplePdx");
+      r.put(1, new SimpleClass(57, (byte) 3));
+      r.put(2, new SimpleClass2(57, (byte) 3));
+      return null;
     });
     final SerializableCallable checkValue = new SerializableCallable() {
       public Object call() throws Exception {
@@ -362,17 +337,14 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
 
-
-    int port = createServerRegion(vm0, SimpleClass.class);
+    int port = vm0.invoke(() -> createServerRegion(SimpleClass.class));
     createClientRegion(vm1, port);
     createClientRegion(vm2, port);
 
-    vm1.invoke(new SerializableCallable() {
-      public Object call() throws Exception {
-        Region r = getRootRegion("testSimplePdx");
-        r.put(1, new SimpleClass(57, (byte) 3));
-        return null;
-      }
+    vm1.invoke(() -> {
+      Region r = getRootRegion("testSimplePdx");
+      r.put(1, new SimpleClass(57, (byte) 3));
+      return null;
     });
     final SerializableCallable checkValue = new SerializableCallable() {
       public Object call() throws Exception {
@@ -405,8 +377,6 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test to make sure that types are sent to all pools, even if they are in multiple distributed
    * systems.
-   * 
-   * @throws Exception
    */
   @Test
   public void testMultipleServerDSes() throws Exception {
@@ -415,7 +385,6 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
-
 
     final int port1 = createLonerServerRegion(vm0, "region1", "1");
     final int port2 = createLonerServerRegion(vm1, "region2", "2");
@@ -451,24 +420,20 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
 
     // Serialize an object and put it in both regions, sending
     // the event to each pool
-    vm2.invoke(new SerializableCallable() {
-      public Object call() throws Exception {
-        HeapDataOutputStream bytes = new HeapDataOutputStream(Version.CURRENT);
-        Region r1 = getRootRegion("region1");
-        r1.put(1, new SimpleClass(57, (byte) 3));
-        Region r2 = getRootRegion("region2");
-        r2.put(1, new SimpleClass(57, (byte) 3));
-        return null;
-      }
+    vm2.invoke(() -> {
+      HeapDataOutputStream bytes = new HeapDataOutputStream(Version.CURRENT);
+      Region r1 = getRootRegion("region1");
+      r1.put(1, new SimpleClass(57, (byte) 3));
+      Region r2 = getRootRegion("region2");
+      r2.put(1, new SimpleClass(57, (byte) 3));
+      return null;
     });
 
     // Make sure we get deserialize the value in a different client
-    vm3.invoke(new SerializableCallable() {
-      public Object call() throws Exception {
-        Region r = getRootRegion("region1");
-        assertEquals(new SimpleClass(57, (byte) 3), r.get(1));
-        return null;
-      }
+    vm3.invoke(() -> {
+      Region r = getRootRegion("region1");
+      assertEquals(new SimpleClass(57, (byte) 3), r.get(1));
+      return null;
     });
 
     // Make sure we can get the entry in the current member
@@ -483,20 +448,17 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
 
-
-    int port = createServerRegion(vm0, Object.class);
+    int port = vm0.invoke(() -> createServerRegion(Object.class));
     createClientRegion(vm1, port);
     createClientRegion(vm2, port);
 
-    vm1.invoke(new SerializableCallable() {
-      public Object call() throws Exception {
-        HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
-        DataSerializer.writeObject(new SimpleClass(57, (byte) 3), out);
-        byte[] bytes = out.toByteArray();
-        Region r = getRootRegion("testSimplePdx");
-        r.put(1, bytes);
-        return null;
-      }
+    vm1.invoke(() -> {
+      HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+      DataSerializer.writeObject(new SimpleClass(57, (byte) 3), out);
+      byte[] bytes = out.toByteArray();
+      Region r = getRootRegion("testSimplePdx");
+      r.put(1, bytes);
+      return null;
     });
 
     SerializableCallable checkValue = new SerializableCallable() {
@@ -524,8 +486,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
 
-
-    final int port = createServerRegion(vm0, SimpleClass.class);
+    final int port = vm0.invoke(() -> createServerRegion(SimpleClass.class));
     SerializableCallable createRegion = new SerializableCallable() {
       public Object call() throws Exception {
         Properties props = new Properties();
@@ -546,12 +507,10 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
     vm1.invoke(createRegion);
     vm2.invoke(createRegion);
 
-    vm1.invoke(new SerializableCallable() {
-      public Object call() throws Exception {
-        Region r = getRootRegion("testSimplePdx");
-        r.put(1, new SimpleClass(57, (byte) 3));
-        return null;
-      }
+    vm1.invoke(() -> {
+      Region r = getRootRegion("testSimplePdx");
+      r.put(1, new SimpleClass(57, (byte) 3));
+      return null;
     });
     final SerializableCallable checkValue = new SerializableCallable() {
       public Object call() throws Exception {
@@ -575,8 +534,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
     final VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
 
-
-    final int port = createServerRegion(vm0, SimpleClass.class);
+    final int port = vm0.invoke(() -> createServerRegion(SimpleClass.class));
     SerializableCallable createRegion = new SerializableCallable() {
       public Object call() throws Exception {
         Properties props = new Properties();
@@ -608,22 +566,19 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
 
+    final int port = vm0.invoke(() -> createServerRegion(SimpleClass.class));
 
-    int port = createServerRegion(vm0, SimpleClass.class);
-
-    vm0.invoke(new SerializableCallable("put value in region") {
-      public Object call() throws Exception {
-        Region r = basicGetCache().getRegion("testSimplePdx");
-        String className = "objects.PersonWithoutID";
-        try {
-          r.put("pdxObject", getTypedJSONPdxInstance(className));
-          fail("expected a ClassCastException");
-        } catch (ClassCastException e) {
-          assertTrue("wrong ClassCastException message: " + e.getMessage(),
-              e.getMessage().contains(className));
-        }
-        return null;
+    vm0.invoke("put value in region", () -> {
+      Region r = basicGetCache().getRegion("testSimplePdx");
+      String className = "objects.PersonWithoutID";
+      try {
+        r.put("pdxObject", getTypedJSONPdxInstance(className));
+        fail("expected a ClassCastException");
+      } catch (ClassCastException e) {
+        assertTrue("wrong ClassCastException message: " + e.getMessage(),
+            e.getMessage().contains(className));
       }
+      return null;
     });
   }
 
@@ -637,23 +592,17 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
     return pdxInstance;
   }
 
-  private int createServerRegion(VM vm, final Class constraintClass) {
-    SerializableCallable createRegion = new SerializableCallable() {
-      public Object call() throws Exception {
-        CacheFactory cf = new CacheFactory(getDistributedSystemProperties());
-        Cache cache = getCache(cf);
-        RegionFactory rf = cache.createRegionFactory(RegionShortcut.REPLICATE);
-        rf.setValueConstraint(constraintClass);
-        rf.create("testSimplePdx");
-        CacheServer server = cache.addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailableTCPPort();
-        server.setPort(port);
-        server.start();
-        return port;
-      }
-    };
-
-    return (Integer) vm.invoke(createRegion);
+  private int createServerRegion(final Class constraintClass) throws IOException {
+    CacheFactory cf = new CacheFactory(getDistributedSystemProperties());
+    Cache cache = getCache(cf);
+    RegionFactory rf = cache.createRegionFactory(RegionShortcut.REPLICATE);
+    rf.setValueConstraint(constraintClass);
+    rf.create("testSimplePdx");
+    CacheServer server = cache.addCacheServer();
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
+    server.setPort(port);
+    server.start();
+    return port;
   }
 
   private int createServerRegion(VM vm) {
@@ -767,12 +716,13 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void createClientRegion(final VM vm, final int port,
-      final boolean threadLocalConnections) {
+                                  final boolean threadLocalConnections) {
     createClientRegion(vm, port, threadLocalConnections, false);
   }
 
   private void createClientRegion(final VM vm, final int port, final boolean threadLocalConnections,
-      final boolean setPdxTypeClearProp, final String... autoSerializerPatterns) {
+                                  final boolean setPdxTypeClearProp,
+                                  final String... autoSerializerPatterns) {
     SerializableCallable createRegion = new SerializableCallable() {
       public Object call() throws Exception {
         if (setPdxTypeClearProp) {
