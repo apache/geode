@@ -195,7 +195,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
     });
     try {
       String[] patterns =
-          new String[]{"org.apache.geode.pdx.PdxClientServerDUnitTest.AutoPdxType.*"};
+          new String[] {"org.apache.geode.pdx.PdxClientServerDUnitTest.AutoPdxType.*"};
       int port = createServerRegion(vm0);
       createClientRegion(vm1, port, false, true, patterns);
 
@@ -716,13 +716,12 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void createClientRegion(final VM vm, final int port,
-                                  final boolean threadLocalConnections) {
+      final boolean threadLocalConnections) {
     createClientRegion(vm, port, threadLocalConnections, false);
   }
 
   private void createClientRegion(final VM vm, final int port, final boolean threadLocalConnections,
-                                  final boolean setPdxTypeClearProp,
-                                  final String... autoSerializerPatterns) {
+      final boolean setPdxTypeClearProp, final String... autoSerializerPatterns) {
     SerializableCallable createRegion = new SerializableCallable() {
       public Object call() throws Exception {
         if (setPdxTypeClearProp) {
