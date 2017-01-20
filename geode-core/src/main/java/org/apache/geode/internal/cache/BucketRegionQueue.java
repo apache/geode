@@ -30,6 +30,8 @@ import java.util.TreeSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.Logger;
@@ -77,6 +79,10 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
   // LinkedBlockingQueue<EventID>();
 
   private long lastKeyRecovered;
+
+  private AtomicLong latestQueuedKey = new AtomicLong();
+
+  private AtomicLong latestAcknowledgedKey = new AtomicLong();
 
   /**
    * @param regionName
@@ -437,6 +443,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     if (didPut) {
       if (this.initialized) {
         this.eventSeqNumQueue.add(key);
+        updateLargestQueuedKey((Long) key);
       }
       if (logger.isDebugEnabled()) {
         logger.debug("Put successfully in the queue : {} was initialized: {}",
@@ -446,6 +453,41 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     if (this.getBucketAdvisor().isPrimary()) {
       incQueueSize(1);
     }
+  }
+
+  private void updateLargestQueuedKey(Long key) {
+    Atomics.setIfGreater(this.latestQueuedKey, key);
+  }
+
+  private void setLatestAcknowledgedKey(Long key) {
+    this.latestAcknowledgedKey.set(key);
+  }
+
+  public boolean waitUntilFlushed(long timeout, TimeUnit unit) throws InterruptedException {
+    if (logger.isDebugEnabled()) {
+      logger.debug("BucketRegionQueue: waitUntilFlushed bucket=" + getId() + "; time="
+          + System.currentTimeMillis() + "; timeout=" + timeout + "; unit=" + unit);
+    }
+    boolean result = false;
+    // Wait until latestAcknowledgedKey > latestQueuedKey or the queue is empty
+    if (this.initialized) {
+      long latestQueuedKeyToCheck = this.latestQueuedKey.get();
+      long nanosRemaining = unit.toNanos(timeout);
+      long endTime = System.nanoTime() + nanosRemaining;
+      while (nanosRemaining > 0) {
+        if (latestAcknowledgedKey.get() > latestQueuedKeyToCheck || isEmpty()) {
+          result = true;
+          break;
+        }
+        Thread.sleep(Math.min(TimeUnit.NANOSECONDS.toMillis(nanosRemaining) + 1, 100));
+        nanosRemaining = endTime - System.nanoTime();
+      }
+    }
+    if (logger.isDebugEnabled()) {
+      logger.debug("BucketRegionQueue: waitUntilFlushed completed bucket=" + getId() + "; time="
+          + System.currentTimeMillis() + "; result=" + result);
+    }
+    return result;
   }
 
   /**
@@ -503,6 +545,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
       event.setEventId(new EventID(cache.getSystem()));
       event.setRegion(this);
       basicDestroy(event, true, null);
+      setLatestAcknowledgedKey((Long) key);
       checkReadiness();
     } catch (EntryNotFoundException enf) {
       if (getPartitionedRegion().isDestroyed()) {

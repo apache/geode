@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
+import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,6 +22,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 import static org.mockito.Mockito.*;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.geode.cache.Cache;
@@ -49,13 +51,13 @@ public class LuceneIndexImplJUnitTest {
   @Test
   public void waitUnitFlushedWithMissingAEQThrowsIllegalArgument() throws Exception {
     thrown.expect(IllegalArgumentException.class);
-    index.waitUntilFlushed(MAX_WAIT);
+    index.waitUntilFlushed(MAX_WAIT, TimeUnit.MILLISECONDS);
   }
 
   @Test
   public void waitUnitFlushedWaitsForFlush() throws Exception {
     final String expectedIndexName = LuceneServiceImpl.getUniqueIndexName(INDEX, REGION);
-    final AsyncEventQueue queue = mock(AsyncEventQueue.class);
+    final AsyncEventQueueImpl queue = mock(AsyncEventQueueImpl.class);
     when(cache.getAsyncEventQueue(eq(expectedIndexName))).thenReturn(queue);
 
     AtomicInteger callCount = new AtomicInteger();
@@ -69,7 +71,7 @@ public class LuceneIndexImplJUnitTest {
         return 0;
       }
     });
-    index.waitUntilFlushed(MAX_WAIT);
+    index.waitUntilFlushed(MAX_WAIT, TimeUnit.MILLISECONDS);
     verify(cache).getAsyncEventQueue(eq(expectedIndexName));
   }
 

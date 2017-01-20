@@ -18,6 +18,7 @@ import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
@@ -55,7 +56,7 @@ public class DumpDirectoryFilesIntegrationTest extends LuceneIntegrationTest {
     InternalLuceneIndex index =
         (InternalLuceneIndex) luceneService.getIndex(INDEX_NAME, REGION_NAME);
 
-    index.waitUntilFlushed(60000);
+    index.waitUntilFlushed(60000, TimeUnit.MILLISECONDS);
 
     index.dumpFiles(diskDirRule.get().getAbsolutePath());
 

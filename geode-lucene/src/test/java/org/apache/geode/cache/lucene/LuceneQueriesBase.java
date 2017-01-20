@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.geode.cache.Cache;
@@ -115,7 +116,7 @@ public abstract class LuceneQueriesBase extends LuceneDUnitTest {
       LuceneService service = LuceneServiceProvider.get(cache);
       LuceneIndexImpl index = (LuceneIndexImpl) service.getIndex(INDEX_NAME, REGION_NAME);
 
-      return index.waitUntilFlushed(ms);
+      return index.waitUntilFlushed(ms, TimeUnit.MILLISECONDS);
     });
   }
 

@@ -2134,3 +2134,7 @@ org/apache/geode/redis/internal/DoubleWrapper,2
 fromData,9,2a2bb80004b50002b1
 toData,9,2ab400022bb80003b1
 
+org/apache/geode/internal/cache/wan/parallel/WaitUntilParallelGatewaySenderFlushedCoordinator$WaitUntilGatewaySenderFlushedMessage,2
+fromData,47,2a2bb700322a2bb900330100b500032a2bb80034b500042a2bb900350100b500052a12362bb80037c00036b50006b1
+toData,42,2a2bb7002d2b2ab40003b9002e02002ab400042bb8002f2b2ab40005b9003003002ab400062bb80031b1
+

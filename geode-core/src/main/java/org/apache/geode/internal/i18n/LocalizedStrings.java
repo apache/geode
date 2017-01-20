@@ -7665,6 +7665,15 @@ public class LocalizedStrings {
       new StringId(6647,
           "Cannot create GatewaySender {0} because the maximum ({1}) has been reached");
 
+  public static final StringId AbstractGatewaySender_WAIT_UNTIL_FLUSHED_NOT_SUPPORTED_FOR_SERIAL_SENDERS =
+      new StringId(6648, "waitUntilFlushed is not currently supported for serial gateway senders");
+  public static final StringId AbstractGatewaySender_CAUGHT_EXCEPTION_ATTEMPTING_WAIT_UNTIL_FLUSHED_RETRYING =
+      new StringId(6649,
+          "Caught the following exception attempting waitUntilFlushed and will retry:");
+  public static final StringId AbstractGatewaySender_CAUGHT_EXCEPTION_ATTEMPTING_WAIT_UNTIL_FLUSHED_RETURNING =
+      new StringId(6650,
+          "Caught the following exception attempting waitUntilFlushed and will return:");
+
   /** Testing strings, messageId 90000-99999 **/
 
   /**

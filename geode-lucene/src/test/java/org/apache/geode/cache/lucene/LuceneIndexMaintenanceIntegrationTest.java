@@ -52,7 +52,7 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
     region.put("object-4", new TestObject("hello world", "hello world"));
 
     LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
-    index.waitUntilFlushed(WAIT_FOR_FLUSH_TIME);
+    index.waitUntilFlushed(WAIT_FOR_FLUSH_TIME, TimeUnit.MILLISECONDS);
     LuceneQuery query = luceneService.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME,
         "description:\"hello world\"", DEFAULT_FIELD);
     PageableLuceneQueryResults<Integer, TestObject> results = query.findPages();
@@ -61,7 +61,7 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
     // begin transaction
     cache.getCacheTransactionManager().begin();
     region.put("object-1", new TestObject("title 1", "updated"));
-    index.waitUntilFlushed(WAIT_FOR_FLUSH_TIME);
+    index.waitUntilFlushed(WAIT_FOR_FLUSH_TIME, TimeUnit.MILLISECONDS);
     assertEquals(3, query.findPages().size());
   }
 
@@ -76,7 +76,7 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
     region.put("object-4", new TestObject("hello world", "hello world"));
 
     LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
-    index.waitUntilFlushed(WAIT_FOR_FLUSH_TIME);
+    index.waitUntilFlushed(WAIT_FOR_FLUSH_TIME, TimeUnit.MILLISECONDS);
     LuceneQuery query = luceneService.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME,
         "description:\"hello world\"", DEFAULT_FIELD);
     PageableLuceneQueryResults<Integer, TestObject> results = query.findPages();
@@ -85,7 +85,7 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
     cache.getCacheTransactionManager().begin();
     region.put("object-1", new TestObject("title 1", "updated"));
     cache.getCacheTransactionManager().commit();
-    index.waitUntilFlushed(WAIT_FOR_FLUSH_TIME);
+    index.waitUntilFlushed(WAIT_FOR_FLUSH_TIME, TimeUnit.MILLISECONDS);
 
     assertEquals(2, query.findPages().size());
   }
@@ -101,7 +101,7 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
     region.put("object-4", new TestObject("hello world", "hello world"));
 
     LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
-    index.waitUntilFlushed(WAIT_FOR_FLUSH_TIME);
+    index.waitUntilFlushed(WAIT_FOR_FLUSH_TIME, TimeUnit.MILLISECONDS);
     LuceneQuery query = luceneService.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME,
         "description:\"hello world\"", DEFAULT_FIELD);
     PageableLuceneQueryResults<Integer, TestObject> results = query.findPages();
@@ -110,7 +110,7 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
     cache.getCacheTransactionManager().begin();
     region.put("object-1", new TestObject("title 1", "updated"));
     cache.getCacheTransactionManager().rollback();
-    index.waitUntilFlushed(WAIT_FOR_FLUSH_TIME);
+    index.waitUntilFlushed(WAIT_FOR_FLUSH_TIME, TimeUnit.MILLISECONDS);
 
     assertEquals(3, query.findPages().size());
   }
@@ -127,7 +127,7 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
 
     LuceneIndexForPartitionedRegion index =
         (LuceneIndexForPartitionedRegion) luceneService.getIndex(INDEX_NAME, REGION_NAME);
-    index.waitUntilFlushed(WAIT_FOR_FLUSH_TIME);
+    index.waitUntilFlushed(WAIT_FOR_FLUSH_TIME, TimeUnit.MILLISECONDS);
 
     FileSystemStats fileSystemStats = index.getFileSystemStats();
     LuceneIndexStats indexStats = index.getIndexStats();
@@ -154,7 +154,7 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
 
     LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
     // Wait for events to be flushed from AEQ.
-    index.waitUntilFlushed(WAIT_FOR_FLUSH_TIME);
+    index.waitUntilFlushed(WAIT_FOR_FLUSH_TIME, TimeUnit.MILLISECONDS);
     // Execute query to fetch all the values for "description" field.
     LuceneQuery query = luceneService.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME,
         "description:\"hello world\"", DEFAULT_FIELD);
@@ -173,7 +173,7 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
     region.put(113, new TestObject("hello world", "hello world"));
     LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
     // Wait for events to be flushed from AEQ.
-    index.waitUntilFlushed(WAIT_FOR_FLUSH_TIME);
+    index.waitUntilFlushed(WAIT_FOR_FLUSH_TIME, TimeUnit.MILLISECONDS);
     // Execute query to fetch all the values for "description" field.
     LuceneQuery query = luceneService.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME,
         "description:\"hello world\"", DEFAULT_FIELD);
@@ -182,7 +182,7 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
   }
 
   @Test
-  public void entriesFlushedToIndexAfterWaitForFlushCalled() {
+  public void entriesFlushedToIndexAfterWaitForFlushCalled() throws InterruptedException {
     luceneService.createIndex(INDEX_NAME, REGION_NAME, "title", "description");
 
     Region region = createRegion(REGION_NAME, RegionShortcut.PARTITION);
@@ -194,9 +194,9 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
     region.put("object-4", new TestObject("hello world", "hello world"));
 
     LuceneIndexImpl index = (LuceneIndexImpl) luceneService.getIndex(INDEX_NAME, REGION_NAME);
-    assertFalse(index.waitUntilFlushed(500));
+    assertFalse(index.waitUntilFlushed(500, TimeUnit.MILLISECONDS));
     LuceneTestUtilities.resumeSender(cache);
-    assertTrue(index.waitUntilFlushed(WAIT_FOR_FLUSH_TIME));
+    assertTrue(index.waitUntilFlushed(WAIT_FOR_FLUSH_TIME, TimeUnit.MILLISECONDS));
     assertEquals(4, index.getIndexStats().getCommits());
   }
 

@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import org.apache.geode.cache.Cache;
@@ -86,10 +87,11 @@ public class LuceneTestUtilities {
     LuceneServiceProvider.get(cache).createIndex(INDEX_NAME, REGION_NAME, fieldNames);
   }
 
-  public static void verifyIndexFinishFlushing(Cache cache, String indexName, String regionName) {
+  public static void verifyIndexFinishFlushing(Cache cache, String indexName, String regionName)
+      throws InterruptedException {
     LuceneService luceneService = LuceneServiceProvider.get(cache);
     LuceneIndex index = luceneService.getIndex(indexName, regionName);
-    boolean flushed = index.waitUntilFlushed(60000);
+    boolean flushed = index.waitUntilFlushed(60000, TimeUnit.MILLISECONDS);
     assertTrue(flushed);
   }
 

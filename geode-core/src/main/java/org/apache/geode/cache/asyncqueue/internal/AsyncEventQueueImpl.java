@@ -17,6 +17,7 @@ package org.apache.geode.cache.asyncqueue.internal;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
@@ -201,5 +202,9 @@ public class AsyncEventQueueImpl implements AsyncEventQueue {
 
   public boolean isForwardExpirationDestroy() {
     return ((AbstractGatewaySender) this.sender).isForwardExpirationDestroy();
+  }
+
+  public boolean waitUntilFlushed(long timeout, TimeUnit unit) throws InterruptedException {
+    return ((AbstractGatewaySender) this.sender).waitUntilFlushed(timeout, unit);
   }
 }

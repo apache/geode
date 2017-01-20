@@ -22,9 +22,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
+import org.apache.geode.internal.cache.wan.parallel.WaitUntilParallelGatewaySenderFlushedCoordinator;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
@@ -33,15 +37,12 @@ import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
-import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
-import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueStats;
 import org.apache.geode.cache.client.internal.LocatorDiscoveryCallback;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.wan.GatewayEventFilter;
@@ -675,7 +676,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     }
   }
 
-  final public RegionQueue getQueue() {
+  public RegionQueue getQueue() {
     if (this.eventProcessor != null) {
       if (!(this.eventProcessor instanceof ConcurrentSerialGatewaySenderEventProcessor)) {
         return this.eventProcessor.getQueue();
@@ -1089,7 +1090,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     return substituteValue;
   }
 
-  private void initializeEventIdIndex() {
+  protected void initializeEventIdIndex() {
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
     boolean gotLock = false;
@@ -1238,6 +1239,42 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
 
   public ReentrantReadWriteLock getLifeCycleLock() {
     return lifeCycleLock;
+  }
+
+  public boolean waitUntilFlushed(long timeout, TimeUnit unit) throws InterruptedException {
+    int attempts = 0;
+    boolean result = false;
+    if (isParallel()) {
+      // Wait until the sender is flushed. Retry if necessary.
+      while (true) {
+        try {
+          WaitUntilParallelGatewaySenderFlushedCoordinator coordinator =
+              new WaitUntilParallelGatewaySenderFlushedCoordinator(this, timeout, unit, true);
+          result = coordinator.waitUntilFlushed();
+          break;
+        } catch (BucketMovedException | CancelException | RegionDestroyedException e) {
+          attempts++;
+          logger.warn(
+              LocalizedStrings.AbstractGatewaySender_CAUGHT_EXCEPTION_ATTEMPTING_WAIT_UNTIL_FLUSHED_RETRYING
+                  .toLocalizedString(),
+              e);
+          Thread.sleep(100);
+        } catch (Throwable t) {
+          attempts++;
+          logger.warn(
+              LocalizedStrings.AbstractGatewaySender_CAUGHT_EXCEPTION_ATTEMPTING_WAIT_UNTIL_FLUSHED_RETURNING
+                  .toLocalizedString(),
+              t);
+          throw new InternalGemFireError(t);
+        }
+      }
+      return result;
+    } else {
+      // Serial senders are currently not supported
+      throw new UnsupportedOperationException(
+          LocalizedStrings.AbstractGatewaySender_WAIT_UNTIL_FLUSHED_NOT_SUPPORTED_FOR_SERIAL_SENDERS
+              .toLocalizedString());
+    }
   }
 
   /**

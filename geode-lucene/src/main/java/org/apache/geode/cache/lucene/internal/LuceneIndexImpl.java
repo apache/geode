@@ -30,9 +30,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
-import org.apache.geode.cache.lucene.internal.filesystem.ChunkKey;
-import org.apache.geode.cache.lucene.internal.filesystem.File;
-import org.apache.geode.cache.lucene.internal.filesystem.FileSystemStats;
+import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
 import org.apache.geode.cache.lucene.internal.xml.LuceneIndexCreation;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -92,29 +90,15 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   }
 
   @Override
-  public boolean waitUntilFlushed(int maxWaitInMillisecond) {
+  public boolean waitUntilFlushed(long timeout, TimeUnit unit) throws InterruptedException {
     String aeqId = LuceneServiceImpl.getUniqueIndexName(indexName, regionPath);
-    AsyncEventQueue queue = (AsyncEventQueue) cache.getAsyncEventQueue(aeqId);
-    boolean flushed = false;
+    AsyncEventQueueImpl queue = (AsyncEventQueueImpl) cache.getAsyncEventQueue(aeqId);
     if (queue != null) {
-      long start = System.nanoTime();
-      while (System.nanoTime() - start < TimeUnit.MILLISECONDS.toNanos(maxWaitInMillisecond)) {
-        if (0 == queue.size()) {
-          flushed = true;
-          break;
-        } else {
-          try {
-            Thread.sleep(200);
-          } catch (InterruptedException e) {
-          }
-        }
-      }
+      return queue.waitUntilFlushed(timeout, unit);
     } else {
       throw new IllegalArgumentException(
           "The AEQ does not exist for the index " + indexName + " region " + regionPath);
     }
-
-    return flushed;
   }
 
   @Override

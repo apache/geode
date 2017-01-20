@@ -35,6 +35,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertNotNull;
@@ -73,7 +74,8 @@ public class LuceneIndexRecoveryHAIntegrationTest {
    * construct index. This test simulates the same.
    */
   // @Test
-  public void recoverRepoInANewNode() throws BucketNotFoundException, IOException {
+  public void recoverRepoInANewNode()
+      throws BucketNotFoundException, IOException, InterruptedException {
     LuceneServiceImpl service = (LuceneServiceImpl) LuceneServiceProvider.get(cache);
     service.createIndex("index1", "/userRegion", indexedFields);
     PartitionAttributes<String, String> attrs =
@@ -87,7 +89,7 @@ public class LuceneIndexRecoveryHAIntegrationTest {
         (LuceneIndexForPartitionedRegion) service.getIndex("index1", "/userRegion");
     // put an entry to create the bucket
     userRegion.put("rebalance", "test");
-    index.waitUntilFlushed(30000);
+    index.waitUntilFlushed(30000, TimeUnit.MILLISECONDS);
 
     RepositoryManager manager = new PartitionedRepositoryManager((LuceneIndexImpl) index, mapper);
     IndexRepository repo = manager.getRepository(userRegion, 0, null);
@@ -112,9 +114,10 @@ public class LuceneIndexRecoveryHAIntegrationTest {
 
 
 
-  private void verifyIndexFinishFlushing(String indexName, String regionName) {
+  private void verifyIndexFinishFlushing(String indexName, String regionName)
+      throws InterruptedException {
     LuceneIndex index = LuceneServiceProvider.get(cache).getIndex(indexName, regionName);
-    boolean flushed = index.waitUntilFlushed(60000);
+    boolean flushed = index.waitUntilFlushed(60000, TimeUnit.MILLISECONDS);
     assertTrue(flushed);
   }
 }

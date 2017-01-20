@@ -16,6 +16,7 @@
 package org.apache.geode.cache.lucene.internal.xml;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
@@ -101,7 +102,7 @@ public class LuceneIndexCreation implements LuceneIndex, Extension<Region<?, ?>>
   }
 
   @Override
-  public boolean waitUntilFlushed(int maxWaitInMillisecond) {
+  public boolean waitUntilFlushed(long timeout, TimeUnit unit) {
     return true;
   }
 }
