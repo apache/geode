@@ -1528,85 +1528,89 @@ public class AcceptorImpl extends Acceptor implements Runnable {
 
   @Override
   public void close() {
-    synchronized (syncLock) {
-      if (!isRunning()) {
-        return;
-      }
-      this.shutdown = true;
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.AcceptorImpl_CACHE_SERVER_ON_PORT_0_IS_SHUTTING_DOWN, this.localPort));
-      if (this.thread != null) {
-        this.thread.interrupt();
-      }
-      try {
-        this.serverSock.close();
-      } catch (IOException ignore) {
-        // Well, we tried. Continue shutting down.
-      }
-      crHelper.setShutdown(true); // set this before shutting down the pool
-      if (isSelector()) {
-        this.hsTimer.cancel();
-        if (this.tmpSel != null) {
-          try {
-            this.tmpSel.close();
-          } catch (IOException ignore) {
-          }
+    try {
+      synchronized (syncLock) {
+        if (!isRunning()) {
+          return;
+        }
+        this.shutdown = true;
+        logger.info(LocalizedMessage.create(
+            LocalizedStrings.AcceptorImpl_CACHE_SERVER_ON_PORT_0_IS_SHUTTING_DOWN, this.localPort));
+        if (this.thread != null) {
+          this.thread.interrupt();
         }
         try {
-          wakeupSelector();
-          this.selector.close();
+          this.serverSock.close();
         } catch (IOException ignore) {
+          // Well, we tried. Continue shutting down.
         }
-        if (this.selectorThread != null) {
-          this.selectorThread.interrupt();
+        crHelper.setShutdown(true); // set this before shutting down the pool
+        if (isSelector()) {
+          this.hsTimer.cancel();
+          if (this.tmpSel != null) {
+            try {
+              this.tmpSel.close();
+            } catch (IOException ignore) {
+            }
+          }
+          try {
+            wakeupSelector();
+            this.selector.close();
+          } catch (IOException ignore) {
+          }
+          if (this.selectorThread != null) {
+            this.selectorThread.interrupt();
+          }
+          this.commBufferQueue.clear();
         }
-        this.commBufferQueue.clear();
-      }
-      ClientHealthMonitor.shutdownInstance();
-      shutdownSCs();
-      this.clientNotifier.shutdown(this.acceptorId);
-      this.pool.shutdown();
+        ClientHealthMonitor.shutdownInstance();
+        shutdownSCs();
+        this.clientNotifier.shutdown(this.acceptorId);
+        this.pool.shutdown();
 
-      try {
-        if (!this.pool.awaitTermination(PoolImpl.SHUTDOWN_TIMEOUT, TimeUnit.MILLISECONDS)) {
-          logger.warn(LocalizedMessage
-              .create(LocalizedStrings.PoolImpl_TIMEOUT_WAITING_FOR_BACKGROUND_TASKS_TO_COMPLETE));
+        try {
+          if (!this.pool.awaitTermination(PoolImpl.SHUTDOWN_TIMEOUT, TimeUnit.MILLISECONDS)) {
+            logger.warn(LocalizedMessage.create(
+                LocalizedStrings.PoolImpl_TIMEOUT_WAITING_FOR_BACKGROUND_TASKS_TO_COMPLETE));
+            this.pool.shutdownNow();
+          }
+        } catch (InterruptedException ignore) {
           this.pool.shutdownNow();
         }
-      } catch (InterruptedException ignore) {
-        this.pool.shutdownNow();
-      }
-      this.hsPool.shutdownNow();
-      this.stats.close();
-      GemFireCacheImpl myCache = (GemFireCacheImpl) cache;
-      if (!myCache.forcedDisconnect()) {
-        Set<PartitionedRegion> prs = myCache.getPartitionedRegions();
-        for (PartitionedRegion pr : prs) {
-          Map<Integer, BucketAdvisor.BucketProfile> profiles =
-              new HashMap<Integer, BucketAdvisor.BucketProfile>();
-          // get all local real bucket advisors
-          Map<Integer, BucketAdvisor> advisors = pr.getRegionAdvisor().getAllBucketAdvisors();
-          for (Map.Entry<Integer, BucketAdvisor> entry : advisors.entrySet()) {
-            BucketAdvisor advisor = entry.getValue();
-            BucketProfile bp = (BucketProfile) advisor.createProfile();
-            advisor.updateServerBucketProfile(bp);
-            profiles.put(entry.getKey(), bp);
-          }
-          Set receipients = new HashSet();
-          receipients = pr.getRegionAdvisor().adviseAllPRNodes();
-          // send it to all in one messgae
-          ReplyProcessor21 reply = AllBucketProfilesUpdateMessage.send(receipients,
-              pr.getDistributionManager(), pr.getPRId(), profiles, true);
-          if (reply != null) {
-            reply.waitForRepliesUninterruptibly();
-          }
+        this.hsPool.shutdownNow();
+        this.stats.close();
+        GemFireCacheImpl myCache = (GemFireCacheImpl) cache;
+        if (!myCache.forcedDisconnect()) {
+          Set<PartitionedRegion> prs = myCache.getPartitionedRegions();
+          for (PartitionedRegion pr : prs) {
+            Map<Integer, BucketAdvisor.BucketProfile> profiles =
+                new HashMap<Integer, BucketAdvisor.BucketProfile>();
+            // get all local real bucket advisors
+            Map<Integer, BucketAdvisor> advisors = pr.getRegionAdvisor().getAllBucketAdvisors();
+            for (Map.Entry<Integer, BucketAdvisor> entry : advisors.entrySet()) {
+              BucketAdvisor advisor = entry.getValue();
+              BucketProfile bp = (BucketProfile) advisor.createProfile();
+              advisor.updateServerBucketProfile(bp);
+              profiles.put(entry.getKey(), bp);
+            }
+            Set receipients = new HashSet();
+            receipients = pr.getRegionAdvisor().adviseAllPRNodes();
+            // send it to all in one messgae
+            ReplyProcessor21 reply = AllBucketProfilesUpdateMessage.send(receipients,
+                pr.getDistributionManager(), pr.getPRId(), profiles, true);
+            if (reply != null) {
+              reply.waitForRepliesUninterruptibly();
+            }
 
-          if (logger.isDebugEnabled()) {
-            logger.debug("sending messages to all peers for removing this server..");
+            if (logger.isDebugEnabled()) {
+              logger.debug("sending messages to all peers for removing this server..");
+            }
           }
         }
-      }
-    } // synchronized
+      } // synchronized
+    } catch (RuntimeException e) {/* ignore and log */
+      logger.warn(LocalizedMessage.create(LocalizedStrings.AcceptorImpl_UNEXPECTED), e);
+    }
   }
 
   private void shutdownSCs() {
