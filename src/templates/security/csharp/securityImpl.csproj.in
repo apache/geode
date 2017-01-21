@@ -7,8 +7,8 @@
     <ProjectGuid>{D9F8A614-D117-491F-9E3A-B5F432E435AE}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GemStone.GemFire.Templates.Cache.Security</RootNamespace>
-    <AssemblyName>GemStone.GemFire.Templates.Cache.Security</AssemblyName>
+    <RootNamespace>Apache.Geode.Templates.Cache.Security</RootNamespace>
+    <AssemblyName>Apache.Geode.Templates.Cache.Security</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -31,8 +31,8 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Gemstone.Gemfire.Cache">
-      <HintPath>${GFCPP}\bin\Gemstone.Gemfire.Cache.dll</HintPath>
+    <Reference Include="Apache.Gedoe.Client">
+      <HintPath>${GFCPP}\bin\Apache.Geode.Client.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

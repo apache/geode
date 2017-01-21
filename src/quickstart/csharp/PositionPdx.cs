@@ -16,7 +16,7 @@
  */
 
 using System;
-using Apache.Geode.Client.Generic;
+using Apache.Geode.Client;
 
 namespace PdxTests
 {

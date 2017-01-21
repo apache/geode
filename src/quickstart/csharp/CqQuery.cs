@@ -33,12 +33,12 @@
 using System;
 
 // Use the GemFire namespace
-using Apache.Geode.Client.Generic;
+using Apache.Geode.Client;
 
 // Use the "Tests" namespace for the query objects.
 using Apache.Geode.Client.Tests;
 
-namespace Apache.Geode.Client.Generic.QuickStart
+namespace Apache.Geode.Client.QuickStart
 {
   // The CqQuery QuickStart example.
 

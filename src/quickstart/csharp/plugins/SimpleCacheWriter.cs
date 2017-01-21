@@ -16,9 +16,9 @@
  */
 
 using System;
-using Apache.Geode.Client.Generic;
+using Apache.Geode.Client;
 
-namespace Apache.Geode.Client.Generic.QuickStart
+namespace Apache.Geode.Client.QuickStart
 {
   /// <summary>
   /// Capture and display cache events.

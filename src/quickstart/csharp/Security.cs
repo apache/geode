@@ -34,9 +34,9 @@
 using System;
 
 // Use the GemFire namespace
-using Apache.Geode.Client.Generic;
+using Apache.Geode.Client;
 
-namespace Apache.Geode.Client.Generic.QuickStart
+namespace Apache.Geode.Client.QuickStart
 {
   // The Security QuickStart example.
   class SecurityExample
@@ -45,8 +45,8 @@ namespace Apache.Geode.Client.Generic.QuickStart
     {
       // Create client's Authentication Intializer and Credentials using api ( Same can be set to gfcpp.properties & comment following code ).
       Properties<string, string> properties = Properties<string, string>.Create<string, string>();
-      properties.Insert("security-client-auth-factory", "GemStone.GemFire.Templates.Cache.Security.UserPasswordAuthInit.Create");
-      properties.Insert("security-client-auth-library", "GemStone.GemFire.Templates.Cache.Security");
+      properties.Insert("security-client-auth-factory", "Apache.Geode.Templates.Cache.Security.UserPasswordAuthInit.Create");
+      properties.Insert("security-client-auth-library", "Apache.Geode.Templates.Cache.Security");
       properties.Insert("cache-xml-file", "XMLs/clientSecurity.xml");
       properties.Insert("security-username", "writer1");
       properties.Insert("security-password", "writer1");
@@ -88,8 +88,8 @@ namespace Apache.Geode.Client.Generic.QuickStart
     {
       // Create client's Authentication Intializer and Credentials using api ( Same can be set to gfcpp.properties & comment following code ).
       Properties<string, string> properties = Properties<string, string>.Create<string, string>();
-      properties.Insert("security-client-auth-factory", "GemStone.GemFire.Templates.Cache.Security.UserPasswordAuthInit.Create");
-      properties.Insert("security-client-auth-library", "GemStone.GemFire.Templates.Cache.Security");
+      properties.Insert("security-client-auth-factory", "Apache.Geode.Templates.Cache.Security.UserPasswordAuthInit.Create");
+      properties.Insert("security-client-auth-library", "Apache.Geode.Templates.Cache.Security");
       properties.Insert("cache-xml-file", "XMLs/clientSecurity.xml");
       properties.Insert("security-username", "reader1");
       properties.Insert("security-password", "reader1");
@@ -131,8 +131,8 @@ namespace Apache.Geode.Client.Generic.QuickStart
     {
       // Create client's Authentication Intializer and Credentials using api ( Same can be set to gfcpp.properties & comment following code ).
       Properties<string, string> properties = Properties<string, string>.Create<string, string>();
-      properties.Insert("security-client-auth-factory", "GemStone.GemFire.Templates.Cache.Security.UserPasswordAuthInit.Create");
-      properties.Insert("security-client-auth-library", "GemStone.GemFire.Templates.Cache.Security");
+      properties.Insert("security-client-auth-factory", "Apache.Geode.Templates.Cache.Security.UserPasswordAuthInit.Create");
+      properties.Insert("security-client-auth-library", "Apache.Geode.Templates.Cache.Security");
       properties.Insert("cache-xml-file", "XMLs/clientSecurity.xml");
       properties.Insert("security-username", "root");
       properties.Insert("security-password", "root");
