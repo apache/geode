@@ -17,11 +17,11 @@
 
 using NUnit.Framework;
 using Apache.Geode.DUnitFramework;
-using Apache.Geode.Client.Tests.NewAPI;
+using Apache.Geode.Client.Tests;
 using Apache.Geode.Client;
 using System;
 
-namespace Apache.Geode.Client.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests
 {
 
   [TestFixture]

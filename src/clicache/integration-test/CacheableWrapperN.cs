@@ -20,7 +20,7 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Runtime.Serialization;
 
-namespace Apache.Geode.Client.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests
 {
   
   using NUnit.Framework;

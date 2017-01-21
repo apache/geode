@@ -24,10 +24,10 @@ using System;
 using System.Threading;
 
 // Use the GemFire namespace
-using GemStone.GemFire.Cache;
+using Apache.Geode.Client;
 using System.Collections.Generic;
 
-namespace GemStone.GemFire.Cache.Examples
+namespace Apache.Geode.Client.Examples
 {
   // The Function Execution example.
   //customer result collector

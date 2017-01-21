@@ -17,7 +17,7 @@
 
 using System;
 
-namespace GemStone.GemFire.Cache.Examples
+namespace Apache.Geode.Client.Examples
 {
   /// <summary>
   /// Capture and display cache events.

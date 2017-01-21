@@ -18,7 +18,7 @@
 using System;
 using Apache.Geode.Client;
 
-namespace Apache.Geode.Client.Tests.NewAPI
+namespace Apache.Geode.Client.Tests
 {
   public class PositionPdx
     : IPdxSerializable

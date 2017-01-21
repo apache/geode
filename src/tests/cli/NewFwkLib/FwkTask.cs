@@ -328,7 +328,7 @@ namespace Apache.Geode.Client.FwkLib
                 }
                 else
                 {
-                  typName = "Apache.Geode.Client.Tests.NewAPI." + typName;
+                  typName = "Apache.Geode.Client.Tests." + typName;
                   types[index] = loadAssmb.GetType(typName.Trim(), true, true);
                   //Util.Log("rjk: FwkTask: typeAttrib for userobject 34 argname {0}", typName);
                 }

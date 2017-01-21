@@ -26,12 +26,12 @@
 using System;
 
 // Use the GemFire namespace
-using GemStone.GemFire.Cache;
+using Apache.Geode.Client;
 
 // Use the "Tests" namespace for the query objects.
-using GemStone.GemFire.Cache.Tests;
+using Apache.Geode.Client.Tests;
 
-namespace GemStone.GemFire.Cache.Examples
+namespace Apache.Geode.Client.Examples
 {
   // The CqQuery example.
 

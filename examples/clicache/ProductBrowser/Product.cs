@@ -18,7 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using GemStone.GemFire.Cache;
+using Apache.Geode.Client;
 
 namespace ProductBrowser
 {

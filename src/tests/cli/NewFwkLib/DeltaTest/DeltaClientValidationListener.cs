@@ -22,7 +22,7 @@ using System.Collections.Generic;
 namespace Apache.Geode.Client.FwkLib
 {
   using Apache.Geode.DUnitFramework;
-  using Apache.Geode.Client.Tests.NewAPI;
+  using Apache.Geode.Client.Tests;
   using Apache.Geode.Client;
   public class DeltaClientValidationListener<TKey, TVal> : CacheListenerAdapter<TKey, TVal>
   {

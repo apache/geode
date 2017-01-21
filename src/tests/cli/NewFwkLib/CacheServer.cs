@@ -26,7 +26,7 @@ using PdxTests;
 namespace Apache.Geode.Client.FwkLib
 {
   using Apache.Geode.DUnitFramework;
-  using Apache.Geode.Client.Tests.NewAPI;
+  using Apache.Geode.Client.Tests;
   using Apache.Geode.Client;
   using QueryCategory = Apache.Geode.Client.Tests.QueryCategory;
   using QueryStrings = Apache.Geode.Client.Tests.QueryStrings;
@@ -1137,8 +1137,8 @@ namespace Apache.Geode.Client.FwkLib
         remoteQuery(currentQuery, isLargeSetQuery, isUnsupportedPRQuery, i,false,false);
         i = Util.Rand(QueryStrings.SSsize);
         int[] a = new int[] { 4, 6, 7, 9, 12, 14, 15, 16 };
-        if ((typeof(TVal).Equals(typeof(Apache.Geode.Client.Tests.NewAPI.PortfolioPdx)) ||
-          (typeof(TVal).Equals(typeof(Apache.Geode.Client.Tests.NewAPI.PositionPdx)))) && ((IList<int>)a).Contains(i))
+        if ((typeof(TVal).Equals(typeof(Apache.Geode.Client.Tests.PortfolioPdx)) ||
+          (typeof(TVal).Equals(typeof(Apache.Geode.Client.Tests.PositionPdx)))) && ((IList<int>)a).Contains(i))
         {
           FwkInfo("Skiping Query for pdx object [{0}]", QueryStatics.StructSetQueries[i]);
         }
@@ -1151,8 +1151,8 @@ namespace Apache.Geode.Client.FwkLib
         currentQuery = QueryStatics.ResultSetParamQueries[i];
         remoteQuery(currentQuery, isLargeSetQuery, isUnsupportedPRQuery, i,true,false);
         i = Util.Rand(QueryStrings.SSPsize);
-        if ((typeof(TVal).Equals(typeof(Apache.Geode.Client.Tests.NewAPI.PortfolioPdx)) ||
-          (typeof(TVal).Equals(typeof(Apache.Geode.Client.Tests.NewAPI.PositionPdx)))) && ((IList<int>)a).Contains(i))
+        if ((typeof(TVal).Equals(typeof(Apache.Geode.Client.Tests.PortfolioPdx)) ||
+          (typeof(TVal).Equals(typeof(Apache.Geode.Client.Tests.PositionPdx)))) && ((IList<int>)a).Contains(i))
         {
           FwkInfo("Skiping Query for pdx object [{0}]", QueryStatics.StructSetParamQueries[i]);
         }

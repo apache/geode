@@ -25,7 +25,7 @@ using System.Xml;
 
 #pragma warning disable 618
 
-namespace Apache.Geode.Client.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests
 {
   using NUnit.Framework;
   using Apache.Geode.DUnitFramework;

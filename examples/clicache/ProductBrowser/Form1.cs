@@ -22,14 +22,14 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
-using GemStone.GemFire.Cache;
+using Apache.Geode.Client;
 
 namespace ProductBrowser
 {
   public partial class ProductBrowser : Form, ICacheListener
   {
     //Cache cache = null;
-    GemStone.GemFire.Cache.Region prodRegion = null;
+    Apache.Geode.Client.Region prodRegion = null;
     private string logLevel = "debug";
     private string logFile = "productBrowserLog";
 
@@ -41,7 +41,7 @@ namespace ProductBrowser
       /*
        * Initialize Cache system properties
        */      
-      GemStone.GemFire.Cache.Properties prop = GemStone.GemFire.Cache.Properties.Create();
+      Apache.Geode.Client.Properties prop = Apache.Geode.Client.Properties.Create();
       prop.Insert("log-file", logFile);
       prop.Insert("log-level", logLevel);
       prop.Insert("name", "ProductCache");
@@ -288,11 +288,11 @@ namespace ProductBrowser
       txtEvent.Text = ev.Region.Name + " is live";
     }
 
-    public void Close(GemStone.GemFire.Cache.Region region)
+    public void Close(Apache.Geode.Client.Region region)
     {
       txtEvent.Text = region.Name + " has closed";
     }
-    public void AfterRegionDisconnected(GemStone.GemFire.Cache.Region region)
+    public void AfterRegionDisconnected(Apache.Geode.Client.Region region)
     {
       txtEvent.Text = region.Name + " has disconnected";
     }

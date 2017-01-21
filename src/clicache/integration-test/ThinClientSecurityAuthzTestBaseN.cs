@@ -19,11 +19,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Apache.Geode.Client.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests
 {
   using NUnit.Framework;
   using Apache.Geode.DUnitFramework;
-  using Apache.Geode.Client.Tests.NewAPI;
+  using Apache.Geode.Client.Tests;
   using Apache.Geode.Client;
   //using Region = Apache.Geode.Client.IRegion<Object, Object>;
   using AssertionException = Apache.Geode.Client.AssertionException;

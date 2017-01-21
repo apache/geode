@@ -38,7 +38,7 @@ using System;
 using Apache.Geode.Client.Generic;
 
 // Use the "Tests" namespace for the query objects.
-using Apache.Geode.Client.Tests.NewAPI;
+using Apache.Geode.Client.Tests;
 
 namespace Apache.Geode.Client.Generic.QuickStart
 {

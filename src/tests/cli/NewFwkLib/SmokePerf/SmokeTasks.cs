@@ -19,7 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
-using Apache.Geode.Client.Tests.NewAPI;
+using Apache.Geode.Client.Tests;
 using Apache.Geode.DUnitFramework;
 
 namespace Apache.Geode.Client.FwkLib
