@@ -26,7 +26,7 @@
 
 
 using namespace System;
-using namespace Apache::Geode::Client::Generic;
+using namespace Apache::Geode::Client;
 
 
 namespace Apache
@@ -35,25 +35,24 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       generic<class TKey, class TValue>
       Cache^ TransactionEvent<TKey, TValue>::Cache::get( )
       {
         apache::geode::client::CachePtr & nativeptr(
           NativePtr->getCache( ) );
 
-				return Apache::Geode::Client::Generic::Cache::Create(
+				return Apache::Geode::Client::Cache::Create(
           nativeptr.ptr( ) );
       }
       
       generic<class TKey, class TValue>
-			Apache::Geode::Client::Generic::TransactionId^ TransactionEvent<TKey, TValue>::TransactionId::get( )
+			Apache::Geode::Client::TransactionId^ TransactionEvent<TKey, TValue>::TransactionId::get( )
       {
         apache::geode::client::TransactionIdPtr & nativeptr(
           NativePtr->getTransactionId( ) );
 
-				return Apache::Geode::Client::Generic::TransactionId::Create(
+				return Apache::Geode::Client::TransactionId::Create(
           nativeptr.ptr( ) );
       }
     
@@ -72,10 +71,9 @@ namespace Generic
           events[ index ] = (%entryEvent);
         }
         return events;
-      }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
  } //namespace 
 #endif

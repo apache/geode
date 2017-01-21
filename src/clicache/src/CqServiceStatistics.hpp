@@ -28,8 +28,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       /// <summary>
       /// Defines common statistical information for cqservice 
@@ -96,8 +94,7 @@ namespace Generic
         inline CqServiceStatistics( apache::geode::client::CqServiceStatistics* nativeptr )
           : SBWrap( nativeptr ) { }
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

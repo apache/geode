@@ -31,8 +31,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       /// <summary>
       /// Enumerated type for expiration (LRU) actions.
@@ -130,9 +128,8 @@ namespace Generic
             (type == ExpirationAction::Destroy);
         }
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 
 

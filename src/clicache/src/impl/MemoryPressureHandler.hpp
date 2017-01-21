@@ -26,7 +26,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic {
 
       class MemoryPressureHandler
         : public ACE_Event_Handler
@@ -37,7 +36,7 @@ namespace Generic {
 
           int handle_close( ACE_HANDLE handle, ACE_Reactor_Mask close_mask );
       };
-    }
-  }
-}
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

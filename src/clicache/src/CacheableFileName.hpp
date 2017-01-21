@@ -31,8 +31,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       /// <summary>
       /// An immutable filename wrapper that can serve as a distributable
       /// key object for caching as well as being a string value.
@@ -165,9 +164,9 @@ namespace Generic
         String^ m_str;
         int m_hashcode;
       };
-    }
-  }
-}
- } //namespace 
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 
 

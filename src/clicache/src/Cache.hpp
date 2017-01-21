@@ -38,8 +38,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
 
 				generic<class TKey, class TResult>
 				ref class QueryService;
@@ -110,18 +108,18 @@ namespace Generic
         /// This method does not throw
         /// <c>CacheClosedException</c> if the cache is closed.
         /// </remarks>
-        virtual property Apache::Geode::Client::Generic::DistributedSystem^ DistributedSystem
+        virtual property Apache::Geode::Client::DistributedSystem^ DistributedSystem
         {
-          Apache::Geode::Client::Generic::DistributedSystem^ get( );
+          Apache::Geode::Client::DistributedSystem^ get( );
         }
 
         /// <summary>
         /// Returns the cache transaction manager of
         /// <see cref="CacheFactory.Create" /> this cache.
         /// </summary>
-        virtual property Apache::Geode::Client::Generic::CacheTransactionManager^ CacheTransactionManager
+        virtual property Apache::Geode::Client::CacheTransactionManager^ CacheTransactionManager
         {
-          Apache::Geode::Client::Generic::CacheTransactionManager^ get( );
+          Apache::Geode::Client::CacheTransactionManager^ get( );
         }
 
         /// <summary>
@@ -197,7 +195,7 @@ namespace Generic
         /// before actually firing a query.
         /// </remarks>
         generic<class TKey, class TResult>
-        virtual Generic::QueryService<TKey, TResult>^ GetQueryService();
+        virtual Client::QueryService<TKey, TResult>^ GetQueryService();
 
         /// <summary>
         /// Get a query service object to be able to query the cache.
@@ -209,7 +207,7 @@ namespace Generic
         /// before actually firing a query.
         /// </remarks>
         generic<class TKey, class TResult>
-        virtual Generic::QueryService<TKey, TResult>^ GetQueryService(String^ poolName );
+        virtual Client::QueryService<TKey, TResult>^ GetQueryService(String^ poolName );
 
         /// <summary>
         /// Returns the instance of <see cref="RegionFactory" /> to create the region
@@ -286,7 +284,7 @@ namespace Generic
         inline Cache( apache::geode::client::Cache* nativeptr )
           : SBWrap( nativeptr ) { }
       };
-      } // end namespace Generic
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

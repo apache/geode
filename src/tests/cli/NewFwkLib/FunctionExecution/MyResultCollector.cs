@@ -22,8 +22,8 @@ using System.Threading;
 namespace Apache.Geode.Client.FwkLib
 {
   using Apache.Geode.DUnitFramework;
-  using Apache.Geode.Client.Generic;
-  public class MyResultCollector<TResult> : Generic.IResultCollector<TResult>
+  using Apache.Geode.Client;
+  public class MyResultCollector<TResult> : Client.IResultCollector<TResult>
   {
     #region Private members
     private bool m_resultReady = false;
@@ -97,7 +97,7 @@ namespace Apache.Geode.Client.FwkLib
     }
 
   }
-  public class MyResultCollectorHA<TResult> : Generic.IResultCollector<TResult>
+  public class MyResultCollectorHA<TResult> : Client.IResultCollector<TResult>
   {
     #region Private members
     private bool m_resultReady = false;

@@ -25,9 +25,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-			{         
-			
+
          /// <summary>
          ///PdxInstance provides run time access to the fields of a PDX without 
          ///deserializing the PDX. Preventing deserialization saves time
@@ -181,8 +179,7 @@ namespace Generic
            IWritablePdxInstance^ CreateWriter();
 
         };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-			}
-    }
-  }
-}

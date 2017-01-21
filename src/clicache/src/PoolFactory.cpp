@@ -32,8 +32,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       //generic<class TKey, class TValue>
       PoolFactory^ PoolFactory/*<TKey, TValue>*/::SetFreeConnectionTimeout( Int32 connectionTimeout )
@@ -287,8 +285,8 @@ namespace Generic
         return Pool/*<TKey, TValue>*/::Create(pool.ptr());
 
 			  _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
-		  }
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
  } //namespace 

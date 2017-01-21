@@ -33,8 +33,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       generic<class TKey, class TValue>
       int32_t AttributesMutator<TKey, TValue>::SetEntryIdleTimeout( int32_t idleTimeout )
@@ -178,9 +176,8 @@ namespace Generic
 
         NativePtr->setCacheWriter( mg_libpath.CharPtr,
           mg_factoryFunctionName.CharPtr );
-      }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
  } //namespace 

@@ -31,8 +31,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
         interface class IGFSerializable;
 
      // ref class Region;
@@ -118,8 +117,7 @@ namespace Generic
           : Internal::UMWrap<apache::geode::client::EntryEvent>(
             const_cast<apache::geode::client::EntryEvent*>( nativeptr ), false ) { }
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

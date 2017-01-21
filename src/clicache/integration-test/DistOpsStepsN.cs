@@ -25,8 +25,8 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
 {
   using NUnit.Framework;
   using Apache.Geode.DUnitFramework;
-  using Apache.Geode.Client.Generic;
-  //using Region = Apache.Geode.Client.Generic.IRegion<Object, Object>;
+  using Apache.Geode.Client;
+  //using Region = Apache.Geode.Client.IRegion<Object, Object>;
 
   public abstract class DistOpsSteps : UnitTests
   {
@@ -201,7 +201,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
       {
         CreateEntry(regionName, key, val);
       }
-      catch (Apache.Geode.Client.Generic.NotConnectedException ex)
+      catch (Apache.Geode.Client.NotConnectedException ex)
       {
         if (ex.InnerException is NoAvailableLocatorsException)
         {
@@ -269,7 +269,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
       {
         checkVal = (string)region[key];
       }
-      catch (Apache.Geode.Client.Generic.KeyNotFoundException)
+      catch (Apache.Geode.Client.KeyNotFoundException)
       {
         // expected?
         //checkVal = (string)region[key];
@@ -1331,7 +1331,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
         Object val = region[1];
         Assert.Fail("Should have got KeyNotFoundException");
       }
-      catch (Apache.Geode.Client.Generic.KeyNotFoundException ex)
+      catch (Apache.Geode.Client.KeyNotFoundException ex)
       {
         Util.Log("Got expected KeyNotFoundException {0} ", ex);
       }
@@ -1347,7 +1347,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
           Assert.Fail("Should have got KeyNotFoundException");
         }
       }
-      catch (Apache.Geode.Client.Generic.KeyNotFoundException ex)
+      catch (Apache.Geode.Client.KeyNotFoundException ex)
       {
         Util.Log("Got expected KeyNotFoundException {0} ", ex);
       }
@@ -1359,7 +1359,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
         Object val = region[1];
         Assert.Fail("Should have got KeyNotFoundException");
       }
-      catch (Apache.Geode.Client.Generic.KeyNotFoundException ex)
+      catch (Apache.Geode.Client.KeyNotFoundException ex)
       {
         Util.Log("Got expected KeyNotFoundException {0} ", ex);
       }

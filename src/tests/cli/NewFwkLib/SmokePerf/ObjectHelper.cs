@@ -23,7 +23,7 @@ using Apache.Geode.Client.Tests.NewAPI;
 namespace Apache.Geode.Client.FwkLib
 {
   using Apache.Geode.DUnitFramework;
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
   public class ObjectHelper<TKey, TVal>
   {
     public static TVal CreateObject(string objectname, Int32 size, bool encodeKey, bool encodeTimestamp,

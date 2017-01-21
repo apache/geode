@@ -21,7 +21,7 @@ using System.Text;
 
 namespace Apache.Geode.Client.UnitTests.NewAPI
 {
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
 
   [Serializable]
   class CustomSerializableObject

@@ -24,9 +24,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-			{         
-			
+
          /// <summary>
          /// Application can implement this interface to map pdx type name to local type name.
         /// Need to set this using <see cref="Serializable.SetPdxTypeMapper" />
@@ -48,8 +46,7 @@ namespace Generic
            /// </summary>          
             String^ FromPdxTypeName(String^ pdxTypeName);
         };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-			}
-    }
-  }
-}

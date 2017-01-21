@@ -22,7 +22,7 @@ namespace Apache.Geode.Client.UnitTests
 {
   using Apache.Geode.DUnitFramework;
 
-  class TallyListener : Apache.Geode.Client.Generic.CacheListenerAdapter<Object, Object>
+  class TallyListener : Apache.Geode.Client.CacheListenerAdapter<Object, Object>
   {
     #region Private members
 
@@ -31,9 +31,9 @@ namespace Apache.Geode.Client.UnitTests
     private int m_invalidates = 0;
     private int m_destroys = 0;
     private int m_clears = 0;
-    private Apache.Geode.Client.Generic.ICacheableKey m_lastKey = null;
-    private Apache.Geode.Client.Generic.IGFSerializable m_lastValue = null;
-    private Apache.Geode.Client.Generic.IGFSerializable m_callbackArg = null;
+    private Apache.Geode.Client.ICacheableKey m_lastKey = null;
+    private Apache.Geode.Client.IGFSerializable m_lastValue = null;
+    private Apache.Geode.Client.IGFSerializable m_callbackArg = null;
     private bool m_ignoreTimeout = false;
     private bool m_quiet = false;
     private bool isListenerInvoke = false;
@@ -83,7 +83,7 @@ namespace Apache.Geode.Client.UnitTests
       }
     }
 
-    public Apache.Geode.Client.Generic.IGFSerializable LastKey
+    public Apache.Geode.Client.IGFSerializable LastKey
     {
       get
       {
@@ -107,7 +107,7 @@ namespace Apache.Geode.Client.UnitTests
       }
     }
 
-    public Apache.Geode.Client.Generic.IGFSerializable LastValue
+    public Apache.Geode.Client.IGFSerializable LastValue
     {
       get
       {
@@ -131,7 +131,7 @@ namespace Apache.Geode.Client.UnitTests
       }
     }
 
-     public void SetCallBackArg(Apache.Geode.Client.Generic.IGFSerializable callbackArg)
+     public void SetCallBackArg(Apache.Geode.Client.IGFSerializable callbackArg)
     {
       m_callbackArg = callbackArg;
     }
@@ -139,13 +139,13 @@ namespace Apache.Geode.Client.UnitTests
 
     #endregion
 
-    public void CheckcallbackArg(Apache.Geode.Client.Generic.EntryEvent<Object, Object> ev)
+    public void CheckcallbackArg(Apache.Geode.Client.EntryEvent<Object, Object> ev)
     {
       if (!isListenerInvoke)
         isListenerInvoke = true;
       if (m_callbackArg != null)
       {
-        Apache.Geode.Client.Generic.IGFSerializable callbkArg = (Apache.Geode.Client.Generic.IGFSerializable)ev.CallbackArgument;
+        Apache.Geode.Client.IGFSerializable callbkArg = (Apache.Geode.Client.IGFSerializable)ev.CallbackArgument;
         if (m_callbackArg.Equals(callbkArg))
           isCallbackCalled = true;
       }
@@ -234,11 +234,11 @@ namespace Apache.Geode.Client.UnitTests
 
     #region ICacheListener Members
 
-    public override void AfterCreate(Apache.Geode.Client.Generic.EntryEvent<Object, Object> ev)
+    public override void AfterCreate(Apache.Geode.Client.EntryEvent<Object, Object> ev)
     {
       m_creates++;
-      m_lastKey = (Apache.Geode.Client.Generic.ICacheableKey)ev.Key;
-      m_lastValue = (Apache.Geode.Client.Generic.IGFSerializable)ev.NewValue;
+      m_lastKey = (Apache.Geode.Client.ICacheableKey)ev.Key;
+      m_lastValue = (Apache.Geode.Client.IGFSerializable)ev.NewValue;
       CheckcallbackArg(ev);
 
       string keyString = m_lastKey.ToString();
@@ -253,11 +253,11 @@ namespace Apache.Geode.Client.UnitTests
       }
     }
 
-    public override void AfterUpdate(Apache.Geode.Client.Generic.EntryEvent<Object, Object> ev)
+    public override void AfterUpdate(Apache.Geode.Client.EntryEvent<Object, Object> ev)
     {
       m_updates++;
-      m_lastKey = (Apache.Geode.Client.Generic.ICacheableKey)ev.Key;
-      m_lastValue = (Apache.Geode.Client.Generic.IGFSerializable)ev.NewValue;
+      m_lastKey = (Apache.Geode.Client.ICacheableKey)ev.Key;
+      m_lastValue = (Apache.Geode.Client.IGFSerializable)ev.NewValue;
       CheckcallbackArg(ev);
      
       string keyString = m_lastKey.ToString();
@@ -271,29 +271,29 @@ namespace Apache.Geode.Client.UnitTests
         WriteLog("TallyListener: done sleeping..");
       }
     }
-    public override void AfterDestroy(Apache.Geode.Client.Generic.EntryEvent<Object, Object> ev)
+    public override void AfterDestroy(Apache.Geode.Client.EntryEvent<Object, Object> ev)
     {
       m_destroys++;
       CheckcallbackArg(ev);
     }
-    public override void AfterInvalidate(Apache.Geode.Client.Generic.EntryEvent<Object, Object> ev)
+    public override void AfterInvalidate(Apache.Geode.Client.EntryEvent<Object, Object> ev)
     {
       m_invalidates++;
       CheckcallbackArg(ev);
     }
 
-    public override void AfterRegionDestroy(Apache.Geode.Client.Generic.RegionEvent<Object, Object> ev) { }
+    public override void AfterRegionDestroy(Apache.Geode.Client.RegionEvent<Object, Object> ev) { }
 
-    public override void AfterRegionClear(Apache.Geode.Client.Generic.RegionEvent<Object, Object> ev) 
+    public override void AfterRegionClear(Apache.Geode.Client.RegionEvent<Object, Object> ev) 
     { 
         m_clears++;
     }
 
-    public override void AfterRegionInvalidate(Apache.Geode.Client.Generic.RegionEvent<Object, Object> ev) { }
+    public override void AfterRegionInvalidate(Apache.Geode.Client.RegionEvent<Object, Object> ev) { }
 
-    public override void AfterRegionLive(Apache.Geode.Client.Generic.RegionEvent<Object, Object> ev) { }
+    public override void AfterRegionLive(Apache.Geode.Client.RegionEvent<Object, Object> ev) { }
 
-    public override void Close(Apache.Geode.Client.Generic.IRegion<Object, Object> region) { }
+    public override void Close(Apache.Geode.Client.IRegion<Object, Object> region) { }
 
     #endregion
   }

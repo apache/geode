@@ -28,8 +28,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {    
+
     /// <summary> 
     /// Each enum represents a predefined <see cref="RegionAttributes" /> in a <see cref="Cache" />.
     /// These enum values can be used to create regions using a <see cref="RegionFactory" />
@@ -71,8 +70,7 @@ namespace Generic
        /// </summary>
        LOCAL_ENTRY_LRU
       } ;
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
- } //namespace 

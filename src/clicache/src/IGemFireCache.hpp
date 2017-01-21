@@ -30,8 +30,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       /// <summary>
       /// GemFireCache represents the singleton cache that must be created
       /// in order to connect to Gemfire server.
@@ -83,16 +82,16 @@ namespace Generic
         /// </remarks>
         property DistributedSystem^ DistributedSystem
         {
-          Apache::Geode::Client::Generic::DistributedSystem^ get( );
+          Apache::Geode::Client::DistributedSystem^ get( );
         } 
 
         /// <summary>
         /// Returns the cache transaction manager of
         /// <see cref="CacheFactory.Create" /> this cache.
         /// </summary>
-        property Apache::Geode::Client::Generic::CacheTransactionManager^ CacheTransactionManager
+        property Apache::Geode::Client::CacheTransactionManager^ CacheTransactionManager
         {
-          Apache::Geode::Client::Generic::CacheTransactionManager^ get( );
+          Apache::Geode::Client::CacheTransactionManager^ get( );
         }
 
 				///<summary>
@@ -105,7 +104,7 @@ namespace Generic
         ///</summary>
         bool GetPdxReadSerialized();
       };
-      } // end namespace Generic      
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

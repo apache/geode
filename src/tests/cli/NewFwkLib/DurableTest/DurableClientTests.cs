@@ -22,7 +22,7 @@ using System.Threading;
 namespace Apache.Geode.Client.FwkLib
 {
   using Apache.Geode.DUnitFramework;
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
 
   public class DurableClientTests<TKey,TVal> : PerfTests<TKey,TVal>
   {
@@ -237,7 +237,7 @@ namespace Apache.Geode.Client.FwkLib
               SetRegionAttributes(rootAttrs, rootRegionData, ref m_isPool);
               rootAttrs = CreatePool(rootAttrs, redundancyLevel);
               region = CacheHelper<TKey, TVal>.CreateRegion(rootRegionName, rootAttrs);
-              Apache.Geode.Client.Generic.RegionAttributes<TKey, TVal> regAttr = region.Attributes;
+              Apache.Geode.Client.RegionAttributes<TKey, TVal> regAttr = region.Attributes;
               FwkInfo("Region attributes for {0}: {1}", rootRegionName,
                 CacheHelper<TKey, TVal>.RegionAttributesToString(regAttr));
 

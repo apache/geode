@@ -27,8 +27,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
         // IGFSerializable methods
 
         void UserFunctionExecutionException::ToData( DataOutput^ output )
@@ -69,9 +68,9 @@ namespace Generic
             return CacheableString::GetString( value.ptr( ) );          
 
           _GF_MG_EXCEPTION_CATCH_ALL2
-        }
-      }
-    }
-  }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 }
 

@@ -25,8 +25,8 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
   using NUnit.Framework;
   using Apache.Geode.Client.Tests.NewAPI;
   using Apache.Geode.DUnitFramework;
-  using Apache.Geode.Client.Generic;
-  using AssertionException = Apache.Geode.Client.Generic.AssertionException;
+  using Apache.Geode.Client;
+  using AssertionException = Apache.Geode.Client.AssertionException;
 
   /// <summary>
   /// Enumeration to indicate the result expected of an operation.

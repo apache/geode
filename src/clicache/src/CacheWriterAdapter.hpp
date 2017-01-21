@@ -27,8 +27,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       /// <summary>
       /// Utility class that implements all methods in <c>ICacheWriter</c>
@@ -69,8 +67,7 @@ namespace Generic
         {
         }
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

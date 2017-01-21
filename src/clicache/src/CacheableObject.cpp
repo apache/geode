@@ -34,8 +34,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       void CacheableObject::ToData(DataOutput^ output)
       {
         if(m_obj != nullptr)
@@ -75,9 +74,9 @@ namespace Generic
           m_objectSize = (uint32_t)sizeof(CacheableObject^) + (uint32_t)ns.Length;
         }
         return m_objectSize;
-      }
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
  } //namespace 
 

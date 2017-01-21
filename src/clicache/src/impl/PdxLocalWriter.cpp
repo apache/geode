@@ -28,8 +28,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       namespace Internal
       {
         
@@ -482,10 +481,10 @@ namespace Generic
               return this->WriteObject(fieldName, fieldValue);
               //throw gcnew IllegalStateException("WriteField unable to serialize  " 
 								//																	+ fieldName + " of " + type); 
-            }
-          }
-			  }
-      }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
     }
   }
 }

@@ -32,8 +32,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       /// <summary>
       /// Contains the generic writer object. Inherits from non generic writer interface.
@@ -45,24 +43,24 @@ namespace Generic
       {
         private:
 
-          Apache::Geode::Client::Generic::ITransactionWriter<TKey, TValue>^ m_writer;
+          Apache::Geode::Client::ITransactionWriter<TKey, TValue>^ m_writer;
 
         public:
 
-          void SetTransactionWriter(Apache::Geode::Client::Generic::ITransactionWriter<TKey, TValue>^ writer)
+          void SetTransactionWriter(Apache::Geode::Client::ITransactionWriter<TKey, TValue>^ writer)
           {
             m_writer = writer;
           }
 
           virtual void BeforeCommit(Apache::Geode::Client::TransactionEvent^ te) override
           {
-            Apache::Geode::Client::Generic::TransactionEvent<TKey, TValue> gevent(GetNativePtr<apache::geode::client::TransactionEvent>(te));
+            Apache::Geode::Client::TransactionEvent<TKey, TValue> gevent(GetNativePtr<apache::geode::client::TransactionEvent>(te));
             m_writer->BeforeCommit(%gevent);
           }
 
       };
-    }
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 #endif

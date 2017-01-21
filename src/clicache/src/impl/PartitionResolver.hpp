@@ -33,8 +33,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       public interface class IPartitionResolverProxy
       {
@@ -70,7 +68,7 @@ namespace Generic
             return mg_name.CharPtr;
           }
       };
-    }
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

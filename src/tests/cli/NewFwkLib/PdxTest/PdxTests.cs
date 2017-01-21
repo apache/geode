@@ -29,7 +29,7 @@ namespace Apache.Geode.Client.FwkLib
 {
     using Apache.Geode.DUnitFramework;
     using Apache.Geode.Client.Tests.NewAPI;
-    using Apache.Geode.Client.Generic;
+    using Apache.Geode.Client;
     using QueryCategory = Apache.Geode.Client.Tests.QueryCategory;
     using QueryStrings = Apache.Geode.Client.Tests.QueryStrings;
     using QueryStatics = Apache.Geode.Client.Tests.QueryStatics;
@@ -595,11 +595,11 @@ namespace Apache.Geode.Client.FwkLib
             {
                 anObj = (TVal)aRegion[key];
             }
-            catch (Apache.Geode.Client.Generic.KeyNotFoundException)
+            catch (Apache.Geode.Client.KeyNotFoundException)
             {
                 if (!EqualityComparer<TVal>.Default.Equals(anObj, default(TVal)))
                 {
-                    throw new Apache.Geode.Client.Generic.KeyNotFoundException();
+                    throw new Apache.Geode.Client.KeyNotFoundException();
                 }
 
             }
@@ -1834,11 +1834,11 @@ namespace Apache.Geode.Client.FwkLib
          {
            anObj = aRegion[key];
          }
-         catch (Apache.Geode.Client.Generic.KeyNotFoundException)
+         catch (Apache.Geode.Client.KeyNotFoundException)
          {
            if (!EqualityComparer<TVal>.Default.Equals(anObj, default(TVal)))
            {
-               throw new Apache.Geode.Client.Generic.KeyNotFoundException();
+               throw new Apache.Geode.Client.KeyNotFoundException();
            }
 
          }
@@ -2411,7 +2411,7 @@ namespace Apache.Geode.Client.FwkLib
                         }
                        
                     }
-                    catch (Apache.Geode.Client.Generic.KeyNotFoundException)
+                    catch (Apache.Geode.Client.KeyNotFoundException)
                     {
                     }
                     catch (Exception e)
@@ -2465,7 +2465,7 @@ namespace Apache.Geode.Client.FwkLib
                 {
                     value = aRegion[key];
                 }
-                catch (Apache.Geode.Client.Generic.KeyNotFoundException)
+                catch (Apache.Geode.Client.KeyNotFoundException)
                 {
                     value = default(TVal);
                 }
@@ -2520,7 +2520,7 @@ namespace Apache.Geode.Client.FwkLib
                                 expectedValue, valueOnServer, key);
                             //}
                         }
-                        catch (Apache.Geode.Client.Generic.KeyNotFoundException)
+                        catch (Apache.Geode.Client.KeyNotFoundException)
                         {
                         }
                         catch (EntryNotFoundException)
@@ -3373,7 +3373,7 @@ namespace Apache.Geode.Client.FwkLib
                                 FwkInfo("CacheServer.DoEntryOperations() Caught non-fatal " +
                                   "ex-ception in read: {0}", ex.Message);
                             }
-                            catch (Apache.Geode.Client.Generic.KeyNotFoundException ex)
+                            catch (Apache.Geode.Client.KeyNotFoundException ex)
                             {
                                 FwkInfo("CacheServer.DoEntryOperations() Caught non-fatal " +
                                   "ex-ception in read: {0}", ex.Message);

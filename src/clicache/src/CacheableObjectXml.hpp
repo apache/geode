@@ -29,8 +29,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       /// <summary>
       /// A mutable generic <see cref="System.Object" /> wrapper that can
       /// serve as a distributable value for caching.
@@ -152,7 +151,7 @@ namespace Generic
         Object^ m_obj;
         uint32_t m_objectSize;
       };
-    }
-  }
-}
- } //namespace 
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

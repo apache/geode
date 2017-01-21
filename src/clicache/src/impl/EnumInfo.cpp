@@ -28,8 +28,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       namespace Internal
       {
         void EnumInfo::ToData( DataOutput^ output )
@@ -54,13 +53,9 @@ namespace Generic
          Object^ obj = Enum::Parse(t, _enumName);
 
          return obj;
-       }        
-        
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-        
-        
-       }
-			}
-    }
   }
 }

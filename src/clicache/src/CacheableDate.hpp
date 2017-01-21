@@ -31,8 +31,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       /// <summary>
       /// An immutable date wrapper that can serve as a distributable
       /// key object for caching as well as being a string value.
@@ -171,8 +170,8 @@ namespace Generic
         DateTime m_dateTime;
         int m_hashcode;
       };
-    }
-  }
-}
- } //namespace 
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 

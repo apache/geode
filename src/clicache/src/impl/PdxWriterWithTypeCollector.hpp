@@ -30,8 +30,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       ref class DataOutput;
       namespace Internal
       {
@@ -322,8 +321,8 @@ namespace Generic
 
           virtual IPdxWriter^ WriteUnreadFields(IPdxUnreadFields^ unread) override;
         };      
-      }
-			}
-    }
-  }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 }

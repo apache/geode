@@ -46,7 +46,7 @@ namespace apache
       public:
 
         inline ManagedCacheableKeyGeneric(
-          Apache::Geode::Client::Generic::IGFSerializable^ managedptr, int hashcode, int classId)
+          Apache::Geode::Client::IGFSerializable^ managedptr, int hashcode, int classId)
           : m_managedptr(managedptr) {
           m_hashcode = hashcode;
           m_classId = classId;
@@ -58,7 +58,7 @@ namespace apache
         /// <param name="managedptr">
         /// The managed object.
         /// </param>
-        inline ManagedCacheableKeyGeneric(Apache::Geode::Client::Generic::IGFSerializable^ managedptr)
+        inline ManagedCacheableKeyGeneric(Apache::Geode::Client::IGFSerializable^ managedptr)
           : m_managedptr(managedptr) {
           // m_hashcode = managedptr->GetHashCode();
           m_hashcode = 0;
@@ -139,7 +139,7 @@ namespace apache
         /// <summary>
         /// Returns the wrapped managed object reference.
         /// </summary>
-        inline Apache::Geode::Client::Generic::IGFSerializable^ ptr() const
+        inline Apache::Geode::Client::IGFSerializable^ ptr() const
         {
           return m_managedptr;
         }
@@ -153,7 +153,7 @@ namespace apache
         /// to be called which is not what is desired when this object is destroyed. Normally this
         /// managed object may be created by the user and will be handled automatically by the GC.
         /// </summary>
-        gcroot<Apache::Geode::Client::Generic::IGFSerializable^> m_managedptr;
+        gcroot<Apache::Geode::Client::IGFSerializable^> m_managedptr;
 
         // Disable the copy and assignment constructors
         ManagedCacheableKeyGeneric(const ManagedCacheableKeyGeneric&);

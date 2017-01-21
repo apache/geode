@@ -18,7 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Apache.Geode.Client.Generic;
+using Apache.Geode.Client;
 using System.Collections;
 namespace PdxTests
 {

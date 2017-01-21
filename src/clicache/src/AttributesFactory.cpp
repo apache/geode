@@ -47,10 +47,9 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       generic<class TKey, class TValue>
-      AttributesFactory<TKey, TValue>::AttributesFactory( Apache::Geode::Client::Generic::RegionAttributes<TKey, TValue>^ regionAttributes )
+      AttributesFactory<TKey, TValue>::AttributesFactory( Apache::Geode::Client::RegionAttributes<TKey, TValue>^ regionAttributes )
         : UMWrap( )
       {
         apache::geode::client::RegionAttributesPtr attribptr(
@@ -105,8 +104,8 @@ namespace Generic
       {
         apache::geode::client::PartitionResolverPtr resolverptr;
         if ( partitionresolver != nullptr ) {
-          Generic::IFixedPartitionResolver<TKey, TValue>^ resolver = 
-            dynamic_cast<Generic::IFixedPartitionResolver<TKey, TValue>^>(partitionresolver);
+          Client::IFixedPartitionResolver<TKey, TValue>^ resolver = 
+            dynamic_cast<Client::IFixedPartitionResolver<TKey, TValue>^>(partitionresolver);
           if (resolver != nullptr) {            
             FixedPartitionResolverGeneric<TKey, TValue>^ prg = gcnew FixedPartitionResolverGeneric<TKey, TValue>();
             prg->SetPartitionResolver(partitionresolver);
@@ -316,18 +315,17 @@ namespace Generic
       // FACTORY METHOD
 
       generic<class TKey, class TValue>
-      Apache::Geode::Client::Generic::RegionAttributes<TKey, TValue>^ AttributesFactory<TKey, TValue>::CreateRegionAttributes()
+      Apache::Geode::Client::RegionAttributes<TKey, TValue>^ AttributesFactory<TKey, TValue>::CreateRegionAttributes()
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-          apache::geode::client::RegionAttributesPtr& nativeptr (
-            NativePtr->createRegionAttributes( ) );
-          return Apache::Geode::Client::Generic::RegionAttributes<TKey, TValue>::Create(nativeptr.ptr());
+          apache::geode::client::RegionAttributesPtr& nativeptr(
+          NativePtr->createRegionAttributes());
+        return Apache::Geode::Client::RegionAttributes<TKey, TValue>::Create(nativeptr.ptr());
 
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
       }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
-} //namespace 

@@ -25,8 +25,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       uint32_t CacheStatistics::LastModifiedTime::get( )
       {
@@ -36,9 +34,8 @@ namespace Generic
       uint32_t CacheStatistics::LastAccessedTime::get( )
       {
         return NativePtr->getLastAccessedTime( );
-      }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
  } //namespace 

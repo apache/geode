@@ -21,7 +21,7 @@ using System.Threading;
 namespace Apache.Geode.Client.UnitTests.NewAPI
 {
   using Apache.Geode.DUnitFramework;
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
   class TallyWriter<TKey, TVal> : CacheWriterAdapter<TKey, TVal>
   {
     #region Private members

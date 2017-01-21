@@ -27,8 +27,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       SystemProperties::SystemProperties( Properties<String^, String^>^ properties )
       {
         _GF_MG_EXCEPTION_TRY2
@@ -238,9 +237,8 @@ namespace Generic
        bool SystemProperties::OnClientDisconnectClearPdxTypeIds::get( )
       {
         return NativePtr->onClientDisconnectClearPdxTypeIds( );
-      }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-      } // end namespace Generic
-    }
-  }
 }

@@ -29,8 +29,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
 
       /// <summary>
       /// Logging levels.
@@ -323,7 +321,7 @@ namespace Generic
        private:
          static LogLevel staticLogLevel =  LogLevel::Null;
       };
-      } // end namespace Generic
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

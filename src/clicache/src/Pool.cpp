@@ -34,8 +34,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       //generic<class TKey, class TValue>
       String^ Pool/*<TKey, TValue>*/::Name::get( )
       {
@@ -236,8 +235,8 @@ namespace Generic
         return NativePtr->getPendingEventCount();
 
         _GF_MG_EXCEPTION_CATCH_ALL2
-      }
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
  } //namespace 

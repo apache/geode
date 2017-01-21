@@ -30,8 +30,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       generic<class TResult>
       void ResultCollector<TResult>::AddResult( TResult rs )
@@ -83,8 +81,8 @@ namespace Generic
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
           NativePtr->clearResults();
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
-      }
-    }
-    }
-  }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 } //namespace 

@@ -35,8 +35,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       //generic<class TKey, class TValue>
      // ref class AttributesMutator;
 
@@ -166,12 +165,12 @@ namespace Generic
 
           virtual property AttributesMutator<TKey, TValue>^ AttributesMutator
           {
-            Apache::Geode::Client::Generic::AttributesMutator<TKey, TValue>^ get();
+            Apache::Geode::Client::AttributesMutator<TKey, TValue>^ get();
           }
 
-          virtual property Apache::Geode::Client::Generic::CacheStatistics^ Statistics 
+          virtual property Apache::Geode::Client::CacheStatistics^ Statistics 
           {
-            Apache::Geode::Client::Generic::CacheStatistics^ get();
+            Apache::Geode::Client::CacheStatistics^ get();
           }
 
           virtual IRegion<TKey, TValue>^ GetSubRegion( String^ path );
@@ -181,13 +180,13 @@ namespace Generic
 
           virtual System::Collections::Generic::ICollection<IRegion<TKey, TValue>^>^ SubRegions( bool recursive );
 
-          virtual Generic::RegionEntry<TKey, TValue>^ GetEntry( TKey key );
+          virtual Client::RegionEntry<TKey, TValue>^ GetEntry( TKey key );
 
-          virtual System::Collections::Generic::ICollection<Generic::RegionEntry<TKey, TValue>^>^ GetEntries(bool recursive);
+          virtual System::Collections::Generic::ICollection<Client::RegionEntry<TKey, TValue>^>^ GetEntries(bool recursive);
 
-          virtual property Generic::IRegionService^ RegionService
+          virtual property Client::IRegionService^ RegionService
           {
-            Generic::IRegionService^ get( );
+            Client::IRegionService^ get( );
           }
 
           virtual bool ContainsValueForKey( TKey key );
@@ -197,7 +196,7 @@ namespace Generic
           {
             bool get();
           }
-          virtual Apache::Geode::Client::Generic::ISubscriptionService<TKey>^ GetSubscriptionService();
+          virtual Apache::Geode::Client::ISubscriptionService<TKey>^ GetSubscriptionService();
 
           virtual IRegion<TKey, TValue>^ GetLocalView();
 
@@ -271,7 +270,7 @@ namespace Generic
         /// The managed wrapper object; null if the native pointer is null.
         /// </returns>
         //generic<class TKey, class TValue>
-        inline static Apache::Geode::Client::Generic::IRegion<TKey, TValue>^
+        inline static Apache::Geode::Client::IRegion<TKey, TValue>^
         Create( apache::geode::client::Region* nativeptr )
         {
           return ( nativeptr != nullptr ?
@@ -292,9 +291,7 @@ namespace Generic
         bool AreValuesEqual(apache::geode::client::CacheablePtr& val1, apache::geode::client::CacheablePtr& val2);
         bool isPoolInMultiuserMode();
       };
-
-
-    }
-  }
-}
-} //namespace 
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+ //namespace 

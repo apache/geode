@@ -27,8 +27,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       /// <summary>
       /// Utility class that implements all methods in <c>ITransactionListener</c>
@@ -37,18 +35,18 @@ namespace Generic
       /// </summary>
       generic<class TKey, class TValue>
       public ref class TransactionListenerAdapter
-        : public Apache::Geode::Client::Generic::ITransactionListener<TKey, TValue>
+        : public Apache::Geode::Client::ITransactionListener<TKey, TValue>
       {
       public:
-        virtual void AfterCommit(Apache::Geode::Client::Generic::TransactionEvent<TKey, TValue>^ te)
+        virtual void AfterCommit(Apache::Geode::Client::TransactionEvent<TKey, TValue>^ te)
         {
         }
 
-	      virtual void AfterFailedCommit(Apache::Geode::Client::Generic::TransactionEvent<TKey, TValue>^ te)
+	      virtual void AfterFailedCommit(Apache::Geode::Client::TransactionEvent<TKey, TValue>^ te)
         {
         }
 
-	      virtual void AfterRollback(Apache::Geode::Client::Generic::TransactionEvent<TKey, TValue>^ te)
+	      virtual void AfterRollback(Apache::Geode::Client::TransactionEvent<TKey, TValue>^ te)
         {
         }
     
@@ -56,9 +54,8 @@ namespace Generic
         {
         }
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 
 #endif

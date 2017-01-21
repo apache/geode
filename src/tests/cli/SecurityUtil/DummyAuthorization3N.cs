@@ -21,7 +21,7 @@ using System.Text;
 
 namespace Apache.Geode.Client.Tests.NewAPI
 {
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
   public class DummyAuthorization3 : CredentialGenerator
   {
     public override CredentialGenerator.ClassCode GetClassCode()

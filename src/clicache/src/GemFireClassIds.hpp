@@ -29,8 +29,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
 			struct PdxTypes
       {
@@ -364,9 +362,8 @@ namespace Generic
   
         literal Byte DATE_SIZE = 8;
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 
 

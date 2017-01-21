@@ -26,8 +26,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       generic<class TKey>
       /// <summary>
       /// This generic interface class provides all Register Interest API's for 
@@ -621,10 +620,7 @@ namespace Generic
           void UnregisterRegex( String^ regex );
 
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-
-  }
-
-}
- } //namespace 

@@ -31,8 +31,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       /// <summary>
       /// Template class to wrap a managed <see cref="TypeFactoryMethod" />
@@ -99,8 +97,6 @@ namespace Generic
 
         TypeFactoryMethodGeneric^ m_delegate;
       };
-
-    }
-  }
-}
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache

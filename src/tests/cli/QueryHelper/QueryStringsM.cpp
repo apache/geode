@@ -33,7 +33,7 @@ namespace Tests
         void QueryStrings::Init( QueryCategory pcategory, String^ pquery,
           Boolean pisLargeResultset )
         {
-          Apache::Geode::Client::Generic::ManagedString mg_pquery( pquery );
+          Apache::Geode::Client::ManagedString mg_pquery( pquery );
 
           testData::QueryStrings* nativeptr = new testData::QueryStrings(
             static_cast<testData::queryCategory>( pcategory ),
@@ -78,7 +78,7 @@ namespace Tests
 
         String^ QueryStrings::Query::get( )
         {
-          return Apache::Geode::Client::Generic::ManagedString::Get( NativePtr->query( ) );
+          return Apache::Geode::Client::ManagedString::Get( NativePtr->query( ) );
         }
 
         bool QueryStrings::IsLargeResultset::get( )

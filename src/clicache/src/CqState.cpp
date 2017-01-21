@@ -29,8 +29,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       String^ CqState::ToString()
       {
@@ -87,9 +85,8 @@ namespace Generic
 		else
 			state = CqStateType::INVALID;
 		return state;
-      }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
  } //namespace 

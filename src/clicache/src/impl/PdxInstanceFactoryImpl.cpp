@@ -27,8 +27,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-			{ 
+
         namespace Internal
         {
           PdxInstanceFactoryImpl::PdxInstanceFactoryImpl(String^ className)
@@ -346,10 +345,10 @@ namespace Generic
             {
               throw gcnew IllegalStateException(
                 "Field: " + fieldName + " either already added into PdxInstanceFactory or it is null");
-            }
-          }
-        }       
-			}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
     }
   }
 }

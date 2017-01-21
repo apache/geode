@@ -23,7 +23,7 @@ namespace Apache.Geode.Client.Examples
   /// <summary>
   /// A complex number -- no operations defined yet.
   /// </summary>
-  public class ComplexNumber : Apache.Geode.Client.Generic.ICacheableKey
+  public class ComplexNumber : Apache.Geode.Client.ICacheableKey
   {
     #region Public Accessors
 
@@ -83,7 +83,7 @@ namespace Apache.Geode.Client.Examples
     /// Factory function to be registered using
     /// <see cref="Serializable.registerType" />.
     /// </summary>
-    public static Apache.Geode.Client.Generic.IGFSerializable Create()
+    public static Apache.Geode.Client.IGFSerializable Create()
     {
       return new ComplexNumber(0.0, 0.0);
     }
@@ -97,7 +97,7 @@ namespace Apache.Geode.Client.Examples
     /// </summary>
     /// <param name="input">The <c>DataInput</c> stream.</param>
     /// <returns>A reference to <c>this</c> object.</returns>
-    public Apache.Geode.Client.Generic.IGFSerializable FromData(Apache.Geode.Client.Generic.DataInput input)
+    public Apache.Geode.Client.IGFSerializable FromData(Apache.Geode.Client.DataInput input)
     {
       m_real = input.ReadDouble();
       m_imaginary = input.ReadDouble();
@@ -108,7 +108,7 @@ namespace Apache.Geode.Client.Examples
     /// Write the complex number to the <see cref="DataOutput" /> stream.
     /// </summary>
     /// <param name="output">The <c>DataOutput</c> stream.</param>
-    public void ToData(Apache.Geode.Client.Generic.DataOutput output)
+    public void ToData(Apache.Geode.Client.DataOutput output)
     {
       output.WriteDouble(m_real);
       output.WriteDouble(m_imaginary);
@@ -141,7 +141,7 @@ namespace Apache.Geode.Client.Examples
 
     #region ICacheableKey Members
 
-    public bool Equals(Apache.Geode.Client.Generic.ICacheableKey other)
+    public bool Equals(Apache.Geode.Client.ICacheableKey other)
     {
       ComplexNumber cOther = other as ComplexNumber;
       if (cOther != null)

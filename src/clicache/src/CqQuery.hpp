@@ -31,8 +31,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       generic<class TResult>
       interface class ICqResults;
 
@@ -186,8 +185,7 @@ namespace Generic
         inline CqQuery( apache::geode::client::CqQuery* nativeptr )
           : SBWrap( nativeptr ) { }
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

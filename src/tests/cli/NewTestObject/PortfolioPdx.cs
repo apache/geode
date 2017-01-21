@@ -17,7 +17,7 @@
 
 using System;
 using System.Collections;
-using Apache.Geode.Client.Generic;
+using Apache.Geode.Client;
 
 
 namespace Apache.Geode.Client.Tests.NewAPI

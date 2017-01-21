@@ -42,9 +42,9 @@ namespace apache
         try
         {
           String^ mg_assemblyPath =
-            Apache::Geode::Client::Generic::ManagedString::Get(assemblyPath);
+            Apache::Geode::Client::ManagedString::Get(assemblyPath);
           String^ mg_factoryFunctionName =
-            Apache::Geode::Client::Generic::ManagedString::Get(factoryFunctionName);
+            Apache::Geode::Client::ManagedString::Get(factoryFunctionName);
           String^ mg_typeName = nullptr;
 
           String^ mg_genericKey = nullptr;
@@ -98,7 +98,7 @@ namespace apache
           mg_genericVal = mg_genericVal->Trim();
           mg_factoryFunctionName = mg_factoryFunctionName->Substring(dotIndx + 1);
 
-          Apache::Geode::Client::Generic::Log::Fine("Attempting to instantiate a [{0}<{1}, {2}>] via the [{3}] factory method.",
+          Apache::Geode::Client::Log::Fine("Attempting to instantiate a [{0}<{1}, {2}>] via the [{3}] factory method.",
             mg_typeName, mg_genericKey, mg_genericVal, mg_factoryFunctionName);
 
           typeBuilder->Append("`2");
@@ -120,7 +120,7 @@ namespace apache
             throw IllegalArgumentException(ex_str.c_str());
           }
 
-          Apache::Geode::Client::Generic::Log::Debug("Loading type: [{0}]", mg_typeName);
+          Apache::Geode::Client::Log::Debug("Loading type: [{0}]", mg_typeName);
 
           Type^ typeInst = assmb->GetType(mg_typeName, false, true);
 
@@ -137,7 +137,7 @@ namespace apache
             }
 
             typeInst = typeInst->MakeGenericType(types);
-            Apache::Geode::Client::Generic::Log::Info("Loading function: [{0}]", mg_factoryFunctionName);
+            Apache::Geode::Client::Log::Info("Loading function: [{0}]", mg_factoryFunctionName);
 
             MethodInfo^ mInfo = typeInst->GetMethod(mg_factoryFunctionName,
               BindingFlags::Public | BindingFlags::Static | BindingFlags::IgnoreCase);
@@ -151,7 +151,7 @@ namespace apache
               }
               catch (System::Exception^ ex)
               {
-                Apache::Geode::Client::Generic::Log::Debug("{0}: {1}", ex->GetType()->Name, ex->Message);
+                Apache::Geode::Client::Log::Debug("{0}: {1}", ex->GetType()->Name, ex->Message);
                 managedptr = nullptr;
               }
               if (managedptr == nullptr)
@@ -166,7 +166,7 @@ namespace apache
 
               ManagedCacheLoaderGeneric* mgcl = new ManagedCacheLoaderGeneric(managedptr);
 
-              Type^ clgType = Type::GetType("Apache.Geode.Client.Generic.CacheLoaderGeneric`2");
+              Type^ clgType = Type::GetType("Apache.Geode.Client.CacheLoaderGeneric`2");
               clgType = clgType->MakeGenericType(types);
               Object^ clg = Activator::CreateInstance(clgType);
 
@@ -175,7 +175,7 @@ namespace apache
               params[0] = managedptr;
               mInfo->Invoke(clg, params);
 
-              mgcl->setptr((Apache::Geode::Client::Generic::ICacheLoaderProxy^)clg);
+              mgcl->setptr((Apache::Geode::Client::ICacheLoaderProxy^)clg);
 
               return mgcl;
             }
@@ -191,7 +191,7 @@ namespace apache
           }
           else
           {
-            Apache::Geode::Client::Generic::ManagedString typeName(mg_typeName);
+            Apache::Geode::Client::ManagedString typeName(mg_typeName);
             std::string ex_str = "ManagedCacheLoaderGeneric: Could not load type [";
             ex_str += typeName.CharPtr;
             ex_str += "] in assembly: ";
@@ -205,7 +205,7 @@ namespace apache
         }
         catch (System::Exception^ ex)
         {
-          Apache::Geode::Client::Generic::ManagedString mg_exStr(ex->ToString());
+          Apache::Geode::Client::ManagedString mg_exStr(ex->ToString());
           std::string ex_str = "ManagedCacheLoaderGeneric: Got an exception while "
             "loading managed library: ";
           ex_str += mg_exStr.CharPtr;
@@ -233,11 +233,11 @@ namespace apache
           */
           return m_managedptr->load(region, key, aCallbackArgument);
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GemFireException::ThrowNative(ex);
         }
         return NULLPTR;
       }
@@ -252,11 +252,11 @@ namespace apache
 
           m_managedptr->close(region);
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GemFireException::ThrowNative(ex);
         }
       }
 

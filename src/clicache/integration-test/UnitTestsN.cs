@@ -21,10 +21,10 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
 {
   using NUnit.Framework;
   using Apache.Geode.DUnitFramework;
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
   using System.IO;
 
-  //using Region = Apache.Geode.Client.Generic.IRegion<Object, Object>;
+  //using Region = Apache.Geode.Client.IRegion<Object, Object>;
 
   /// <summary>
   /// Setup the test parameters including logfile, timebomb and timeout settings.

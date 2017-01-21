@@ -64,10 +64,9 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
-      void Apache::Geode::Client::Generic::Serializable::ToData(
-        Apache::Geode::Client::Generic::DataOutput^ output)
+
+      void Apache::Geode::Client::Serializable::ToData(
+        Apache::Geode::Client::DataOutput^ output)
       {
         if (output->IsManagedObject()) {
           output->WriteBytesToUMDataOutput();          
@@ -79,9 +78,9 @@ namespace Generic
           output->SetBuffer();          
         }
       }
-      Apache::Geode::Client::Generic::IGFSerializable^
-        Apache::Geode::Client::Generic::Serializable::FromData(
-        Apache::Geode::Client::Generic::DataInput^ input)
+      Apache::Geode::Client::IGFSerializable^
+        Apache::Geode::Client::Serializable::FromData(
+        Apache::Geode::Client::DataInput^ input)
       {
          if(input->IsManagedObject()) {
           input->AdvanceUMCursor();
@@ -95,12 +94,12 @@ namespace Generic
         return this;
       }
 
-      uint32_t Apache::Geode::Client::Generic::Serializable::ObjectSize::get()
+      uint32_t Apache::Geode::Client::Serializable::ObjectSize::get()
       {
         return NativePtr->objectSize();
       }
 
-      uint32_t Apache::Geode::Client::Generic::Serializable::ClassId::get()
+      uint32_t Apache::Geode::Client::Serializable::ClassId::get()
       {
         int8_t typeId = NativePtr->typeId();
         if (typeId == apache::geode::client::GemfireTypeIdsImpl::CacheableUserData ||
@@ -112,7 +111,7 @@ namespace Generic
         }
       }
 
-      String^ Apache::Geode::Client::Generic::Serializable::ToString()
+      String^ Apache::Geode::Client::Serializable::ToString()
       {
         apache::geode::client::CacheableStringPtr& cStr = NativePtr->toString();
         if (cStr->isWideString()) {
@@ -122,99 +121,99 @@ namespace Generic
         }
       }
 
-      Apache::Geode::Client::Generic::Serializable::operator Apache::Geode::Client::Generic::Serializable^ (Byte value)
+      Apache::Geode::Client::Serializable::operator Apache::Geode::Client::Serializable^ (Byte value)
       {
-        return (Apache::Geode::Client::Generic::Serializable^) CacheableByte::Create(value);
+        return (Apache::Geode::Client::Serializable^) CacheableByte::Create(value);
       }
 
-      Apache::Geode::Client::Generic::Serializable::operator Apache::Geode::Client::Generic::Serializable^ (bool value)
+      Apache::Geode::Client::Serializable::operator Apache::Geode::Client::Serializable^ (bool value)
       {
-        return (Apache::Geode::Client::Generic::Serializable^)CacheableBoolean::Create(value);
+        return (Apache::Geode::Client::Serializable^)CacheableBoolean::Create(value);
       }
 
-      Apache::Geode::Client::Generic::Serializable::operator Apache::Geode::Client::Generic::Serializable^ (array<bool>^ value)
+      Apache::Geode::Client::Serializable::operator Apache::Geode::Client::Serializable^ (array<bool>^ value)
       {
-       // return (Apache::Geode::Client::Generic::Serializable^)Apache::Geode::Client::Generic::CacheableBooleanArray::Create(value);
+       // return (Apache::Geode::Client::Serializable^)Apache::Geode::Client::CacheableBooleanArray::Create(value);
 				//TODO:split
 				return nullptr;
       }
 
-      Apache::Geode::Client::Generic::Serializable::operator Apache::Geode::Client::Generic::Serializable^ (array<Byte>^ value)
+      Apache::Geode::Client::Serializable::operator Apache::Geode::Client::Serializable^ (array<Byte>^ value)
       {
-        return (Apache::Geode::Client::Generic::Serializable^)CacheableBytes::Create(value);
+        return (Apache::Geode::Client::Serializable^)CacheableBytes::Create(value);
       }
 
-      Apache::Geode::Client::Generic::Serializable::operator Apache::Geode::Client::Generic::Serializable^ (Char value)
+      Apache::Geode::Client::Serializable::operator Apache::Geode::Client::Serializable^ (Char value)
       {
-        return (Apache::Geode::Client::Generic::Serializable^)CacheableCharacter::Create(value);
+        return (Apache::Geode::Client::Serializable^)CacheableCharacter::Create(value);
       }
 
-      Apache::Geode::Client::Generic::Serializable::operator Apache::Geode::Client::Generic::Serializable^ (array<Char>^ value)
+      Apache::Geode::Client::Serializable::operator Apache::Geode::Client::Serializable^ (array<Char>^ value)
       {
-        //return (Apache::Geode::Client::Generic::Serializable^)Apache::Geode::Client::Generic::CacheableCharArray::Create(value);
+        //return (Apache::Geode::Client::Serializable^)Apache::Geode::Client::CacheableCharArray::Create(value);
 				//TODO:split
 				return nullptr;
 
       }
 
-      Apache::Geode::Client::Generic::Serializable::operator Apache::Geode::Client::Generic::Serializable^ (Double value)
+      Apache::Geode::Client::Serializable::operator Apache::Geode::Client::Serializable^ (Double value)
       {
-        return (Apache::Geode::Client::Generic::Serializable^)CacheableDouble::Create(value);
+        return (Apache::Geode::Client::Serializable^)CacheableDouble::Create(value);
       }
 
-      Apache::Geode::Client::Generic::Serializable::operator Apache::Geode::Client::Generic::Serializable^ (array<Double>^ value)
+      Apache::Geode::Client::Serializable::operator Apache::Geode::Client::Serializable^ (array<Double>^ value)
       {
-        return (Apache::Geode::Client::Generic::Serializable^)CacheableDoubleArray::Create(value);
+        return (Apache::Geode::Client::Serializable^)CacheableDoubleArray::Create(value);
       }
 
-      Apache::Geode::Client::Generic::Serializable::operator Apache::Geode::Client::Generic::Serializable^ (Single value)
+      Apache::Geode::Client::Serializable::operator Apache::Geode::Client::Serializable^ (Single value)
       {
-        return (Apache::Geode::Client::Generic::Serializable^)CacheableFloat::Create(value);
+        return (Apache::Geode::Client::Serializable^)CacheableFloat::Create(value);
       }
 
-      Apache::Geode::Client::Generic::Serializable::operator Apache::Geode::Client::Generic::Serializable^ (array<Single>^ value)
+      Apache::Geode::Client::Serializable::operator Apache::Geode::Client::Serializable^ (array<Single>^ value)
       {
-        return (Apache::Geode::Client::Generic::Serializable^)CacheableFloatArray::Create(value);
+        return (Apache::Geode::Client::Serializable^)CacheableFloatArray::Create(value);
       }
 
-      Apache::Geode::Client::Generic::Serializable::operator Apache::Geode::Client::Generic::Serializable^ (int16_t value)
+      Apache::Geode::Client::Serializable::operator Apache::Geode::Client::Serializable^ (int16_t value)
       {
-        return (Apache::Geode::Client::Generic::Serializable^)CacheableInt16::Create(value);
+        return (Apache::Geode::Client::Serializable^)CacheableInt16::Create(value);
       }
 
-      Apache::Geode::Client::Generic::Serializable::operator Apache::Geode::Client::Generic::Serializable^ (array<int16_t>^ value)
+      Apache::Geode::Client::Serializable::operator Apache::Geode::Client::Serializable^ (array<int16_t>^ value)
       {
-        return (Apache::Geode::Client::Generic::Serializable^)CacheableInt16Array::Create(value);
+        return (Apache::Geode::Client::Serializable^)CacheableInt16Array::Create(value);
       }
 
-      Apache::Geode::Client::Generic::Serializable::operator Apache::Geode::Client::Generic::Serializable^ (int32_t value)
+      Apache::Geode::Client::Serializable::operator Apache::Geode::Client::Serializable^ (int32_t value)
       {
-        return (Apache::Geode::Client::Generic::Serializable^)CacheableInt32::Create(value);
+        return (Apache::Geode::Client::Serializable^)CacheableInt32::Create(value);
       }
 
-      Apache::Geode::Client::Generic::Serializable::operator Apache::Geode::Client::Generic::Serializable^ (array<int32_t>^ value)
+      Apache::Geode::Client::Serializable::operator Apache::Geode::Client::Serializable^ (array<int32_t>^ value)
       {
-        return (Apache::Geode::Client::Generic::Serializable^)CacheableInt32Array::Create(value);
+        return (Apache::Geode::Client::Serializable^)CacheableInt32Array::Create(value);
       }
 
-      Apache::Geode::Client::Generic::Serializable::operator Apache::Geode::Client::Generic::Serializable^ (int64_t value)
+      Apache::Geode::Client::Serializable::operator Apache::Geode::Client::Serializable^ (int64_t value)
       {
-        return (Apache::Geode::Client::Generic::Serializable^)CacheableInt64::Create(value);
+        return (Apache::Geode::Client::Serializable^)CacheableInt64::Create(value);
       }
 
       /*Apache::Geode::Client::*/Serializable::operator /*Apache::Geode::Client::*/Serializable^ (array<int64_t>^ value)
       {
-				return (Apache::Geode::Client::Generic::Serializable^)Apache::Geode::Client::Generic::CacheableInt64Array::Create(value);
+				return (Apache::Geode::Client::Serializable^)Apache::Geode::Client::CacheableInt64Array::Create(value);
       }
 
-      Apache::Geode::Client::Generic::Serializable::operator Apache::Geode::Client::Generic::Serializable^ (String^ value)
+      Apache::Geode::Client::Serializable::operator Apache::Geode::Client::Serializable^ (String^ value)
       {
-        return (Apache::Geode::Client::Generic::Serializable^)CacheableString::Create(value);
+        return (Apache::Geode::Client::Serializable^)CacheableString::Create(value);
       }
 
-      Apache::Geode::Client::Generic::Serializable::operator Apache::Geode::Client::Generic::Serializable^ (array<String^>^ value)
+      Apache::Geode::Client::Serializable::operator Apache::Geode::Client::Serializable^ (array<String^>^ value)
       {
-        return (Apache::Geode::Client::Generic::Serializable^)CacheableStringArray::Create(value);
+        return (Apache::Geode::Client::Serializable^)CacheableStringArray::Create(value);
       }
 
 			int32 Serializable::GetPDXIdForType(const char* poolName, IGFSerializable^ pdxType)
@@ -485,7 +484,7 @@ namespace Generic
 				}
       }
 
-      void Apache::Geode::Client::Generic::Serializable::RegisterTypeGeneric(TypeFactoryMethodGeneric^ creationMethod)
+      void Apache::Geode::Client::Serializable::RegisterTypeGeneric(TypeFactoryMethodGeneric^ creationMethod)
       {
         if (creationMethod == nullptr) {
           throw gcnew IllegalArgumentException("Serializable.RegisterType(): "
@@ -522,7 +521,7 @@ namespace Generic
         _GF_MG_EXCEPTION_CATCH_ALL2
       }
 
-      void Apache::Geode::Client::Generic::Serializable::RegisterTypeGeneric(Byte typeId,
+      void Apache::Geode::Client::Serializable::RegisterTypeGeneric(Byte typeId,
         TypeFactoryMethodGeneric^ creationMethod, Type^ type)
       {
         if (creationMethod == nullptr) {
@@ -572,7 +571,7 @@ namespace Generic
         }
       }
 
-      void Apache::Geode::Client::Generic::Serializable::UnregisterTypeGeneric(Byte typeId)
+      void Apache::Geode::Client::Serializable::UnregisterTypeGeneric(Byte typeId)
       {
         BuiltInDelegatesGeneric->Remove(typeId);
         _GF_MG_EXCEPTION_TRY2
@@ -582,7 +581,7 @@ namespace Generic
         _GF_MG_EXCEPTION_CATCH_ALL2
       }
 
-      void Apache::Geode::Client::Generic::Serializable::RegisterWrapperGeneric(
+      void Apache::Geode::Client::Serializable::RegisterWrapperGeneric(
         WrapperDelegateGeneric^ wrapperMethod, Byte typeId, System::Type^ type)
       {
         if (typeId < 0 || typeId > WrapperEndGeneric)
@@ -594,7 +593,7 @@ namespace Generic
 				ManagedTypeMappingGeneric[type] = typeId;
       }
 
-      void Apache::Geode::Client::Generic::Serializable::UnregisterNativesGeneric()
+      void Apache::Geode::Client::Serializable::UnregisterNativesGeneric()
       {
         BuiltInDelegatesGeneric->Clear();
         for (Byte typeId = 0; typeId <= WrapperEndGeneric; ++typeId) {
@@ -684,8 +683,8 @@ namespace Generic
 					case apache::geode::client::GemfireTypeIds::CacheableDate:
           {
 						//TODO::
-            Apache::Geode::Client::Generic::CacheableDate^ ret = static_cast<Apache::Geode::Client::Generic::CacheableDate ^>
-              ( SafeGenericUMSerializableConvert<Apache::Geode::Client::Generic::CacheableDate^>(val.ptr()));
+            Apache::Geode::Client::CacheableDate^ ret = static_cast<Apache::Geode::Client::CacheableDate ^>
+              ( SafeGenericUMSerializableConvert<Apache::Geode::Client::CacheableDate^>(val.ptr()));
 
             System::DateTime dt(ret->Value.Ticks);
             return safe_cast<TValue>(dt);
@@ -714,50 +713,50 @@ namespace Generic
           }
         case apache::geode::client::GemfireTypeIds::CacheableBytes:
           {
-            Apache::Geode::Client::Generic::CacheableBytes^ ret = safe_cast<Apache::Geode::Client::Generic::CacheableBytes ^>
-              ( SafeGenericUMSerializableConvert<Apache::Geode::Client::Generic::CacheableBytes^>(val.ptr()));
+            Apache::Geode::Client::CacheableBytes^ ret = safe_cast<Apache::Geode::Client::CacheableBytes ^>
+              ( SafeGenericUMSerializableConvert<Apache::Geode::Client::CacheableBytes^>(val.ptr()));
 
             return safe_cast<TValue>(ret->Value);            
           }
         case apache::geode::client::GemfireTypeIds::CacheableDoubleArray:
           {
-            Apache::Geode::Client::Generic::CacheableDoubleArray^ ret = safe_cast<Apache::Geode::Client::Generic::CacheableDoubleArray ^>
-              ( SafeGenericUMSerializableConvert<Apache::Geode::Client::Generic::CacheableDoubleArray^>(val.ptr()));
+            Apache::Geode::Client::CacheableDoubleArray^ ret = safe_cast<Apache::Geode::Client::CacheableDoubleArray ^>
+              ( SafeGenericUMSerializableConvert<Apache::Geode::Client::CacheableDoubleArray^>(val.ptr()));
             
             return safe_cast<TValue>(ret->Value);
           }
         case apache::geode::client::GemfireTypeIds::CacheableFloatArray:
           {
-            Apache::Geode::Client::Generic::CacheableFloatArray^ ret = safe_cast<Apache::Geode::Client::Generic::CacheableFloatArray^>
-              ( SafeGenericUMSerializableConvert<Apache::Geode::Client::Generic::CacheableFloatArray^>(val.ptr()));
+            Apache::Geode::Client::CacheableFloatArray^ ret = safe_cast<Apache::Geode::Client::CacheableFloatArray^>
+              ( SafeGenericUMSerializableConvert<Apache::Geode::Client::CacheableFloatArray^>(val.ptr()));
             
             return safe_cast<TValue>(ret->Value);
           }
         case apache::geode::client::GemfireTypeIds::CacheableInt16Array:
           {
-            Apache::Geode::Client::Generic::CacheableInt16Array^ ret = safe_cast<Apache::Geode::Client::Generic::CacheableInt16Array^>
-              ( SafeGenericUMSerializableConvert<Apache::Geode::Client::Generic::CacheableInt16Array^>(val.ptr()));
+            Apache::Geode::Client::CacheableInt16Array^ ret = safe_cast<Apache::Geode::Client::CacheableInt16Array^>
+              ( SafeGenericUMSerializableConvert<Apache::Geode::Client::CacheableInt16Array^>(val.ptr()));
             
             return safe_cast<TValue>(ret->Value);
           }
         case apache::geode::client::GemfireTypeIds::CacheableInt32Array:
           {
-            Apache::Geode::Client::Generic::CacheableInt32Array^ ret = safe_cast<Apache::Geode::Client::Generic::CacheableInt32Array^>
-              ( SafeGenericUMSerializableConvert<Apache::Geode::Client::Generic::CacheableInt32Array^>(val.ptr()));
+            Apache::Geode::Client::CacheableInt32Array^ ret = safe_cast<Apache::Geode::Client::CacheableInt32Array^>
+              ( SafeGenericUMSerializableConvert<Apache::Geode::Client::CacheableInt32Array^>(val.ptr()));
 
             return safe_cast<TValue>(ret->Value);
           }
         case apache::geode::client::GemfireTypeIds::CacheableInt64Array:
           {
-						Apache::Geode::Client::Generic::CacheableInt64Array^ ret = safe_cast<Apache::Geode::Client::Generic::CacheableInt64Array^>
-              ( SafeGenericUMSerializableConvert<Apache::Geode::Client::Generic::CacheableInt64Array^>(val.ptr()));
+						Apache::Geode::Client::CacheableInt64Array^ ret = safe_cast<Apache::Geode::Client::CacheableInt64Array^>
+              ( SafeGenericUMSerializableConvert<Apache::Geode::Client::CacheableInt64Array^>(val.ptr()));
             
             return safe_cast<TValue>(ret->Value);
           }
         case apache::geode::client::GemfireTypeIds::CacheableStringArray:
           {
-            Apache::Geode::Client::Generic::CacheableStringArray^ ret = safe_cast<Apache::Geode::Client::Generic::CacheableStringArray^>
-              ( SafeGenericUMSerializableConvert<Apache::Geode::Client::Generic::CacheableStringArray^>(val.ptr()));
+            Apache::Geode::Client::CacheableStringArray^ ret = safe_cast<Apache::Geode::Client::CacheableStringArray^>
+              ( SafeGenericUMSerializableConvert<Apache::Geode::Client::CacheableStringArray^>(val.ptr()));
                         
            /* array<String^>^ str = gcnew array<String^>(ret->GetValues()->Length);
             for(int i=0; i<ret->GetValues()->Length; i++ ) {
@@ -768,123 +767,123 @@ namespace Generic
           }
         case apache::geode::client::GemfireTypeIds::CacheableArrayList://Ilist generic
           {
-            Apache::Geode::Client::Generic::CacheableArrayList^ ret = safe_cast<Apache::Geode::Client::Generic::CacheableArrayList^>
-             ( SafeGenericUMSerializableConvert<Apache::Geode::Client::Generic::CacheableArrayList^>(val.ptr()));
+            Apache::Geode::Client::CacheableArrayList^ ret = safe_cast<Apache::Geode::Client::CacheableArrayList^>
+             ( SafeGenericUMSerializableConvert<Apache::Geode::Client::CacheableArrayList^>(val.ptr()));
             
             return safe_cast<TValue>(ret->Value);
           }
         case apache::geode::client::GemfireTypeIds::CacheableLinkedList://LinkedList generic
           {
-            Apache::Geode::Client::Generic::CacheableLinkedList^ ret = safe_cast<Apache::Geode::Client::Generic::CacheableLinkedList^>
-             ( SafeGenericUMSerializableConvert<Apache::Geode::Client::Generic::CacheableLinkedList^>(val.ptr()));
+            Apache::Geode::Client::CacheableLinkedList^ ret = safe_cast<Apache::Geode::Client::CacheableLinkedList^>
+             ( SafeGenericUMSerializableConvert<Apache::Geode::Client::CacheableLinkedList^>(val.ptr()));
             
             return safe_cast<TValue>(ret->Value);
           }		  
         case apache::geode::client::GemfireTypeIds::CacheableHashTable://collection::hashtable
           {
-            Apache::Geode::Client::Generic::CacheableHashTable^ ret = safe_cast<Apache::Geode::Client::Generic::CacheableHashTable^>
-              ( SafeGenericUMSerializableConvert<Apache::Geode::Client::Generic::CacheableHashTable^>(val.ptr()));
+            Apache::Geode::Client::CacheableHashTable^ ret = safe_cast<Apache::Geode::Client::CacheableHashTable^>
+              ( SafeGenericUMSerializableConvert<Apache::Geode::Client::CacheableHashTable^>(val.ptr()));
             
             return safe_cast<TValue>(ret->Value);
           }
         case apache::geode::client::GemfireTypeIds::CacheableHashMap://generic dictionary
           {
-           Apache::Geode::Client::Generic::CacheableHashMap^ ret = safe_cast<Apache::Geode::Client::Generic::CacheableHashMap^>
-             ( SafeGenericUMSerializableConvert<Apache::Geode::Client::Generic::CacheableHashMap^>(val.ptr()));
+           Apache::Geode::Client::CacheableHashMap^ ret = safe_cast<Apache::Geode::Client::CacheableHashMap^>
+             ( SafeGenericUMSerializableConvert<Apache::Geode::Client::CacheableHashMap^>(val.ptr()));
             
             return safe_cast<TValue>(ret->Value);
           }
 				case apache::geode::client::GemfireTypeIds::CacheableIdentityHashMap:
           {
-            Apache::Geode::Client::Generic::CacheableIdentityHashMap^ ret = static_cast<Apache::Geode::Client::Generic::CacheableIdentityHashMap^>
-							( SafeGenericUMSerializableConvert<Apache::Geode::Client::Generic::CacheableIdentityHashMap^>(val.ptr()));            
+            Apache::Geode::Client::CacheableIdentityHashMap^ ret = static_cast<Apache::Geode::Client::CacheableIdentityHashMap^>
+							( SafeGenericUMSerializableConvert<Apache::Geode::Client::CacheableIdentityHashMap^>(val.ptr()));            
             return safe_cast<TValue>(ret->Value);
           }
 				 case apache::geode::client::GemfireTypeIds::CacheableHashSet://no need of it, default case should work
         {
-          Apache::Geode::Client::Generic::CacheableHashSet^ ret = static_cast<Apache::Geode::Client::Generic::CacheableHashSet^>
-						( SafeGenericUMSerializableConvert<Apache::Geode::Client::Generic::CacheableHashSet^>(val.ptr()));
+          Apache::Geode::Client::CacheableHashSet^ ret = static_cast<Apache::Geode::Client::CacheableHashSet^>
+						( SafeGenericUMSerializableConvert<Apache::Geode::Client::CacheableHashSet^>(val.ptr()));
           return safe_cast<TValue>(ret);
         }
         case apache::geode::client::GemfireTypeIds::CacheableLinkedHashSet://no need of it, default case should work
         {
-          Apache::Geode::Client::Generic::CacheableLinkedHashSet^ ret = static_cast<Apache::Geode::Client::Generic::CacheableLinkedHashSet^>
-						( SafeGenericUMSerializableConvert<Apache::Geode::Client::Generic::CacheableLinkedHashSet^>(val.ptr()));
+          Apache::Geode::Client::CacheableLinkedHashSet^ ret = static_cast<Apache::Geode::Client::CacheableLinkedHashSet^>
+						( SafeGenericUMSerializableConvert<Apache::Geode::Client::CacheableLinkedHashSet^>(val.ptr()));
           return safe_cast<TValue>(ret);
         }
 				case apache::geode::client::GemfireTypeIds::CacheableFileName:
         {
-          Apache::Geode::Client::Generic::CacheableFileName^ ret = static_cast<Apache::Geode::Client::Generic::CacheableFileName^>
-						( SafeGenericUMSerializableConvert<Apache::Geode::Client::Generic::CacheableFileName^>(val.ptr()));
+          Apache::Geode::Client::CacheableFileName^ ret = static_cast<Apache::Geode::Client::CacheableFileName^>
+						( SafeGenericUMSerializableConvert<Apache::Geode::Client::CacheableFileName^>(val.ptr()));
           return safe_cast<TValue>(ret);
         }
 				 case apache::geode::client::GemfireTypeIds::CacheableObjectArray:
         {
-          Apache::Geode::Client::Generic::CacheableObjectArray^ ret = static_cast<Apache::Geode::Client::Generic::CacheableObjectArray^>
-						( SafeGenericUMSerializableConvert<Apache::Geode::Client::Generic::CacheableObjectArray^>(val.ptr()));
+          Apache::Geode::Client::CacheableObjectArray^ ret = static_cast<Apache::Geode::Client::CacheableObjectArray^>
+						( SafeGenericUMSerializableConvert<Apache::Geode::Client::CacheableObjectArray^>(val.ptr()));
           return safe_cast<TValue>(ret);
         }
 				case apache::geode::client::GemfireTypeIds::CacheableVector://collection::arraylist
         {
-          Apache::Geode::Client::Generic::CacheableVector^ ret = static_cast<Apache::Geode::Client::Generic::CacheableVector^>
-						( SafeGenericUMSerializableConvert<Apache::Geode::Client::Generic::CacheableVector^>(val.ptr()));
+          Apache::Geode::Client::CacheableVector^ ret = static_cast<Apache::Geode::Client::CacheableVector^>
+						( SafeGenericUMSerializableConvert<Apache::Geode::Client::CacheableVector^>(val.ptr()));
           return safe_cast<TValue>(ret->Value);
         }
 				case apache::geode::client::GemfireTypeIds::CacheableUndefined:
         {
-          Apache::Geode::Client::Generic::CacheableUndefined^ ret = static_cast<Apache::Geode::Client::Generic::CacheableUndefined^>
-						( SafeGenericUMSerializableConvert<Apache::Geode::Client::Generic::CacheableUndefined^>(val.ptr()));
+          Apache::Geode::Client::CacheableUndefined^ ret = static_cast<Apache::Geode::Client::CacheableUndefined^>
+						( SafeGenericUMSerializableConvert<Apache::Geode::Client::CacheableUndefined^>(val.ptr()));
           return safe_cast<TValue>(ret);
         }
         case apache::geode::client::GemfireTypeIds::Struct:
         {
-          return safe_cast<TValue>(Apache::Geode::Client::Generic::Struct::Create(val.ptr()));
+          return safe_cast<TValue>(Apache::Geode::Client::Struct::Create(val.ptr()));
         }
 				case apache::geode::client::GemfireTypeIds::CacheableStack:
         {
-          Apache::Geode::Client::Generic::CacheableStack^ ret = static_cast<Apache::Geode::Client::Generic::CacheableStack^>
-						( SafeGenericUMSerializableConvert<Apache::Geode::Client::Generic::CacheableStack^>(val.ptr()));
+          Apache::Geode::Client::CacheableStack^ ret = static_cast<Apache::Geode::Client::CacheableStack^>
+						( SafeGenericUMSerializableConvert<Apache::Geode::Client::CacheableStack^>(val.ptr()));
           return safe_cast<TValue>(ret->Value);
         }
         case 7: //GemFireClassIds::CacheableManagedObject
         {
-          Apache::Geode::Client::Generic::CacheableObject^ ret = static_cast<Apache::Geode::Client::Generic::CacheableObject^>
-						( SafeGenericUMSerializableConvert<Apache::Geode::Client::Generic::CacheableObject^>(val.ptr()));
+          Apache::Geode::Client::CacheableObject^ ret = static_cast<Apache::Geode::Client::CacheableObject^>
+						( SafeGenericUMSerializableConvert<Apache::Geode::Client::CacheableObject^>(val.ptr()));
           return safe_cast<TValue>(ret);
         }
         case 8://GemFireClassIds::CacheableManagedObjectXml
         {
-          Apache::Geode::Client::Generic::CacheableObjectXml^ ret = static_cast<Apache::Geode::Client::Generic::CacheableObjectXml^>
-						( SafeGenericUMSerializableConvert<Apache::Geode::Client::Generic::CacheableObjectXml^>(val.ptr()));
+          Apache::Geode::Client::CacheableObjectXml^ ret = static_cast<Apache::Geode::Client::CacheableObjectXml^>
+						( SafeGenericUMSerializableConvert<Apache::Geode::Client::CacheableObjectXml^>(val.ptr()));
           return safe_cast<TValue>(ret);
         }
           /*  TODO: replace with IDictionary<K, V>
         case apache::geode::client::GemfireTypeIds::Properties:
           {
-            Apache::Geode::Client::Generic::Properties^ ret = safe_cast<Apache::Geode::Client::Generic::Properties^>
-              ( SafeGenericUMSerializableConvert<Apache::Geode::Client::Generic::Properties^>(val.ptr()));
+            Apache::Geode::Client::Properties^ ret = safe_cast<Apache::Geode::Client::Properties^>
+              ( SafeGenericUMSerializableConvert<Apache::Geode::Client::Properties^>(val.ptr()));
             
             return safe_cast<TValue>(ret);
           }*/
        
         case apache::geode::client::GemfireTypeIds::BooleanArray:
           {
-						Apache::Geode::Client::Generic::BooleanArray^ ret = safe_cast<Apache::Geode::Client::Generic::BooleanArray^>
-              ( SafeGenericUMSerializableConvert<Apache::Geode::Client::Generic::BooleanArray^>(val.ptr()));
+						Apache::Geode::Client::BooleanArray^ ret = safe_cast<Apache::Geode::Client::BooleanArray^>
+              ( SafeGenericUMSerializableConvert<Apache::Geode::Client::BooleanArray^>(val.ptr()));
             
             return safe_cast<TValue>(ret->Value);
 					}
         case apache::geode::client::GemfireTypeIds::CharArray:
           {
-						Apache::Geode::Client::Generic::CharArray^ ret = safe_cast<Apache::Geode::Client::Generic::CharArray^>
-              ( SafeGenericUMSerializableConvert<Apache::Geode::Client::Generic::CharArray^>(val.ptr()));
+						Apache::Geode::Client::CharArray^ ret = safe_cast<Apache::Geode::Client::CharArray^>
+              ( SafeGenericUMSerializableConvert<Apache::Geode::Client::CharArray^>(val.ptr()));
             
             return safe_cast<TValue>(ret->Value);
 					}
         case 0://UserFunctionExecutionException unregistered
           {            
-						Apache::Geode::Client::Generic::UserFunctionExecutionException^ ret = static_cast<Apache::Geode::Client::Generic::UserFunctionExecutionException^>
-              ( SafeGenericUMSerializableConvert<Apache::Geode::Client::Generic::UserFunctionExecutionException^>(val.ptr()));            
+						Apache::Geode::Client::UserFunctionExecutionException^ ret = static_cast<Apache::Geode::Client::UserFunctionExecutionException^>
+              ( SafeGenericUMSerializableConvert<Apache::Geode::Client::UserFunctionExecutionException^>(val.ptr()));            
             return safe_cast<TValue>(ret);
 					}
         default:
@@ -1042,7 +1041,7 @@ namespace Generic
       apache::geode::client::CacheableKeyPtr Serializable::GetUnmanagedValueGeneric(
         Type^ managedType, TKey key, bool isAsciiChar)
       {
-        Byte typeId = Apache::Geode::Client::Generic::Serializable::GetManagedTypeMappingGeneric(managedType);        
+        Byte typeId = Apache::Geode::Client::Serializable::GetManagedTypeMappingGeneric(managedType);        
 
         switch(typeId)
         {
@@ -1106,84 +1105,84 @@ namespace Generic
          }
         case apache::geode::client::GemfireTypeIds::CacheableBytes:
           {
-						apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::Generic::CacheableBytes::Create((array<Byte>^)key)));
+						apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::CacheableBytes::Create((array<Byte>^)key)));
               return kPtr;
             /*if( managedType == Type::GetType("System.Byte[]") ) {
-              apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::Generic::CacheableBytes::Create((array<Byte>^)key)));
+              apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::CacheableBytes::Create((array<Byte>^)key)));
               return kPtr;
             }
             else {
-              apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::Generic::CacheableBytes::Create(getSByteArray((array<SByte>^)key))));
+              apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::CacheableBytes::Create(getSByteArray((array<SByte>^)key))));
               return kPtr;
             }*/
           }
         case apache::geode::client::GemfireTypeIds::CacheableDoubleArray:
           {
-            apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::Generic::CacheableDoubleArray::Create((array<Double>^)key)));
+            apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::CacheableDoubleArray::Create((array<Double>^)key)));
             return kPtr;
           }
         case apache::geode::client::GemfireTypeIds::CacheableFloatArray:
         {
-          apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::Generic::CacheableFloatArray::Create((array<float>^)key)));
+          apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::CacheableFloatArray::Create((array<float>^)key)));
            return kPtr;
         }
         case apache::geode::client::GemfireTypeIds::CacheableInt16Array:
         {
-					 apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::Generic::CacheableInt16Array::Create((array<Int16>^)key)));
+					 apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::CacheableInt16Array::Create((array<Int16>^)key)));
             return kPtr;
          /* if( managedType == Type::GetType("System.Int16[]") ) {
-            apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::Generic::CacheableInt16Array::Create((array<Int16>^)key)));
+            apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::CacheableInt16Array::Create((array<Int16>^)key)));
             return kPtr;
           }
           else { 
-            apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::Generic::CacheableInt16Array::Create(getInt16Array((array<uint16_t>^)key))));
+            apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::CacheableInt16Array::Create(getInt16Array((array<uint16_t>^)key))));
             return kPtr;
           }  */          
         }
         case apache::geode::client::GemfireTypeIds::CacheableInt32Array:
         {
-					 apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::Generic::CacheableInt32Array::Create((array<Int32>^)key)));
+					 apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::CacheableInt32Array::Create((array<Int32>^)key)));
             return kPtr;
         /*  if( managedType == Type::GetType("System.Int32[]") ) {
-            apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::Generic::CacheableInt32Array::Create((array<Int32>^)key)));
+            apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::CacheableInt32Array::Create((array<Int32>^)key)));
             return kPtr;
           }
           else { 
-            apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::Generic::CacheableInt32Array::Create(getInt32Array((array<uint32_t>^)key))));
+            apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::CacheableInt32Array::Create(getInt32Array((array<uint32_t>^)key))));
             return kPtr;
           }       */   
         }
         case apache::geode::client::GemfireTypeIds::CacheableInt64Array:
         {
-					apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::Generic::CacheableInt64Array::Create((array<Int64>^)key)));
+					apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::CacheableInt64Array::Create((array<Int64>^)key)));
             return kPtr;
           /*if( managedType == Type::GetType("System.Int64[]") ) {
-            apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::Generic::CacheableInt64Array::Create((array<Int64>^)key)));
+            apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::CacheableInt64Array::Create((array<Int64>^)key)));
             return kPtr;
           }
           else { 
-            apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::Generic::CacheableInt64Array::Create(getInt64Array((array<uint64_t>^)key))));
+            apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::CacheableInt64Array::Create(getInt64Array((array<uint64_t>^)key))));
             return kPtr;
           }     */                  
         }
         case apache::geode::client::GemfireTypeIds::CacheableStringArray:
         {
-          apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::Generic::CacheableStringArray::Create((array<String^>^)key)));
+          apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::CacheableStringArray::Create((array<String^>^)key)));
            return kPtr;
         }
 				case apache::geode::client::GemfireTypeIds::CacheableFileName:
         {
-					apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)(Apache::Geode::Client::Generic::CacheableFileName^)key));
+					apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)(Apache::Geode::Client::CacheableFileName^)key));
           return kPtr;
         }
         case apache::geode::client::GemfireTypeIds::CacheableHashTable://collection::hashtable
         {
-          apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::Generic::CacheableHashTable::Create((System::Collections::Hashtable^)key)));
+          apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::CacheableHashTable::Create((System::Collections::Hashtable^)key)));
           return kPtr;
         }
         case apache::geode::client::GemfireTypeIds::CacheableHashMap://generic dictionary
         {
-          apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::Generic::CacheableHashMap::Create((System::Collections::IDictionary^)key)));
+          apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::CacheableHashMap::Create((System::Collections::IDictionary^)key)));
           return kPtr;
         }
         case apache::geode::client::GemfireTypeIds::CacheableVector://collection::arraylist
@@ -1193,62 +1192,62 @@ namespace Generic
         }
         case apache::geode::client::GemfireTypeIds::CacheableArrayList://generic ilist
         {
-          apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::Generic::CacheableArrayList::Create((System::Collections::IList^)key)));
+          apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::CacheableArrayList::Create((System::Collections::IList^)key)));
           return kPtr;
         } 
         case apache::geode::client::GemfireTypeIds::CacheableLinkedList://generic linked list
         {
-          apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::Generic::CacheableLinkedList::Create((System::Collections::Generic::LinkedList<Object^>^)key)));
+          apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::CacheableLinkedList::Create((System::Collections::Generic::LinkedList<Object^>^)key)));
           return kPtr;
         }		
 		case apache::geode::client::GemfireTypeIds::CacheableStack:
         {
-          apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert(Apache::Geode::Client::Generic::CacheableStack::Create((System::Collections::ICollection^)key)));
+          apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert(Apache::Geode::Client::CacheableStack::Create((System::Collections::ICollection^)key)));
           return kPtr;
         }
         case 7: //GemFireClassIds::CacheableManagedObject
         {
-          apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((Apache::Geode::Client::Generic::CacheableObject^)key));
+          apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((Apache::Geode::Client::CacheableObject^)key));
           return kPtr;
         }
         case 8://GemFireClassIds::CacheableManagedObjectXml
         {
-          apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((Apache::Geode::Client::Generic::CacheableObjectXml^)key));
+          apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((Apache::Geode::Client::CacheableObjectXml^)key));
           return kPtr;
         }
 				 case apache::geode::client::GemfireTypeIds::CacheableObjectArray:
         {
-          apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((Apache::Geode::Client::Generic::CacheableObjectArray^)key));
+          apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((Apache::Geode::Client::CacheableObjectArray^)key));
           return kPtr;
         }
 			  case apache::geode::client::GemfireTypeIds::CacheableIdentityHashMap:
         {
-          apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert(Apache::Geode::Client::Generic::CacheableIdentityHashMap::Create((System::Collections::IDictionary^)key)));
+          apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert(Apache::Geode::Client::CacheableIdentityHashMap::Create((System::Collections::IDictionary^)key)));
           return kPtr;
         }
         case apache::geode::client::GemfireTypeIds::CacheableHashSet://no need of it, default case should work
         {
-          apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((Apache::Geode::Client::Generic::CacheableHashSet^)key));
+          apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((Apache::Geode::Client::CacheableHashSet^)key));
           return kPtr;
         }
         case apache::geode::client::GemfireTypeIds::CacheableLinkedHashSet://no need of it, default case should work
         {
-          apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((Apache::Geode::Client::Generic::CacheableLinkedHashSet^)key));
+          apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((Apache::Geode::Client::CacheableLinkedHashSet^)key));
           return kPtr;
         }
         case apache::geode::client::GemfireTypeIds::CacheableDate:
           {
-            apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::Generic::CacheableDate::Create((System::DateTime)key)));
+            apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::CacheableDate::Create((System::DateTime)key)));
             return kPtr;
           }
         case apache::geode::client::GemfireTypeIds::BooleanArray:
           {   
-					  apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::Generic::BooleanArray::Create((array<bool>^)key)));
+					  apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::BooleanArray::Create((array<bool>^)key)));
             return kPtr;
 					}
         case apache::geode::client::GemfireTypeIds::CharArray:
           {
-					  apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::Generic::CharArray::Create((array<Char>^)key)));
+					  apache::geode::client::CacheablePtr kPtr(SafeGenericMSerializableConvert((IGFSerializable^)Apache::Geode::Client::CharArray::Create((array<Char>^)key)));
             return kPtr;
 					}
         default:
@@ -1522,9 +1521,8 @@ namespace Generic
             dArray[index] = sArray[index];
           }          
           return dArray;
-        }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-      } // end namespace Generic
-    }
-  }
 }

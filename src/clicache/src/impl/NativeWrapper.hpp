@@ -29,8 +29,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       namespace Internal
       {
 
@@ -521,9 +520,9 @@ namespace Generic
           NTYPE* m_nativeptr;
           bool m_own;
         };
-      }
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 }
 

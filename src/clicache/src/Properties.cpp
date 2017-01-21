@@ -32,8 +32,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       // Visitor class to get string representations of a property object
       ref class PropertyToString
       {
@@ -46,7 +45,7 @@ namespace Generic
         inline PropertyToString( ) : m_str( "{" )
         { }
 
-        void Visit( Apache::Geode::Client::Generic::ICacheableKey^ key, IGFSerializable^ value )
+        void Visit( Apache::Geode::Client::ICacheableKey^ key, IGFSerializable^ value )
         {
           if ( m_str->Length > 1 ) {
             m_str += ",";
@@ -81,7 +80,7 @@ namespace Generic
        // _GF_MG_EXCEPTION_CATCH_ALL2
       }
 
-      /*IGFSerializable^ Properties::Find( Apache::Geode::Client::Generic::ICacheableKey^ key)
+      /*IGFSerializable^ Properties::Find( Apache::Geode::Client::ICacheableKey^ key)
       {
         CacheableString^ cStr = dynamic_cast<CacheableString ^>(key);
 
@@ -194,7 +193,7 @@ namespace Generic
         _GF_MG_EXCEPTION_CATCH_ALL2
       }*/
 
-      /*void Properties::Insert( Apache::Geode::Client::Generic::ICacheableKey^ key, IGFSerializable^ value)
+      /*void Properties::Insert( Apache::Geode::Client::ICacheableKey^ key, IGFSerializable^ value)
       {
         CacheableString^ cStr = dynamic_cast<CacheableString ^>(key);
         if (cStr != nullptr) {
@@ -266,7 +265,7 @@ namespace Generic
       }
       */
 
-	  /*void Properties::Insert( Apache::Geode::Client::Generic::ICacheableKey^ key, Serializable^ value)
+	  /*void Properties::Insert( Apache::Geode::Client::ICacheableKey^ key, Serializable^ value)
       {
         CacheableString^ cStr = dynamic_cast<CacheableString ^>(key);
         if (cStr != nullptr) {
@@ -345,7 +344,7 @@ namespace Generic
         _GF_MG_EXCEPTION_CATCH_ALL2
       }
 
-      /*void Properties::Remove( Apache::Geode::Client::Generic::ICacheableKey^ key)
+      /*void Properties::Remove( Apache::Geode::Client::ICacheableKey^ key)
       {
         CacheableString^ cStr = dynamic_cast<CacheableString ^>(key);
         if (cStr != nullptr) {
@@ -574,9 +573,9 @@ namespace Generic
               NativePtr->fromData( input ) ) );
 
           _GF_MG_EXCEPTION_CATCH_ALL2
-        }
-      }
-      } // end namespace Generic
-    }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
   }
 }

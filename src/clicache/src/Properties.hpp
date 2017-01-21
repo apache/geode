@@ -40,13 +40,11 @@ namespace Apache
   {
     namespace Client
     {
-delegate void PropertyVisitor(Apache::Geode::Client::Generic::ICacheableKey^ key, Apache::Geode::Client::Generic::IGFSerializable^ value);
+
+delegate void PropertyVisitor(Apache::Geode::Client::ICacheableKey^ key, Apache::Geode::Client::IGFSerializable^ value);
 
       generic <class TPropKey, class TPropValue>
       ref class PropertyVisitorProxy;
-
-      namespace Generic
-      {
 
       /// <summary>
       /// Delegate that represents visitor for the <c>Properties</c> class.
@@ -286,35 +284,34 @@ delegate void PropertyVisitor(Apache::Geode::Client::Generic::ICacheableKey^ key
         inline Properties( apache::geode::client::Serializable* nativeptr )
           : SBWrap( (apache::geode::client::Properties*)nativeptr ) { }
       };
-      } // end namespace Generic
 
       generic <class TPropKey, class TPropValue>
       ref class PropertyVisitorProxy
       {
       public:
-        void Visit(Apache::Geode::Client::Generic::ICacheableKey^ key,
-          Apache::Geode::Client::Generic::IGFSerializable^ value)
+        void Visit(Apache::Geode::Client::ICacheableKey^ key,
+          Apache::Geode::Client::IGFSerializable^ value)
         {
-          TPropKey tpkey = Apache::Geode::Client::Generic::Serializable::
+          TPropKey tpkey = Apache::Geode::Client::Serializable::
             GetManagedValueGeneric<TPropKey>(SerializablePtr(SafeMSerializableConvertGeneric(key)));
-          TPropValue tpvalue = Apache::Geode::Client::Generic::Serializable::
+          TPropValue tpvalue = Apache::Geode::Client::Serializable::
             GetManagedValueGeneric<TPropValue>(SerializablePtr(SafeMSerializableConvertGeneric(value)));
           m_visitor->Invoke(tpkey, tpvalue);
         }
 
         void SetPropertyVisitorGeneric(
-          Apache::Geode::Client::Generic::PropertyVisitorGeneric<TPropKey, TPropValue>^ visitor)
+          Apache::Geode::Client::PropertyVisitorGeneric<TPropKey, TPropValue>^ visitor)
         {
           m_visitor = visitor;
         }
 
       private:
 
-        Apache::Geode::Client::Generic::PropertyVisitorGeneric<TPropKey, TPropValue>^ m_visitor;
+        Apache::Geode::Client::PropertyVisitorGeneric<TPropKey, TPropValue>^ m_visitor;
 
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
 

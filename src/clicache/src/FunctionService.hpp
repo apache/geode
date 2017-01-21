@@ -31,8 +31,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
     //  generic<class TKey, class TValue>
       ref class Pool;
      
@@ -104,8 +103,7 @@ namespace Generic
           : SBWrap( nativeptr ) { }
 
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

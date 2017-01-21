@@ -27,8 +27,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       /// <summary>
       /// Utility class that implements all methods in <c>ICacheListener</c>
@@ -72,15 +70,14 @@ namespace Generic
         {
         }
 
-        virtual void Close(Apache::Geode::Client::Generic::IRegion<TKey, TValue>^ region)
+        virtual void Close(Apache::Geode::Client::IRegion<TKey, TValue>^ region)
         {
         }
-		virtual void AfterRegionDisconnected(Apache::Geode::Client::Generic::IRegion<TKey, TValue>^ region)
+		virtual void AfterRegionDisconnected(Apache::Geode::Client::IRegion<TKey, TValue>^ region)
         {
         }
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

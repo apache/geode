@@ -23,8 +23,8 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
   using NUnit.Framework;
   using Apache.Geode.DUnitFramework;
   // using Apache.Geode.Client; 
-  using Apache.Geode.Client.Generic;
-  //using Region = Apache.Geode.Client.Generic.IRegion<Object, Object>;
+  using Apache.Geode.Client;
+  //using Region = Apache.Geode.Client.IRegion<Object, Object>;
 
   [TestFixture]
   [Category("group1")]
@@ -598,7 +598,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
       }
 
       Util.Log("Executing onRegion FE with custom key and custom partitionResolver");
-      Apache.Geode.Client.Generic.Execution<object> exc = Generic.FunctionService<object>.OnRegion<TradeKey, object>(region);
+      Apache.Geode.Client.Execution<object> exc = Client.FunctionService<object>.OnRegion<TradeKey, object>(region);
       Assert.IsTrue(exc != null, "onRegion Returned NULL");
 
       TradeKey[] filter = new TradeKey[901];
@@ -610,7 +610,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
       }
       Util.Log("filter count= {0}.", filter.Length);
 
-      Generic.IResultCollector<object> rc = exc.WithFilter<TradeKey>(filter).Execute(FEOnRegionPrSHOP_OptimizeForWrite, 15);
+      Client.IResultCollector<object> rc = exc.WithFilter<TradeKey>(filter).Execute(FEOnRegionPrSHOP_OptimizeForWrite, 15);
       Util.Log("FEOnRegionPrSHOP_OptimizeForWrite executed");
       ICollection<object> executeFunctionResult = rc.GetResult();
       Util.Log("OnRegionPrSHOP for filter executeFunctionResult.Count = {0} ", executeFunctionResult.Count);

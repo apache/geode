@@ -28,7 +28,7 @@ namespace Apache.Geode.Client.FwkLib
 {
   using Apache.Geode.DUnitFramework;
   using Apache.Geode.Client.Tests.NewAPI;
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
   public class PutTask<TKey, TVal> : ClientTask
   {
     #region Private members

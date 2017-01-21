@@ -46,8 +46,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
 			/// <summary>
       /// This interface provides for the configuration and creation of instances of Region.
       /// </summary>
@@ -179,7 +178,7 @@ namespace Generic
         /// </param>
         /// <returns>the instance of RegionFactory</returns>
         generic <class TKey, class TValue>
-        RegionFactory^ SetPersistenceManager( Generic::IPersistenceManager<TKey, TValue>^ persistenceManager );
+        RegionFactory^ SetPersistenceManager( Client::IPersistenceManager<TKey, TValue>^ persistenceManager );
         
         /// <summary>
         /// Sets the persistence manager for the <c>RegionAttributes</c> being created.
@@ -192,7 +191,7 @@ namespace Generic
         /// </param>
         /// <returns>the instance of RegionFactory</returns>
         generic <class TKey, class TValue>
-        RegionFactory^ SetPersistenceManager( Generic::IPersistenceManager<TKey, TValue>^ persistenceManager, 
+        RegionFactory^ SetPersistenceManager( Client::IPersistenceManager<TKey, TValue>^ persistenceManager, 
             Properties<String^, String^>^ config);
 
         /// <summary>
@@ -444,8 +443,8 @@ namespace Generic
       inline RegionFactory( apache::geode::client::RegionFactory* nativeptr )
 				: Internal::SBWrap<apache::geode::client::RegionFactory>( nativeptr ) { }
       };
-      } // end namespace Generic
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 

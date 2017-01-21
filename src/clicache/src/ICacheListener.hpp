@@ -30,8 +30,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       /// <summary>
       /// An application plug-in that can be installed on a region.
       /// </summary>
@@ -205,8 +204,7 @@ namespace Generic
         ///</param>
         void AfterRegionDisconnected( IRegion<TKey, TValue>^ region );
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

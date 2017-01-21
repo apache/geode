@@ -31,8 +31,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
 			interface class IGFSerializable;
 
       generic<class TResult>
@@ -116,8 +115,7 @@ namespace Generic
         inline ResultSet(apache::geode::client::ResultSet* nativeptr)
           : SBWrap(nativeptr) { }
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

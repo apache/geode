@@ -23,7 +23,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
   using Apache.Geode.DUnitFramework;
 
   using Apache.Geode.Client;
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
 
   class TallyResolver<TKey, TVal> : IPartitionResolver<TKey, TVal>
   {

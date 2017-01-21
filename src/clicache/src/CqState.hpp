@@ -29,8 +29,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       /// <summary>
       /// Enumerated type for cq state
@@ -93,8 +91,7 @@ namespace Generic
 		            : UMWrap( nativeptr, false ) { }
 
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

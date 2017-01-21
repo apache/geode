@@ -32,8 +32,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
 				ref class TransactionId;
 				ref class Cache;
 
@@ -51,9 +50,9 @@ namespace Generic
             /// <summary>
             /// Gets the transaction id for this transaction.
             /// </summary>
-						property Apache::Geode::Client::Generic::TransactionId^ TransactionId
+						property Apache::Geode::Client::TransactionId^ TransactionId
             {
-							Apache::Geode::Client::Generic::TransactionId^ get( );
+							Apache::Geode::Client::TransactionId^ get( );
             }
 
          		/// <summary>
@@ -69,9 +68,9 @@ namespace Generic
             /// <summary>
             /// Gets the Cache for this transaction event
             /// </summary>
-						property Apache::Geode::Client::Generic::Cache^ Cache
+						property Apache::Geode::Client::Cache^ Cache
             {
-              Apache::Geode::Client::Generic::Cache^ get( );
+              Apache::Geode::Client::Cache^ get( );
             }
 
           internal:
@@ -82,9 +81,8 @@ namespace Generic
             inline TransactionEvent( apache::geode::client::TransactionEvent* nativeptr )
               : UMWrap( nativeptr, false ) { }
           };
-
-      }
-    }
-  }
-} //namespace 
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+ //namespace 
 #endif

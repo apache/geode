@@ -33,14 +33,13 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       interface class IGFSerializable;
       interface class IGFDelta;
-    }
-  }
-}
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 
 namespace apache
 {
@@ -69,20 +68,20 @@ namespace apache
         /// The managed object.
         /// </param>
         inline ManagedCacheableDeltaGeneric(
-          Apache::Geode::Client::Generic::IGFDelta^ managedptr)
+          Apache::Geode::Client::IGFDelta^ managedptr)
           : m_managedptr(managedptr)
         {
-          m_managedSerializableptr = dynamic_cast <Apache::Geode::Client::Generic::IGFSerializable^> (managedptr);
+          m_managedSerializableptr = dynamic_cast <Apache::Geode::Client::IGFSerializable^> (managedptr);
           m_classId = m_managedSerializableptr->ClassId;
           m_objectSize = 0;
         }
 
         inline ManagedCacheableDeltaGeneric(
-          Apache::Geode::Client::Generic::IGFDelta^ managedptr, int hashcode, int classId)
+          Apache::Geode::Client::IGFDelta^ managedptr, int hashcode, int classId)
           : m_managedptr(managedptr) {
           m_hashcode = hashcode;
           m_classId = classId;
-          m_managedSerializableptr = dynamic_cast <Apache::Geode::Client::Generic::IGFSerializable^> (managedptr);
+          m_managedSerializableptr = dynamic_cast <Apache::Geode::Client::IGFSerializable^> (managedptr);
           m_objectSize = 0;
         }
 
@@ -161,7 +160,7 @@ namespace apache
         /// <summary>
         /// Returns the wrapped managed object reference.
         /// </summary>
-        inline Apache::Geode::Client::Generic::IGFDelta^ ptr() const
+        inline Apache::Geode::Client::IGFDelta^ ptr() const
         {
           return m_managedptr;
         }
@@ -175,8 +174,8 @@ namespace apache
         /// to be called which is not what is desired when this object is destroyed. Normally this
         /// managed object may be created by the user and will be handled automatically by the GC.
         /// </summary>
-        gcroot<Apache::Geode::Client::Generic::IGFDelta^> m_managedptr;
-        gcroot<Apache::Geode::Client::Generic::IGFSerializable^> m_managedSerializableptr;
+        gcroot<Apache::Geode::Client::IGFDelta^> m_managedptr;
+        gcroot<Apache::Geode::Client::IGFSerializable^> m_managedSerializableptr;
         // Disable the copy and assignment constructors
         ManagedCacheableDeltaGeneric(const ManagedCacheableDeltaGeneric&);
         ManagedCacheableDeltaGeneric& operator = (const ManagedCacheableDeltaGeneric&);

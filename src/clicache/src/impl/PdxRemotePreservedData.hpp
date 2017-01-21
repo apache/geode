@@ -26,8 +26,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       namespace Internal
       {
         public ref class PdxRemotePreservedData : public IPdxUnreadFields
@@ -113,8 +112,8 @@ namespace Generic
             return 0;
           }
         };
-      }
-			}
-    }
-  }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 }

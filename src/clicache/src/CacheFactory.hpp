@@ -31,8 +31,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       ref class Cache;
       ref class CacheAttributes;
       ref class DistributedSystem;
@@ -605,8 +604,7 @@ namespace Generic
         internal:
           static bool m_connected = false;
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
-}

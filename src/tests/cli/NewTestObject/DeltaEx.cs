@@ -20,7 +20,7 @@ using System;
 using Apache.Geode.Client;
 namespace Apache.Geode.Client.Tests
 {
-    public class DeltaEx : Apache.Geode.Client.Generic.IGFDelta, Apache.Geode.Client.Generic.IGFSerializable, ICloneable
+    public class DeltaEx : Apache.Geode.Client.IGFDelta, Apache.Geode.Client.IGFSerializable, ICloneable
     {
         private int counter;
         private bool IsDelta;
@@ -44,30 +44,30 @@ namespace Apache.Geode.Client.Tests
         {
             return IsDelta;
         }
-        public void ToDelta(Apache.Geode.Client.Generic.DataOutput DataOut)
+        public void ToDelta(Apache.Geode.Client.DataOutput DataOut)
         {
             DataOut.WriteInt32(counter);
             ToDeltaCount++;
         }
 
-        public void FromDelta(Apache.Geode.Client.Generic.DataInput DataIn)
+        public void FromDelta(Apache.Geode.Client.DataInput DataIn)
         {
             int val = DataIn.ReadInt32();
             if( FromDeltaCount == 1 )
             {
                 FromDeltaCount++;
-                throw new Apache.Geode.Client.Generic.InvalidDeltaException();
+                throw new Apache.Geode.Client.InvalidDeltaException();
             }
             counter+=val;
             FromDeltaCount++;
         }
 
-        public void ToData(Apache.Geode.Client.Generic.DataOutput DataOut)
+        public void ToData(Apache.Geode.Client.DataOutput DataOut)
         {
             DataOut.WriteInt32( counter );
             ToDataCount++;
         }
-        public Apache.Geode.Client.Generic.IGFSerializable FromData(Apache.Geode.Client.Generic.DataInput DataIn)
+        public Apache.Geode.Client.IGFSerializable FromData(Apache.Geode.Client.DataInput DataIn)
         {
             counter = DataIn.ReadInt32();
             FromDataCount++;
@@ -96,7 +96,7 @@ namespace Apache.Geode.Client.Tests
             IsDelta = isDelta;
         }
 
-        public static Apache.Geode.Client.Generic.IGFSerializable create()
+        public static Apache.Geode.Client.IGFSerializable create()
         {
             return new DeltaEx();
         }

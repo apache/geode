@@ -32,9 +32,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
-      
+
       /// <summary>
       /// CacheTransactionManager encapsulates the transactions for a cache
       /// </summary>
@@ -104,7 +102,7 @@ namespace Generic
         /// </summary>
         /// <returns>the transaction identifier of the suspended transaction or null if
         /// the thread was not associated with a transaction</returns>
-        Apache::Geode::Client::Generic::TransactionId^ Suspend();
+        Apache::Geode::Client::TransactionId^ Suspend();
 
         /// <summary>
         /// On the current thread, resumes a transaction that was previously suspended
@@ -117,7 +115,7 @@ namespace Generic
         /// <exception cref="IllegalStateException">if the thread is associated with a transaction or if
         /// would return false for the given transactionId</exception>
         /// <see cref="TransactionId"/> 
-        void Resume(Apache::Geode::Client::Generic::TransactionId^ transactionId);
+        void Resume(Apache::Geode::Client::TransactionId^ transactionId);
 
         /// <summary>
         /// This method can be used to determine if a transaction with the given
@@ -130,7 +128,7 @@ namespace Generic
         /// <param name="transactionId"></param>
         /// <returns>true if the transaction is in suspended state, false otherwise</returns>
         /// <see cref="TransactionId"/>
-        bool IsSuspended(Apache::Geode::Client::Generic::TransactionId^ transactionId);
+        bool IsSuspended(Apache::Geode::Client::TransactionId^ transactionId);
 
 
         /// <summary>
@@ -149,7 +147,7 @@ namespace Generic
         /// </summary>
         /// <param name="transactionId">the transaction to resume</param>
         /// <returns>true if the transaction was resumed, false otherwise</returns>
-        bool TryResume(Apache::Geode::Client::Generic::TransactionId^ transactionId);
+        bool TryResume(Apache::Geode::Client::TransactionId^ transactionId);
 
 
         /// <summary>
@@ -173,7 +171,7 @@ namespace Generic
         /// <param name="transactionId">the transaction to resume</param>
         /// <param name="waitTimeInMilliSec">the maximum milliseconds to wait </param>
         /// <returns>true if the transaction was resumed, false otherwise</returns>
-        bool TryResume(Apache::Geode::Client::Generic::TransactionId^ transactionId, int32_t waitTimeInMilliSec);
+        bool TryResume(Apache::Geode::Client::TransactionId^ transactionId, int32_t waitTimeInMilliSec);
 
 
 
@@ -188,7 +186,7 @@ namespace Generic
         /// <param name="transactionId">the given transaction identifier</param>
         /// <returns>true if the transaction is in progress, false otherwise.</returns>
         /// <see cref="isSuspended"/> 
-        bool Exists(Apache::Geode::Client::Generic::TransactionId^ transactionId);
+        bool Exists(Apache::Geode::Client::TransactionId^ transactionId);
 
 
         /// <summary>
@@ -198,10 +196,10 @@ namespace Generic
         /// </para>
         /// </summary>
         /// <returns>the transaction identifier or null if no transaction exists</returns>
-        property Apache::Geode::Client::Generic::TransactionId^ TransactionId
+        property Apache::Geode::Client::TransactionId^ TransactionId
         {
         //TODO::split
-        Apache::Geode::Client::Generic::TransactionId^ get( );
+        Apache::Geode::Client::TransactionId^ get( );
         }        
 
 #ifdef CSTX_COMMENTED
@@ -265,8 +263,6 @@ namespace Generic
         inline CacheTransactionManager( apache::geode::client::InternalCacheTransactionManager2PC* nativeptr )
           : SBWrap( nativeptr ) { }
       };
-
-    }
-  }
-}
- } //namespace 
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache

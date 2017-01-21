@@ -27,8 +27,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       namespace Internal
       {
 				int PdxTypeRegistry::testGetNumberOfPdxIds()
@@ -310,9 +309,9 @@ namespace Generic
              g_readerWriterLock->ReleaseWriterLock();
           }
           return nullptr;
-        }
-      }
-			}
-    }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
   }
 }

@@ -28,8 +28,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
 
       ref class DataOutput;
       ref class DataInput;
@@ -99,7 +97,7 @@ namespace Generic
         /// </summary>
         String^ ToString( );
       };
-      } // end namespace generic
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

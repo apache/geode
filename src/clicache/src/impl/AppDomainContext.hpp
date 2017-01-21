@@ -27,7 +27,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic {
 
 using namespace System;
 
@@ -68,8 +67,7 @@ private:
 };
 
 apache::geode::client::AppDomainContext* createAppDomainContext();
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-}
-}
-}
-}

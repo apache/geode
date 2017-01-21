@@ -36,8 +36,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-			{ 
+
         namespace Internal
         {
           //this is for PdxInstanceFactory
@@ -57,8 +56,8 @@ namespace Generic
             
             try
             {
-              Apache::Geode::Client::Generic::DataOutput mg_output( &(*output), true );
-              Apache::Geode::Client::Generic::Internal::PdxHelper::SerializePdx(%mg_output, this);
+              Apache::Geode::Client::DataOutput mg_output( &(*output), true );
+              Apache::Geode::Client::Internal::PdxHelper::SerializePdx(%mg_output, this);
             }
             finally
             {
@@ -1432,11 +1431,10 @@ namespace Generic
               writer->WriteObject(fieldName, value);
                //throw gcnew IllegalStateException("ReadField unable to de-serialize  " 
 								//																	+ fieldName + " of " + type); 
-            }
-          }
-          }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-        }
 			}
     }
   }

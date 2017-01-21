@@ -24,9 +24,9 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
   using Apache.Geode.DUnitFramework;
   using Apache.Geode.Client.Tests.NewAPI;
 
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
 
-  using GIRegion = Apache.Geode.Client.Generic.IRegion<int, object>;
+  using GIRegion = Apache.Geode.Client.IRegion<int, object>;
   using System.Collections.Generic;
 
   public class CallbackListener : CacheListenerAdapter<int, object>

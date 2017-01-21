@@ -38,19 +38,19 @@ namespace apache
       {
         try {
           uint32 pos = (int)output.getBufferLength();
-          Apache::Geode::Client::Generic::DataOutput mg_output(&output, true);
-          Apache::Geode::Client::Generic::Internal::PdxHelper::SerializePdx(%mg_output, m_managedptr);
+          Apache::Geode::Client::DataOutput mg_output(&output, true);
+          Apache::Geode::Client::Internal::PdxHelper::SerializePdx(%mg_output, m_managedptr);
           //m_managedptr->ToData( %mg_output );
           //this will move the cursor in c++ layer
           mg_output.WriteBytesToUMDataOutput();
           PdxManagedCacheableKey* tmp = const_cast<PdxManagedCacheableKey*>(this);
           tmp->m_objectSize = (int)(output.getBufferLength() - pos);
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GemFireException::ThrowNative(ex);
         }
       }
 
@@ -58,22 +58,22 @@ namespace apache
       {
         try {
           int pos = input.getBytesRead();
-          Apache::Geode::Client::Generic::DataInput mg_input(&input, true);
+          Apache::Geode::Client::DataInput mg_input(&input, true);
           //m_managedptr = m_managedptr->FromData( %mg_input );
-          Apache::Geode::Client::Generic::IPdxSerializable^ tmp = Apache::Geode::Client::Generic::Internal::PdxHelper::DeserializePdx(%mg_input, false);
+          Apache::Geode::Client::IPdxSerializable^ tmp = Apache::Geode::Client::Internal::PdxHelper::DeserializePdx(%mg_input, false);
           m_managedptr = tmp;
-          m_managedDeltaptr = dynamic_cast<Apache::Geode::Client::Generic::IGFDelta^>(tmp);
+          m_managedDeltaptr = dynamic_cast<Apache::Geode::Client::IGFDelta^>(tmp);
 
           //this will move the cursor in c++ layer
           input.advanceCursor(mg_input.BytesReadInternally);
           m_objectSize = input.getBytesRead() - pos;
           // m_hashcode = m_managedptr->GetHashCode();
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GemFireException::ThrowNative(ex);
         }
         return this;
       }
@@ -83,11 +83,11 @@ namespace apache
         try {
           return m_objectSize;
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GemFireException::ThrowNative(ex);
         }
         return 0;
       }
@@ -143,15 +143,15 @@ namespace apache
       {
         try {
           apache::geode::client::CacheableStringPtr cStr;
-          Apache::Geode::Client::Generic::CacheableString::GetCacheableString(
+          Apache::Geode::Client::CacheableString::GetCacheableString(
             m_managedptr->ToString(), cStr);
           return cStr;
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GemFireException::ThrowNative(ex);
         }
         return NULLPTR;
       }
@@ -164,15 +164,15 @@ namespace apache
           const PdxManagedCacheableKey* p_other =
             dynamic_cast<const PdxManagedCacheableKey*>(&other);
           if (p_other != NULL) {
-            return ((Apache::Geode::Client::Generic::IPdxSerializable^)m_managedptr)->Equals((p_other->ptr()));
+            return ((Apache::Geode::Client::IPdxSerializable^)m_managedptr)->Equals((p_other->ptr()));
           }
           return false;
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GemFireException::ThrowNative(ex);
         }
         return false;
       }
@@ -180,13 +180,13 @@ namespace apache
       bool PdxManagedCacheableKey::operator ==(const PdxManagedCacheableKey& other) const
       {
         try {
-          return ((Apache::Geode::Client::Generic::IPdxSerializable^)m_managedptr)->Equals((other.ptr()));
+          return ((Apache::Geode::Client::IPdxSerializable^)m_managedptr)->Equals((other.ptr()));
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GemFireException::ThrowNative(ex);
         }
         return false;
       }
@@ -198,15 +198,15 @@ namespace apache
         try {
           PdxManagedCacheableKey* tmp = const_cast<PdxManagedCacheableKey*>(this);
           tmp->m_hashcode = (
-            (Apache::Geode::Client::Generic::IPdxSerializable^)tmp->m_managedptr)
+            (Apache::Geode::Client::IPdxSerializable^)tmp->m_managedptr)
             ->GetHashCode();
           return m_hashcode;
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GemFireException::ThrowNative(ex);
         }
         return 0;
       }
@@ -217,15 +217,15 @@ namespace apache
           if (maxLength > 0) {
             String^ logstr = m_managedptr->GetType()->Name + '(' +
               m_managedptr->ToString() + ')';
-            Apache::Geode::Client::Generic::ManagedString mg_str(logstr);
+            Apache::Geode::Client::ManagedString mg_str(logstr);
             return snprintf(buffer, maxLength, "%s", mg_str.CharPtr);
           }
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GemFireException::ThrowNative(ex);
         }
         return 0;
       }
@@ -242,23 +242,23 @@ namespace apache
       void PdxManagedCacheableKey::toDelta(DataOutput& output) const
       {
         try {
-          Apache::Geode::Client::Generic::DataOutput mg_output(&output, true);
+          Apache::Geode::Client::DataOutput mg_output(&output, true);
           m_managedDeltaptr->ToDelta(%mg_output);
           //this will move the cursor in c++ layer
           mg_output.WriteBytesToUMDataOutput();
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GemFireException::ThrowNative(ex);
         }
       }
 
       void PdxManagedCacheableKey::fromDelta(DataInput& input)
       {
         try {
-          Apache::Geode::Client::Generic::DataInput mg_input(&input, true);
+          Apache::Geode::Client::DataInput mg_input(&input, true);
           m_managedDeltaptr->FromDelta(%mg_input);
 
           //this will move the cursor in c++ layer
@@ -266,11 +266,11 @@ namespace apache
 
           m_hashcode = m_managedptr->GetHashCode();
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GemFireException::ThrowNative(ex);
         }
       }
 
@@ -278,10 +278,10 @@ namespace apache
       {
         try {
           ICloneable^ cloneable = dynamic_cast<ICloneable^>((
-            Apache::Geode::Client::Generic::IGFDelta^) m_managedDeltaptr);
+            Apache::Geode::Client::IGFDelta^) m_managedDeltaptr);
           if (cloneable) {
-            Apache::Geode::Client::Generic::IPdxSerializable^ Mclone =
-              dynamic_cast<Apache::Geode::Client::Generic::IPdxSerializable^>(cloneable->Clone());
+            Apache::Geode::Client::IPdxSerializable^ Mclone =
+              dynamic_cast<Apache::Geode::Client::IPdxSerializable^>(cloneable->Clone());
             return DeltaPtr(static_cast<PdxManagedCacheableKey*>(
               SafeGenericM2UMConvert(Mclone)));
           }
@@ -289,11 +289,11 @@ namespace apache
             return Delta::clone();
           }
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GemFireException::ThrowNative(ex);
         }
         return NULLPTR;
       }

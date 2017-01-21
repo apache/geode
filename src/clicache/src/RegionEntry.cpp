@@ -29,8 +29,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       generic<class TKey, class TValue>
       TKey RegionEntry<TKey, TValue>::Key::get( )
@@ -54,25 +52,24 @@ namespace Generic
         apache::geode::client::RegionPtr rptr;
 
         NativePtr->getRegion( rptr );
-        return Apache::Geode::Client::Generic::Region<TKey, TValue>::Create( rptr.ptr( ) );
+        return Apache::Geode::Client::Region<TKey, TValue>::Create( rptr.ptr( ) );
       }
 
       generic<class TKey, class TValue>
-      Apache::Geode::Client::Generic::CacheStatistics^ RegionEntry<TKey, TValue>::Statistics::get( )
+      Apache::Geode::Client::CacheStatistics^ RegionEntry<TKey, TValue>::Statistics::get( )
       {
         apache::geode::client::CacheStatisticsPtr nativeptr;
 
         NativePtr->getStatistics( nativeptr );
-        return Apache::Geode::Client::Generic::CacheStatistics::Create( nativeptr.ptr( ) );
+        return Apache::Geode::Client::CacheStatistics::Create( nativeptr.ptr( ) );
       }
 
       generic<class TKey, class TValue>
       bool RegionEntry<TKey, TValue>::IsDestroyed::get( )
       {
         return NativePtr->isDestroyed( );
-      }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
  } //namespace 

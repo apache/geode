@@ -147,12 +147,12 @@ namespace Internal
           /// object is in progress since the temporary <c>ManagedPtrWrap</c>
           /// object holds a reference to the managed object.
           /// </summary>
-          property Apache::Geode::Client::Generic::Internal::ManagedPtrWrap<NativeType, ManagedWrapper>
+          property Apache::Geode::Client::Internal::ManagedPtrWrap<NativeType, ManagedWrapper>
             SafeNativePtr2
           {
-            inline Apache::Geode::Client::Generic::Internal::ManagedPtrWrap<NativeType, ManagedWrapper> get()
+            inline Apache::Geode::Client::Internal::ManagedPtrWrap<NativeType, ManagedWrapper> get()
             {
-              return Apache::Geode::Client::Generic::Internal::ManagedPtrWrap<NativeType, ManagedWrapper>(
+              return Apache::Geode::Client::Internal::ManagedPtrWrap<NativeType, ManagedWrapper>(
                 m_nativePtr, this);
             }
           }

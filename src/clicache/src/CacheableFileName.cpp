@@ -31,8 +31,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       void CacheableFileName::ToData(DataOutput^ output)
       {
         if (m_str->Length <= 0xFFFF) {
@@ -103,9 +102,9 @@ namespace Generic
           return (m_str == otherFileName->m_str);
         }
         return false;
-      }
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
  } //namespace 
 

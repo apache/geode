@@ -20,7 +20,7 @@ using System.Collections;
 using System.Collections.Generic;
 namespace Apache.Geode.Client.Tests.NewAPI
 {
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
   public class DeltaFastAssetAccount
     : IGFSerializable, IGFDelta
   {

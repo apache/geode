@@ -24,8 +24,8 @@ using Apache.Geode.DUnitFramework;
 
 namespace Apache.Geode.Client.FwkLib
 {
-  using Apache.Geode.Client.Generic;
-  //using Region = Apache.Geode.Client.Generic.IRegion<Object, Object>;
+  using Apache.Geode.Client;
+  //using Region = Apache.Geode.Client.IRegion<Object, Object>;
   public class InitPerfStat : ClientTask
   {
     public Int32 m_cnt;
