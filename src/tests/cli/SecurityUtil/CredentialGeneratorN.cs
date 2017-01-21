@@ -37,7 +37,7 @@ namespace Apache.Geode.Client.Tests
     /// <list type="number">
     /// <item><description>
     /// Add implementation for <see cref="Apache.Geode.Client.IAuthInitialize"/>
-    /// or the C++ <c>gemfire::AuthInitialize</c> interface.
+    /// or the C++ <c>apache::geode::client::AuthInitialize</c> interface.
     /// </description></item>
     /// <item><description>
     /// On the java server side add implementation for

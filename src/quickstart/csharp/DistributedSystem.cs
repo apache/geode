@@ -40,9 +40,9 @@ using System;
 
 // Use the GemFire namespaces
 //using Apache.Geode.Client;
-using Apache.Geode.Client.Generic;
+using Apache.Geode.Client;
 
-namespace Apache.Geode.Client.Generic.QuickStart
+namespace Apache.Geode.Client.QuickStart
 {
   // The DistributedSystem QuickStart example.
   class DistributedSystem
