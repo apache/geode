@@ -22,7 +22,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Threading;
 
-namespace Apache.Geode.Client.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests
 {
   using NUnit.Framework;
   using Apache.Geode.DUnitFramework;

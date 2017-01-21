@@ -21,7 +21,7 @@ using System.Threading;
 using System.Reflection;
 using System.Collections;
 
-namespace Apache.Geode.Client.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests
 {
   using NUnit.Framework;
   using Apache.Geode.DUnitFramework;
@@ -485,11 +485,11 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
       m_firstAppDomain = AppDomain.CreateDomain("FIRST_APPDOMAIN");
       m_secondAppDomain = AppDomain.CreateDomain("SECOND_APPDOMAIN");
 
-      m_chw_forFirstAppDomain = (CacheHelperWrapper)m_firstAppDomain.CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, "Apache.Geode.Client.UnitTests.NewAPI.CacheHelperWrapper");
-      m_chw_forSecondAppDomain = (CacheHelperWrapper)m_secondAppDomain.CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, "Apache.Geode.Client.UnitTests.NewAPI.CacheHelperWrapper");
+      m_chw_forFirstAppDomain = (CacheHelperWrapper)m_firstAppDomain.CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, "Apache.Geode.Client.UnitTests.CacheHelperWrapper");
+      m_chw_forSecondAppDomain = (CacheHelperWrapper)m_secondAppDomain.CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, "Apache.Geode.Client.UnitTests.CacheHelperWrapper");
 
-      m_putGetTests_forFirstAppDomain = (PutGetTestsAD)m_firstAppDomain.CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, "Apache.Geode.Client.UnitTests.NewAPI.PutGetTestsAD");
-      m_putGetTests_forSecondAppDomain = (PutGetTestsAD)m_secondAppDomain.CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, "Apache.Geode.Client.UnitTests.NewAPI.PutGetTestsAD");
+      m_putGetTests_forFirstAppDomain = (PutGetTestsAD)m_firstAppDomain.CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, "Apache.Geode.Client.UnitTests.PutGetTestsAD");
+      m_putGetTests_forSecondAppDomain = (PutGetTestsAD)m_secondAppDomain.CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, "Apache.Geode.Client.UnitTests.PutGetTestsAD");
     }
 
     public void CloseCacheAD()

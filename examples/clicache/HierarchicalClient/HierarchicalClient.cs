@@ -31,7 +31,7 @@
 using System;
 
 // These namespaces provide access to classes needed to interact with GemFire.
-using GemStone.GemFire.Cache;
+using Apache.Geode.Client;
 
 public class HierarchicalClient
 {

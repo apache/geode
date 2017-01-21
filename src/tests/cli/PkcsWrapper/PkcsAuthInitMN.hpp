@@ -30,19 +30,17 @@ namespace Apache
   {
     namespace Client
     {
-namespace Tests
-        {
-          namespace NewAPI
-          {
-          public ref class PkcsAuthInit sealed
+      namespace Tests
+      {
+        public ref class PkcsAuthInit sealed
           : public Internal::SBWrap<apache::geode::client::PKCSAuthInitInternal>,
-            public Apache::Geode::Client::IAuthInitialize/*<String^, Object^>*/
+          public Apache::Geode::Client::IAuthInitialize/*<String^, Object^>*/
         {
         public:
-          
-          PkcsAuthInit();          
 
-          ~PkcsAuthInit();          
+          PkcsAuthInit();
+
+          ~PkcsAuthInit();
 
           //generic <class TPropKey, class TPropValue>
           virtual Apache::Geode::Client::Properties<String^, Object^> ^
@@ -51,11 +49,10 @@ namespace Tests
 
           virtual void Close();
 
-        internal:            
-          PkcsAuthInit( apache::geode::client::PKCSAuthInitInternal* nativeptr )
-            : SBWrap( nativeptr ) { }
+        internal:
+          PkcsAuthInit(apache::geode::client::PKCSAuthInitInternal* nativeptr)
+            : SBWrap(nativeptr) { }
         };
-        } // end namespace NewAPI
       }
     }
   }

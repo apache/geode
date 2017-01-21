@@ -20,7 +20,7 @@
 #include "impl/ManagedString.hpp"
 
 using namespace System;
-using namespace Apache::Geode::Client::Tests::NewAPI;
+using namespace Apache::Geode::Client::Tests;
 using namespace Apache::Geode::Client;
 
 PkcsAuthInit::PkcsAuthInit() 

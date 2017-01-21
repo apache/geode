@@ -29,7 +29,7 @@ using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 
-using GemStone.GemFire.Cache;
+using Apache.Geode.Client;
 
 public class BenchmarkHierarchicalClient
 {

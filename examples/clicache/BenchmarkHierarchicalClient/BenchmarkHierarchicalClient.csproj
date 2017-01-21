@@ -7,7 +7,7 @@
     <ProjectGuid>{DAF42015-6FB4-4B35-A486-46BB68CB18CA}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GemStone.GemFire.Cache.Examples</RootNamespace>
+    <RootNamespace>Apache.Geode.Client.Examples</RootNamespace>
     <AssemblyName>BenchmarkHierarchicalClient</AssemblyName>
     <FileUpgradeFlags>
     </FileUpgradeFlags>

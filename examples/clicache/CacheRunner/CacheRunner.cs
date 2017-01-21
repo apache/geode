@@ -17,10 +17,10 @@
 
 using System;
 
-namespace GemStone.GemFire.Cache.Examples
+namespace Apache.Geode.Client.Examples
 {
-  using GemStone.GemFire.Cache.Tests;
-  using GemStone.GemFire.Cache;
+  using Apache.Geode.Client.Tests;
+  using Apache.Geode.Client;
 
   // Example class to perform puts/gets using one or more clients.
   class CacheRunner

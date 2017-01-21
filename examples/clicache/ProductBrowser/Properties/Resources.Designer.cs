@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace GemStone.GemFire.Cache.Examples.Properties {
+namespace Apache.Geode.Client.Examples.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace GemStone.GemFire.Cache.Examples.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("GemStone.GemFire.Cache.Examples.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Apache.Geode.Client.Examples.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

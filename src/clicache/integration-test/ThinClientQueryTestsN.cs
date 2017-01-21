@@ -19,11 +19,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Apache.Geode.Client.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests
 {
   using NUnit.Framework;
   using Apache.Geode.DUnitFramework;
-  using Apache.Geode.Client.Tests.NewAPI;
+  using Apache.Geode.Client.Tests;
   
   using Apache.Geode.Client;
 
@@ -79,8 +79,8 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
       {
         Serializable.RegisterTypeGeneric(Portfolio.CreateDeserializable);
         Serializable.RegisterTypeGeneric(Position.CreateDeserializable);
-        Serializable.RegisterPdxType(Apache.Geode.Client.Tests.NewAPI.PortfolioPdx.CreateDeserializable);
-        Serializable.RegisterPdxType(Apache.Geode.Client.Tests.NewAPI.PositionPdx.CreateDeserializable);
+        Serializable.RegisterPdxType(Apache.Geode.Client.Tests.PortfolioPdx.CreateDeserializable);
+        Serializable.RegisterPdxType(Apache.Geode.Client.Tests.PositionPdx.CreateDeserializable);
       }
       catch (IllegalStateException)
       {

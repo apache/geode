@@ -28,7 +28,7 @@ using PdxTests;
 namespace Apache.Geode.Client.FwkLib
 {
     using Apache.Geode.DUnitFramework;
-    using Apache.Geode.Client.Tests.NewAPI;
+    using Apache.Geode.Client.Tests;
     using Apache.Geode.Client;
     using QueryCategory = Apache.Geode.Client.Tests.QueryCategory;
     using QueryStrings = Apache.Geode.Client.Tests.QueryStrings;

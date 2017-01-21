@@ -22,11 +22,11 @@ using System.Threading;
 
 #pragma warning disable 618
 
-namespace Apache.Geode.Client.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests
 {
   using NUnit.Framework;
   using Apache.Geode.DUnitFramework;
-  using Apache.Geode.Client.Tests.NewAPI;
+  using Apache.Geode.Client.Tests;
   using Apache.Geode.Client;
   using DeltaEx = Apache.Geode.Client.Tests.DeltaEx;
 

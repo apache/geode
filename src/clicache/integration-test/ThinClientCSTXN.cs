@@ -19,14 +19,14 @@ using System;
 using System.Threading;
 using System.Collections.Generic;
 
-namespace Apache.Geode.Client.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests
 {
   using NUnit.Framework;
   using Apache.Geode.DUnitFramework;
   using Apache.Geode.Client;
-  using Apache.Geode.Client.UnitTests.NewAPI;
+  using Apache.Geode.Client.UnitTests;
   using Region = Apache.Geode.Client.IRegion<Object, Object>;
-  using Apache.Geode.Client.Tests.NewAPI;
+  using Apache.Geode.Client.Tests;
   #region CSTX_COMMENTED - transaction listener and writer are disabled for now
   /* 
   class CSTXListener<TKey, TVal> : TransactionListenerAdapter<TKey, TVal>

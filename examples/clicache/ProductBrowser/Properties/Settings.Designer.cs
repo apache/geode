@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace GemStone.GemFire.Cache.Examples.Properties {
+namespace Apache.Geode.Client.Examples.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]

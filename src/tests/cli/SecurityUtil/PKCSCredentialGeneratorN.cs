@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-namespace Apache.Geode.Client.Tests.NewAPI
+namespace Apache.Geode.Client.Tests
 {
   using Apache.Geode.DUnitFramework;
   using Apache.Geode.Client;
@@ -29,7 +29,7 @@ namespace Apache.Geode.Client.Tests.NewAPI
     public const string KeyStorePasswordProp = "security-keystorepass";
     private const string UserPrefix = "gemfire";
     private bool IsMultiUserMode = false;
-    Apache.Geode.Client.Tests.NewAPI.PkcsAuthInit Pkcs = null;
+    Apache.Geode.Client.Tests.PkcsAuthInit Pkcs = null;
 
     public PKCSCredentialGenerator(bool isMultiUser)
     {

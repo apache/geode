@@ -27,9 +27,9 @@ using System.Xml;
 namespace Apache.Geode.Client.FwkLib
 {
   using Apache.Geode.DUnitFramework;
-  using Apache.Geode.Client.Tests.NewAPI;
+  using Apache.Geode.Client.Tests;
   using Apache.Geode.Client;
-  using NEWAPI = Apache.Geode.Client.Tests.NewAPI;
+  using NEWAPI = Apache.Geode.Client.Tests;
   //using Region = Apache.Geode.Client.IRegion<Object, Object>;
 
 

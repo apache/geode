@@ -120,9 +120,6 @@
     <Compile Include="$(CMAKE_CURRENT_SOURCE_DIR)\AssemblyInfo.cs">
       <Link>AssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="$(CMAKE_CURRENT_SOURCE_DIR)\DefaultCacheable.cs">
-      <Link>DefaultCacheable.cs</Link>
-    </Compile>
     <Compile Include="$(CMAKE_CURRENT_SOURCE_DIR)\DataOutputTests.cs">
       <Link>DataOutputTests.cs</Link>
     </Compile>
