@@ -20,7 +20,7 @@
  */
 
 using System;
-namespace GemStone.GemFire.Cache.Examples
+namespace Apache.Geode.Client.Examples
 {
   public class ExampleObject
     : IGFSerializable

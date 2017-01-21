@@ -17,10 +17,10 @@
 
 ﻿using System;
 
-namespace Apache.Geode.Client.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests
 {
     using Apache.Geode.Client;
-    using Apache.Geode.Client.Tests.NewAPI;
+    using Apache.Geode.Client.Tests;
     using Apache.Geode.DUnitFramework;
     using NUnit.Framework;
     using QueryCategory = Apache.Geode.Client.Tests.QueryCategory;
@@ -74,8 +74,8 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
         {
             Serializable.RegisterTypeGeneric(Portfolio.CreateDeserializable);
             Serializable.RegisterTypeGeneric(Position.CreateDeserializable);
-            Serializable.RegisterPdxType(Apache.Geode.Client.Tests.NewAPI.PortfolioPdx.CreateDeserializable);
-            Serializable.RegisterPdxType(Apache.Geode.Client.Tests.NewAPI.PositionPdx.CreateDeserializable);
+            Serializable.RegisterPdxType(Apache.Geode.Client.Tests.PortfolioPdx.CreateDeserializable);
+            Serializable.RegisterPdxType(Apache.Geode.Client.Tests.PositionPdx.CreateDeserializable);
         }
 
         public void CreateCache(string locators)

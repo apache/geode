@@ -19,7 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Apache.Geode.Client.Tests.NewAPI
+namespace Apache.Geode.Client.Tests
 {
   using Apache.Geode.Client;
   public class DummyAuthorization3 : CredentialGenerator

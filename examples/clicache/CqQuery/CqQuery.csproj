@@ -7,7 +7,7 @@
     <ProjectGuid>{D8F67104-CDDE-433F-A8EE-470A92180AA9}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GemStone.GemFire.Cache.Examples</RootNamespace>
+    <RootNamespace>Apache.Geode.Client.Examples</RootNamespace>
     <AssemblyName>CqQuery</AssemblyName>
     <FileUpgradeFlags>
     </FileUpgradeFlags>

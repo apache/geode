@@ -18,7 +18,7 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace Apache.Geode.Client.Tests.NewAPI
+namespace Apache.Geode.Client.Tests
 {
   using Apache.Geode.DUnitFramework;
   using Apache.Geode.Templates.Cache.Security;

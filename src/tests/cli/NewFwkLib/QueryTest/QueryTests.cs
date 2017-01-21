@@ -19,12 +19,12 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-using Apache.Geode.Client.Tests.NewAPI; // for Portfolio and Position classes
+using Apache.Geode.Client.Tests; // for Portfolio and Position classes
 
 namespace Apache.Geode.Client.FwkLib
 {
   using Apache.Geode.DUnitFramework;
-  using Apache.Geode.Client.Tests.NewAPI;
+  using Apache.Geode.Client.Tests;
   using Apache.Geode.Client;
   using QueryCategory = Apache.Geode.Client.Tests.QueryCategory;
   using QueryStrings = Apache.Geode.Client.Tests.QueryStrings;
@@ -501,8 +501,8 @@ namespace Apache.Geode.Client.FwkLib
             QueryStatics.StructSetQueries[index].IsLargeResultset == isLargeSetQuery)
           {
             int [] a = new int[] {4,6,7,9,12,14,15,16};
-            if ((typeof(TVal).Equals(typeof(Apache.Geode.Client.Tests.NewAPI.PortfolioPdx))||
-              (typeof(TVal).Equals(typeof(Apache.Geode.Client.Tests.NewAPI.PositionPdx)))) && ((IList<int>)a).Contains(index))
+            if ((typeof(TVal).Equals(typeof(Apache.Geode.Client.Tests.PortfolioPdx))||
+              (typeof(TVal).Equals(typeof(Apache.Geode.Client.Tests.PositionPdx)))) && ((IList<int>)a).Contains(index))
             {
               FwkInfo("Skiping Query for pdx object [{0}]", QueryStatics.StructSetQueries[index].Query);
             }
@@ -1398,8 +1398,8 @@ namespace Apache.Geode.Client.FwkLib
           FwkInfo("Getting inside for registeration");
           Serializable.RegisterTypeGeneric(Position.CreateDeserializable);
           Serializable.RegisterTypeGeneric(Portfolio.CreateDeserializable);
-          Serializable.RegisterPdxType(Apache.Geode.Client.Tests.NewAPI.PortfolioPdx.CreateDeserializable);
-          Serializable.RegisterPdxType(Apache.Geode.Client.Tests.NewAPI.PositionPdx.CreateDeserializable);
+          Serializable.RegisterPdxType(Apache.Geode.Client.Tests.PortfolioPdx.CreateDeserializable);
+          Serializable.RegisterPdxType(Apache.Geode.Client.Tests.PositionPdx.CreateDeserializable);
 
         }
         IRegion<TKey, TVal> parentRegion = null;

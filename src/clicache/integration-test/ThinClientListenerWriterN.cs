@@ -18,12 +18,12 @@
 using System;
 using System.Threading;
 
-namespace Apache.Geode.Client.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests
 {
   using NUnit.Framework;
   using Apache.Geode.DUnitFramework;
   using Apache.Geode.Client;
-  using Apache.Geode.Client.UnitTests.NewAPI;
+  using Apache.Geode.Client.UnitTests;
   using Region = Apache.Geode.Client.IRegion<Object, Object>;
 
   [TestFixture]

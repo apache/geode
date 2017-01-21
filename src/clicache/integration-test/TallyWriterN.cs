@@ -18,7 +18,7 @@
 using System;
 using System.Threading;
 
-namespace Apache.Geode.Client.UnitTests.NewAPI
+namespace Apache.Geode.Client.UnitTests
 {
   using Apache.Geode.DUnitFramework;
   using Apache.Geode.Client;

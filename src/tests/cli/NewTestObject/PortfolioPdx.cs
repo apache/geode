@@ -20,7 +20,7 @@ using System.Collections;
 using Apache.Geode.Client;
 
 
-namespace Apache.Geode.Client.Tests.NewAPI
+namespace Apache.Geode.Client.Tests
 {
   /// <summary>
   /// User class for testing the put functionality for object.

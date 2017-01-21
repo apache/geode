@@ -27,7 +27,7 @@ echo If OpenSSL libraries are not found in PATH then Security example will fail.
 
 :startexamples
 
-copy /V %GFCPP%\bin\GemStone.GemFire.Cache.dll .
+copy /V %GFCPP%\bin\Apache.Geode.Client.dll .
 
 set LANG=C#
 set LANGDIR=.

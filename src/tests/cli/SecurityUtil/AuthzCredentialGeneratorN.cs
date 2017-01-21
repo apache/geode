@@ -18,7 +18,7 @@
 using System;
 using Apache.Geode.DUnitFramework;
 
-namespace Apache.Geode.Client.Tests.NewAPI
+namespace Apache.Geode.Client.Tests
 {
   using Apache.Geode.Client;
   /// <summary>
