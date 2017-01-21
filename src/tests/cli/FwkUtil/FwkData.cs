@@ -226,7 +226,7 @@ namespace Apache.Geode.Client.FwkLib
 
               // Now collect the region atributes
               XmlNode attrnode = xmlNode.FirstChild.FirstChild.FirstChild;
-              Apache.Geode.Client.Generic.Properties<string, string> rattr = Apache.Geode.Client.Generic.Properties<string, string>.Create<string, string>();
+              Apache.Geode.Client.Properties<string, string> rattr = Apache.Geode.Client.Properties<string, string>.Create<string, string>();
               //AttributesFactory af = new AttributesFactory();
               if (attrnode.Name == "region-attributes")
               {
@@ -247,7 +247,7 @@ namespace Apache.Geode.Client.FwkLib
                     //SetThisAttribute(tmpnode.Name, tmpnode, af);
                   }
                 }
-                Apache.Geode.Client.Generic.DataOutput dout = new Apache.Geode.Client.Generic.DataOutput();
+                Apache.Geode.Client.DataOutput dout = new Apache.Geode.Client.DataOutput();
                 //RegionAttributes rattr = af.CreateRegionAttributes();
                 rattr.ToData(dout);
                 // Console.WriteLine("Going to construct FwkData with region = " + regionName +
@@ -265,7 +265,7 @@ namespace Apache.Geode.Client.FwkLib
               XmlAttribute nameattr = xmlNode.FirstChild.FirstChild.Attributes["name"];
               String poolName = nameattr.Value;
               // Now collect the pool atributes
-              Apache.Geode.Client.Generic.Properties<string, string> prop = Apache.Geode.Client.Generic.Properties<string, string>.Create<string, string>();
+              Apache.Geode.Client.Properties<string, string> prop = Apache.Geode.Client.Properties<string, string>.Create<string, string>();
               XmlAttributeCollection attrcoll = xmlNode.FirstChild.FirstChild.Attributes;
               if (attrcoll != null)
               {
@@ -273,7 +273,7 @@ namespace Apache.Geode.Client.FwkLib
                 {
                   prop.Insert(eachattr.Name, eachattr.Value);
                 }
-                Apache.Geode.Client.Generic.DataOutput dout = new Apache.Geode.Client.Generic.DataOutput();
+                Apache.Geode.Client.DataOutput dout = new Apache.Geode.Client.DataOutput();
                 prop.ToData(dout);
                 FwkData td = new FwkData(poolName, dout.GetBuffer(), DataKind.Pool);
                 dataNodes[name] = td;
@@ -357,7 +357,7 @@ namespace Apache.Geode.Client.FwkLib
       return null;
     }
 
-    public static void SetThisAttribute(string name, XmlNode node, Apache.Geode.Client.Generic.AttributesFactory<string, string> af)
+    public static void SetThisAttribute(string name, XmlNode node, Apache.Geode.Client.AttributesFactory<string, string> af)
     {
       string value = node.Value;
       switch (name)
@@ -396,11 +396,11 @@ namespace Apache.Geode.Client.FwkLib
         case "disk-policy":
           if (value == "none")
           {
-              af.SetDiskPolicy(Apache.Geode.Client.Generic.DiskPolicyType.None);
+              af.SetDiskPolicy(Apache.Geode.Client.DiskPolicyType.None);
           }
           else if (value == "overflows")
           {
-              af.SetDiskPolicy(Apache.Geode.Client.Generic.DiskPolicyType.Overflows);
+              af.SetDiskPolicy(Apache.Geode.Client.DiskPolicyType.Overflows);
           }
           else
           {
@@ -426,7 +426,7 @@ namespace Apache.Geode.Client.FwkLib
           if (nlrttl.Name == "expiration-attributes")
           {
             XmlAttributeCollection exAttrColl = nlrttl.Attributes;
-            Apache.Geode.Client.Generic.ExpirationAction action = StrToExpirationAction(exAttrColl["action"].Value);
+            Apache.Geode.Client.ExpirationAction action = StrToExpirationAction(exAttrColl["action"].Value);
             string rttl = exAttrColl["timeout"].Value;
             af.SetRegionTimeToLive(action, uint.Parse(rttl));
           }
@@ -441,7 +441,7 @@ namespace Apache.Geode.Client.FwkLib
           if (nlrit.Name == "expiration-attributes")
           {
             XmlAttributeCollection exAttrColl = nlrit.Attributes;
-            Apache.Geode.Client.Generic.ExpirationAction action = StrToExpirationAction(exAttrColl["action"].Value);
+            Apache.Geode.Client.ExpirationAction action = StrToExpirationAction(exAttrColl["action"].Value);
             string rit = exAttrColl["timeout"].Value;
             af.SetRegionIdleTimeout(action, uint.Parse(rit));
           }
@@ -456,7 +456,7 @@ namespace Apache.Geode.Client.FwkLib
           if (nlettl.Name == "expiration-attributes")
           {
             XmlAttributeCollection exAttrColl = nlettl.Attributes;
-            Apache.Geode.Client.Generic.ExpirationAction action = StrToExpirationAction(exAttrColl["action"].Value);
+            Apache.Geode.Client.ExpirationAction action = StrToExpirationAction(exAttrColl["action"].Value);
             string ettl = exAttrColl["timeout"].Value;
             af.SetEntryTimeToLive(action, uint.Parse(ettl));
           }
@@ -471,7 +471,7 @@ namespace Apache.Geode.Client.FwkLib
           if (nleit.Name == "expiration-attributes")
           {
             XmlAttributeCollection exAttrColl = nleit.Attributes;
-            Apache.Geode.Client.Generic.ExpirationAction action = StrToExpirationAction(exAttrColl["action"].Value);
+            Apache.Geode.Client.ExpirationAction action = StrToExpirationAction(exAttrColl["action"].Value);
             string eit = exAttrColl["timeout"].Value;
             af.SetEntryIdleTimeout(action, uint.Parse(eit));
           }
@@ -581,7 +581,7 @@ namespace Apache.Geode.Client.FwkLib
         case "persistence-manager":
           string pmlibrary = null;
           string pmfunction = null;
-          Apache.Geode.Client.Generic.Properties<string, string> prop = new Apache.Geode.Client.Generic.Properties<string, string>();
+          Apache.Geode.Client.Properties<string, string> prop = new Apache.Geode.Client.Properties<string, string>();
           XmlAttributeCollection pmattrs = node.Attributes;
           foreach (XmlAttribute attr in pmattrs)
           {
@@ -627,9 +627,9 @@ namespace Apache.Geode.Client.FwkLib
       }
     }
 
-    private static Apache.Geode.Client.Generic.ExpirationAction StrToExpirationAction(string str)
+    private static Apache.Geode.Client.ExpirationAction StrToExpirationAction(string str)
     {
-        return (Apache.Geode.Client.Generic.ExpirationAction)Enum.Parse(typeof(Apache.Geode.Client.Generic.ExpirationAction),
+        return (Apache.Geode.Client.ExpirationAction)Enum.Parse(typeof(Apache.Geode.Client.ExpirationAction),
         str.Replace("-", string.Empty), true);
     }
   }
@@ -892,34 +892,34 @@ namespace Apache.Geode.Client.FwkLib
     /// </summary>
     /// <param name="key">The key of the region to read.</param>
     /// <returns>The attributes of the region.</returns>
-    public Apache.Geode.Client.Generic.RegionAttributes<string, string> GetRegionAttributes(string key)
+    public Apache.Geode.Client.RegionAttributes<string, string> GetRegionAttributes(string key)
     {
       FwkData data = ReadData(key);
       if (data != null && data.Kind == DataKind.Region)
       {
-        Apache.Geode.Client.Generic.AttributesFactory<string, string> af = new Apache.Geode.Client.Generic.AttributesFactory<string, string>();
-        Apache.Geode.Client.Generic.RegionAttributes<string, string> attrs = af.CreateRegionAttributes();
+        Apache.Geode.Client.AttributesFactory<string, string> af = new Apache.Geode.Client.AttributesFactory<string, string>();
+        Apache.Geode.Client.RegionAttributes<string, string> attrs = af.CreateRegionAttributes();
         byte[] attrsArr = data.Data2 as byte[];
         if (attrsArr != null && attrsArr.Length > 0)
         {
-          Apache.Geode.Client.Generic.DataInput dinp = new Apache.Geode.Client.Generic.DataInput(attrsArr);
+          Apache.Geode.Client.DataInput dinp = new Apache.Geode.Client.DataInput(attrsArr);
           attrs.FromData(dinp);
         }
         return attrs;
       }
       return null;
     }
-    public Apache.Geode.Client.Generic.Properties<string, string> GetPoolAttributes(string key)
+    public Apache.Geode.Client.Properties<string, string> GetPoolAttributes(string key)
     {
       FwkData data = ReadData(key);
       if (data != null && data.Kind == DataKind.Pool)
       {
-        Apache.Geode.Client.Generic.Properties<string, string> prop = Apache.Geode.Client.Generic.Properties<string, string>.Create<string, string>();
+        Apache.Geode.Client.Properties<string, string> prop = Apache.Geode.Client.Properties<string, string>.Create<string, string>();
         //RegionAttributes attrs = af.CreateRegionAttributes();
         byte[] attrsArr = data.Data2 as byte[];
         if (attrsArr != null && attrsArr.Length > 0)
         {
-          Apache.Geode.Client.Generic.DataInput dinp = new Apache.Geode.Client.Generic.DataInput(attrsArr);
+          Apache.Geode.Client.DataInput dinp = new Apache.Geode.Client.DataInput(attrsArr);
           prop.FromData(dinp);
         }
         return prop;

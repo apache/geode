@@ -29,8 +29,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       /// <summary>
       /// Specifies the mechanism to obtain credentials for a client.
       /// It is mandantory for clients when the server is running in secure
@@ -78,7 +77,7 @@ namespace Generic
         void Close();
 
       };
-    }
-  }
-}
- } //namespace 
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

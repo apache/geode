@@ -31,8 +31,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       ref class StatisticDescriptor;
       ref class StatisticsType;
 
@@ -534,12 +533,8 @@ namespace Generic
           : UMWrapN( nativeptr, false ) { }
 
       };
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-
-
-
- } //namespace 
 

@@ -34,8 +34,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       StatisticsFactory^ StatisticsFactory::GetExistingInstance()
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
@@ -249,10 +248,10 @@ namespace Generic
       int64_t StatisticsFactory::ID::get( )
       {
         return  NativePtr->getId();
-      }
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 
  } //namespace 
 

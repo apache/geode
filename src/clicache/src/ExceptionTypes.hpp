@@ -32,8 +32,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
 
       ref class GemFireException;
 
@@ -273,7 +271,7 @@ namespace Generic
 #define _GF_MG_EXCEPTION_CATCH_ALL2  \
       } \
       catch (const apache::geode::client::Exception& ex) { \
-      throw Apache::Geode::Client::Generic::GemFireException::Get(ex); \
+      throw Apache::Geode::Client::GemFireException::Get(ex); \
       } \
       catch (System::AccessViolationException^ ex) { \
         throw ex; \
@@ -679,8 +677,7 @@ namespace Generic
       /// Thrown if commit rebalance happens during a transaction.
       /// </summary>
       _GF_MG_EXCEPTION_DEF3( TransactionDataRebalancedException );
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-      } // end namespace Generic
-    }
-  }
-}

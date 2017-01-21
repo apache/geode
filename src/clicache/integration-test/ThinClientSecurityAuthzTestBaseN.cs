@@ -24,9 +24,9 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
   using NUnit.Framework;
   using Apache.Geode.DUnitFramework;
   using Apache.Geode.Client.Tests.NewAPI;
-  using Apache.Geode.Client.Generic;
-  //using Region = Apache.Geode.Client.Generic.IRegion<Object, Object>;
-  using AssertionException = Apache.Geode.Client.Generic.AssertionException;
+  using Apache.Geode.Client;
+  //using Region = Apache.Geode.Client.IRegion<Object, Object>;
+  using AssertionException = Apache.Geode.Client.AssertionException;
   public abstract class ThinClientSecurityAuthzTestBase : ThinClientRegionSteps
   {
     #region Protected members
@@ -194,7 +194,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
                 {
                   value = region[key];
                 }
-                catch (Generic.KeyNotFoundException )
+                catch (Client.KeyNotFoundException )
                 {
                   Util.Log("KeyNotFoundException while getting key. should be ok as we are just testing auth");
                 }
@@ -432,8 +432,8 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
                 Pool/*<object, object>*/ pool2 = PoolManager/*<object, object>*/.Find("__TESTPOOL1_");
                 if (pool2 != null)
                 {
-                  Generic.FunctionService<object>.OnServer(pool2).Execute("securityTest");
-                  Generic.FunctionService<object>.OnRegion<object, object>(region).Execute("FireNForget"); 
+                  Client.FunctionService<object>.OnServer(pool2).Execute("securityTest");
+                  Client.FunctionService<object>.OnRegion<object, object>(region).Execute("FireNForget"); 
                 }
                 else
                 {
@@ -445,11 +445,11 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
                 //FunctionService fs = CacheHelper.getMultiuserCache(creds).GetFunctionService();
                 //Execution exe =  fs.OnServer();
                 IRegionService userCache = CacheHelper.getMultiuserCache(creds);
-                Apache.Geode.Client.Generic.Execution<object> exe = Generic.FunctionService<object>.OnServer(userCache);
+                Apache.Geode.Client.Execution<object> exe = Client.FunctionService<object>.OnServer(userCache);
                 exe.Execute("securityTest");
-                exe = Generic.FunctionService<object>.OnServers(userCache);
-                Generic.FunctionService<object>.OnRegion<object, object>(region);
-                Generic.FunctionService<object>.OnRegion<object, object>(userCache.GetRegion<object, object>(region.Name)).Execute("FireNForget");
+                exe = Client.FunctionService<object>.OnServers(userCache);
+                Client.FunctionService<object>.OnRegion<object, object>(region);
+                Client.FunctionService<object>.OnRegion<object, object>(userCache.GetRegion<object, object>(region.Name)).Execute("FireNForget");
               }
               break;
             default:

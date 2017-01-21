@@ -32,8 +32,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       //ref class Region;
 
@@ -42,7 +40,7 @@ namespace Generic
       /// </summary>
       generic<class TKey, class TValue>
       public ref class RegionEvent sealed
-        : public Generic::Internal::UMWrap<apache::geode::client::RegionEvent>
+        : public Client::Internal::UMWrap<apache::geode::client::RegionEvent>
       {
       public:
 
@@ -88,12 +86,11 @@ namespace Generic
         /// Internal constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline Apache::Geode::Client::Generic::RegionEvent<TKey, TValue>( const apache::geode::client::RegionEvent* nativeptr )
-          : Apache::Geode::Client::Generic::Internal::UMWrap<apache::geode::client::RegionEvent>(
+        inline Apache::Geode::Client::RegionEvent<TKey, TValue>( const apache::geode::client::RegionEvent* nativeptr )
+          : Apache::Geode::Client::Internal::UMWrap<apache::geode::client::RegionEvent>(
             const_cast<apache::geode::client::RegionEvent*>( nativeptr ), false ) { }
       };
-
-    }
-  }
-}
-} //namespace 
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+ //namespace 

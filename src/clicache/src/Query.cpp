@@ -32,8 +32,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       generic<class TResult>
       ISelectResults<TResult>^ Query<TResult>::Execute(  )
@@ -134,9 +132,8 @@ namespace Generic
           return NativePtr->isCompiled( );
 
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
-      }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
  } //namespace 

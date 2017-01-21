@@ -42,8 +42,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic 
-    {
 
       //ref class RegionAttributes;
       //interface class ICacheLoader;
@@ -509,8 +507,7 @@ namespace Generic
         /// </exception>
         RegionAttributes<TKey, TValue>^ CreateRegionAttributes( );
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

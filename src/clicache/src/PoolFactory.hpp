@@ -29,8 +29,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
      // generic<class TKey, class TValue>
       ref class Pool;
 
@@ -415,9 +414,7 @@ namespace Generic
         inline PoolFactory( apache::geode::client::PoolFactory* nativeptr )
           : SBWrap( nativeptr ) { }
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
-
- } //namespace 

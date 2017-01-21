@@ -25,8 +25,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
 		uint32_t CqStatistics::numInserts( )
 	{
 	  return NativePtr->numInserts( );
@@ -42,8 +41,8 @@ namespace Generic
     uint32_t CqStatistics::numEvents( )
 	{
 	  return NativePtr->numEvents( );
-	}
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
  } //namespace 

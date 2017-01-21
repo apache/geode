@@ -19,7 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-using Apache.Geode.Client.Generic;
+using Apache.Geode.Client;
 
 namespace Apache.Geode.Client.UnitTests
 {
@@ -35,19 +35,19 @@ namespace Apache.Geode.Client.UnitTests
       value = "value";
     }
   }
-  class DefaultCacheable : Apache.Geode.Client.Generic.IGFSerializable
+  class DefaultCacheable : Apache.Geode.Client.IGFSerializable
   {
-    Apache.Geode.Client.Generic.CacheableBoolean m_cacheableBoolean = null;
-    Apache.Geode.Client.Generic.CacheableInt32 m_cacheableInt32 = null;
-    Apache.Geode.Client.Generic.CacheableInt32Array m_cacheableInt32Array = null;
-    Apache.Geode.Client.Generic.CacheableFileName m_cacheableFileName = null;
-    Apache.Geode.Client.Generic.CacheableString m_CacheableStringASCII = null;
-    Apache.Geode.Client.Generic.CacheableStringArray m_cacheableStringArray = null;
-    Apache.Geode.Client.Generic.CacheableHashSet m_cacheableHashSet = null;
-    Apache.Geode.Client.Generic.CacheableHashMap m_cacheableHashMap = null;
-    Apache.Geode.Client.Generic.CacheableDate m_cacheableDate = null;
-    Apache.Geode.Client.Generic.CacheableVector m_cacheableVector = null;
-    Apache.Geode.Client.Generic.CacheableObject m_cacheableObject = null;
+    Apache.Geode.Client.CacheableBoolean m_cacheableBoolean = null;
+    Apache.Geode.Client.CacheableInt32 m_cacheableInt32 = null;
+    Apache.Geode.Client.CacheableInt32Array m_cacheableInt32Array = null;
+    Apache.Geode.Client.CacheableFileName m_cacheableFileName = null;
+    Apache.Geode.Client.CacheableString m_CacheableStringASCII = null;
+    Apache.Geode.Client.CacheableStringArray m_cacheableStringArray = null;
+    Apache.Geode.Client.CacheableHashSet m_cacheableHashSet = null;
+    Apache.Geode.Client.CacheableHashMap m_cacheableHashMap = null;
+    Apache.Geode.Client.CacheableDate m_cacheableDate = null;
+    Apache.Geode.Client.CacheableVector m_cacheableVector = null;
+    Apache.Geode.Client.CacheableObject m_cacheableObject = null;
 
     bool m_initialized = false;
 
@@ -60,86 +60,86 @@ namespace Apache.Geode.Client.UnitTests
     {
       if (initialized)
       {
-        Apache.Geode.Client.Generic.Log.Fine(" in constructor");
+        Apache.Geode.Client.Log.Fine(" in constructor");
         m_initialized = true;
 
-        m_cacheableBoolean = Apache.Geode.Client.Generic.CacheableBoolean.Create(true);
+        m_cacheableBoolean = Apache.Geode.Client.CacheableBoolean.Create(true);
 
-        m_cacheableInt32 = Apache.Geode.Client.Generic.CacheableInt32.Create(1000);
+        m_cacheableInt32 = Apache.Geode.Client.CacheableInt32.Create(1000);
 
-        m_cacheableInt32Array = Apache.Geode.Client.Generic.CacheableInt32Array.Create(new Int32[] { 1, 2, 3 });
+        m_cacheableInt32Array = Apache.Geode.Client.CacheableInt32Array.Create(new Int32[] { 1, 2, 3 });
 
-        m_cacheableFileName = Apache.Geode.Client.Generic.CacheableFileName.Create("gemstone.txt");
+        m_cacheableFileName = Apache.Geode.Client.CacheableFileName.Create("gemstone.txt");
 
-        m_CacheableStringASCII = Apache.Geode.Client.Generic.CacheableString.Create("asciistring");
+        m_CacheableStringASCII = Apache.Geode.Client.CacheableString.Create("asciistring");
 
-        m_cacheableStringArray = Apache.Geode.Client.Generic.CacheableStringArray.Create(new string[] { "one", "two" });
+        m_cacheableStringArray = Apache.Geode.Client.CacheableStringArray.Create(new string[] { "one", "two" });
 
-        m_cacheableHashSet = Apache.Geode.Client.Generic.CacheableHashSet.Create(2);
-        m_cacheableHashSet.Add(Apache.Geode.Client.Generic.CacheableString.Create("first"));
-        m_cacheableHashSet.Add(Apache.Geode.Client.Generic.CacheableString.Create("second"));
+        m_cacheableHashSet = Apache.Geode.Client.CacheableHashSet.Create(2);
+        m_cacheableHashSet.Add(Apache.Geode.Client.CacheableString.Create("first"));
+        m_cacheableHashSet.Add(Apache.Geode.Client.CacheableString.Create("second"));
 
-        m_cacheableHashMap = new Apache.Geode.Client.Generic.CacheableHashMap(new Dictionary<string, string>() {{ "key-hm", "value-hm" }});
+        m_cacheableHashMap = new Apache.Geode.Client.CacheableHashMap(new Dictionary<string, string>() {{ "key-hm", "value-hm" }});
 
         m_cacheableDate = (CacheableDate)CacheableDate.Create(DateTime.Now);
 
-        m_cacheableVector = new Apache.Geode.Client.Generic.CacheableVector(new List<string>() { "one-vec", "two-vec" });
+        m_cacheableVector = new Apache.Geode.Client.CacheableVector(new List<string>() { "one-vec", "two-vec" });
 
-        m_cacheableObject = Apache.Geode.Client.Generic.CacheableObject.Create(new CustomSerializableObject());
+        m_cacheableObject = Apache.Geode.Client.CacheableObject.Create(new CustomSerializableObject());
       } 
     }
 
-    public Apache.Geode.Client.Generic.CacheableBoolean CBool
+    public Apache.Geode.Client.CacheableBoolean CBool
     {
       get { return m_cacheableBoolean; }
     }
 
-    public Apache.Geode.Client.Generic.CacheableInt32 CInt
+    public Apache.Geode.Client.CacheableInt32 CInt
     {
       get { return m_cacheableInt32; }
     }
 
-    public Apache.Geode.Client.Generic.CacheableInt32Array CIntArray
+    public Apache.Geode.Client.CacheableInt32Array CIntArray
     {
       get { return m_cacheableInt32Array; }
     }
 
-    public Apache.Geode.Client.Generic.CacheableFileName CFileName
+    public Apache.Geode.Client.CacheableFileName CFileName
     {
       get { return m_cacheableFileName; }
     }
 
-    public Apache.Geode.Client.Generic.CacheableString CString
+    public Apache.Geode.Client.CacheableString CString
     {
       get { return m_CacheableStringASCII; }
     }
 
-    public Apache.Geode.Client.Generic.CacheableStringArray CStringArray
+    public Apache.Geode.Client.CacheableStringArray CStringArray
     {
       get { return m_cacheableStringArray; }
     }
 
-    public Apache.Geode.Client.Generic.CacheableHashSet CHashSet
+    public Apache.Geode.Client.CacheableHashSet CHashSet
     {
       get { return m_cacheableHashSet; }
     }
 
-    public Apache.Geode.Client.Generic.CacheableHashMap CHashMap
+    public Apache.Geode.Client.CacheableHashMap CHashMap
     {
       get { return m_cacheableHashMap; }
     }
 
-    public Apache.Geode.Client.Generic.CacheableDate CDate
+    public Apache.Geode.Client.CacheableDate CDate
     {
       get { return m_cacheableDate; }
     }
 
-    public Apache.Geode.Client.Generic.CacheableVector CVector
+    public Apache.Geode.Client.CacheableVector CVector
     {
       get { return m_cacheableVector; }
     }
 
-    public Apache.Geode.Client.Generic.CacheableObject CObject
+    public Apache.Geode.Client.CacheableObject CObject
     {
       get { return m_cacheableObject; }
     }
@@ -151,21 +151,21 @@ namespace Apache.Geode.Client.UnitTests
       get { return 0x04; }
     }
 
-    public Apache.Geode.Client.Generic.IGFSerializable FromData(Apache.Geode.Client.Generic.DataInput input)
+    public Apache.Geode.Client.IGFSerializable FromData(Apache.Geode.Client.DataInput input)
     {
       if (!m_initialized)
       {
-        m_cacheableBoolean = (Apache.Geode.Client.Generic.CacheableBoolean)CacheableBoolean.CreateDeserializable();
-        m_cacheableInt32 = (Apache.Geode.Client.Generic.CacheableInt32)CacheableInt32.CreateDeserializable();
-        m_cacheableInt32Array = (Apache.Geode.Client.Generic.CacheableInt32Array)CacheableInt32Array.CreateDeserializable();
+        m_cacheableBoolean = (Apache.Geode.Client.CacheableBoolean)CacheableBoolean.CreateDeserializable();
+        m_cacheableInt32 = (Apache.Geode.Client.CacheableInt32)CacheableInt32.CreateDeserializable();
+        m_cacheableInt32Array = (Apache.Geode.Client.CacheableInt32Array)CacheableInt32Array.CreateDeserializable();
        // m_cacheableFileName = (CacheableFileName)CacheableFileName.CreateDeserializable();
         //m_CacheableStringASCII = (CacheableString)CacheableString.CreateDeserializable();
-        m_cacheableStringArray = (Apache.Geode.Client.Generic.CacheableStringArray)CacheableStringArray.CreateDeserializable();
-        m_cacheableHashSet = (Apache.Geode.Client.Generic.CacheableHashSet)CacheableHashSet.CreateDeserializable();
-        m_cacheableHashMap = (Apache.Geode.Client.Generic.CacheableHashMap)CacheableHashMap.CreateDeserializable();
+        m_cacheableStringArray = (Apache.Geode.Client.CacheableStringArray)CacheableStringArray.CreateDeserializable();
+        m_cacheableHashSet = (Apache.Geode.Client.CacheableHashSet)CacheableHashSet.CreateDeserializable();
+        m_cacheableHashMap = (Apache.Geode.Client.CacheableHashMap)CacheableHashMap.CreateDeserializable();
         m_cacheableDate = (CacheableDate)CacheableDate.CreateDeserializable();
-        m_cacheableVector = (Apache.Geode.Client.Generic.CacheableVector)CacheableVector.CreateDeserializable();
-        m_cacheableObject = (Apache.Geode.Client.Generic.CacheableObject)CacheableObject.CreateDeserializable();
+        m_cacheableVector = (Apache.Geode.Client.CacheableVector)CacheableVector.CreateDeserializable();
+        m_cacheableObject = (Apache.Geode.Client.CacheableObject)CacheableObject.CreateDeserializable();
       }
 
       m_cacheableBoolean.FromData(input);
@@ -187,7 +187,7 @@ namespace Apache.Geode.Client.UnitTests
       get { return 100; }//need to implement
     }
 
-    public void ToData(Apache.Geode.Client.Generic.DataOutput output)
+    public void ToData(Apache.Geode.Client.DataOutput output)
     {
       if (m_initialized)
       {
@@ -207,7 +207,7 @@ namespace Apache.Geode.Client.UnitTests
 
     #endregion
 
-    public static Apache.Geode.Client.Generic.IGFSerializable CreateDeserializable()
+    public static Apache.Geode.Client.IGFSerializable CreateDeserializable()
     {
       return new DefaultCacheable();
     }

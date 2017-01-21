@@ -32,11 +32,9 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       generic<class TKey, class TValue>
-      public ref class CacheWriterGeneric : Apache::Geode::Client::Generic::CacheWriterAdapter<Object^, Object^>
+      public ref class CacheWriterGeneric : Apache::Geode::Client::CacheWriterAdapter<Object^, Object^>
       {
         private:
 
@@ -49,43 +47,43 @@ namespace Generic
             m_writer = writer;
           }
 
-          virtual bool BeforeUpdate( Apache::Geode::Client::Generic::EntryEvent<Object^, Object^>^ ev ) override
+          virtual bool BeforeUpdate( Apache::Geode::Client::EntryEvent<Object^, Object^>^ ev ) override
           {
-            EntryEvent<TKey, TValue> gevent(Generic::GetNativePtr<apache::geode::client::EntryEvent>(ev));
+            EntryEvent<TKey, TValue> gevent(Client::GetNativePtr<apache::geode::client::EntryEvent>(ev));
             return m_writer->BeforeUpdate(%gevent);
           }
 
-          virtual bool BeforeCreate(Apache::Geode::Client::Generic::EntryEvent<Object^, Object^>^ ev) override
+          virtual bool BeforeCreate(Apache::Geode::Client::EntryEvent<Object^, Object^>^ ev) override
           {
-            EntryEvent<TKey, TValue> gevent(Generic::GetNativePtr<apache::geode::client::EntryEvent>(ev));
+            EntryEvent<TKey, TValue> gevent(Client::GetNativePtr<apache::geode::client::EntryEvent>(ev));
             return m_writer->BeforeCreate(%gevent);
           }
 
-          virtual bool BeforeDestroy(Apache::Geode::Client::Generic::EntryEvent<Object^, Object^>^ ev) override
+          virtual bool BeforeDestroy(Apache::Geode::Client::EntryEvent<Object^, Object^>^ ev) override
           {
-            EntryEvent<TKey, TValue> gevent(Generic::GetNativePtr<apache::geode::client::EntryEvent>(ev));
+            EntryEvent<TKey, TValue> gevent(Client::GetNativePtr<apache::geode::client::EntryEvent>(ev));
             return m_writer->BeforeDestroy(%gevent);
           }
 
-          virtual bool BeforeRegionClear( Apache::Geode::Client::Generic::RegionEvent<Object^, Object^>^ ev ) override
+          virtual bool BeforeRegionClear( Apache::Geode::Client::RegionEvent<Object^, Object^>^ ev ) override
           {
-            RegionEvent<TKey, TValue> gevent(Generic::GetNativePtr<apache::geode::client::RegionEvent>(ev));
+            RegionEvent<TKey, TValue> gevent(Client::GetNativePtr<apache::geode::client::RegionEvent>(ev));
             return m_writer->BeforeRegionClear(%gevent);
           }
 
-          virtual bool BeforeRegionDestroy(Apache::Geode::Client::Generic::RegionEvent<Object^, Object^>^ ev) override
+          virtual bool BeforeRegionDestroy(Apache::Geode::Client::RegionEvent<Object^, Object^>^ ev) override
           {
-            RegionEvent<TKey, TValue> gevent(Generic::GetNativePtr<apache::geode::client::RegionEvent>(ev));
+            RegionEvent<TKey, TValue> gevent(Client::GetNativePtr<apache::geode::client::RegionEvent>(ev));
             return m_writer->BeforeRegionDestroy(%gevent);
           }
           
-          virtual void Close(Apache::Geode::Client::Generic::Region<Object^, Object^>^ region) override
+          virtual void Close(Apache::Geode::Client::Region<Object^, Object^>^ region) override
           {
-            IRegion<TKey, TValue>^ gregion = Apache::Geode::Client::Generic::Region<TKey, TValue>::Create(Generic::GetNativePtr<apache::geode::client::Region>(region));
+            IRegion<TKey, TValue>^ gregion = Apache::Geode::Client::Region<TKey, TValue>::Create(Client::GetNativePtr<apache::geode::client::Region>(region));
             m_writer->Close(gregion);
           }
       };
-    }
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

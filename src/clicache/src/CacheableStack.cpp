@@ -34,8 +34,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       // Region: IGFSerializable Members
 
       void CacheableStack::ToData(DataOutput^ output)
@@ -83,11 +82,9 @@ namespace Generic
           }
         }*/
         return m_stack->Count;
-      }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-      // End Region: IGFSerializable Members
-    }
-  }
-}
  } //namespace 
 

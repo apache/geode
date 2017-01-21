@@ -36,8 +36,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       void CacheableObjectXml::ToData(DataOutput^ output)
       {
         if (m_obj == nullptr) {
@@ -104,9 +103,9 @@ namespace Generic
           }
         }
         return m_objectSize;
-      }
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
  } //namespace 
 

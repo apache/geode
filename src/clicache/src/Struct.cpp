@@ -30,8 +30,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       Object^ Struct::default::get( size_t index )
       {
        /*   return SafeUMSerializableConvertGeneric(static_cast<apache::geode::client::Struct*>(
@@ -73,9 +72,8 @@ namespace Generic
           NativePtr())->next().ptr());*/
         return (Serializable::GetManagedValueGeneric</*TResult*/Object^>(static_cast<apache::geode::client::Struct*>(
           NativePtr())->next()));
-      }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
  } //namespace 

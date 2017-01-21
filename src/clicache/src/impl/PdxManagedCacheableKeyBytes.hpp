@@ -33,13 +33,12 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       interface class IPdxSerializable;
-    }
-  }
-}
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 
 namespace apache
 {
@@ -64,7 +63,7 @@ namespace apache
     /// The managed object.
     /// </param>
     inline PdxManagedCacheableKeyBytes(
-      Apache::Geode::Client::Generic::IPdxSerializable^ managedptr, bool storeBytes )
+      Apache::Geode::Client::IPdxSerializable^ managedptr, bool storeBytes )
       : m_domainId(System::Threading::Thread::GetDomainID()),
         m_bytes(NULL),
         m_size(0),
@@ -73,7 +72,7 @@ namespace apache
       m_hasDelta = false;
       if(storeBytes)
       {
-        Apache::Geode::Client::Generic::IGFDelta^ deltaObj = dynamic_cast<Apache::Geode::Client::Generic::IGFDelta^>(managedptr);
+        Apache::Geode::Client::IGFDelta^ deltaObj = dynamic_cast<Apache::Geode::Client::IGFDelta^>(managedptr);
 
         if(deltaObj != nullptr)
           m_hasDelta = deltaObj->HasDelta();
@@ -83,8 +82,8 @@ namespace apache
         if(storeBytes)//if value is from app 
         {
           apache::geode::client::DataOutput dataOut;
-          Apache::Geode::Client::Generic::DataOutput mg_output( &dataOut, true);
-					 Apache::Geode::Client::Generic::Internal::PdxHelper::SerializePdx(%mg_output, managedptr);
+          Apache::Geode::Client::DataOutput mg_output( &dataOut, true);
+					 Apache::Geode::Client::Internal::PdxHelper::SerializePdx(%mg_output, managedptr);
         //  managedptr->ToData( %mg_output );
           
           //move cursor
@@ -95,7 +94,7 @@ namespace apache
           m_size = dataOut.getBufferLength();
           
           m_hashCode = managedptr->GetHashCode(); 
-          Apache::Geode::Client::Generic::Log::Fine(
+          Apache::Geode::Client::Log::Fine(
            "PdxManagedCacheableKeyBytes::Constructor objectSize = " + m_size + " m_hashCode = " + m_hashCode);
         }
       }
@@ -190,7 +189,7 @@ namespace apache
     /// <summary>
     /// Returns the wrapped managed object reference.
     /// </summary>
-    inline Apache::Geode::Client::Generic::IPdxSerializable^ ptr( ) const
+    inline Apache::Geode::Client::IPdxSerializable^ ptr( ) const
     {
       return getManagedObject();
     }
@@ -202,7 +201,7 @@ namespace apache
 
     inline ~PdxManagedCacheableKeyBytes()
     {
-      Apache::Geode::Client::Generic::Log::Fine(
+      Apache::Geode::Client::Log::Fine(
         "ManagedCacheableKeyBytes::Destructor current AppDomain ID: " +
         System::Threading::Thread::GetDomainID() + " for object: " +
         System::Convert::ToString((int)this) + " with its AppDomain ID: " + m_domainId);
@@ -211,7 +210,7 @@ namespace apache
 
   private:
 
-    Apache::Geode::Client::Generic::IPdxSerializable^ getManagedObject() const;
+    Apache::Geode::Client::IPdxSerializable^ getManagedObject() const;
     
     /// <summary>
     /// Using gcroot to hold the managed delegate pointer (since it cannot be stored directly).

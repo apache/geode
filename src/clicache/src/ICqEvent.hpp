@@ -27,9 +27,7 @@ namespace Apache
   {
     namespace Client
     {
-//ref class CqOperationType;
-      namespace Generic
-    {
+
 			 interface class IGFSerializable;
        
 
@@ -116,8 +114,7 @@ namespace Apache
 
         TResult /*Object^*/ getNewValue();
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

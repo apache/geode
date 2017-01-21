@@ -34,8 +34,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
 
       interface class IGFSerializable;
 
@@ -44,7 +42,7 @@ namespace Generic
       /// strings, <c>IGFSerializable</c> objects from a byte stream.
       /// </summary>
       public ref class DataInput sealed
-				: public Generic::Internal::UMWrap<apache::geode::client::DataInput>
+				: public Client::Internal::UMWrap<apache::geode::client::DataInput>
       {
       public:
 
@@ -688,7 +686,7 @@ namespace Generic
       
         void Cleanup( );
       };
-      } // end namespace generic
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

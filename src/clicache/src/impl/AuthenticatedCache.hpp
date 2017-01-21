@@ -34,8 +34,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
 
       //ref class DistributedSystem;
       //ref class Region;
@@ -162,7 +160,7 @@ namespace Generic
         inline AuthenticatedCache( apache::geode::client::RegionService* nativeptr )
           : SBWrap( nativeptr ) { }
       };
-      } // end namespace Generic
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

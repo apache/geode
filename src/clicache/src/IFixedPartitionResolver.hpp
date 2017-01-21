@@ -28,10 +28,8 @@ namespace Apache
   {
     namespace Client
     {
-ref class EntryEvent;
+
       interface class IGFSerializable;
-      namespace Generic
-      {
         /// <summary>
         /// Implementers of interface <code>FixedPartitionResolver</code> helps to
         /// achieve explicit mapping of a "user defined" partition to a data member node.
@@ -92,8 +90,7 @@ ref class EntryEvent;
          /// </return>         
           String^ GetPartitionName(EntryEvent<TKey, TValue>^ opDetails);
         };
-      }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}

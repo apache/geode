@@ -33,8 +33,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       /*
       generic<class TKey, class TValue>
@@ -61,7 +59,7 @@ namespace Generic
           : UMWrap( new apache::geode::client::CqAttributesFactory( ), true )
         { }
 
-        inline CqAttributesFactory(Generic::CqAttributes<TKey, TResult>^ cqAttributes )
+        inline CqAttributesFactory(Client::CqAttributes<TKey, TResult>^ cqAttributes )
           : UMWrap( new apache::geode::client::CqAttributesFactory(apache::geode::client::CqAttributesPtr(GetNativePtrFromSBWrapGeneric<apache::geode::client::CqAttributes>(cqAttributes ))), true )
         { }
 
@@ -70,22 +68,21 @@ namespace Generic
         /// <summary>
         /// add a cqListener 
         /// </summary>
-        void AddCqListener(Generic::ICqListener<TKey, TResult>^ cqListener);
+        void AddCqListener(Client::ICqListener<TKey, TResult>^ cqListener);
 
         /// <summary>
         /// Initialize with an array of listeners
         /// </summary>
-        void InitCqListeners( array<Generic::ICqListener<TKey, TResult>^>^ cqListeners );
+        void InitCqListeners( array<Client::ICqListener<TKey, TResult>^>^ cqListeners );
 
         // FACTORY METHOD
 
         /// <summary>
         /// Creates a <c>CqAttributes</c> with the current settings.
         /// </summary>
-        Generic::CqAttributes<TKey, TResult>^ Create( );
+        Client::CqAttributes<TKey, TResult>^ Create( );
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

@@ -30,8 +30,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       /// <summary>
       /// A mutable <c>IGFSerializable</c> vector wrapper that can serve as
       /// a distributable object for caching. This class extends .NET generic
@@ -147,7 +146,7 @@ namespace Generic
           return gcnew CacheableLinkedList(gcnew System::Collections::Generic::LinkedList<Object^>());
         }
       };
-    }
-  }
-}
- } //namespace
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

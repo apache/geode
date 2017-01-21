@@ -21,10 +21,10 @@ using System.Threading;
 namespace Apache.Geode.Client.FwkLib
 {
   using Apache.Geode.DUnitFramework;
-  using Apache.Geode.Client.Generic;
-  //using Region = Apache.Geode.Client.Generic.IRegion<Object, Object>;
-  //using IntRegion = Apache.Geode.Client.Generic.IRegion<int, byte[]>;
-  //using StringRegion = Apache.Geode.Client.Generic.IRegion<string, byte[]>;
+  using Apache.Geode.Client;
+  //using Region = Apache.Geode.Client.IRegion<Object, Object>;
+  //using IntRegion = Apache.Geode.Client.IRegion<int, byte[]>;
+  //using StringRegion = Apache.Geode.Client.IRegion<string, byte[]>;
 
   public class PutsTask<TKey, TVal> : ClientTask
   {

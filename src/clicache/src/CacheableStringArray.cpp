@@ -30,8 +30,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       CacheableStringArray::CacheableStringArray(array<String^>^ strings)
         : Serializable()
@@ -90,10 +88,9 @@ namespace Generic
             }
           }
           return this;
-        }
-      }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
 }
  } //namespace 

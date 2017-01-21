@@ -34,8 +34,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       generic<class TKey, class TValue>
       ref class RegionEntry;
 
@@ -43,7 +42,7 @@ namespace Generic
       ref class AttributesMutator;
 
       generic<class TKey, class TValue>
-			public ref class LocalRegion : public Generic::Internal::SBWrap<apache::geode::client::Region>, public IRegion<TKey, TValue>  
+			public ref class LocalRegion : public Client::Internal::SBWrap<apache::geode::client::Region>, public IRegion<TKey, TValue>  
       {
       public:
 
@@ -166,12 +165,12 @@ namespace Generic
 
           virtual property AttributesMutator<TKey, TValue>^ AttributesMutator
           {
-            Apache::Geode::Client::Generic::AttributesMutator<TKey, TValue>^ get();
+            Apache::Geode::Client::AttributesMutator<TKey, TValue>^ get();
           }
 
-          virtual property Apache::Geode::Client::Generic::CacheStatistics^ Statistics 
+          virtual property Apache::Geode::Client::CacheStatistics^ Statistics 
           {
-            Apache::Geode::Client::Generic::CacheStatistics^ get();
+            Apache::Geode::Client::CacheStatistics^ get();
           }
 
           virtual IRegion<TKey, TValue>^ GetSubRegion( String^ path );
@@ -185,9 +184,9 @@ namespace Generic
 
           virtual System::Collections::Generic::ICollection<RegionEntry<TKey,TValue>^>^ GetEntries(bool recursive);
 
-          virtual property Apache::Geode::Client::Generic::IRegionService^ RegionService
+          virtual property Apache::Geode::Client::IRegionService^ RegionService
           {
-            Apache::Geode::Client::Generic::IRegionService^ get( );
+            Apache::Geode::Client::IRegionService^ get( );
           }
 
           virtual bool ContainsValueForKey( TKey key );
@@ -244,8 +243,7 @@ namespace Generic
         inline apache::geode::client::SerializablePtr getRegionEntryValue(apache::geode::client::CacheableKeyPtr& key);
         bool AreValuesEqual(apache::geode::client::CacheablePtr& val1, apache::geode::client::CacheablePtr& val2);
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-
-    }
-  }
-} } //namespace 

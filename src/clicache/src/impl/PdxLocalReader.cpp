@@ -28,8 +28,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       namespace Internal
       {
         void PdxLocalReader::initialize()
@@ -414,11 +413,10 @@ namespace Generic
               return this->ReadObject(fieldName);
                //throw gcnew IllegalStateException("ReadField unable to de-serialize  " 
 								//																	+ fieldName + " of " + type); 
-            }
-          }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-				}
-      }
     }
   }
 }

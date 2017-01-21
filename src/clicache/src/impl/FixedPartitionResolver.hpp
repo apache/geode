@@ -30,8 +30,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       public interface class IFixedPartitionResolverProxy
       {
@@ -98,7 +96,7 @@ namespace Generic
             return mnStr->CharPtr;            
           }
       };
-    }
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

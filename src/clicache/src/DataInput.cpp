@@ -45,8 +45,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
         DataInput::DataInput( uint8_t* buffer, int size )
         {
           m_ispdxDesrialization = false;
@@ -1086,9 +1085,9 @@ namespace Generic
           else 
           {
             return ReadUTFHuge();
-          }
-				}
-      } // end namespace generic
-    }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
   }
 }

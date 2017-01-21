@@ -25,7 +25,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
   using Apache.Geode.DUnitFramework;
   using Apache.Geode.Client.Tests.NewAPI;
   
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
 
   using QueryStatics = Apache.Geode.Client.Tests.QueryStatics;
   using QueryCategory = Apache.Geode.Client.Tests.QueryCategory;
@@ -169,7 +169,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
         null, locators, "__TESTPOOL1_", true);
 
       IRegion<object, object> region = CacheHelper.GetRegion<object, object>(QueryRegionNames[0]);
-      Apache.Geode.Client.Generic.RegionAttributes<object, object> regattrs = region.Attributes;
+      Apache.Geode.Client.RegionAttributes<object, object> regattrs = region.Attributes;
       region.CreateSubRegion(QueryRegionNames[1], regattrs);
     }
     

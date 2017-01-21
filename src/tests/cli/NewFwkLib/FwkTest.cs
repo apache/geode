@@ -28,9 +28,9 @@ namespace Apache.Geode.Client.FwkLib
 {
   using Apache.Geode.DUnitFramework;
   using Apache.Geode.Client.Tests.NewAPI;
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
   using NEWAPI = Apache.Geode.Client.Tests.NewAPI;
-  //using Region = Apache.Geode.Client.Generic.IRegion<Object, Object>;
+  //using Region = Apache.Geode.Client.IRegion<Object, Object>;
 
 
   /// <summary>
@@ -1344,7 +1344,7 @@ namespace Apache.Geode.Client.FwkLib
               else
                region = CacheHelper<TKey, TVal>.CreateRegion(rootRegionName, rootAttrs);
             }
-            Apache.Geode.Client.Generic.RegionAttributes<TKey, TVal> regAttr = region.Attributes;
+            Apache.Geode.Client.RegionAttributes<TKey, TVal> regAttr = region.Attributes;
             FwkInfo("Region attributes for {0}: {1}", rootRegionName,
               CacheHelper<TKey, TVal>.RegionAttributesToString(regAttr));
           }

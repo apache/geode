@@ -23,11 +23,11 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic {
+
 apache::geode::client::AppDomainContext* createAppDomainContext() {
   return new AppDomainContext();
-}
-}
-}
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 }

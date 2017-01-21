@@ -32,13 +32,12 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       interface class IGFSerializable;
-    }
-  }
-}
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 
 namespace apache
 {
@@ -63,7 +62,7 @@ namespace apache
         /// The managed object.
         /// </param>
         inline ManagedCacheableKeyBytesGeneric(
-          Apache::Geode::Client::Generic::IGFSerializable^ managedptr, bool storeBytes)
+          Apache::Geode::Client::IGFSerializable^ managedptr, bool storeBytes)
           : m_domainId(System::Threading::Thread::GetDomainID()),
           m_classId(managedptr->ClassId),
           m_bytes(NULL),
@@ -75,7 +74,7 @@ namespace apache
             if (storeBytes)//if value is from app 
             {
               apache::geode::client::DataOutput dataOut;
-              Apache::Geode::Client::Generic::DataOutput mg_output(&dataOut, true);
+              Apache::Geode::Client::DataOutput mg_output(&dataOut, true);
               managedptr->ToData(%mg_output);
 
               //move cursor
@@ -86,7 +85,7 @@ namespace apache
               m_size = dataOut.getBufferLength();
 
               m_hashCode = managedptr->GetHashCode();
-              Apache::Geode::Client::Generic::Log::Fine(
+              Apache::Geode::Client::Log::Fine(
                 "ManagedCacheableKeyBytes::Constructor objectSize = " + m_size + " m_hashCode = " + m_hashCode);
             }
           }
@@ -165,14 +164,14 @@ namespace apache
         /// <summary>
         /// Returns the wrapped managed object reference.
         /// </summary>
-        inline Apache::Geode::Client::Generic::IGFSerializable^ ptr() const
+        inline Apache::Geode::Client::IGFSerializable^ ptr() const
         {
           return getManagedObject();
         }
 
         inline ~ManagedCacheableKeyBytesGeneric()
         {
-          Apache::Geode::Client::Generic::Log::Fine(
+          Apache::Geode::Client::Log::Fine(
             "ManagedCacheableKeyBytes::Destructor current AppDomain ID: " +
             System::Threading::Thread::GetDomainID() + " for object: " +
             System::Convert::ToString((int)this) + " with its AppDomain ID: " + m_domainId);
@@ -181,7 +180,7 @@ namespace apache
 
       private:
 
-        Apache::Geode::Client::Generic::IGFSerializable^ getManagedObject() const;
+        Apache::Geode::Client::IGFSerializable^ getManagedObject() const;
 
         /// <summary>
         /// Using gcroot to hold the managed delegate pointer (since it cannot be stored directly).

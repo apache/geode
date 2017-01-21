@@ -29,11 +29,9 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       generic<class TKey, class TResult>
-      public ref class CqListenerGeneric : Apache::Geode::Client::Generic::ICqListener<Object^, Object^>
+      public ref class CqListenerGeneric : Apache::Geode::Client::ICqListener<Object^, Object^>
       {
         private:
 
@@ -46,14 +44,14 @@ namespace Generic
             m_listener = listener;
           }
 
-          virtual void OnEvent( Apache::Geode::Client::Generic::CqEvent<Object^, Object^>^ ev) 
+          virtual void OnEvent( Apache::Geode::Client::CqEvent<Object^, Object^>^ ev) 
 	        {
 						//TODO:split---Done
             CqEvent<TKey, TResult> gevent(GetNativePtr<apache::geode::client::CqEvent>(ev));
             m_listener->OnEvent(%gevent);
           }
 
-          virtual void OnError(Apache::Geode::Client::Generic::CqEvent<Object^, Object^>^ ev)
+          virtual void OnError(Apache::Geode::Client::CqEvent<Object^, Object^>^ ev)
 	        {
 						//TODO::split--Done
 	          CqEvent<TKey, TResult> gevent(GetNativePtr<apache::geode::client::CqEvent>(ev));
@@ -65,7 +63,7 @@ namespace Generic
 	          m_listener->Close();
           }   
       };
-    }
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

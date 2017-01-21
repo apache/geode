@@ -29,8 +29,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       //interface class ICacheableKey;
 
       /// <summary>
@@ -110,8 +109,7 @@ namespace Generic
         /// <seealso cref="Region.DestroyRegion" />
         void Close( IRegion<TKey, TValue>^ region );
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

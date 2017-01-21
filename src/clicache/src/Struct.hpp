@@ -30,8 +30,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       generic<class TResult>
       ref class StructSet;
 
@@ -45,7 +44,7 @@ namespace Generic
       /// </remarks>
       //generic<class TResult>
       public ref class Struct sealed
-        : public Apache::Geode::Client::Generic::Serializable
+        : public Apache::Geode::Client::Serializable
       {
       public:
 
@@ -55,9 +54,9 @@ namespace Generic
         /// <returns>
         /// The value of the field or null if index is out of bounds.
         /// </returns>
-        property /*Apache::Geode::Client::Generic::IGFSerializable^*//*TResult*/ Object^ GFINDEXER( size_t )
+        property /*Apache::Geode::Client::IGFSerializable^*//*TResult*/ Object^ GFINDEXER( size_t )
         {
-          /*Apache::Geode::Client::Generic::IGFSerializable^*/ /*TResult*/ Object^ get( size_t index );
+          /*Apache::Geode::Client::IGFSerializable^*/ /*TResult*/ Object^ get( size_t index );
         }
 
         /// <summary>
@@ -67,9 +66,9 @@ namespace Generic
         /// <exception cref="IllegalArgumentException">
         /// if the field name is not found.
         /// </exception>
-        property /*Apache::Geode::Client::Generic::IGFSerializable^*//*TResult*/Object^ GFINDEXER( String^ )
+        property /*Apache::Geode::Client::IGFSerializable^*//*TResult*/Object^ GFINDEXER( String^ )
         {
-          /*Apache::Geode::Client::Generic::IGFSerializable^*//*TResult*/Object^ get( String^ fieldName );
+          /*Apache::Geode::Client::IGFSerializable^*//*TResult*/Object^ get( String^ fieldName );
         }
 
         /// <summary>
@@ -78,9 +77,9 @@ namespace Generic
         /// <returns>
         /// A reference to the parent <c>StructSet</c> of this <c>Struct</c>.
         /// </returns>
-        property Apache::Geode::Client::Generic::StructSet</*TResult*/Object^>^ Set
+        property Apache::Geode::Client::StructSet</*TResult*/Object^>^ Set
         {
-          Apache::Geode::Client::Generic::StructSet</*TResult*/Object^>^ get( );
+          Apache::Geode::Client::StructSet</*TResult*/Object^>^ get( );
         }
 
         /// <summary>
@@ -106,7 +105,7 @@ namespace Generic
         /// A reference to the next item in the <c>Struct</c>
         /// or null if no more available.
         /// </returns>
-        /*Apache::Geode::Client::Generic::IGFSerializable^*//*TResult*/Object^ Next( );
+        /*Apache::Geode::Client::IGFSerializable^*//*TResult*/Object^ Next( );
 
 
       private:
@@ -115,32 +114,32 @@ namespace Generic
         /// Private constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline Apache::Geode::Client::Generic::Struct/*<TResult>*/( ::apache::geode::client::Serializable* nativeptr )
-          : Apache::Geode::Client::Generic::Serializable( nativeptr ) { }
+        inline Apache::Geode::Client::Struct/*<TResult>*/( ::apache::geode::client::Serializable* nativeptr )
+          : Apache::Geode::Client::Serializable( nativeptr ) { }
 
-        inline Apache::Geode::Client::Generic::Struct/*<TResult>*/(  )
-          : Apache::Geode::Client::Generic::Serializable( ::apache::geode::client::Struct::createDeserializable()) { }
+        inline Apache::Geode::Client::Struct/*<TResult>*/(  )
+          : Apache::Geode::Client::Serializable( ::apache::geode::client::Struct::createDeserializable()) { }
 
       internal:
 
         /// <summary>
         /// Factory function to register wrapper
         /// </summary>
-        inline static Apache::Geode::Client::Generic::IGFSerializable^ /*Struct^*/ /*<TResult>*/ Create( ::apache::geode::client::Serializable* obj )
+        inline static Apache::Geode::Client::IGFSerializable^ /*Struct^*/ /*<TResult>*/ Create( ::apache::geode::client::Serializable* obj )
         {
           return ( obj != nullptr ?
-            gcnew Apache::Geode::Client::Generic::Struct/*<TResult>*/( obj ) : nullptr );
+            gcnew Apache::Geode::Client::Struct/*<TResult>*/( obj ) : nullptr );
           /*return ( obj != nullptr ?
             gcnew Struct( obj ) : nullptr );*/
         }
 
-        inline static Apache::Geode::Client::Generic::IGFSerializable^ CreateDeserializable( )
+        inline static Apache::Geode::Client::IGFSerializable^ CreateDeserializable( )
         {
-          return gcnew Apache::Geode::Client::Generic::Struct/*<TResult>*/(  ) ;
+          return gcnew Apache::Geode::Client::Struct/*<TResult>*/(  ) ;
           //return gcnew Struct(  ) ;
         }
       };
-    }
-  }
-}
-} //namespace 
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+ //namespace 

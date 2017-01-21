@@ -30,8 +30,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       /// <summary>
       /// Encapsulate an undefined result.
       /// </summary>
@@ -104,7 +103,7 @@ namespace Generic
 					return gcnew CacheableUndefined();
         }
       };
-    }
-  }
-}
- } //namespace 
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

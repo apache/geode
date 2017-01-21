@@ -23,7 +23,7 @@ using Apache.Geode.Client.Tests;
 using Apache.Geode.DUnitFramework;
 namespace Apache.Geode.Client.FwkLib
 {
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
   public static class PerfOps {
     public const string PERF_CREATES = "creates";
     public const string PERF_CREATE_TIME = "createTime";

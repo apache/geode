@@ -37,8 +37,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       CacheFactory^ CacheFactory::CreateCacheFactory()
       {
         return CacheFactory::CreateCacheFactory(Properties<String^, String^>::Create<String^, String^>());
@@ -87,7 +86,7 @@ namespace Generic
 
             Serializable::RegisterTypeGeneric(
               apache::geode::client::GemfireTypeIds::PdxType,
-              gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::Generic::Internal::PdxType::CreateDeserializable),
+              gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::Internal::PdxType::CreateDeserializable),
               nullptr);
 
            if(!m_connected)
@@ -105,8 +104,8 @@ namespace Generic
           finally {
             DistributedSystem::registerCliCallback();
 						Serializable::RegisterPDXManagedCacheableKey(appDomainEnable);
-					Apache::Geode::Client::Generic::Internal::PdxTypeRegistry::PdxIgnoreUnreadFields = pdxIgnoreUnreadFields; 
-          Apache::Geode::Client::Generic::Internal::PdxTypeRegistry::PdxReadSerialized = pdxReadSerialized; 
+					Apache::Geode::Client::Internal::PdxTypeRegistry::PdxIgnoreUnreadFields = pdxIgnoreUnreadFields; 
+          Apache::Geode::Client::Internal::PdxTypeRegistry::PdxReadSerialized = pdxReadSerialized; 
           DistributedSystem::releaseDisconnectLock();
         }
       }
@@ -406,8 +405,8 @@ namespace Generic
           return this;
 
 			  _GF_MG_EXCEPTION_CATCH_ALL2
-      }
-      } // end namespace Generic
-    }
-  }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 }

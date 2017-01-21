@@ -22,7 +22,7 @@ using System.Threading;
 namespace Apache.Geode.Client.FwkLib
 {
   using Apache.Geode.DUnitFramework;
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
 
 
   public class DurablePerfListener<TKey, TVal> : CacheListenerAdapter<TKey, TVal>, IDisposable

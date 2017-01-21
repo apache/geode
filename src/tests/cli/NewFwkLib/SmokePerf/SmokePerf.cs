@@ -25,8 +25,8 @@ using Apache.Geode.Client.Tests.NewAPI;
 namespace Apache.Geode.Client.FwkLib
 {
   using Apache.Geode.DUnitFramework;
-  using Apache.Geode.Client.Generic;
-  //using Region = Apache.Geode.Client.Generic.IRegion<Object, Object>;
+  using Apache.Geode.Client;
+  //using Region = Apache.Geode.Client.IRegion<Object, Object>;
   public class PerfCacheListener<TKey, TVal> : CacheListenerAdapter<TKey, TVal>, IDisposable
   {
     public static Int64 LAT_MARK = 0x55667788;

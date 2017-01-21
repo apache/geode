@@ -30,8 +30,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       generic<class TResult>
       ref class SelectResultsIterator;
@@ -64,18 +62,17 @@ namespace Generic
         /// <summary>
         /// Get an object at the given index.
         /// </summary>
-        property /*Apache::Geode::Client::Generic::IGFSerializable^*/TResult GFINDEXER( size_t )
+        property /*Apache::Geode::Client::IGFSerializable^*/TResult GFINDEXER( size_t )
         {
-          /*Apache::Geode::Client::Generic::IGFSerializable^*/TResult get( size_t index );
+          /*Apache::Geode::Client::IGFSerializable^*/TResult get( size_t index );
         }
 
         /// <summary>
         /// Get an iterator for the result set.
         /// </summary>
-        Apache::Geode::Client::Generic::SelectResultsIterator<TResult>^ GetIterator( );
+        Apache::Geode::Client::SelectResultsIterator<TResult>^ GetIterator( );
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

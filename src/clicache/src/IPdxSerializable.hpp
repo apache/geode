@@ -27,8 +27,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-			{      
+
 				/// <summary>
 				/// When a domain class implements PdxSerializable it marks 
 				/// itself as a PDX. 
@@ -62,7 +61,7 @@ namespace Generic
 					void FromData( IPdxReader^ reader );
 
 				};
-			}
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

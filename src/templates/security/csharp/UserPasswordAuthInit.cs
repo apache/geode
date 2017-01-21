@@ -18,10 +18,10 @@
 namespace Apache.Geode.Templates.Cache.Security
 {
 
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
 
   ///<summary>
-  /// An <see cref="Apache.Geode.Client.Generic.IAuthInitialize"/> implementation
+  /// An <see cref="Apache.Geode.Client.IAuthInitialize"/> implementation
   /// that obtains the user name and password as the credentials from the
   /// given set of properties.
   /// </summary>

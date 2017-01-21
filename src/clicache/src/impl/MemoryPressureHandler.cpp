@@ -27,8 +27,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       int64_t g_prevUnmanagedSize = 0;
 
       int MemoryPressureHandler::handle_timeout( const ACE_Time_Value&
@@ -70,8 +69,8 @@ namespace Generic
           ACE_Reactor_Mask close_mask )
       {
         return 0;
-      }
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
  } //namespace 

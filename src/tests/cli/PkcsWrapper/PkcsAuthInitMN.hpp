@@ -22,7 +22,7 @@
 
 using namespace System;
 
-using namespace Apache::Geode::Client::Generic;
+using namespace Apache::Geode::Client;
 
 namespace Apache
 {
@@ -36,7 +36,7 @@ namespace Tests
           {
           public ref class PkcsAuthInit sealed
           : public Internal::SBWrap<apache::geode::client::PKCSAuthInitInternal>,
-            public Apache::Geode::Client::Generic::IAuthInitialize/*<String^, Object^>*/
+            public Apache::Geode::Client::IAuthInitialize/*<String^, Object^>*/
         {
         public:
           
@@ -45,9 +45,9 @@ namespace Tests
           ~PkcsAuthInit();          
 
           //generic <class TPropKey, class TPropValue>
-          virtual Apache::Geode::Client::Generic::Properties<String^, Object^> ^
+          virtual Apache::Geode::Client::Properties<String^, Object^> ^
             GetCredentials(
-            Apache::Geode::Client::Generic::Properties<String^, String^>^ props, String^ server);
+            Apache::Geode::Client::Properties<String^, String^>^ props, String^ server);
 
           virtual void Close();
 

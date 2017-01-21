@@ -27,8 +27,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       /// <summary>
       /// Utility class that implements all methods in <c>ITransactionWriter</c>
@@ -36,16 +34,15 @@ namespace Generic
       /// </summary>
       generic<class TKey, class TValue>
       public ref class TransactionWriterAdapter
-        : public Apache::Geode::Client::Generic::ITransactionWriter<TKey, TValue>
+        : public Apache::Geode::Client::ITransactionWriter<TKey, TValue>
       {
       public:
         virtual void BeforeCommit(TransactionEvent<TKey, TValue>^ te)
         {
         }
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 
 #endif

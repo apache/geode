@@ -27,8 +27,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       /// <summary>
       /// An application plug-in that can be installed for getting events for 
       /// cache transactions. 
@@ -77,9 +76,8 @@ namespace Generic
         /// <seealso cref="Region.DestroyRegion" />
         void Close();
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 
 #endif

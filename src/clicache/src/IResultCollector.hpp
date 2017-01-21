@@ -27,8 +27,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
 			 interface class IGFSerializable;
       /*
       generic<class TKey>
@@ -75,8 +74,7 @@ namespace Generic
   void ClearResults(/*bool*/);
 
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

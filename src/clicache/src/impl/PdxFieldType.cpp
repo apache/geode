@@ -27,8 +27,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       namespace Internal
       {
         Int32 PdxFieldType::SequenceId::get()
@@ -183,10 +182,10 @@ namespace Generic
         
           default:
             return -1;
-           }
-        }
-      }
-			}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
     }
   }
 }

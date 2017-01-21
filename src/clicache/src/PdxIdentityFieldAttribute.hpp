@@ -28,8 +28,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-			{    
+
         ///<summary>        
         /// PdxIdentityField attribute one can specify on member fields.
         /// This attribute is used by <see cref="ReflectionBasedAutoSerializer">,
@@ -46,7 +45,6 @@ namespace Generic
         {
         }
       };
-      }
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache

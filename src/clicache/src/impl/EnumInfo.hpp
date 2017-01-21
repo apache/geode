@@ -27,8 +27,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       namespace Internal
       {
         public ref class EnumInfo : public IGFSerializable
@@ -98,8 +97,8 @@ namespace Generic
            Object^ GetEnum();
           
           };
-			}
-      }
-    }
-  }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 }

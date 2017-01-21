@@ -101,12 +101,12 @@ namespace apache {
         /// <summary>
         /// Returns the wrapped managed object reference.
         /// </summary>
-        inline Apache::Geode::Client::Generic::IPartitionResolverProxy^ ptr() const
+        inline Apache::Geode::Client::IPartitionResolverProxy^ ptr() const
         {
           return m_managedptr;
         }
 
-        inline void setptr(Apache::Geode::Client::Generic::IPartitionResolverProxy^ managedptr)
+        inline void setptr(Apache::Geode::Client::IPartitionResolverProxy^ managedptr)
         {
           m_managedptr = managedptr;
         }
@@ -124,7 +124,7 @@ namespace apache {
         /// to be called which is not what is desired when this object is destroyed. Normally this
         /// managed object may be created by the user and will be handled automatically by the GC.
         /// </summary>
-        gcroot<Apache::Geode::Client::Generic::IPartitionResolverProxy^> m_managedptr;
+        gcroot<Apache::Geode::Client::IPartitionResolverProxy^> m_managedptr;
 
         gcroot<Object^> m_userptr;
       };

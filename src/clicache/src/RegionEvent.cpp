@@ -28,11 +28,9 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       generic<class TKey, class TValue>
-      RegionEvent<TKey, TValue>::RegionEvent(Generic::IRegion<TKey, TValue>^ region,
+      RegionEvent<TKey, TValue>::RegionEvent(Client::IRegion<TKey, TValue>^ region,
         Object^ aCallbackArgument, bool remoteOrigin)
         : UMWrap( )
       {
@@ -54,7 +52,7 @@ namespace Generic
       {
         apache::geode::client::RegionPtr& regionptr( NativePtr->getRegion( ) );
 
-        return Generic::Region<TKey, TValue>::Create( regionptr.ptr( ) );
+        return Client::Region<TKey, TValue>::Create( regionptr.ptr( ) );
       }
 
       generic<class TKey, class TValue>
@@ -68,9 +66,8 @@ namespace Generic
       bool RegionEvent<TKey, TValue>::RemoteOrigin::get( )
       {
         return NativePtr->remoteOrigin( );
-      }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
  } //namespace 

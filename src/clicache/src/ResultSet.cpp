@@ -30,8 +30,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       generic<class TResult>
       bool ResultSet<TResult>::IsModifiable::get( )
@@ -72,9 +70,8 @@ namespace Generic
       System::Collections::IEnumerator^ ResultSet<TResult>::GetIEnumerator( )
       {
         return GetIterator( );
-      }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
  } //namespace 

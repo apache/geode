@@ -22,7 +22,7 @@ namespace Apache.Geode.Client.UnitTests
 {
   using Apache.Geode.DUnitFramework;
 
-  class TallyWriter : Apache.Geode.Client.Generic.CacheWriterAdapter<Object, Object>
+  class TallyWriter : Apache.Geode.Client.CacheWriterAdapter<Object, Object>
   {
     #region Private members
 
@@ -30,10 +30,10 @@ namespace Apache.Geode.Client.UnitTests
     private int m_updates = 0;
     private int m_invalidates = 0;
     private int m_destroys = 0;
-    private Apache.Geode.Client.Generic.IGFSerializable m_callbackArg = null;
+    private Apache.Geode.Client.IGFSerializable m_callbackArg = null;
     private int m_clears = 0;
-    private Apache.Geode.Client.Generic.IGFSerializable m_lastKey = null;
-    private Apache.Geode.Client.Generic.IGFSerializable m_lastValue = null;
+    private Apache.Geode.Client.IGFSerializable m_lastKey = null;
+    private Apache.Geode.Client.IGFSerializable m_lastValue = null;
     private bool isWriterFailed = false;
     private bool isWriterInvoke = false;
     private bool isCallbackCalled = false;
@@ -82,7 +82,7 @@ namespace Apache.Geode.Client.UnitTests
     }
 
 
-    public Apache.Geode.Client.Generic.IGFSerializable LastKey
+    public Apache.Geode.Client.IGFSerializable LastKey
     {
       get
       {
@@ -90,7 +90,7 @@ namespace Apache.Geode.Client.UnitTests
       }
     }
 
-    public Apache.Geode.Client.Generic.IGFSerializable CallbackArgument
+    public Apache.Geode.Client.IGFSerializable CallbackArgument
     {
       get
       {
@@ -99,7 +99,7 @@ namespace Apache.Geode.Client.UnitTests
     }
 
 
-    public Apache.Geode.Client.Generic.IGFSerializable LastValue
+    public Apache.Geode.Client.IGFSerializable LastValue
     {
       get
       {
@@ -112,7 +112,7 @@ namespace Apache.Geode.Client.UnitTests
     isWriterFailed = true;
    }
 
-  public void SetCallBackArg( Apache.Geode.Client.Generic.IGFSerializable callbackArg )
+  public void SetCallBackArg( Apache.Geode.Client.IGFSerializable callbackArg )
   {
     m_callbackArg = callbackArg;
   }
@@ -167,14 +167,14 @@ namespace Apache.Geode.Client.UnitTests
         Updates, Creates, Invalidates, Destroys);
     }
 
-    public void CheckcallbackArg(Apache.Geode.Client.Generic.EntryEvent<Object, Object> ev)
+    public void CheckcallbackArg(Apache.Geode.Client.EntryEvent<Object, Object> ev)
       {
 
         if(!isWriterInvoke)
           isWriterInvoke = true;
         if (m_callbackArg != null)
         {
-          Apache.Geode.Client.Generic.IGFSerializable callbkArg = (Apache.Geode.Client.Generic.IGFSerializable)ev.CallbackArgument;
+          Apache.Geode.Client.IGFSerializable callbkArg = (Apache.Geode.Client.IGFSerializable)ev.CallbackArgument;
           if (m_callbackArg.Equals(callbkArg))
             isCallbackCalled = true;
         }  
@@ -187,7 +187,7 @@ namespace Apache.Geode.Client.UnitTests
 
     #region ICacheWriter Members
 
-    public override bool BeforeCreate(Apache.Geode.Client.Generic.EntryEvent<Object, Object> ev)
+    public override bool BeforeCreate(Apache.Geode.Client.EntryEvent<Object, Object> ev)
     {
       m_creates++;
       Util.Log("TallyWriter::BeforeCreate");
@@ -195,7 +195,7 @@ namespace Apache.Geode.Client.UnitTests
       return !isWriterFailed;
     }
 
-    public override bool BeforeDestroy(Apache.Geode.Client.Generic.EntryEvent<Object, Object> ev)
+    public override bool BeforeDestroy(Apache.Geode.Client.EntryEvent<Object, Object> ev)
     {
       m_destroys++;
       Util.Log("TallyWriter::BeforeDestroy");
@@ -203,14 +203,14 @@ namespace Apache.Geode.Client.UnitTests
       return !isWriterFailed;
     }
 
-    public override bool BeforeRegionClear(Apache.Geode.Client.Generic.RegionEvent<Object, Object> ev)
+    public override bool BeforeRegionClear(Apache.Geode.Client.RegionEvent<Object, Object> ev)
     {
       m_clears++;
       Util.Log("TallyWriter::BeforeRegionClear");
       return true;
     }
 
-    public override bool BeforeUpdate(Apache.Geode.Client.Generic.EntryEvent<Object, Object> ev)
+    public override bool BeforeUpdate(Apache.Geode.Client.EntryEvent<Object, Object> ev)
     {
       m_updates++;
       Util.Log("TallyWriter::BeforeUpdate");

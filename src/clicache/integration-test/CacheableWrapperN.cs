@@ -24,7 +24,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
 {
   
   using NUnit.Framework;
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
   /// <summary>
   /// Interface class for wrappers of gemfire cacheable types.
   /// </summary>

@@ -28,8 +28,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
 
         /// <summary>
         /// Extension of CqListener. Adds two new methods to CqListener, one that
@@ -53,7 +51,7 @@ namespace Generic
           virtual void OnCqConnected(); 
 
         };
-      }
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

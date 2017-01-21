@@ -27,8 +27,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-			{      
+
 				/// <summary>
 				/// The IPdxSerializer interface allows domain classes to be 
         /// serialized and deserialized as PDXs without modification 
@@ -63,7 +62,7 @@ namespace Generic
 					Object^ FromData(String^ classname, IPdxReader^ reader );
 
 				};
-			}
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

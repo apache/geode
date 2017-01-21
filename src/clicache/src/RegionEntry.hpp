@@ -31,8 +31,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       //ref class Region;
       ref class CacheStatistics;
@@ -112,9 +110,9 @@ namespace Generic
         /// <exception cref="StatisticsDisabledException">
         /// if statistics have been disabled for this region
         /// </exception>
-        property Apache::Geode::Client::Generic::CacheStatistics^ Statistics
+        property Apache::Geode::Client::CacheStatistics^ Statistics
         {
-          Apache::Geode::Client::Generic::CacheStatistics^ get( );
+          Apache::Geode::Client::CacheStatistics^ get( );
         }
 
         ///// <summary>
@@ -161,10 +159,10 @@ namespace Generic
         /// <returns>
         /// The managed wrapper object; null if the native pointer is null.
         /// </returns>
-        inline static Generic::RegionEntry<TKey, TValue>^ Create( apache::geode::client::RegionEntry* nativeptr )
+        inline static Client::RegionEntry<TKey, TValue>^ Create( apache::geode::client::RegionEntry* nativeptr )
         {
           return ( nativeptr != nullptr ?
-            gcnew Generic::RegionEntry<TKey, TValue>( nativeptr ) : nullptr );
+            gcnew Client::RegionEntry<TKey, TValue>( nativeptr ) : nullptr );
         }
 
 
@@ -177,8 +175,7 @@ namespace Generic
         inline RegionEntry( apache::geode::client::RegionEntry* nativeptr )
           : SBWrap( nativeptr ) { }
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

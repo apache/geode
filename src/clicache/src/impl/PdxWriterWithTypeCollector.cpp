@@ -30,8 +30,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       namespace Internal
       {
           void PdxWriterWithTypeCollector::initialize()
@@ -352,9 +351,9 @@ namespace Generic
 
             pft->IdentityField = true;
             return this;
-          }
-      }
-			}
-    }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
   }
 }

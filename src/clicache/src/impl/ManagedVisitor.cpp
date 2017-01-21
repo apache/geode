@@ -32,12 +32,12 @@ namespace apache
 
       void ManagedVisitorGeneric::visit(CacheableKeyPtr& key, CacheablePtr& value)
       {
-        using namespace Apache::Geode::Client::Generic;
+        using namespace Apache::Geode::Client;
         try {
           ICacheableKey^ mg_key(SafeGenericUMKeyConvert<ICacheableKey^>(key.ptr()));
           IGFSerializable^ mg_value(SafeUMSerializableConvertGeneric(value.ptr()));
 
-          m_visitor->Invoke(mg_key, (Apache::Geode::Client::Generic::IGFSerializable^)mg_value);
+          m_visitor->Invoke(mg_key, (Apache::Geode::Client::IGFSerializable^)mg_value);
         }
         catch (GemFireException^ ex) {
           ex->ThrowNative();

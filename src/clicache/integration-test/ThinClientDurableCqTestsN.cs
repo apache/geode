@@ -18,7 +18,7 @@
 using NUnit.Framework;
 using Apache.Geode.DUnitFramework;
 using Apache.Geode.Client.Tests.NewAPI;
-using Apache.Geode.Client.Generic;
+using Apache.Geode.Client;
 using System;
 
 namespace Apache.Geode.Client.UnitTests.NewAPI
@@ -61,7 +61,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
       Util.Log("Registering Cqs for client1.");
       CqAttributesFactory<object, object> cqAf = new CqAttributesFactory<object, object>();
       CqAttributes<object, object> attributes = cqAf.Create();
-      QueryService<object, object> qs = Generic.PoolManager.Find("__TESTPOOL1_").GetQueryService<object, object>();
+      QueryService<object, object> qs = Client.PoolManager.Find("__TESTPOOL1_").GetQueryService<object, object>();
 
       if (!isRecycle)
       {
@@ -85,7 +85,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
       Util.Log("Registering Cqs for client1 for multiple chunks.");
       CqAttributesFactory<object, object> cqAf = new CqAttributesFactory<object, object>();
       CqAttributes<object, object> attributes = cqAf.Create();
-      QueryService<object, object> qs = Generic.PoolManager.Find("__TESTPOOL1_").GetQueryService<object, object>();
+      QueryService<object, object> qs = Client.PoolManager.Find("__TESTPOOL1_").GetQueryService<object, object>();
 
       for (int i = 0; i < m_NumberOfCqs; i++)
         qs.NewCq("MyCq_" + i.ToString(), "Select * From /" + QueryRegionNames[0] + " where id = 1", attributes, true).ExecuteWithInitialResults();
@@ -97,7 +97,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
       Util.Log("Registering Cqs for client2.");
       CqAttributesFactory<object, object> cqAf = new CqAttributesFactory<object, object>();
       CqAttributes<object, object> attributes = cqAf.Create();
-      QueryService<object, object> qs = Generic.PoolManager.Find("__TESTPOOL1_").GetQueryService<object, object>();
+      QueryService<object, object> qs = Client.PoolManager.Find("__TESTPOOL1_").GetQueryService<object, object>();
 
       if (!isRecycle)
       {
@@ -118,7 +118,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
     public void VerifyDurableCqListClient1MultipleChunks()
     {
       Util.Log("Verifying durable Cqs for client1.");
-      QueryService<object, object> qs = Generic.PoolManager.Find("__TESTPOOL1_").GetQueryService<object, object>();
+      QueryService<object, object> qs = Client.PoolManager.Find("__TESTPOOL1_").GetQueryService<object, object>();
       System.Collections.Generic.List<string> durableCqList = qs.GetAllDurableCqsFromServer();
       Assert.AreNotEqual(null, durableCqList);
 
@@ -130,7 +130,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
     public void VerifyDurableCqListClient1(bool isRecycle)
     {
       Util.Log("Verifying durable Cqs for client1.");
-      QueryService<object, object> qs = Generic.PoolManager.Find("__TESTPOOL1_").GetQueryService<object, object>();
+      QueryService<object, object> qs = Client.PoolManager.Find("__TESTPOOL1_").GetQueryService<object, object>();
       System.Collections.Generic.List<string> durableCqList = qs.GetAllDurableCqsFromServer();
       Assert.AreNotEqual(null, durableCqList);
 
@@ -154,7 +154,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
     public void VerifyDurableCqListClient2(bool isRecycle)
     {
       Util.Log("Verifying durable Cqs for client2.");
-      QueryService<object, object> qs = Generic.PoolManager.Find("__TESTPOOL1_").GetQueryService<object, object>();
+      QueryService<object, object> qs = Client.PoolManager.Find("__TESTPOOL1_").GetQueryService<object, object>();
       System.Collections.Generic.List<string> durableCqList = qs.GetAllDurableCqsFromServer();
       Assert.AreNotEqual(null, durableCqList);
 
@@ -183,7 +183,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
     public void VerifyEmptyDurableCqListClient1()
     {
       Util.Log("Verifying empty durable Cqs for client1.");
-      QueryService<object, object> qs = Generic.PoolManager.Find("__TESTPOOL1_").GetQueryService<object, object>();
+      QueryService<object, object> qs = Client.PoolManager.Find("__TESTPOOL1_").GetQueryService<object, object>();
       System.Collections.Generic.List<string> durableCqList = qs.GetAllDurableCqsFromServer();
       Assert.AreNotEqual(null, durableCqList);
       Assert.AreEqual(0, durableCqList.Count, "Durable CQ list sholuld be empty");

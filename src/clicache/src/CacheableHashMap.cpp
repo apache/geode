@@ -30,27 +30,25 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       // Region: IGFSerializable Members
 
-      void Generic::CacheableHashMap::ToData(DataOutput^ output)
+      void Client::CacheableHashMap::ToData(DataOutput^ output)
       {
         output->WriteDictionary((System::Collections::IDictionary^)m_dictionary);        
       }
 
-      IGFSerializable^ Generic::CacheableHashMap::FromData(DataInput^ input)
+      IGFSerializable^ Client::CacheableHashMap::FromData(DataInput^ input)
       {
         m_dictionary = input->ReadDictionary();
         return this;
       }
 
-      uint32_t Generic::CacheableHashMap::ObjectSize::get()
+      uint32_t Client::CacheableHashMap::ObjectSize::get()
       {
         return ((System::Collections::IDictionary^)m_dictionary)->Count;
-      }
-      // End Region: IGFSerializable Members
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
  } //namespace 

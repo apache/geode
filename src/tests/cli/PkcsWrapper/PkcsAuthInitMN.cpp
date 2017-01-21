@@ -21,7 +21,7 @@
 
 using namespace System;
 using namespace Apache::Geode::Client::Tests::NewAPI;
-using namespace Apache::Geode::Client::Generic;
+using namespace Apache::Geode::Client;
 
 PkcsAuthInit::PkcsAuthInit() 
 {
@@ -38,17 +38,17 @@ void PkcsAuthInit::Close()
 }
 
 //generic <class TPropKey, class TPropValue>
-Apache::Geode::Client::Generic::Properties<String^, Object^>^
+Apache::Geode::Client::Properties<String^, Object^>^
 PkcsAuthInit::GetCredentials(
-  Apache::Geode::Client::Generic::Properties<String^, String^> ^props, System::String ^server)
+  Apache::Geode::Client::Properties<String^, String^> ^props, System::String ^server)
 {
-  Apache::Geode::Client::Generic::ManagedString mg_server( server );
+  Apache::Geode::Client::ManagedString mg_server( server );
   apache::geode::client::PropertiesPtr propsPtr = NULLPTR;
   if (props != nullptr) {
     propsPtr = (apache::geode::client::Properties*)props->NativeIntPtr;
   }
   apache::geode::client::PKCSAuthInitInternal* nativeptr = new apache::geode::client::PKCSAuthInitInternal(true); 
   apache::geode::client::PropertiesPtr& newPropsPtr = nativeptr->getCredentials(propsPtr, mg_server.CharPtr);     
-  return Apache::Geode::Client::Generic::Properties<String^, Object^>::
+  return Apache::Geode::Client::Properties<String^, Object^>::
     CreateFromVoidPtr<String^, Object^>(newPropsPtr.ptr());
 }

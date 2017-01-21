@@ -23,8 +23,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
         namespace Internal
         {
           public ref class DotNetTypes sealed
@@ -55,8 +54,8 @@ namespace Generic
               static Type^ VoidType = Type::GetType("System.Void");
               static Type^ ObjectType = Type::GetType("System.Object");
           };
-        }
-      }
-    }
-  }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 }

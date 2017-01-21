@@ -60,7 +60,7 @@ namespace Tests
         /// Encapsulates a query string.
         /// </summary>
         public ref class QueryStrings sealed
-          : public Apache::Geode::Client::Generic::Internal::UMWrap<testData::QueryStrings>
+          : public Apache::Geode::Client::Internal::UMWrap<testData::QueryStrings>
         {
         public:
 

@@ -32,7 +32,7 @@ namespace apache
     {
 
       /// <summary>
-      /// Wraps the managed <see cref="Apache.Geode.Client.Generic.IAuthInitialize" />
+      /// Wraps the managed <see cref="Apache.Geode.Client.IAuthInitialize" />
       /// object and implements the native <c>apache::geode::client::AuthInitialize</c> interface.
       /// </summary>
       class ManagedAuthInitializeGeneric
@@ -46,7 +46,7 @@ namespace apache
         /// <param name="managedptr">
         /// The managed object.
         /// </param>
-        inline ManagedAuthInitializeGeneric(Apache::Geode::Client::Generic::IAuthInitialize^ managedptr)
+        inline ManagedAuthInitializeGeneric(Apache::Geode::Client::IAuthInitialize^ managedptr)
           : m_managedptr(managedptr) { }
 
         /// <summary>
@@ -100,7 +100,7 @@ namespace apache
         /// <summary>
         /// Returns the wrapped managed object reference.
         /// </summary>
-        inline Apache::Geode::Client::Generic::IAuthInitialize^ ptr() const
+        inline Apache::Geode::Client::IAuthInitialize^ ptr() const
         {
           return m_managedptr;
         }
@@ -113,7 +113,7 @@ namespace apache
         /// to be called which is not what is desired when this object is destroyed. Normally this
         /// managed object may be created by the user and will be handled automatically by the GC.
         /// </summary>
-        gcroot<Apache::Geode::Client::Generic::IAuthInitialize^> m_managedptr;
+        gcroot<Apache::Geode::Client::IAuthInitialize^> m_managedptr;
 
         // Disable the copy and assignment constructors
         ManagedAuthInitializeGeneric(const ManagedAuthInitializeGeneric&);

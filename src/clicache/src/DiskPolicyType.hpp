@@ -31,8 +31,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       /// <summary>
       /// Enumerated type for disk policy.
@@ -81,9 +79,8 @@ namespace Generic
         //  return (type == DiskPolicyType::Persist);
         //}
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 
 

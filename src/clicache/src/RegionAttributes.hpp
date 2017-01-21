@@ -39,8 +39,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       //interface class ICacheLoader;
       //interface class ICacheWriter;
       //interface class ICacheListener;
@@ -69,7 +68,7 @@ namespace Generic
       /// <seealso cref="Region.Attributes" />
       generic <class TKey, class TValue>
       public ref class RegionAttributes sealed
-				: public Generic::Internal::SBWrap<apache::geode::client::RegionAttributes>, public IGFSerializable
+				: public Client::Internal::SBWrap<apache::geode::client::RegionAttributes>, public IGFSerializable
       {
       public:
 
@@ -79,9 +78,9 @@ namespace Generic
         /// <returns>
         /// region's <c>ICacheLoader</c> or null if none
         /// </returns>
-        property Apache::Geode::Client::Generic::ICacheLoader<TKey, TValue>^ CacheLoader
+        property Apache::Geode::Client::ICacheLoader<TKey, TValue>^ CacheLoader
         {
-          Apache::Geode::Client::Generic::ICacheLoader<TKey, TValue>^ get( );
+          Apache::Geode::Client::ICacheLoader<TKey, TValue>^ get( );
         }
 
         /// <summary>
@@ -498,9 +497,8 @@ namespace Generic
         inline RegionAttributes<TKey, TValue>( apache::geode::client::RegionAttributes* nativeptr )
           : SBWrap( nativeptr ) { }
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 
 

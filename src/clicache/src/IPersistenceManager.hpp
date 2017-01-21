@@ -28,8 +28,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
 
          /// <summary>
         /// IPersistenceManager interface for persistence and overflow. 
@@ -102,7 +100,7 @@ namespace Generic
           void Close();
 
         };
-      }
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

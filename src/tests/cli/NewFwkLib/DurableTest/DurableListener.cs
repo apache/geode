@@ -21,7 +21,7 @@ using System.Collections.Generic;
 namespace Apache.Geode.Client.FwkLib
 {
   using Apache.Geode.DUnitFramework;
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
 
   public class DurableListener<TKey, TVal> : CacheListenerAdapter<TKey, TVal>, IDisposable
   {

@@ -32,10 +32,9 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       generic<class TKey, class TResult>
-      void CqAttributesFactory<TKey, TResult>::AddCqListener(Generic::ICqListener<TKey, TResult>^ cqListener )
+      void CqAttributesFactory<TKey, TResult>::AddCqListener(Client::ICqListener<TKey, TResult>^ cqListener )
       {
         apache::geode::client::CqListenerPtr listenerptr;
         if ( cqListener != nullptr ) {
@@ -83,7 +82,7 @@ namespace Generic
       }
 
       generic<class TKey, class TResult>
-      void CqAttributesFactory<TKey, TResult>::InitCqListeners(array<Generic::ICqListener<TKey, TResult>^>^ cqListeners)
+      void CqAttributesFactory<TKey, TResult>::InitCqListeners(array<Client::ICqListener<TKey, TResult>^>^ cqListeners)
       {
         apache::geode::client::VectorOfCqListener vrr;
         for( int i = 0; i < cqListeners->Length; i++ )
@@ -134,12 +133,11 @@ namespace Generic
       }
 
       generic<class TKey, class TResult>
-      Generic::CqAttributes<TKey, TResult>^ CqAttributesFactory<TKey, TResult>::Create( )
+      Client::CqAttributes<TKey, TResult>^ CqAttributesFactory<TKey, TResult>::Create( )
       {
-        return Generic::CqAttributes<TKey, TResult>::Create(NativePtr->create().ptr());
-      }
+        return Client::CqAttributes<TKey, TResult>::Create(NativePtr->create().ptr());
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-    }
-  }
 } //namespace 

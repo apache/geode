@@ -23,8 +23,8 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
 {
   using NUnit.Framework;
   using Apache.Geode.DUnitFramework;
-  using Apache.Geode.Client.Generic;
-  using AssertionException = Apache.Geode.Client.Generic.AssertionException;
+  using Apache.Geode.Client;
+  using AssertionException = Apache.Geode.Client.AssertionException;
 
 
   [TestFixture]
@@ -320,12 +320,12 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
       CacheHelper.ReadyForEvents();
     }
 
-    public void DoPutsMU(int numOps, Generic.Properties<string, string> credentials, bool multiuserMode, ExpectedResult result)
+    public void DoPutsMU(int numOps, Client.Properties<string, string> credentials, bool multiuserMode, ExpectedResult result)
     {
       DoPuts(numOps, false, result, credentials, multiuserMode);
     }
 
-    public void DoPutsMU(int numOps, Generic.Properties<string, string> credentials, bool multiuserMode)
+    public void DoPutsMU(int numOps, Client.Properties<string, string> credentials, bool multiuserMode)
     {
       DoPuts(numOps, false, ExpectedResult.Success, credentials, multiuserMode);
     }
@@ -345,7 +345,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
       DoPuts(numOps, useNewVal, expect, null, false);
     }
 
-    public void DoPuts(int numOps, bool useNewVal, ExpectedResult expect, Generic.Properties<string, string> credentials, bool multiuserMode)
+    public void DoPuts(int numOps, bool useNewVal, ExpectedResult expect, Client.Properties<string, string> credentials, bool multiuserMode)
     {
       string valPrefix = (useNewVal ? NValuePrefix : ValuePrefix);
       IRegion<object, object> region;
@@ -426,7 +426,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
       }
     }
 
-    public void DoPutsTx(int numOps, bool useNewVal, ExpectedResult expect, Generic.Properties<string, string> credentials, bool multiuserMode)
+    public void DoPutsTx(int numOps, bool useNewVal, ExpectedResult expect, Client.Properties<string, string> credentials, bool multiuserMode)
     {
       Util.Log("DoPutsTx starts");
       CacheHelper.CSTXManager.Begin();
@@ -504,12 +504,12 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
       Util.Log("DoPutsTx Done");
     }
 
-    public void DoGetsMU(int numOps, Generic.Properties<string, string> credential, bool isMultiuser, ExpectedResult result)
+    public void DoGetsMU(int numOps, Client.Properties<string, string> credential, bool isMultiuser, ExpectedResult result)
     {
       DoGets(numOps, false, result, credential, isMultiuser);
     }
 
-    public void DoGetsMU(int numOps, Generic.Properties<string, string> credential, bool isMultiuser)
+    public void DoGetsMU(int numOps, Client.Properties<string, string> credential, bool isMultiuser)
     {
       DoGets(numOps, false, ExpectedResult.Success, credential, isMultiuser);
     }
@@ -528,7 +528,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
     {
       DoGets(numOps, useNewVal, expect, null, false);
     }
-    public void DoGets(int numOps, bool useNewVal, ExpectedResult expect, Generic.Properties<string, string> credential, bool isMultiuser)
+    public void DoGets(int numOps, bool useNewVal, ExpectedResult expect, Client.Properties<string, string> credential, bool isMultiuser)
     {
       string valPrefix = (useNewVal ? NValuePrefix : ValuePrefix);
       IRegion<object, object> region;

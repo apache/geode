@@ -34,7 +34,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic{
 
     ref class ManagedString sealed
     {
@@ -98,6 +97,7 @@ namespace Generic{
         }
       }
     };
-	}}
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

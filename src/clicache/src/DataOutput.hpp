@@ -39,8 +39,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
 
       interface class IGFSerializable;
 
@@ -50,7 +48,7 @@ namespace Generic
       /// This class is intentionally not thread safe.
       /// </summary>
       public ref class DataOutput sealed
-				: public Generic::Internal::UMWrap<apache::geode::client::DataOutput>
+				: public Client::Internal::UMWrap<apache::geode::client::DataOutput>
       {
       private:
         int32_t m_cursor;
@@ -603,7 +601,7 @@ namespace Generic
           m_ispdxSerialization = false;
         }
       };
-      } // end namespace generic
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

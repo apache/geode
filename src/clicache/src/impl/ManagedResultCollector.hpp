@@ -47,7 +47,7 @@ namespace apache {
         /// <param name="userptr">
         /// The managed object.
         /// </param>
-        inline ManagedResultCollectorGeneric(Apache::Geode::Client::Generic::ResultCollectorG^ userptr)
+        inline ManagedResultCollectorGeneric(Apache::Geode::Client::ResultCollectorG^ userptr)
           : m_managedptr(userptr) { }
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace apache {
         /// <summary>
         /// Returns the wrapped managed object reference.
         /// </summary>
-        inline Apache::Geode::Client::Generic::ResultCollectorG^ ptr() const
+        inline Apache::Geode::Client::ResultCollectorG^ ptr() const
         {
           return m_managedptr;
         }
@@ -97,7 +97,7 @@ namespace apache {
         /// to be called which is not what is desired when this object is destroyed. Normally this
         /// managed object may be created by the user and will be handled automatically by the GC.
         /// </summary>
-        gcroot<Apache::Geode::Client::Generic::ResultCollectorG^> m_managedptr;
+        gcroot<Apache::Geode::Client::ResultCollectorG^> m_managedptr;
         //Apache::Geode::Client::IResultCollector^ m_managedptr;
         //gcroot<Object^> m_userptr;
       };

@@ -27,7 +27,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
   using Apache.Geode.DUnitFramework;
   using Apache.Geode.Client.Tests.NewAPI;
   using Apache.Geode.Client.Examples;
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
 
   namespace gemfire.cliwrap.Examples
   {
@@ -1125,7 +1125,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
       bool args0 = true;
       //test data dependant function execution
       //     test get function with result
-      Apache.Geode.Client.Generic.Execution<object> exc = Apache.Geode.Client.Generic.FunctionService<object>.OnRegion<object, object>(region);
+      Apache.Geode.Client.Execution<object> exc = Apache.Geode.Client.FunctionService<object>.OnRegion<object, object>(region);
       IResultCollector<object> rc = exc.WithArgs<bool>(args0).WithFilter<object>(routingObj).Execute(
       getFuncName);
       ICollection<object> executeFunctionResult = rc.GetResult();
@@ -1165,7 +1165,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
       Console.WriteLine("routingObj count= {0}.", routingObj.Length);
       //test date independant fucntion execution on one server
       //     test get function with result
-      Apache.Geode.Client.Generic.Execution<object> exc = Apache.Geode.Client.Generic.FunctionService<object>.OnServer(cache);
+      Apache.Geode.Client.Execution<object> exc = Apache.Geode.Client.FunctionService<object>.OnServer(cache);
       //TODO::split
       //CacheableVector args1 = new CacheableVector();
       System.Collections.ArrayList args1 = new System.Collections.ArrayList();

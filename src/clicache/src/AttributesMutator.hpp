@@ -34,8 +34,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       /// <summary>
       /// Supports modification of certain region attributes after the region
@@ -260,8 +258,7 @@ namespace Generic
         inline AttributesMutator<TKey, TValue>( apache::geode::client::AttributesMutator* nativeptr )
           : SBWrap( nativeptr ) { }
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

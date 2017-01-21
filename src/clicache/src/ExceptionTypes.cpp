@@ -27,8 +27,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
 
 #define _GF_MG_EXCEPTION_ADD3(x) { "apache::geode::client::" #x, gcnew CreateException2( x::Create ) }
 #define _GF_MG_EXCEPTION_ADD4(x,y) { "apache::geode::client::" #y, gcnew CreateException2( x::Create ) }
@@ -143,10 +141,10 @@ namespace Generic
                       gcnew array<Object^>{ mgMsg, innerException }));
                 if ( mgEx != nullptr ) {
                   return mgEx;
-                }
-              }
-            }
-          }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
         }
         if (innerException == nullptr) {
           return gcnew GemFireException(exName + ": " + exMsg,

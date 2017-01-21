@@ -26,7 +26,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
 {
   using NUnit.Framework;
   using Apache.Geode.DUnitFramework;
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
 
   [Serializable]
   public class CustomPartitionResolver<TValue> : IPartitionResolver<int, TValue>
@@ -574,7 +574,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
       {
         Assert.Fail("Expected region size 0");
       }
-      Apache.Geode.Client.Generic.RegionAttributes<object, object> attr = region0.Attributes;
+      Apache.Geode.Client.RegionAttributes<object, object> attr = region0.Attributes;
       TallyListener<object, object> listener = attr.CacheListener as TallyListener<object, object>;
       TallyWriter<object, object> writer = attr.CacheWriter as TallyWriter<object, object>;
       if (listener.Clears != 1)

@@ -31,8 +31,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
   generic<class TKey, class TResult>
 	ref class CqEvent;
 	//interface class ICqListener;
@@ -107,8 +106,7 @@ namespace Generic
         }
 
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

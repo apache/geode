@@ -30,9 +30,7 @@ namespace Apache
   {
     namespace Client
     {
-//interface class IGFSerializable;
-      namespace Generic
-    {
+
       generic<class TResult>
       interface class IResultCollector;
 
@@ -105,8 +103,7 @@ namespace Apache
       private:
         IResultCollector<TResult>^ m_rc;
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

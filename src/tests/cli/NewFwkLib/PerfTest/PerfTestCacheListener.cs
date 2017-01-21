@@ -21,8 +21,8 @@ using System.Threading;
 namespace Apache.Geode.Client.FwkLib
 {
   using Apache.Geode.DUnitFramework;
-  using Apache.Geode.Client.Generic;
-  //using Region = Apache.Geode.Client.Generic.IRegion<Object, Object>;
+  using Apache.Geode.Client;
+  //using Region = Apache.Geode.Client.IRegion<Object, Object>;
 
   public class PerfTestCacheListener<TKey, TVal> : CacheListenerAdapter<TKey, TVal>, IDisposable
   {

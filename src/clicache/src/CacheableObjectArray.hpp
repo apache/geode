@@ -31,8 +31,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       /// <summary>
       /// A mutable <c>IGFSerializable</c> object array wrapper that can serve
@@ -149,8 +147,7 @@ namespace Generic
           return gcnew CacheableObjectArray();
         }
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

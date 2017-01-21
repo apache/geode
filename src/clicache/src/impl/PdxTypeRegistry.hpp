@@ -31,8 +31,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       namespace Internal
       {
         public ref class PdxTypeRegistry
@@ -105,8 +104,8 @@ namespace Generic
 					static bool pdxIgnoreUnreadFields = false;
           static bool pdxReadSerialized = false;
         };
-      }
-			}
-    }
-  }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 }

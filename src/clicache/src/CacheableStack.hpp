@@ -30,8 +30,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       /// <summary>
       /// A mutable <c>IGFSerializable</c> vector wrapper that can serve as
       /// a distributable object for caching.
@@ -125,7 +124,7 @@ namespace Generic
         private:
           System::Collections::ICollection^ m_stack;
       };
-    }
-  }
-}
- } //namespace 
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

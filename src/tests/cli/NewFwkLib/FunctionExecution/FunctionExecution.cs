@@ -24,7 +24,7 @@ using System.Threading;
 namespace Apache.Geode.Client.FwkLib
 {
   using Apache.Geode.DUnitFramework;
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
 
     //----------------------------------- DoOpsTask start ------------------------
     public class DoFETask<TKey, TVal> : ClientTask
@@ -211,8 +211,8 @@ namespace Apache.Geode.Client.FwkLib
             if (pdxobject)
                 args.Add(pdxobject);    
             args.Add(filterObj[0]); 
-            Apache.Geode.Client.Generic.Execution<object> exc =
-                Generic.FunctionService<object>.OnRegion<TKey, TVal>(m_region);
+            Apache.Geode.Client.Execution<object> exc =
+                Client.FunctionService<object>.OnRegion<TKey, TVal>(m_region);
             //FwkTest<TKey, TVal>.CurrentTest.FwkInfo("Going to do addKey execute");
             ICollection<object> executeFunctionResult = null;
             FwkTest<TKey, TVal>.CurrentTest.ResetKey("replicated");
@@ -252,8 +252,8 @@ namespace Apache.Geode.Client.FwkLib
             if (pdxobject)
                 args.Add(pdxobject);
             args.Add(filterObj[0]);
-            Apache.Geode.Client.Generic.Execution<object> exc =
-                Generic.FunctionService<object>.OnRegion<TKey, TVal>(m_region);
+            Apache.Geode.Client.Execution<object> exc =
+                Client.FunctionService<object>.OnRegion<TKey, TVal>(m_region);
             //FwkTest<TKey, TVal>.CurrentTest.FwkInfo("Going to do addKey execute");
             ICollection<object> executeFunctionResult = null;
             FwkTest<TKey, TVal>.CurrentTest.ResetKey("replicated");
@@ -287,8 +287,8 @@ namespace Apache.Geode.Client.FwkLib
             if(pdxobject)
                 args.Add(pdxobject);      
             args.Add(filterObj[0]); 
-            Apache.Geode.Client.Generic.Execution<object> exc =
-                Generic.FunctionService<object>.OnRegion<TKey, TVal>(m_region);
+            Apache.Geode.Client.Execution<object> exc =
+                Client.FunctionService<object>.OnRegion<TKey, TVal>(m_region);
             //FwkTest<TKey, TVal>.CurrentTest.FwkInfo("Going to do invalidate execute");
              ICollection<object> executeFunctionResult = null;
             FwkTest<TKey, TVal>.CurrentTest.ResetKey("replicated");
@@ -323,8 +323,8 @@ namespace Apache.Geode.Client.FwkLib
                 args.Add(pdxobject);
             args.Add(filterObj[0]); 
             
-            Apache.Geode.Client.Generic.Execution<object> exc =
-                Generic.FunctionService<object>.OnRegion<TKey, TVal>(m_region);
+            Apache.Geode.Client.Execution<object> exc =
+                Client.FunctionService<object>.OnRegion<TKey, TVal>(m_region);
             //FwkTest<TKey, TVal>.CurrentTest.FwkInfo("Going to do locally invalidate execute");
              ICollection<object> executeFunctionResult = null;
             FwkTest<TKey, TVal>.CurrentTest.ResetKey("replicated");
@@ -359,8 +359,8 @@ namespace Apache.Geode.Client.FwkLib
                 args.Add(pdxobject);
             args.Add(filterObj[0]); 
            
-            Apache.Geode.Client.Generic.Execution<object> exc =
-                Generic.FunctionService<object>.OnRegion<TKey, TVal>(m_region);
+            Apache.Geode.Client.Execution<object> exc =
+                Client.FunctionService<object>.OnRegion<TKey, TVal>(m_region);
             //FwkTest<TKey, TVal>.CurrentTest.FwkInfo("Going to do destroy execute");
              ICollection<object> executeFunctionResult = null;
             FwkTest<TKey, TVal>.CurrentTest.ResetKey("replicated");
@@ -395,8 +395,8 @@ namespace Apache.Geode.Client.FwkLib
                 args.Add(pdxobject);
             args.Add(filterObj[0]); 
            
-            Apache.Geode.Client.Generic.Execution<object> exc =
-                Generic.FunctionService<object>.OnRegion<TKey, TVal>(m_region);
+            Apache.Geode.Client.Execution<object> exc =
+                Client.FunctionService<object>.OnRegion<TKey, TVal>(m_region);
             //FwkTest<TKey, TVal>.CurrentTest.FwkInfo("Going to do local destroy execute");
              ICollection<object> executeFunctionResult = null;
             FwkTest<TKey, TVal>.CurrentTest.ResetKey("replicated");
@@ -433,8 +433,8 @@ namespace Apache.Geode.Client.FwkLib
                 args.Add(pdxobject);
             args.Add(filterObj[0]); 
             
-            Apache.Geode.Client.Generic.Execution<object> exc =
-                Generic.FunctionService<object>.OnRegion<TKey, TVal>(m_region);
+            Apache.Geode.Client.Execution<object> exc =
+                Client.FunctionService<object>.OnRegion<TKey, TVal>(m_region);
             //FwkTest<TKey, TVal>.CurrentTest.FwkInfo("Going to do update execute");
              ICollection<object> executeFunctionResult = null;
             FwkTest<TKey, TVal>.CurrentTest.ResetKey("replicated");
@@ -470,8 +470,8 @@ namespace Apache.Geode.Client.FwkLib
                 args.Add(pdxobject);
             args.Add(filterObj[0]); 
             
-            Apache.Geode.Client.Generic.Execution<object> exc =
-                Generic.FunctionService<object>.OnRegion<TKey, TVal>(m_region);
+            Apache.Geode.Client.Execution<object> exc =
+                Client.FunctionService<object>.OnRegion<TKey, TVal>(m_region);
             //FwkTest<TKey, TVal>.CurrentTest.FwkInfo("Going to do get execute");
              ICollection<object> executeFunctionResult = null;
             FwkTest<TKey, TVal>.CurrentTest.ResetKey("replicated");
@@ -515,8 +515,8 @@ namespace Apache.Geode.Client.FwkLib
                 args.Add(pdxobject);
             args.Add(filterObj[0]); 
             
-            Apache.Geode.Client.Generic.Execution<object> exc =
-                Generic.FunctionService<object>.OnRegion<TKey, TVal>(m_region);
+            Apache.Geode.Client.Execution<object> exc =
+                Client.FunctionService<object>.OnRegion<TKey, TVal>(m_region);
             //FwkTest<TKey, TVal>.CurrentTest.FwkInfo("Going to do query execute");
              ICollection<object> executeFunctionResult = null;
             FwkTest<TKey, TVal>.CurrentTest.ResetKey("replicated");
@@ -726,7 +726,7 @@ namespace Apache.Geode.Client.FwkLib
           }
         }
         //Execution<object> exc = null;
-        Apache.Geode.Client.Generic.Execution<object> exc = null;
+        Apache.Geode.Client.Execution<object> exc = null;
         //Execution exc = null;
         Pool/*<TKey, TVal>*/ pptr = null;
         IRegion<TKey, TVal> region = GetRegion();
@@ -743,12 +743,12 @@ namespace Apache.Geode.Client.FwkLib
             funcName = "ServerOperationsWithOutResultFunction";
         }
         if ( executionMode == "onServers") {
-          /*exc = Generic.FunctionService.OnServers<TKey,TVal,object>(pptr);*/
-          exc = Generic.FunctionService<object>.OnServers(pptr);
+          /*exc = Client.FunctionService.OnServers<TKey,TVal,object>(pptr);*/
+          exc = Client.FunctionService<object>.OnServers(pptr);
         } if ( executionMode == "onServer"){
-          exc = Generic.FunctionService<object>.OnServer(pptr);
+          exc = Client.FunctionService<object>.OnServer(pptr);
         }else if( executionMode == "onRegion"){
-          exc = Generic.FunctionService<object>.OnRegion<TKey, TVal>(region);
+          exc = Client.FunctionService<object>.OnRegion<TKey, TVal>(region);
           if(getresult)
             funcName = "RegionOperationsFunction";
           else
@@ -829,7 +829,7 @@ namespace Apache.Geode.Client.FwkLib
           }
         }
       }
-      catch (Apache.Geode.Client.Generic.KeyNotFoundException ex)
+      catch (Apache.Geode.Client.KeyNotFoundException ex)
       {
         FwkInfo("VerifyAddNewResult() caught exception: {0}", ex);
       }
@@ -866,7 +866,7 @@ namespace Apache.Geode.Client.FwkLib
               {
                 value = region[key].ToString();
               }
-              catch (Apache.Geode.Client.Generic.KeyNotFoundException)
+              catch (Apache.Geode.Client.KeyNotFoundException)
               {
                 if(ops.Equals("destroy") && destroyedKeys.Remove(key))
                 {
@@ -1033,11 +1033,11 @@ namespace Apache.Geode.Client.FwkLib
     public void DoParitionedRegionFunctionExecution()
     {
       FwkInfo("In DoParitionedRegionFunctionExecution()");
-      Apache.Geode.Client.Generic.Execution<object> exc = null;
+      Apache.Geode.Client.Execution<object> exc = null;
       IRegion<TKey, TVal> region = GetRegion("partitionedRegion");
       try
       {
-        exc = Generic.FunctionService<object>.OnRegion<TKey, TVal>(region);
+        exc = Client.FunctionService<object>.OnRegion<TKey, TVal>(region);
          MyResultCollector<object> myRC = new MyResultCollector<object>();
          Random rnd = new Random();
          if(rnd.Next(100) % 2 == 0)
@@ -1061,14 +1061,14 @@ namespace Apache.Geode.Client.FwkLib
            exc = exc.WithFilter(filterObj).WithCollector(myRC);
          }
          // execute function
-         Generic.IResultCollector<object> rc = exc.Execute("ExceptionHandlingFunction", 30);
+         Client.IResultCollector<object> rc = exc.Execute("ExceptionHandlingFunction", 30);
 
       }
-      catch (Apache.Geode.Client.Generic.FunctionExecutionException)
+      catch (Apache.Geode.Client.FunctionExecutionException)
       {
         //expected exception
       }
-      catch (Apache.Geode.Client.Generic.TimeoutException)
+      catch (Apache.Geode.Client.TimeoutException)
       {
         //expected exception
       }
@@ -1077,21 +1077,21 @@ namespace Apache.Geode.Client.FwkLib
     public void DoReplicatedRegionFunctionExecution()
     {
       FwkInfo("In DoReplicatedRegionFunctionExecution()");
-      Apache.Geode.Client.Generic.Execution<object> exc = null;
+      Apache.Geode.Client.Execution<object> exc = null;
       IRegion<TKey, TVal> region = GetRegion("replicatedRegion");
       try
       {
-        exc = Generic.FunctionService<object>.OnRegion<TKey, TVal>(region);
+        exc = Client.FunctionService<object>.OnRegion<TKey, TVal>(region);
         MyResultCollector<object> myRC = new MyResultCollector<object>();
         exc = exc.WithCollector(myRC);
         // execute function
-        Generic.IResultCollector<object> rc = exc.Execute("ExceptionHandlingFunction", 30);
+        Client.IResultCollector<object> rc = exc.Execute("ExceptionHandlingFunction", 30);
       }
-      catch (Apache.Geode.Client.Generic.FunctionExecutionException)
+      catch (Apache.Geode.Client.FunctionExecutionException)
       {
         //expected exception
       }
-      catch (Apache.Geode.Client.Generic.TimeoutException)
+      catch (Apache.Geode.Client.TimeoutException)
       {
         //expected exception
       }
@@ -1115,15 +1115,15 @@ namespace Apache.Geode.Client.FwkLib
       try
       {
         MyResultCollector<object> myRC = new MyResultCollector<object>();
-        Apache.Geode.Client.Generic.Execution<object> exc = Generic.FunctionService<object>.OnRegion<TKey, TVal>(region).WithCollector(myRC);
+        Apache.Geode.Client.Execution<object> exc = Client.FunctionService<object>.OnRegion<TKey, TVal>(region).WithCollector(myRC);
         // execute function
-        Generic.IResultCollector<object> rc = exc.Execute("FireNForget", 30);
+        Client.IResultCollector<object> rc = exc.Execute("FireNForget", 30);
       }
-      catch (Apache.Geode.Client.Generic.FunctionExecutionException)
+      catch (Apache.Geode.Client.FunctionExecutionException)
       {
         //expected exception
       }
-      catch (Apache.Geode.Client.Generic.TimeoutException)
+      catch (Apache.Geode.Client.TimeoutException)
       {
         //expected exception
       }
@@ -1134,20 +1134,20 @@ namespace Apache.Geode.Client.FwkLib
       FwkInfo("In DoOnServersFunctionExcecution()");
       ResetKey("poolName");
       string poolname = GetStringValue("poolName");
-      Apache.Geode.Client.Generic.Execution<object> exc = null;
+      Apache.Geode.Client.Execution<object> exc = null;
       try
       {
         Pool/*<TKey, TVal>*/ pptr = PoolManager/*<TKey, TVal>*/.Find(poolname);
         MyResultCollector<object> myRC = new MyResultCollector<object>();
-        exc = Generic.FunctionService<object>.OnServers(pptr).WithCollector(myRC);
+        exc = Client.FunctionService<object>.OnServers(pptr).WithCollector(myRC);
         // execute function
-        Generic.IResultCollector<object> rc = exc.Execute("ExceptionHandlingFunction", 30);
+        Client.IResultCollector<object> rc = exc.Execute("ExceptionHandlingFunction", 30);
       }
-      catch (Apache.Geode.Client.Generic.FunctionExecutionException)
+      catch (Apache.Geode.Client.FunctionExecutionException)
       {
         //expected exception
       }
-      catch (Apache.Geode.Client.Generic.TimeoutException)
+      catch (Apache.Geode.Client.TimeoutException)
       {
         //expected exception
       }
@@ -1163,10 +1163,10 @@ namespace Apache.Geode.Client.FwkLib
       IRegion<TKey, TVal> region = GetRegion();
       ICollection<object> executeFunctionResult = null;
       string funcName = "GetFunctionExeHA";
-      Apache.Geode.Client.Generic.Execution<object> exc = Generic.FunctionService<object>.OnRegion<TKey, TVal>(region);
+      Apache.Geode.Client.Execution<object> exc = Client.FunctionService<object>.OnRegion<TKey, TVal>(region);
       MyResultCollectorHA<object> myRC = new MyResultCollectorHA<object>();
       exc = exc.WithCollector(myRC);
-      Generic.IResultCollector<object>  rc = exc.Execute(funcName, 120);
+      Client.IResultCollector<object>  rc = exc.Execute(funcName, 120);
       executeFunctionResult = myRC.GetResult();
       if (executeFunctionResult != null)
       {
@@ -1233,8 +1233,8 @@ namespace Apache.Geode.Client.FwkLib
               for (int i = 0; i < keys.Length; i++)
                   args.Add(keys[i]);
               string funcName = GetStringValue("funcName");
-              Apache.Geode.Client.Generic.Execution<object> exc =
-                  Generic.FunctionService<object>.OnRegion<TKey, TVal>(region);
+              Apache.Geode.Client.Execution<object> exc =
+                  Client.FunctionService<object>.OnRegion<TKey, TVal>(region);
               //FwkInfo("Going to do get execute");
               ICollection<object> executeFunctionResult = null;
               ResetKey("replicated");
@@ -1284,8 +1284,8 @@ namespace Apache.Geode.Client.FwkLib
               for (int i = 0; i < keys.Length; i++)
                   args.Add(keys[i]);
               string funcName = GetStringValue("funcName");
-              Apache.Geode.Client.Generic.Execution<object> exc =
-                  Generic.FunctionService<object>.OnRegion<TKey, TVal>(region);
+              Apache.Geode.Client.Execution<object> exc =
+                  Client.FunctionService<object>.OnRegion<TKey, TVal>(region);
               //FwkInfo("Going to do get execute");
               ICollection<object> executeFunctionResult = null;
               ResetKey("replicated");

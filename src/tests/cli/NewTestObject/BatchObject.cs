@@ -19,7 +19,7 @@ using System;
 
 namespace Apache.Geode.Client.Tests.NewAPI
 {
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
   public class BatchObject
     : TimeStampdObject
   {

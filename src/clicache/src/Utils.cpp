@@ -26,8 +26,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-			{
 
     MethodInfo^ Utils::LoadMethod( String^ assemblyName,
       String^ typeName, String^ methodName)
@@ -71,8 +69,8 @@ namespace Generic
     int32_t Utils::LastError::get( )
     {
        return apache::geode::client::Utils::getLastError( );
-    }
-			}
-	 }
-  }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 }
