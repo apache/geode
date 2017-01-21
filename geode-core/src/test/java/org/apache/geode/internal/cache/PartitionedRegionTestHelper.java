@@ -49,9 +49,16 @@ public class PartitionedRegionTestHelper
    */
 
   public static Region createPartionedRegion(String regionname) throws RegionExistsException {
+    return createPartionedRegion(regionname, new PartitionAttributesFactory().create());
+  }
+
+  /**
+   * This method creates a partitioned region with the given PR attributes. The cache created is a
+   * loner, so this is only suitable for single VM tests.
+   */
+  public static Region createPartionedRegion(String regionname, PartitionAttributes prattribs)
+      throws RegionExistsException {
     AttributesFactory attribFactory = new AttributesFactory();
-    PartitionAttributesFactory paf = new PartitionAttributesFactory();
-    PartitionAttributes prattribs = paf.create();
     attribFactory.setDataPolicy(DataPolicy.PARTITION);
     attribFactory.setPartitionAttributes(prattribs);
     RegionAttributes regionAttribs = attribFactory.create();

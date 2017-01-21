@@ -650,8 +650,8 @@ public class DefaultQuery implements Query {
             continue;
           }
           other = allPRs;
-          if ((((PartitionedRegion) eachPR).colocatedByList.contains(allPRs)
-              || ((PartitionedRegion) allPRs).colocatedByList.contains(eachPR))) {
+          if ((((PartitionedRegion) eachPR).getColocatedByList().contains(allPRs)
+              || ((PartitionedRegion) allPRs).getColocatedByList().contains(eachPR))) {
             colocated = true;
             break;
           }
