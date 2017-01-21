@@ -34,8 +34,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
 			interface class IGFSerializable;
       //interface class ICqEvent;
       //interface class ICacheableKey;
@@ -89,8 +88,7 @@ namespace Generic
         inline CqEvent( const apache::geode::client::CqEvent* nativeptr )
           : UMWrap( const_cast<apache::geode::client::CqEvent*>( nativeptr ), false ) { }
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

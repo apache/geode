@@ -38,8 +38,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       namespace Internal
       {
 
@@ -460,9 +459,9 @@ namespace Generic
             return ReadInt32(offsetPosition);
           }
           throw gcnew System::ArgumentException("Size should be 1,2 or 4 in PdxHelper::ReadInt.");
-        }
-			}
-      }
-    }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
   }
 }

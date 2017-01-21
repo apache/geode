@@ -28,8 +28,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-			{     
+
 				/// <summary>
 				/// A IPdxWriter will be passed to IPdxSerializable.toData
 				/// when it is serializing the domain class. The domain class needs to serialize member 
@@ -242,7 +241,7 @@ namespace Generic
 					/// <returns>this PdxWriter</returns>
           IPdxWriter^ WriteField(String^ fieldName, Object^ fieldValue, Type^ type);
 				};
-			}
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

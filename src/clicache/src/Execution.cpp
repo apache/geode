@@ -34,8 +34,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       generic<class TResult>
       generic<class TFilter>
@@ -70,7 +68,7 @@ namespace Generic
       }
 
       generic<class TResult>
-      Execution<TResult>^ Execution<TResult>::WithCollector(Generic::IResultCollector<TResult>^ rc)
+      Execution<TResult>^ Execution<TResult>::WithCollector(Client::IResultCollector<TResult>^ rc)
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
           apache::geode::client::ResultCollectorPtr rcptr;
@@ -102,8 +100,8 @@ namespace Generic
       IResultCollector<TResult>^ Execution<TResult>::Execute(String^ func)
       {
         return Execute(func, DEFAULT_QUERY_RESPONSE_TIMEOUT);
-      }
-    }
-    }
-  }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 } //namespace 

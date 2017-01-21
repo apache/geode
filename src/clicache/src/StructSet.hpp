@@ -31,8 +31,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       interface class IGFSerializable;
 
       generic<class TResult>
@@ -74,9 +73,9 @@ namespace Generic
         /// if the index is out of bounds.
         /// </exception>
         /// <returns>Item at the given index.</returns>
-        virtual property /*Apache::Geode::Client::Generic::IGFSerializable^*/TResult GFINDEXER( size_t )
+        virtual property /*Apache::Geode::Client::IGFSerializable^*/TResult GFINDEXER( size_t )
         {
-          virtual /*Apache::Geode::Client::Generic::IGFSerializable^*/TResult get( size_t index );
+          virtual /*Apache::Geode::Client::IGFSerializable^*/TResult get( size_t index );
         }
 
         /// <summary>
@@ -123,7 +122,7 @@ namespace Generic
         /// A <c>System.Collections.Generic.IEnumerator</c> that
         /// can be used to iterate through the <c>StructSet</c>.
         /// </returns>
-        virtual System::Collections::Generic::IEnumerator</*Apache::Geode::Client::Generic::IGFSerializable^*/TResult>^
+        virtual System::Collections::Generic::IEnumerator</*Apache::Geode::Client::IGFSerializable^*/TResult>^
           GetEnumerator( );
 
         // End Region: IEnumerable<IGFSerializable^> Members
@@ -157,8 +156,7 @@ namespace Generic
         inline StructSet(apache::geode::client::StructSet* nativeptr)
           : SBWrap(nativeptr) { }
       };
-
-    }
-  }
-}
-} //namespace 
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+ //namespace 

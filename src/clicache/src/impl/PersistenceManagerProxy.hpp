@@ -27,8 +27,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
         public interface class IPersistenceManagerProxy
         {
           public:
@@ -92,8 +91,8 @@ namespace Generic
               m_persistenceManager->Close();
             }
         };
-      }
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 

@@ -24,8 +24,8 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
 {
   using NUnit.Framework;
   using Apache.Geode.DUnitFramework;
-  using Apache.Geode.Client.Generic;
-  using Region = Apache.Geode.Client.Generic.IRegion<Object, Object>;
+  using Apache.Geode.Client;
+  using Region = Apache.Geode.Client.IRegion<Object, Object>;
 
   [TestFixture]
   [Category("group2")]
@@ -71,7 +71,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
 
     bool checkPoolAttributes
     (
-      Generic.Pool pool,
+      Client.Pool pool,
       string[] locators,
       string[] servers,
       int freeConnectionTimeout,

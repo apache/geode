@@ -38,8 +38,8 @@ namespace apache
       {
         try {
           uint32 pos = (int)output.getBufferLength();
-          //Apache::Geode::Client::Generic::Log::Debug("ManagedCacheableKeyGeneric::toData");      
-          Apache::Geode::Client::Generic::DataOutput mg_output(&output, true);
+          //Apache::Geode::Client::Log::Debug("ManagedCacheableKeyGeneric::toData");      
+          Apache::Geode::Client::DataOutput mg_output(&output, true);
           m_managedptr->ToData(%mg_output);
           //this will move the cursor in c++ layer
           mg_output.WriteBytesToUMDataOutput();
@@ -47,11 +47,11 @@ namespace apache
           ManagedCacheableKeyGeneric* tmp = const_cast<ManagedCacheableKeyGeneric*>(this);
           tmp->m_objectSize = (int)(output.getBufferLength() - pos);
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GemFireException::ThrowNative(ex);
         }
       }
 
@@ -59,8 +59,8 @@ namespace apache
       {
         try {
           int pos = input.getBytesRead();
-          //Apache::Geode::Client::Generic::Log::Debug("ManagedCacheableKeyGeneric::fromData");      
-          Apache::Geode::Client::Generic::DataInput mg_input(&input, true);
+          //Apache::Geode::Client::Log::Debug("ManagedCacheableKeyGeneric::fromData");      
+          Apache::Geode::Client::DataInput mg_input(&input, true);
           m_managedptr = m_managedptr->FromData(%mg_input);
 
           //this will move the cursor in c++ layer
@@ -71,11 +71,11 @@ namespace apache
 
 
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GemFireException::ThrowNative(ex);
         }
         return this;
       }
@@ -89,18 +89,18 @@ namespace apache
           else
             return m_objectSize;
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GemFireException::ThrowNative(ex);
         }
         return 0;
       }
 
       int32_t ManagedCacheableKeyGeneric::classId() const
       {
-        //Apache::Geode::Client::Generic::Log::Debug("ManagedCacheableKeyGeneric::classid " + m_classId);
+        //Apache::Geode::Client::Log::Debug("ManagedCacheableKeyGeneric::classid " + m_classId);
         /*uint32_t classId;
         try {
         classId = m_managedptr->ClassId;
@@ -116,12 +116,12 @@ namespace apache
 
       int8_t ManagedCacheableKeyGeneric::typeId() const
       {
-        //Apache::Geode::Client::Generic::Log::Debug("ManagedCacheableKeyGeneric::typeId " + m_classId);
+        //Apache::Geode::Client::Log::Debug("ManagedCacheableKeyGeneric::typeId " + m_classId);
         if (m_classId >= 0x80000000) {
           return (int8_t)((m_classId - 0x80000000) % 0x20000000);
         }
         else if (m_classId <= 0x7F) {
-          //Apache::Geode::Client::Generic::Log::Debug("ManagedCacheableKeyGeneric::typeId inin"); 
+          //Apache::Geode::Client::Log::Debug("ManagedCacheableKeyGeneric::typeId inin"); 
           return (int8_t)GemfireTypeIdsImpl::CacheableUserData;
         }
         else if (m_classId <= 0x7FFF) {
@@ -150,15 +150,15 @@ namespace apache
       {
         try {
           apache::geode::client::CacheableStringPtr cStr;
-          Apache::Geode::Client::Generic::CacheableString::GetCacheableString(
+          Apache::Geode::Client::CacheableString::GetCacheableString(
             m_managedptr->ToString(), cStr);
           return cStr;
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GemFireException::ThrowNative(ex);
         }
         return NULLPTR;
       }
@@ -171,17 +171,17 @@ namespace apache
           const ManagedCacheableKeyGeneric* p_other =
             dynamic_cast<const ManagedCacheableKeyGeneric*>(&other);
           if (p_other != NULL) {
-            return static_cast<Apache::Geode::Client::Generic::ICacheableKey^>(
-              (static_cast<Apache::Geode::Client::Generic::IGFSerializable^>((Apache::Geode::Client::Generic::IGFSerializable^)m_managedptr)))->Equals(
-              static_cast<Apache::Geode::Client::Generic::ICacheableKey^>(p_other->ptr()));
+            return static_cast<Apache::Geode::Client::ICacheableKey^>(
+              (static_cast<Apache::Geode::Client::IGFSerializable^>((Apache::Geode::Client::IGFSerializable^)m_managedptr)))->Equals(
+              static_cast<Apache::Geode::Client::ICacheableKey^>(p_other->ptr()));
           }
           return false;
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GemFireException::ThrowNative(ex);
         }
         return false;
       }
@@ -189,15 +189,15 @@ namespace apache
       bool ManagedCacheableKeyGeneric::operator ==(const ManagedCacheableKeyGeneric& other) const
       {
         try {
-          return static_cast<Apache::Geode::Client::Generic::ICacheableKey^>(
-            (Apache::Geode::Client::Generic::IGFSerializable^)(Apache::Geode::Client::Generic::IGFSerializable^)m_managedptr)->Equals(
-            static_cast<Apache::Geode::Client::Generic::ICacheableKey^>(other.ptr()));
+          return static_cast<Apache::Geode::Client::ICacheableKey^>(
+            (Apache::Geode::Client::IGFSerializable^)(Apache::Geode::Client::IGFSerializable^)m_managedptr)->Equals(
+            static_cast<Apache::Geode::Client::ICacheableKey^>(other.ptr()));
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GemFireException::ThrowNative(ex);
         }
         return false;
       }
@@ -209,16 +209,16 @@ namespace apache
         try {
 
           ManagedCacheableKeyGeneric* tmp = const_cast<ManagedCacheableKeyGeneric*>(this);
-          tmp->m_hashcode = ((Apache::Geode::Client::Generic::ICacheableKey^)
-            (Apache::Geode::Client::Generic::IGFSerializable^)m_managedptr)
+          tmp->m_hashcode = ((Apache::Geode::Client::ICacheableKey^)
+            (Apache::Geode::Client::IGFSerializable^)m_managedptr)
             ->GetHashCode();
           return m_hashcode;
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GemFireException::ThrowNative(ex);
         }
         return 0;
       }
@@ -229,15 +229,15 @@ namespace apache
           if (maxLength > 0) {
             String^ logstr = m_managedptr->GetType()->Name + '(' +
               m_managedptr->ToString() + ')';
-            Apache::Geode::Client::Generic::ManagedString mg_str(logstr);
+            Apache::Geode::Client::ManagedString mg_str(logstr);
             return snprintf(buffer, maxLength, "%s", mg_str.CharPtr);
           }
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GemFireException::ThrowNative(ex);
         }
         return 0;
       }

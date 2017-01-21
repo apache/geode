@@ -127,8 +127,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       DistributedSystem^ DistributedSystem::Connect(String^ name)
       {
         return DistributedSystem::Connect(name, nullptr);
@@ -573,12 +572,12 @@ namespace Generic
               
           /*  Serializable::RegisterTypeGeneric(
               apache::geode::client::GemfireTypeIds::PdxType,
-              gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::Generic::Internal::PdxType::CreateDeserializable),
+              gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::Internal::PdxType::CreateDeserializable),
               nullptr);*/
 
             Serializable::RegisterTypeGeneric(
               apache::geode::client::GemfireTypeIds::EnumInfo,
-              gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::Generic::Internal::EnumInfo::CreateDeserializable),
+              gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::Internal::EnumInfo::CreateDeserializable),
               nullptr);
           
           // End register generic wrapper types for built-in types
@@ -755,7 +754,7 @@ namespace Generic
         Create(apache::geode::client::DistributedSystem::getInstance().ptr());
 
         // Register managed AppDomain context with unmanaged.
-        apache::geode::client::createAppDomainContext = &Apache::Geode::Client::Generic::createAppDomainContext;
+        apache::geode::client::createAppDomainContext = &Apache::Geode::Client::createAppDomainContext;
       }
 
       void DistributedSystem::UnregisterBuiltinManagedTypes()
@@ -804,12 +803,12 @@ namespace Generic
         }
       }
 
-      Apache::Geode::Client::Generic::SystemProperties^ DistributedSystem::SystemProperties::get()
+      Apache::Geode::Client::SystemProperties^ DistributedSystem::SystemProperties::get()
       {
         _GF_MG_EXCEPTION_TRY2
 
           //  TODO
-					return Apache::Geode::Client::Generic::SystemProperties::Create(
+					return Apache::Geode::Client::SystemProperties::Create(
             apache::geode::client::DistributedSystem::getSystemProperties());
             
          //return nullptr;
@@ -905,8 +904,8 @@ namespace Generic
       void DistributedSystem::unregisterCliCallback()
       {
         apache::geode::client::DistributedSystemImpl::unregisterCliCallback( System::Threading::Thread::GetDomainID());
-      }
-      } // end namespace generic
-    }
-  }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 }

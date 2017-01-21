@@ -33,8 +33,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       //generic<class TKey, class TValue>
       PoolFactory/*<TKey, TValue>*/^ PoolManager/*<TKey, TValue>*/::CreateFactory()
       {
@@ -64,7 +63,7 @@ namespace Generic
       }
 
       //generic <class TKey, class TValue>
-      Pool/*<TKey, TValue>*/^ PoolManager/*<TKey, TValue>*/::Find(Generic::Region<Object^, Object^>^ region)
+      Pool/*<TKey, TValue>*/^ PoolManager/*<TKey, TValue>*/::Find(Client::Region<Object^, Object^>^ region)
       {
         //return Pool::Create(apache::geode::client::PoolManager::find(apache::geode::client::RegionPtr(GetNativePtr<apache::geode::client::Region>(region))).ptr());
         return Pool/*<TKey, TValue>*/::Create(apache::geode::client::PoolManager::find(apache::geode::client::RegionPtr(region->_NativePtr)).ptr());
@@ -80,9 +79,9 @@ namespace Generic
       void PoolManager/*<TKey, TValue>*/::Close()
       {
         apache::geode::client::PoolManager::close();
-      }
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 
  } //namespace 

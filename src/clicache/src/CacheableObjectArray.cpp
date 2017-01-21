@@ -36,8 +36,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       // Region: IGFSerializable Members
 
       void CacheableObjectArray::ToData(DataOutput^ output)
@@ -116,9 +115,8 @@ namespace Generic
           }
         }*/
         return Count;
-      }      
-      // End Region: IGFSerializable Members
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
  } //namespace 

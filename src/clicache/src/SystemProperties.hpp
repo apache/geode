@@ -31,8 +31,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       /// <summary>
       /// A class for internal use, that encapsulates the properties that can be
       /// set through <see cref="DistributedSystem.Connect" />
@@ -440,7 +439,7 @@ namespace Generic
         inline SystemProperties( apache::geode::client::SystemProperties* nativeptr )
           : UMWrap( nativeptr, false ) { }
       };
-      } // end namespace Generic
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

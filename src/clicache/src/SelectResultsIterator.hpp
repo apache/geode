@@ -30,8 +30,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       interface class IGFSerializable;
 
       /// <summary>
@@ -40,7 +39,7 @@ namespace Generic
       generic<class TResult>
       public ref class SelectResultsIterator sealed
         : public Internal::UMWrap<apache::geode::client::SelectResultsIterator>,
-        public System::Collections::Generic::IEnumerator</*Apache::Geode::Client::Generic::IGFSerializable^*/TResult>
+        public System::Collections::Generic::IEnumerator</*Apache::Geode::Client::IGFSerializable^*/TResult>
       {
       public:
 
@@ -52,9 +51,9 @@ namespace Generic
         /// The element in the collection at the current position
         /// of the enumerator.
         /// </returns>
-        virtual property /*Apache::Geode::Client::Generic::IGFSerializable^*/TResult Current
+        virtual property /*Apache::Geode::Client::IGFSerializable^*/TResult Current
         {
-          virtual /*Apache::Geode::Client::Generic::IGFSerializable^*/TResult get( );
+          virtual /*Apache::Geode::Client::IGFSerializable^*/TResult get( );
         }
 
         /// <summary>
@@ -76,7 +75,7 @@ namespace Generic
         /// <summary>
         /// Get the current element and move to the next one.
         /// </summary>
-        /*Apache::Geode::Client::Generic::IGFSerializable^*/TResult Next( );
+        /*Apache::Geode::Client::IGFSerializable^*/TResult Next( );
 
         /// <summary>
         /// Check if there is a next element.
@@ -97,11 +96,11 @@ namespace Generic
         /// <returns>
         /// The managed wrapper object; null if the native pointer is null.
         /// </returns>
-        inline static Apache::Geode::Client::Generic::SelectResultsIterator<TResult>^ Create(
+        inline static Apache::Geode::Client::SelectResultsIterator<TResult>^ Create(
           apache::geode::client::SelectResultsIterator* nativeptr )
         {
           return ( nativeptr != nullptr ?
-            gcnew Apache::Geode::Client::Generic::SelectResultsIterator<TResult>( nativeptr ) : nullptr );
+            gcnew Apache::Geode::Client::SelectResultsIterator<TResult>( nativeptr ) : nullptr );
         }
 
 
@@ -124,8 +123,7 @@ namespace Generic
           apache::geode::client::SelectResultsIterator* nativeptr )
           : UMWrap( nativeptr, true ) { }
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

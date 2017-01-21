@@ -28,8 +28,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       ref class GFNullStream : public Stream
       {
       public:
@@ -115,7 +114,6 @@ namespace Generic
       private:
         int m_position;
       };
-    }
-  }
-}
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache

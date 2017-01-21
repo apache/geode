@@ -26,8 +26,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       generic<class TKey, class TResult>
       ref class CqEvent;
@@ -116,8 +114,7 @@ namespace Generic
         /// <seealso cref="Region.DestroyRegion" />
         void Close();
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

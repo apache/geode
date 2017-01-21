@@ -27,7 +27,7 @@ using namespace System::Collections::Generic;
 
 /*
 using namespace Apache::Geode::Client;
-using namespace Apache::Geode::Client::Generic;
+using namespace Apache::Geode::Client;
 */
 
 namespace Apache
@@ -36,8 +36,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       ref class Cache;
       ref class CacheStatistics;
       //interface class IGFSerializable;
@@ -1655,7 +1654,7 @@ namespace Generic
           /// </exception>
           property AttributesMutator<TKey, TValue>^ AttributesMutator
           {
-            Apache::Geode::Client::Generic::AttributesMutator<TKey, TValue>^ get();
+            Apache::Geode::Client::AttributesMutator<TKey, TValue>^ get();
           }
 
           /// <summary>
@@ -1709,7 +1708,7 @@ namespace Generic
           /// <exception cref="RegionDestroyedException">
           /// region has been destroyed
           /// </exception>
-          Generic::RegionEntry<TKey, TValue>^ GetEntry( TKey key );
+          Client::RegionEntry<TKey, TValue>^ GetEntry( TKey key );
 
           /// <summary>
           /// Gets the entries in this region.
@@ -1719,15 +1718,15 @@ namespace Generic
           /// if true, also return all nested subregion entries
           /// </param>
           /// <returns>collection of entries</returns>
-          System::Collections::Generic::ICollection<Generic::RegionEntry<TKey, TValue>^>^ GetEntries(bool recursive);
+          System::Collections::Generic::ICollection<Client::RegionEntry<TKey, TValue>^>^ GetEntries(bool recursive);
 
           /// <summary>
           /// Gets the RegionService for this region.
           /// </summary>
           /// <returns>RegionService</returns>
-          property Apache::Geode::Client::Generic::IRegionService^ RegionService
+          property Apache::Geode::Client::IRegionService^ RegionService
           {
-            Apache::Geode::Client::Generic::IRegionService^ get( );
+            Apache::Geode::Client::IRegionService^ get( );
           }
 
           /// <summary>
@@ -2069,8 +2068,7 @@ namespace Generic
           Object^ SelectValue( String^ predicate, uint32_t timeout );
 
       };
-
-    }
-  }
-}
-} //namespace 
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+ //namespace 

@@ -29,8 +29,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       /// <summary>
       /// A class that describes an individual statistic whose value is updated by an
       /// application and may be archived by GemFire. These descriptions are gathered
@@ -123,7 +122,8 @@ namespace Generic
            inline StatisticDescriptor( apache::geode::statistics::StatisticDescriptor* nativeptr )
            : UMWrap( nativeptr, false ) { }
        };      
-    }
-  }
-} } //namespace 
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 

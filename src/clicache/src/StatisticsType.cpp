@@ -32,8 +32,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       String^ StatisticsType::Name::get()
       {
         return ManagedString::Get( NativePtr->getName() );
@@ -78,9 +77,9 @@ namespace Generic
       int32_t StatisticsType::DescriptorsCount::get()
       {
         return NativePtr->getDescriptorsCount();
-      }
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
  } //namespace 
 

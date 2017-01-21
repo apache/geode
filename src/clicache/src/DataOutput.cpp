@@ -34,8 +34,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
 
 				void DataOutput::WriteByte( Byte value )
 				{
@@ -457,9 +455,9 @@ namespace Generic
            return;
          }
 
-					//Apache::Geode::Client::Generic::Log::Debug("DataOutput::WriteObject " + obj);
+					//Apache::Geode::Client::Log::Debug("DataOutput::WriteObject " + obj);
 
-					Byte typeId = Apache::Geode::Client::Generic::Serializable::GetManagedTypeMappingGeneric(obj->GetType());
+					Byte typeId = Apache::Geode::Client::Serializable::GetManagedTypeMappingGeneric(obj->GetType());
 
 					switch(typeId)
 					{
@@ -872,8 +870,8 @@ namespace Generic
 				void DataOutput::WriteDoubleArray(array<double>^ doubleArray)
 				{
 					WriteObject<double>(doubleArray);
-				}
-      } // end namespace generic
-    }
-  }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 }

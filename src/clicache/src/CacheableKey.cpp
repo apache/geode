@@ -28,8 +28,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
      // generic<class TKey>
       int32_t CacheableKey::GetHashCode()
       {
@@ -37,14 +36,14 @@ namespace Generic
       }
 
      // generic<class TKey>
-      bool CacheableKey::Equals(Generic::ICacheableKey^ other)
+      bool CacheableKey::Equals(Client::ICacheableKey^ other)
       {
         if (other == nullptr || other->ClassId != ClassId) {
           return false;
         }
         return static_cast<apache::geode::client::CacheableKey*>(NativePtr())->operator==(
           *static_cast<apache::geode::client::CacheableKey*>(
-            ((Generic::CacheableKey^)other)->NativePtr()));
+            ((Client::CacheableKey^)other)->NativePtr()));
       }
 
       //generic<class TKey>
@@ -112,8 +111,8 @@ namespace Generic
       CacheableKey::operator CacheableKey^ (String^ value)
       {
         return dynamic_cast<CacheableKey^>(CacheableString::Create(value));
-      }
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 } //namespace 

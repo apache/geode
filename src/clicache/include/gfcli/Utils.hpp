@@ -34,8 +34,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-			{
 
     /// <summary>
     /// Some static utility methods.
@@ -84,7 +82,7 @@ namespace Generic
 						int32_t get( );
 					}
 				};
-			}
-		}
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

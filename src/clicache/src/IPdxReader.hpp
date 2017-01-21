@@ -26,8 +26,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-			{
+
 				/// <summary>
 				/// A IPdxReader will be passed to IPdxSerializable.fromData or 
 				/// during deserialization of a PDX. The domain class needs to deserialize field members 
@@ -206,7 +205,7 @@ namespace Generic
           /// <param name="type">The type of a member field, which value needs to read.</param>
           Object^ ReadField(String^ fieldName, Type^ type);
 				};
-			}
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

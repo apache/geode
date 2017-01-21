@@ -32,8 +32,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       ref class DataInput;
       namespace Internal
       {
@@ -305,8 +304,8 @@ namespace Generic
           /// </summary>
           virtual Object^ ReadField(String^ fieldName, Type^ type);
         };
-      }
-			}
-    }
-  }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 }

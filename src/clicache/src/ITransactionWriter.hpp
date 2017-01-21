@@ -27,8 +27,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-			{
+
 				/// <summary>
 				/// A callback that is allowed to veto a transaction. Only one TransactionWriter can exist
 				/// per cache, and only one TransactionWriter will be fired in the
@@ -55,9 +54,8 @@ namespace Generic
 					void BeforeCommit(TransactionEvent<TKey, TValue>^ te);
 
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 
 #endif

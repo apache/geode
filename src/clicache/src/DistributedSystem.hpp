@@ -32,8 +32,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       /// <summary>
       /// DistributedSystem encapsulates this applications "connection" into the
       /// GemFire Java servers.
@@ -44,7 +43,7 @@ namespace Generic
       /// DistributedSystem.
       /// </remarks>
       public ref class DistributedSystem sealed
-				: public Generic::Internal::SBWrap<apache::geode::client::DistributedSystem>
+				: public Client::Internal::SBWrap<apache::geode::client::DistributedSystem>
       {
       public:
 
@@ -91,9 +90,9 @@ namespace Generic
         /// <c>DistributedSystem</c>.
         /// </summary>
         /// <returns>the SystemProperties</returns>
-        static property Apache::Geode::Client::Generic::SystemProperties^ SystemProperties
+        static property Apache::Geode::Client::SystemProperties^ SystemProperties
         {
-          static Apache::Geode::Client::Generic::SystemProperties^ get( );
+          static Apache::Geode::Client::SystemProperties^ get( );
         }
 
         /// <summary>
@@ -212,7 +211,7 @@ namespace Generic
 
         static CliCallbackDelegate^ m_cliCallBackObj;
       };
-      } // end namespace generic
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

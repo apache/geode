@@ -19,7 +19,7 @@ using System;
 using System.IO;
 namespace Apache.Geode.Client.Tests.NewAPI
 {
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
   public class ArrayOfByte
   {
     private static DataOutput dos = new DataOutput();

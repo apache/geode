@@ -41,7 +41,7 @@
 /// @namespace Apache::Geode::Client
 /// This namespace contains all the GemFire .NET API classes and enumerations.
 
-/// @namespace Apache::Geode::Client::Generic
+/// @namespace Apache::Geode::Client
 /// This namespace contains all the GemFire .NET Generics API classes and enumerations.
 
 /// @namespace Apache::Geode::Client::Internal

@@ -24,8 +24,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-			{     
+
 				/// <summary>
 				/// Serialize the data in gemfire Portable Data eXchange(Pdx) Format.
 				/// This format provides class versioning(forward and backward compability of types) in cache.
@@ -35,7 +34,7 @@ namespace Generic
 				{
 
 				};
-			}
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

@@ -28,8 +28,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-			{     
+
         namespace Internal
         {
         ref class PdxType;
@@ -285,8 +284,8 @@ namespace Generic
           virtual void FromData( IPdxReader^ reader );          
 
 				};
-        }
-			}
-    }
-  }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 }

@@ -34,8 +34,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       generic<class TKey, class TResult>
       //generic<class TResult>
@@ -192,9 +190,9 @@ namespace Generic
         catch ( const apache::geode::client::Exception& ex )
         {
           throw GemFireException::Get( ex );
-        }
-      }
-    }
-  }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 }
  } //namespace 

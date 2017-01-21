@@ -29,8 +29,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       /// <summary>
       /// This interface class is the superclass of all user objects 
@@ -64,8 +62,7 @@ namespace Generic
         /// </summary>
         bool Equals( ICacheableKey^ other );
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

@@ -31,8 +31,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       generic <class TResult>
       generic <class TKey, class TValue>
       Execution<TResult>^ FunctionService<TResult>::OnRegion( IRegion<TKey, TValue>^ rg )
@@ -41,7 +40,7 @@ namespace Generic
           
           IRegion<TKey, TValue>^ regImpl = safe_cast<IRegion<TKey, TValue>^>( rg);
 
-        apache::geode::client::RegionPtr regionptr(GetNativePtrFromSBWrapGeneric((Generic::Region<TKey, TValue>^)regImpl));
+        apache::geode::client::RegionPtr regionptr(GetNativePtrFromSBWrapGeneric((Client::Region<TKey, TValue>^)regImpl));
 
           apache::geode::client::ExecutionPtr& nativeptr( apache::geode::client::FunctionService::onRegion(
             regionptr ) );
@@ -82,8 +81,8 @@ namespace Generic
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-          Apache::Geode::Client::Generic::Cache^ realCache =
-            dynamic_cast<Apache::Geode::Client::Generic::Cache^>(cache);
+          Apache::Geode::Client::Cache^ realCache =
+            dynamic_cast<Apache::Geode::Client::Cache^>(cache);
 
         if(realCache != nullptr)
         {
@@ -95,8 +94,8 @@ namespace Generic
         }
         else
         {
-          Apache::Geode::Client::Generic::AuthenticatedCache^ authCache =
-            dynamic_cast<Apache::Geode::Client::Generic::AuthenticatedCache^>(cache);
+          Apache::Geode::Client::AuthenticatedCache^ authCache =
+            dynamic_cast<Apache::Geode::Client::AuthenticatedCache^>(cache);
           apache::geode::client::RegionServicePtr cacheptr(GetNativePtr<apache::geode::client::RegionService>( authCache ) );
 
             apache::geode::client::ExecutionPtr& nativeptr( apache::geode::client::FunctionService::onServer(
@@ -113,8 +112,8 @@ namespace Generic
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-          Apache::Geode::Client::Generic::Cache^ realCache =
-          dynamic_cast<Apache::Geode::Client::Generic::Cache^>(cache);
+          Apache::Geode::Client::Cache^ realCache =
+          dynamic_cast<Apache::Geode::Client::Cache^>(cache);
 
           if(realCache != nullptr)
           {
@@ -126,8 +125,8 @@ namespace Generic
           }
           else
           {
-            Apache::Geode::Client::Generic::AuthenticatedCache^ authCache =
-              dynamic_cast<Apache::Geode::Client::Generic::AuthenticatedCache^>(cache);
+            Apache::Geode::Client::AuthenticatedCache^ authCache =
+              dynamic_cast<Apache::Geode::Client::AuthenticatedCache^>(cache);
             apache::geode::client::RegionServicePtr cacheptr(GetNativePtr<apache::geode::client::RegionService>( authCache ) );
 
             apache::geode::client::ExecutionPtr& nativeptr( apache::geode::client::FunctionService::onServers(
@@ -136,8 +135,8 @@ namespace Generic
           }
 
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
-      }
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
  } //namespace 

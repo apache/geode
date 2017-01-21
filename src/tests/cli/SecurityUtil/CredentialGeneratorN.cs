@@ -17,7 +17,7 @@
 
 namespace Apache.Geode.Client.Tests.NewAPI
 {
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
   /// <summary>
   /// Encapsulates obtaining valid and invalid credentials. Implementations will be
   /// for different kinds of authentication schemes.

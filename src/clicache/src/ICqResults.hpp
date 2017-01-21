@@ -31,8 +31,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       generic<class TResult>
       ref class SelectResultsIterator;
@@ -45,8 +43,7 @@ namespace Generic
         : public ISelectResults<TResult>
       {
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

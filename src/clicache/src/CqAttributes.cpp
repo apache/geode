@@ -31,8 +31,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       generic<class TKey, class TResult>
       array<ICqListener<TKey, TResult>^>^ CqAttributes<TKey, TResult>::getCqListeners( )
       {
@@ -61,9 +60,8 @@ namespace Generic
           }
         }
         return listners;
-      }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-    }
-  }
 } //namespace 

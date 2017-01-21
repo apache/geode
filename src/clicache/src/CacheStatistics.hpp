@@ -28,8 +28,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       /// <summary>
       /// Defines common statistical information for both the region and its entries.
@@ -149,8 +147,7 @@ namespace Generic
         inline CacheStatistics( apache::geode::client::CacheStatistics* nativeptr )
           : SBWrap( nativeptr ) { }
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

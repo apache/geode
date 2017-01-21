@@ -49,8 +49,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       RegionFactory^ RegionFactory::SetCacheLoader( String^ libPath, String^ factoryFunctionName )
       {
         throw gcnew System::NotSupportedException;
@@ -128,7 +127,7 @@ namespace Generic
       // PERSISTENCE
 
        generic <class TKey, class TValue>
-      RegionFactory^ RegionFactory::SetPersistenceManager( Generic::IPersistenceManager<TKey, TValue>^ persistenceManager, 
+      RegionFactory^ RegionFactory::SetPersistenceManager( Client::IPersistenceManager<TKey, TValue>^ persistenceManager, 
           Properties<String^, String^>^ config)
       {
         apache::geode::client::PersistenceManagerPtr persistenceManagerptr;
@@ -144,7 +143,7 @@ namespace Generic
       }
 
       generic <class TKey, class TValue>
-      RegionFactory^ RegionFactory::SetPersistenceManager( Generic::IPersistenceManager<TKey, TValue>^ persistenceManager )
+      RegionFactory^ RegionFactory::SetPersistenceManager( Client::IPersistenceManager<TKey, TValue>^ persistenceManager )
       {
         return SetPersistenceManager(persistenceManager, nullptr);
       }
@@ -251,13 +250,13 @@ namespace Generic
           
         apache::geode::client::RegionPtr& nativeptr( NativePtr->create(
             mg_name.CharPtr ) );
-          return Generic::Region<TKey,TValue>::Create( nativeptr.ptr( ) );
+          return Client::Region<TKey,TValue>::Create( nativeptr.ptr( ) );
 
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
       }
 
       generic <class TKey, class TValue>
-      RegionFactory^ RegionFactory::SetCacheLoader( Generic::ICacheLoader<TKey, TValue>^ cacheLoader )
+      RegionFactory^ RegionFactory::SetCacheLoader( Client::ICacheLoader<TKey, TValue>^ cacheLoader )
       {
         apache::geode::client::CacheLoaderPtr loaderptr;
         if ( cacheLoader != nullptr ) {
@@ -271,7 +270,7 @@ namespace Generic
       }
 
       generic <class TKey, class TValue>
-      RegionFactory^ RegionFactory::SetCacheWriter( Generic::ICacheWriter<TKey, TValue>^ cacheWriter )
+      RegionFactory^ RegionFactory::SetCacheWriter( Client::ICacheWriter<TKey, TValue>^ cacheWriter )
       {
         apache::geode::client::CacheWriterPtr writerptr;
         if ( cacheWriter != nullptr ) {
@@ -285,7 +284,7 @@ namespace Generic
       }
 
       generic <class TKey, class TValue>
-      RegionFactory^ RegionFactory::SetCacheListener( Generic::ICacheListener<TKey, TValue>^ cacheListener )
+      RegionFactory^ RegionFactory::SetCacheListener( Client::ICacheListener<TKey, TValue>^ cacheListener )
       {
         apache::geode::client::CacheListenerPtr listenerptr;
         if ( cacheListener != nullptr ) {
@@ -295,7 +294,7 @@ namespace Generic
           ((apache::geode::client::ManagedCacheListenerGeneric*)listenerptr.ptr())->setptr(clg);
           /*
           listenerptr = new apache::geode::client::ManagedCacheListenerGeneric(
-            (Generic::ICacheListener<Object^, Object^>^)cacheListener);
+            (Client::ICacheListener<Object^, Object^>^)cacheListener);
             */
         }
         NativePtr->setCacheListener( listenerptr );
@@ -303,12 +302,12 @@ namespace Generic
       }
 
       generic <class TKey, class TValue>
-      RegionFactory^ RegionFactory::SetPartitionResolver( Generic::IPartitionResolver<TKey, TValue>^ partitionresolver )
+      RegionFactory^ RegionFactory::SetPartitionResolver( Client::IPartitionResolver<TKey, TValue>^ partitionresolver )
       {
         apache::geode::client::PartitionResolverPtr resolverptr;
         if ( partitionresolver != nullptr ) {
-          Generic::IFixedPartitionResolver<TKey, TValue>^ resolver = 
-            dynamic_cast<Generic::IFixedPartitionResolver<TKey, TValue>^>(partitionresolver);
+          Client::IFixedPartitionResolver<TKey, TValue>^ resolver = 
+            dynamic_cast<Client::IFixedPartitionResolver<TKey, TValue>^>(partitionresolver);
           if (resolver != nullptr) {            
             FixedPartitionResolverGeneric<TKey, TValue>^ prg = gcnew FixedPartitionResolverGeneric<TKey, TValue>();
             prg->SetPartitionResolver(resolver);
@@ -324,8 +323,8 @@ namespace Generic
         }
         NativePtr->setPartitionResolver( resolverptr );
         return this;
-      }
-      } // end namespace Generic
-    }
-  }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 }

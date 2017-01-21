@@ -28,8 +28,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       generic<class TKey, class TResult>
       CqQuery<TKey, TResult>^ CqEvent<TKey, TResult>::getCq( )
@@ -70,10 +68,8 @@ namespace Generic
         apache::geode::client::CacheableBytesPtr deltaBytes = NativePtr->getDeltaValue( );
         CacheableBytes^ managedDeltaBytes = ( CacheableBytes^ ) CacheableBytes::Create( deltaBytes.ptr( ) );
         return ( array< Byte >^ ) managedDeltaBytes;
-      }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-
-    }
-  }
-}
  } //namespace 

@@ -25,7 +25,7 @@ namespace Apache.Geode.Client.FwkLib
 {
   using Apache.Geode.DUnitFramework;
   using Apache.Geode.Client.Tests.NewAPI;
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
   using QueryCategory = Apache.Geode.Client.Tests.QueryCategory;
   using QueryStrings = Apache.Geode.Client.Tests.QueryStrings;
   using QueryStatics = Apache.Geode.Client.Tests.QueryStatics;
@@ -665,7 +665,7 @@ namespace Apache.Geode.Client.FwkLib
             }
             rootAttrs = CreatePool(rootAttrs, redundancyLevel);
             region = CacheHelper<TKey, TVal>.CreateRegion(rootRegionName, rootAttrs);
-            Apache.Geode.Client.Generic.RegionAttributes<TKey, TVal> regAttr = region.Attributes;
+            Apache.Geode.Client.RegionAttributes<TKey, TVal> regAttr = region.Attributes;
             FwkInfo("Region attributes for {0}: {1}", rootRegionName,
               CacheHelper<TKey, TVal>.RegionAttributesToString(regAttr));
             if (isDC)
@@ -1420,7 +1420,7 @@ namespace Apache.Geode.Client.FwkLib
           else
           {
             string fullName = parentRegion.FullPath;
-            Apache.Geode.Client.Generic.RegionAttributes<TKey, TVal> regattrs = parentRegion.Attributes;
+            Apache.Geode.Client.RegionAttributes<TKey, TVal> regattrs = parentRegion.Attributes;
             parentRegion.CreateSubRegion(sRegionName, regattrs);
             Util.BBSet(QueryBB, sRegionName, fullName); parentRegion.SubRegions(false);
           }
@@ -1445,7 +1445,7 @@ namespace Apache.Geode.Client.FwkLib
     {
         IRegion<TKey, TVal> parentRegion = GetRegion();
         IRegion<TKey, TVal> subRegion;
-        Apache.Geode.Client.Generic.RegionAttributes<TKey, TVal> regattrs = parentRegion.Attributes;
+        Apache.Geode.Client.RegionAttributes<TKey, TVal> regattrs = parentRegion.Attributes;
         subRegion = parentRegion.CreateSubRegion(regName,regattrs);
         ICollection<IRegion<TKey, TVal>> subRegions = parentRegion.SubRegions(true);
         FwkInfo("subregions are {0}",subRegions.Count);

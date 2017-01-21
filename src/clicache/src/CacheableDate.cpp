@@ -33,8 +33,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       CacheableDate::CacheableDate(DateTime dateTime)
         : m_dateTime(dateTime),m_hashcode(0)
       {
@@ -115,9 +114,9 @@ namespace Generic
           return (m_dateTime == otherDate->m_dateTime);
         }
         return false;
-      }
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
  } //namespace 
 

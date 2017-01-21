@@ -32,8 +32,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       void CacheableString::ToData(DataOutput^ output)
       {
@@ -144,7 +142,7 @@ namespace Generic
         return (m_value->Length * sizeof(char));
       }
 
-      bool CacheableString::Equals(Apache::Geode::Client::Generic::ICacheableKey^ other)
+      bool CacheableString::Equals(Apache::Geode::Client::ICacheableKey^ other)
       {
         if (other == nullptr || other->ClassId != ClassId) {
           return false;
@@ -205,10 +203,10 @@ namespace Generic
             m_type = GemFireClassIds::CacheableStringHuge;
           else
             m_type = GemFireClassIds::CacheableString;  
-        }
-      }
-    }
-  }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 }
  } //namespace 
 

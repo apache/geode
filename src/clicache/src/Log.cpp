@@ -30,8 +30,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       void Log::Init( LogLevel level, String^ logFileName )
       {
         _GF_MG_EXCEPTION_TRY2
@@ -117,9 +116,9 @@ namespace Generic
             "GemFire exception {0} caught: {1}{2}{3}", ex->GetType( ),
             ex->Message, Environment::NewLine, msg );
           Log::Write( level, logMsg );
-        }
-      }
-      } // end namespace generic
-    }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
   }
 }

@@ -27,7 +27,7 @@ namespace Apache.Geode.Client.FwkLib
 {
   using Apache.Geode.DUnitFramework;
   using Apache.Geode.Client.Tests.NewAPI;
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
   using QueryCategory = Apache.Geode.Client.Tests.QueryCategory;
   using QueryStrings = Apache.Geode.Client.Tests.QueryStrings;
   using QueryStatics = Apache.Geode.Client.Tests.QueryStatics;
@@ -1710,11 +1710,11 @@ namespace Apache.Geode.Client.FwkLib
       {
         anObj = aRegion[key];
       }
-      catch (Apache.Geode.Client.Generic.KeyNotFoundException)
+      catch (Apache.Geode.Client.KeyNotFoundException)
       {
         if (!EqualityComparer<TVal>.Default.Equals(anObj, default(TVal)))
         {
-          throw new Apache.Geode.Client.Generic.KeyNotFoundException();
+          throw new Apache.Geode.Client.KeyNotFoundException();
         }
 
       }
@@ -2284,7 +2284,7 @@ namespace Apache.Geode.Client.FwkLib
             }
             //}
           }
-          catch (Apache.Geode.Client.Generic.KeyNotFoundException)
+          catch (Apache.Geode.Client.KeyNotFoundException)
           {
           }
           catch (Exception e)
@@ -2372,7 +2372,7 @@ namespace Apache.Geode.Client.FwkLib
                 }
               //}
             }
-            catch (Apache.Geode.Client.Generic.KeyNotFoundException)
+            catch (Apache.Geode.Client.KeyNotFoundException)
             {
             }
             catch (Exception e)
@@ -2435,7 +2435,7 @@ namespace Apache.Geode.Client.FwkLib
           try
           {
               value = aRegion[key];
-          }catch(Apache.Geode.Client.Generic.KeyNotFoundException){
+          }catch(Apache.Geode.Client.KeyNotFoundException){
               value = default(TVal);
           }
           regionSnapshot[key] = value;
@@ -2630,7 +2630,7 @@ namespace Apache.Geode.Client.FwkLib
                 FwkInfo("CacheServer.DoEntryOperations() Caught non-fatal " +
                   "exception in read: {0}", ex.Message);
               }
-              catch (Apache.Geode.Client.Generic.KeyNotFoundException ex) {
+              catch (Apache.Geode.Client.KeyNotFoundException ex) {
                 FwkInfo("CacheServer.DoEntryOperations() Caught non-fatal " +
                   "exception in read: {0}", ex.Message);
               }
@@ -2867,7 +2867,7 @@ namespace Apache.Geode.Client.FwkLib
           addOps = -1;
           UpdateOperationsMap(opCode, addOps);
         }
-        catch (Apache.Geode.Client.Generic.KeyNotFoundException)
+        catch (Apache.Geode.Client.KeyNotFoundException)
         {
           addOps = -1;
           UpdateOperationsMap(opCode, addOps);
@@ -3770,7 +3770,7 @@ public void doVerifyRegionContentsAfterLateOps()
                           TVal value = regionPtr[key];
                           checkValue(key, value);
                       }
-                      catch (Apache.Geode.Client.Generic.KeyNotFoundException)
+                      catch (Apache.Geode.Client.KeyNotFoundException)
                       { }
 
                   }
@@ -3886,7 +3886,7 @@ public void doVerifyRegionContentsAfterLateOps()
                       }
                   }
               }
-              catch (Apache.Geode.Client.Generic.KeyNotFoundException)
+              catch (Apache.Geode.Client.KeyNotFoundException)
               {}
           }
       }
@@ -3903,7 +3903,7 @@ public void doVerifyRegionContentsAfterLateOps()
                   TVal value = regionPtr[key];
                   checkValue(key, value);
               }
-              catch (Apache.Geode.Client.Generic.KeyNotFoundException)
+              catch (Apache.Geode.Client.KeyNotFoundException)
               { }
           }
       }
@@ -3931,7 +3931,7 @@ public void doVerifyRegionContentsAfterLateOps()
                       }
                   }
               }
-              catch (Apache.Geode.Client.Generic.KeyNotFoundException)
+              catch (Apache.Geode.Client.KeyNotFoundException)
               { }
           }
       }
@@ -4213,7 +4213,7 @@ private void checkUpdatedValue(TKey key, TVal value)
             rootAttrs = CreatePool(rootAttrs, redundancyLevel);
             FwkInfo("Entering CacheHelper.CreateRegion()");
             region = CacheHelper<TKey, TVal>.CreateRegion(rootRegionName, rootAttrs);
-            Apache.Geode.Client.Generic.RegionAttributes<TKey, TVal> regAttr = region.Attributes;
+            Apache.Geode.Client.RegionAttributes<TKey, TVal> regAttr = region.Attributes;
             FwkInfo("Region attributes for {0}: {1}", rootRegionName,
               CacheHelper<TKey, TVal>.RegionAttributesToString(regAttr));
             if (isDC)
@@ -4679,7 +4679,7 @@ private void checkUpdatedValue(TKey key, TVal value)
                     FwkInfo("MultiUser.DoEntryOperationsForMU() Caught non-fatal " +
                       "ex-ception in read: {0}", ex.Message);
                 }
-                catch (Apache.Geode.Client.Generic.KeyNotFoundException ex)
+                catch (Apache.Geode.Client.KeyNotFoundException ex)
                 {
                     FwkInfo("MultiUser.DoEntryOperationsForMU() Caught non-fatal " +
                       "ex-ception in read: {0}", ex.Message);
@@ -4717,7 +4717,7 @@ private void checkUpdatedValue(TKey key, TVal value)
               string funcName = null;
               Random rdn = new Random();
               int num = rdn.Next(3);
-              Apache.Geode.Client.Generic.Execution<object> exc = null;
+              Apache.Geode.Client.Execution<object> exc = null;
               ICollection<object> executeFunctionResult = null;
               ArrayList args = new ArrayList();
               Object[] filterObj = new Object[1];
@@ -4729,7 +4729,7 @@ private void checkUpdatedValue(TKey key, TVal value)
                 args.Add(filterObj[0]);
                 args.Add("addKey"); 
                 funcName = "RegionOperationsFunction";
-                exc = Generic.FunctionService<object>.OnRegion(region);
+                exc = Client.FunctionService<object>.OnRegion(region);
                 executeFunctionResult = exc.WithArgs(args).WithFilter(filterObj).Execute(funcName, 15).GetResult();
               }
               else if (num == 1)
@@ -4737,7 +4737,7 @@ private void checkUpdatedValue(TKey key, TVal value)
                 args.Add(filterObj[0]);
                 funcName = "ServerOperationsFunction";
                 //exc = region.Cache.GetFunctionService().OnServer();
-                exc = Generic.FunctionService<object>.OnServer(authCache);
+                exc = Client.FunctionService<object>.OnServer(authCache);
                 executeFunctionResult = exc.WithArgs(args).Execute(funcName, 15).GetResult();
               }
               else
@@ -4747,7 +4747,7 @@ private void checkUpdatedValue(TKey key, TVal value)
                   args.Add(filterObj[0]);
                   funcName = "ServerOperationsFunction";
                   //exc = region.Cache.GetFunctionService().OnServers();
-                  exc = Generic.FunctionService<object>.OnServers(authCache);
+                  exc = Client.FunctionService<object>.OnServers(authCache);
                   executeFunctionResult = exc.WithArgs(args).Execute(funcName, 15).GetResult();
                 }
                 catch (FunctionExecutionException)

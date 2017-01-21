@@ -28,8 +28,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
         interface class IGFSerializable;
 
 
@@ -103,8 +102,7 @@ namespace Generic
 
         Object^ GetRoutingObject(EntryEvent<TKey, TValue>^ key) ;
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

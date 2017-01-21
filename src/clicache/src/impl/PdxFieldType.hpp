@@ -28,8 +28,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       namespace Internal
       {
         public ref class PdxFieldType : IGFSerializable
@@ -144,8 +143,8 @@ namespace Generic
              return "PdxFieldName:" + m_fieldName + ", TypeId: " + m_typeId + ", VarLenFieldIdx:" + m_varLenFieldIdx + ", sequenceid:" + m_sequenceId;
            }
         };
-      }
-			}
-    }
-  }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 }

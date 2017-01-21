@@ -30,8 +30,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       ref class DataOutput;
       namespace Internal
       {
@@ -363,8 +362,8 @@ namespace Generic
 
           virtual void WriteByte(Byte byte);//for internal purpose
         };      
-      }
-			}
-    }
-  }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 }

@@ -35,8 +35,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       namespace Internal
       {
         /// <summary>
@@ -71,7 +70,7 @@ namespace Generic
           {
             for ( int i = 0; i < len; i++)
             {
-              //Generic::ICacheableKey^ key = dynamic_cast<Generic::ICacheableKey^>(input->ReadObject());
+              //Generic::ICacheableKey^ key = dynamic_cast<Client::ICacheableKey^>(input->ReadObject());
               Object^ key = (input->ReadObject());
               this->Add(key);
             }
@@ -159,7 +158,7 @@ namespace Generic
                   throw gcnew System::InvalidOperationException(
                     "Call MoveNext first.");
                 }
-                //return SafeGenericUMKeyConvert<Generic::ICacheableKey^>((*(*NativePtr())).ptr());
+                //return SafeGenericUMKeyConvert<Client::ICacheableKey^>((*(*NativePtr())).ptr());
                 return Serializable::GetManagedValueGeneric<Object^>((*(*NativePtr())));
               }
             }
@@ -527,7 +526,7 @@ namespace Generic
       }
 
 #define _GFCLI_CACHEABLEHASHSET_DEF_GENERIC(m, HSTYPE)                               \
-	public ref class m : public Internal::CacheableHashSetType<Apache::Geode::Client::Generic::GemFireClassIds::m, HSTYPE>      \
+	public ref class m : public Internal::CacheableHashSetType<Apache::Geode::Client::GemFireClassIds::m, HSTYPE>      \
       {                                                                       \
       public:                                                                 \
         /** <summary>
@@ -535,7 +534,7 @@ namespace Generic
          *  </summary>
          */                                                                   \
         inline m()                                                            \
-        : Internal::CacheableHashSetType<Apache::Geode::Client::Generic::GemFireClassIds::m, HSTYPE>() {}                      \
+        : Internal::CacheableHashSetType<Apache::Geode::Client::GemFireClassIds::m, HSTYPE>() {}                      \
                                                                               \
         /** <summary>
          *  Allocates a new instance with the given size.
@@ -543,7 +542,7 @@ namespace Generic
          *  <param name="size">the intial size of the new instance</param>
          */                                                                   \
         inline m(int32_t size)                                                 \
-        : Internal::CacheableHashSetType<Apache::Geode::Client::Generic::GemFireClassIds::m, HSTYPE>(size) {}                  \
+        : Internal::CacheableHashSetType<Apache::Geode::Client::GemFireClassIds::m, HSTYPE>(size) {}                  \
                                                                               \
         /** <summary>
          *  Static function to create a new empty instance.
@@ -580,7 +579,7 @@ namespace Generic
                                                                               \
       private:                                                                \
         inline m(apache::geode::client::Serializable* nativeptr)                            \
-        : Internal::CacheableHashSetType<Apache::Geode::Client::Generic::GemFireClassIds::m, HSTYPE>(nativeptr) { }             \
+        : Internal::CacheableHashSetType<Apache::Geode::Client::GemFireClassIds::m, HSTYPE>(nativeptr) { }             \
       };
 
       /// <summary>
@@ -599,7 +598,7 @@ namespace Generic
       /// </summary>
       _GFCLI_CACHEABLEHASHSET_DEF_GENERIC(CacheableLinkedHashSet,
         apache::geode::client::CacheableLinkedHashSet);
-    }
-  }
-}
- } //namespace 
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

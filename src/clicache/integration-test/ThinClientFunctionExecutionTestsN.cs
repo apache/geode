@@ -25,10 +25,10 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
   using NUnit.Framework;
   using Apache.Geode.DUnitFramework;
 
-  using Apache.Geode.Client.Generic;
-  using Region = Apache.Geode.Client.Generic.IRegion<Object, Object>;
+  using Apache.Geode.Client;
+  using Region = Apache.Geode.Client.IRegion<Object, Object>;
 
-  public class MyResultCollector<TResult> : Generic.IResultCollector<TResult>
+  public class MyResultCollector<TResult> : Client.IResultCollector<TResult>
   {
     #region Private members
     private bool m_resultReady = false;
@@ -243,8 +243,8 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
       //test data dependant function execution
       //     test get function with result
       
-      Apache.Geode.Client.Generic.Execution<object> exc = Generic.FunctionService<object>.OnRegion<object, object>(region);
-      Generic.IResultCollector<object> rc = exc.WithArgs<object>(args).WithFilter<object>(routingObj).Execute(getFuncName);
+      Apache.Geode.Client.Execution<object> exc = Client.FunctionService<object>.OnRegion<object, object>(region);
+      Client.IResultCollector<object> rc = exc.WithArgs<object>(args).WithFilter<object>(routingObj).Execute(getFuncName);
       ICollection<object> executeFunctionResult = rc.GetResult();
       List<object> resultList = new List<object>();
       //resultList.Clear();
@@ -284,7 +284,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
 
       args = true;
 
-      exc = Generic.FunctionService<object>.OnRegion<object, object>(region);
+      exc = Client.FunctionService<object>.OnRegion<object, object>(region);
 
       rc = exc.WithArgs<object>(args).WithFilter<object>(filter).Execute(exFuncNameSendException);
 
@@ -332,7 +332,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
       //test date independant fucntion execution on one server
       //     test get function with result
       
-      exc = Generic.FunctionService<object>.OnServer(pl);
+      exc = Client.FunctionService<object>.OnServer(pl);
       ArrayList args1 = new ArrayList();
       for (int i = 0; i < routingObj.Length; i++)
       {
@@ -361,7 +361,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
       //test data independant fucntion execution on all servers
       //     test get function with result
       
-      exc = Generic.FunctionService<object>.OnServers(pl);
+      exc = Client.FunctionService<object>.OnServers(pl);
       rc = exc.WithArgs<ArrayList>(args1).Execute(getFuncIName);
       executeFunctionResult = rc.GetResult();
       resultList.Clear();
@@ -441,8 +441,8 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
       int args1 = 0;
      
       MyResultCollector<int> myRC = new MyResultCollector<int>();
-      Apache.Geode.Client.Generic.Execution<int> exc = Generic.FunctionService<int>.OnServers/*OnRegion<string, string>*/(pl/*region*/);
-      Generic.IResultCollector<int> rc = exc.WithArgs<int>(args1).WithCollector(myRC).Execute("SingleStrGetFunction");
+      Apache.Geode.Client.Execution<int> exc = Client.FunctionService<int>.OnServers/*OnRegion<string, string>*/(pl/*region*/);
+      Client.IResultCollector<int> rc = exc.WithArgs<int>(args1).WithCollector(myRC).Execute("SingleStrGetFunction");
       
       Util.Log("add result count= {0}.", myRC.GetAddResultCount());
       Util.Log("get result count= {0}.", myRC.GetGetResultCount());
@@ -492,8 +492,8 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
       }
 
       MyResultCollector<string> myRC = new MyResultCollector<string>();
-      Apache.Geode.Client.Generic.Execution<string> exc = Generic.FunctionService<string>.OnServers/*OnRegion<string, string>*/(pl/*region*/);
-      Generic.IResultCollector<string> rc = exc.WithArgs<ArrayList>(args1).WithCollector(myRC).Execute("SingleStrGetFunction");
+      Apache.Geode.Client.Execution<string> exc = Client.FunctionService<string>.OnServers/*OnRegion<string, string>*/(pl/*region*/);
+      Client.IResultCollector<string> rc = exc.WithArgs<ArrayList>(args1).WithCollector(myRC).Execute("SingleStrGetFunction");
       
       Util.Log("add result count= {0}.", myRC.GetAddResultCount());
       Util.Log("get result count= {0}.", myRC.GetGetResultCount());
@@ -541,8 +541,8 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
         count++;
       }
 
-      Apache.Geode.Client.Generic.Execution<string> exc = Generic.FunctionService<string>.OnServers/*OnRegion<string, string>*/(pl/*region*/);
-      Generic.IResultCollector<string> rc = exc.WithArgs<ArrayList>(args1).Execute("SingleStrGetFunction");
+      Apache.Geode.Client.Execution<string> exc = Client.FunctionService<string>.OnServers/*OnRegion<string, string>*/(pl/*region*/);
+      Client.IResultCollector<string> rc = exc.WithArgs<ArrayList>(args1).Execute("SingleStrGetFunction");
 
       Assert.IsTrue(rc.GetResult().Count == 2, "result count check failed");
 
@@ -588,8 +588,8 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
         count++;
       }
 
-      Apache.Geode.Client.Generic.Execution<object> exc = Generic.FunctionService<object>.OnServers/*OnRegion<string, string>*/(pl/*region*/);
-      Generic.IResultCollector<object> rc = exc.WithArgs<ArrayList>(args1).Execute("PdxFunctionTest");
+      Apache.Geode.Client.Execution<object> exc = Client.FunctionService<object>.OnServers/*OnRegion<string, string>*/(pl/*region*/);
+      Client.IResultCollector<object> rc = exc.WithArgs<ArrayList>(args1).Execute("PdxFunctionTest");
 
       Assert.IsTrue(rc.GetResult().Count == 2, "result count check failed");
 
@@ -629,8 +629,8 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
       bool args = true;
       //test data dependant function execution
       //     test get function with result
-      Apache.Geode.Client.Generic.Execution<object> exc = Generic.FunctionService<object>.OnRegion<object, object>(region);
-      Generic.IResultCollector<object> rc = exc.WithArgs<bool>(args).WithFilter<object>(routingObj).Execute(getFuncName);
+      Apache.Geode.Client.Execution<object> exc = Client.FunctionService<object>.OnRegion<object, object>(region);
+      Client.IResultCollector<object> rc = exc.WithArgs<bool>(args).WithFilter<object>(routingObj).Execute(getFuncName);
       ICollection<object> executeFunctionResult = rc.GetResult();
       List<object> resultList = new List<object>();
       //resultList.Clear();
@@ -684,11 +684,11 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
 
       //test data independant function execution with result OnRegion
 
-      Apache.Geode.Client.Generic.Execution<object> exc = Generic.FunctionService<object>.OnRegion<object, object>(region);
+      Apache.Geode.Client.Execution<object> exc = Client.FunctionService<object>.OnRegion<object, object>(region);
 
       Assert.IsTrue(exc != null, "onRegion Returned NULL");
 
-      Generic.IResultCollector<object> rc = exc.WithArgs<ArrayList>(args1).Execute(RegionOperationsHAFunctionPrSHOP, 15);
+      Client.IResultCollector<object> rc = exc.WithArgs<ArrayList>(args1).Execute(RegionOperationsHAFunctionPrSHOP, 15);
 
       ICollection<object> executeFunctionResult = rc.GetResult();
       List<Object> resultList = new List<Object>();
@@ -739,11 +739,11 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
 
       //test data independant function execution with result onServer
       
-      Apache.Geode.Client.Generic.Execution<object> exc = Generic.FunctionService<object>.OnRegion<object, object>(region);
+      Apache.Geode.Client.Execution<object> exc = Client.FunctionService<object>.OnRegion<object, object>(region);
 
       Assert.IsTrue(exc != null, "onRegion Returned NULL");
 
-      Generic.IResultCollector<object> rc = exc.WithArgs<ArrayList>(args1).Execute(RegionOperationsHAFunction, 15);
+      Client.IResultCollector<object> rc = exc.WithArgs<ArrayList>(args1).Execute(RegionOperationsHAFunction, 15);
 
       ICollection<object> executeFunctionResult = rc.GetResult();
       List<Object> resultList = new List<Object>();
@@ -812,7 +812,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
         Util.Log("filter count= {0}.", filter.Length);
 
 
-        Execution<object> exc = Generic.FunctionService<object>.OnRegion<object, object>(region);        
+        Execution<object> exc = Client.FunctionService<object>.OnRegion<object, object>(region);        
         IResultCollector<object> rc = exc.WithFilter<object>(filter).Execute(FEOnRegionPrSHOP);
         ICollection<object> executeFunctionResult = rc.GetResult();
         Util.Log("OnRegionPrSHOPSingleFilterKey for filter executeFunctionResult.Count = {0} ", executeFunctionResult.Count);
@@ -861,7 +861,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
       Util.Log("filter count= {0}.", filter.Length);
 
 
-      Execution<object> exc = Generic.FunctionService<object>.OnRegion<object, object>(region);
+      Execution<object> exc = Client.FunctionService<object>.OnRegion<object, object>(region);
 
       IResultCollector<object> rc = exc.WithFilter<object>(filter).Execute(putFuncName);
 
@@ -897,7 +897,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
 
         object args = true;
 
-        Execution<object> exc = Generic.FunctionService<object>.OnRegion<object, object>(region);
+        Execution<object> exc = Client.FunctionService<object>.OnRegion<object, object>(region);
 
         IResultCollector<object> rc = exc.WithFilter<object>(filter).Execute(getFuncName);
         ICollection<object> executeFunctionResult = rc.GetResult();
@@ -972,7 +972,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
         }
         Util.Log("filter count= {0}.", filter.Length);
 
-        Execution<object> exc = Generic.FunctionService<object>.OnRegion<object, object>(region);
+        Execution<object> exc = Client.FunctionService<object>.OnRegion<object, object>(region);
         IResultCollector<object> rc = exc.WithArgs<Object>(args).WithFilter<object>(filter).Execute(FuncTimeOutName, 5000);
         ICollection<object> FunctionResult = rc.GetResult();
         Util.Log("ExecuteFETimeOut onRegion FunctionResult.Count = {0} ", FunctionResult.Count);        
@@ -986,7 +986,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
       }
 
       Pool pool = PoolManager.Find(poolName);
-      Execution<object> excs = Generic.FunctionService<object>.OnServer(pool);
+      Execution<object> excs = Client.FunctionService<object>.OnServer(pool);
       IResultCollector<object> rcs = excs.WithArgs<Object>(args).Execute(FuncTimeOutName, 5000);
       ICollection<object> ServerFunctionResult = rcs.GetResult();
       Util.Log("ExecuteFETimeOut onServer FunctionResult.Count = {0} ", ServerFunctionResult.Count);
@@ -998,7 +998,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
       Util.Log("ExecuteFETimeOut onServer Done");
 
 
-      Execution<object> excss = Generic.FunctionService<object>.OnServers(pool);
+      Execution<object> excss = Client.FunctionService<object>.OnServers(pool);
       IResultCollector<object> rcss = excss.WithArgs<Object>(args).Execute(FuncTimeOutName, 5000);
       ICollection<object> ServerFunctionResults = rcss.GetResult();
       Util.Log("ExecuteFETimeOut onServer FunctionResult.Count = {0} ", ServerFunctionResults.Count);
@@ -1033,7 +1033,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
 
         object args = true;
 
-        Execution<object> exc = Generic.FunctionService<object>.OnRegion<object, object>(region);
+        Execution<object> exc = Client.FunctionService<object>.OnRegion<object, object>(region);
 
         IResultCollector<object> rc = exc.WithFilter<object>(filter).Execute(getFuncName);
         ICollection<object> executeFunctionResult = rc.GetResult();
@@ -1110,7 +1110,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
 
         object args = true;
 
-        Execution<object> exc = Generic.FunctionService<object>.OnRegion<object, object>(region);
+        Execution<object> exc = Client.FunctionService<object>.OnRegion<object, object>(region);
 
         IResultCollector<object> rc = exc.WithFilter<object>(filter).Execute(FEOnRegionPrSHOP);
         ICollection<object> executeFunctionResult = rc.GetResult();
@@ -1173,7 +1173,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
         Util.Log("FEOnRegionPrSHOP_OptimizeForWrite with ResultCollector done");
       }
       
-      Execution<object> exe = Generic.FunctionService<object>.OnRegion<object, object>(region);      
+      Execution<object> exe = Client.FunctionService<object>.OnRegion<object, object>(region);      
 
       //w/o filter      
       IResultCollector<object> collector = exe.Execute(FEOnRegionPrSHOP);
@@ -1255,7 +1255,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
       Util.Log("filter count= {0}.", fil.Length);
 
       // Fire N Forget with filter keys
-      exe = Generic.FunctionService<object>.OnRegion<object, object>(region);
+      exe = Client.FunctionService<object>.OnRegion<object, object>(region);
       exe.WithFilter<object>(fil).Execute(putFuncName);
       Util.Log("Executing ExecuteFunctionOnRegion on region for execKeys for arrList arguement done.");
       Thread.Sleep(4000); //wait for results to be updated
@@ -1275,7 +1275,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
       {
         args1.Add("KEY--" + i);
       }
-      exe = Generic.FunctionService<object>.OnRegion<object, object>(region);
+      exe = Client.FunctionService<object>.OnRegion<object, object>(region);
       exe.WithArgs<ArrayList>(args1).Execute(putFuncIName);
       Util.Log("Executing ExecuteFunctionOnRegion on region for execKeys for arrList arguement done.");
       Thread.Sleep(4000); ////wait for results to be updated
@@ -1321,10 +1321,10 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
       //test data independant function execution with result onServer
       Pool/*<TKey, TValue>*/ pool = PoolManager/*<TKey, TValue>*/.Find(poolName);
       
-      Apache.Geode.Client.Generic.Execution<object> exc = Generic.FunctionService<object>.OnServer(pool);
+      Apache.Geode.Client.Execution<object> exc = Client.FunctionService<object>.OnServer(pool);
       Assert.IsTrue(exc != null, "onServer Returned NULL");
 
-      Generic.IResultCollector<object> rc = exc.WithArgs<ArrayList>(args1).Execute(OnServerHAExceptionFunction, 15);
+      Client.IResultCollector<object> rc = exc.WithArgs<ArrayList>(args1).Execute(OnServerHAExceptionFunction, 15);
 
       ICollection<object> executeFunctionResult = rc.GetResult();
 

@@ -23,7 +23,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
   using Apache.Geode.DUnitFramework;
   using System.Threading;
 
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
 
   public class TestStatisticsType
   {

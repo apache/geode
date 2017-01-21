@@ -43,8 +43,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       generic<class TKey, class TValue>
       TValue Region<TKey, TValue>::Get(TKey key, Object^ callbackArg)
       {
@@ -81,7 +80,7 @@ namespace Generic
       bool Region<TKey, TValue>::isPoolInMultiuserMode()
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
-          Apache::Geode::Client::Generic::RegionAttributes<TKey, TValue>^ rAttributes = this->Attributes;
+          Apache::Geode::Client::RegionAttributes<TKey, TValue>^ rAttributes = this->Attributes;
           String^ poolName = rAttributes->PoolName;
           if (poolName != nullptr) {
             Pool/*<TKey, TValue>*/^ pool = PoolManager/*<TKey, TValue>*/::Find(poolName);
@@ -684,13 +683,13 @@ namespace Generic
       }
 
       generic<class TKey, class TValue>
-      Apache::Geode::Client::Generic::RegionAttributes<TKey, TValue>^ Region<TKey, TValue>::Attributes::get()
+      Apache::Geode::Client::RegionAttributes<TKey, TValue>^ Region<TKey, TValue>::Attributes::get()
       { 
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
         apache::geode::client::RegionAttributesPtr& nativeptr( NativePtr->getAttributes( ) );
 
-        return Apache::Geode::Client::Generic::RegionAttributes<TKey, TValue>::Create(nativeptr.ptr());
+        return Apache::Geode::Client::RegionAttributes<TKey, TValue>::Create(nativeptr.ptr());
 
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
       } 
@@ -703,18 +702,18 @@ namespace Generic
           apache::geode::client::AttributesMutatorPtr& nativeptr(
             NativePtr->getAttributesMutator( ) );
 
-        return Apache::Geode::Client::Generic::AttributesMutator<TKey, TValue>::Create( nativeptr.ptr( ) );
+        return Apache::Geode::Client::AttributesMutator<TKey, TValue>::Create( nativeptr.ptr( ) );
 
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
       }
 
       generic<class TKey, class TValue>
-      Apache::Geode::Client::Generic::CacheStatistics^ Region<TKey, TValue>::Statistics::get()
+      Apache::Geode::Client::CacheStatistics^ Region<TKey, TValue>::Statistics::get()
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
         apache::geode::client::CacheStatisticsPtr& nativeptr( NativePtr->getStatistics( ) );
-        return Apache::Geode::Client::Generic::CacheStatistics::Create( nativeptr.ptr( ) );
+        return Apache::Geode::Client::CacheStatistics::Create( nativeptr.ptr( ) );
 
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
       }
@@ -734,7 +733,7 @@ namespace Generic
 
       generic<class TKey, class TValue>
       IRegion<TKey, TValue>^ Region<TKey, TValue>::CreateSubRegion( String^ subRegionName, 
-        Apache::Geode::Client::Generic::RegionAttributes<TKey, TValue>^ attributes)
+        Apache::Geode::Client::RegionAttributes<TKey, TValue>^ attributes)
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
@@ -819,11 +818,11 @@ namespace Generic
 
           if(realCache != NULL)
           {
-            return Apache::Geode::Client::Generic::Cache::Create( ((apache::geode::client::CachePtr)nativeptr).ptr( ) );
+            return Apache::Geode::Client::Cache::Create( ((apache::geode::client::CachePtr)nativeptr).ptr( ) );
           }
           else
           {
-            return Apache::Geode::Client::Generic::AuthenticatedCache::Create( nativeptr.ptr( ) );
+            return Apache::Geode::Client::AuthenticatedCache::Create( nativeptr.ptr( ) );
           }
           
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
@@ -1244,7 +1243,7 @@ namespace Generic
       {
         return ( _NativePtr != nullptr ?
             gcnew LocalRegion<TKey, TValue>( _NativePtr ) : nullptr );       
-      }
-    }
-  }
-} } //namespace 
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+ } //namespace 

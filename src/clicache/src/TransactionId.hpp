@@ -29,8 +29,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
         /// <summary>
         /// This class encapsulates Id of a transaction.
         /// </summary>
@@ -54,8 +53,7 @@ namespace Generic
           inline TransactionId( apache::geode::client::TransactionId* nativeptr )
             : SBWrap( nativeptr ) { }
         };
-      }
-
-    }
-  }
-} //namespace 
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+ //namespace 

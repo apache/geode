@@ -32,8 +32,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
         /// <summary>
         /// UserFunctionExecutionException class is used to encapsulate gemfire sendException in case of Function execution. 
         /// </summary>
@@ -127,9 +126,8 @@ namespace Generic
           inline UserFunctionExecutionException( apache::geode::client::UserFunctionExecutionException* nativeptr )
             : SBWrap( nativeptr ) { }
         };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-      }
-    }
-  }
-}
 

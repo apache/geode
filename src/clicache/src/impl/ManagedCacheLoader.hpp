@@ -124,7 +124,7 @@ namespace apache
         }
         */
 
-        inline void setptr(Apache::Geode::Client::Generic::ICacheLoaderProxy^ managedptr)
+        inline void setptr(Apache::Geode::Client::ICacheLoaderProxy^ managedptr)
         {
           m_managedptr = managedptr;
         }
@@ -143,7 +143,7 @@ namespace apache
         /// to be called which is not what is desired when this object is destroyed. Normally this
         /// managed object may be created by the user and will be handled automatically by the GC.
         /// </summary>
-        gcroot<Apache::Geode::Client::Generic::ICacheLoaderProxy^> m_managedptr;
+        gcroot<Apache::Geode::Client::ICacheLoaderProxy^> m_managedptr;
 
         gcroot<Object^> m_userptr;
 

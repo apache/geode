@@ -31,8 +31,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       /// <summary>
       /// Enumerated type for CqOperationType
@@ -82,8 +80,8 @@ namespace Generic
         inline CqOperation( apache::geode::client::CqOperation* nativeptr )
 		            : UMWrap( nativeptr, false ) { }
 	  };
-    }
-  }
-}
- } //namespace 
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 

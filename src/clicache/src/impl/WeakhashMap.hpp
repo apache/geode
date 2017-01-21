@@ -32,8 +32,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       namespace Internal
       {
         public ref class EntryNode
@@ -252,8 +251,8 @@ namespace Generic
             m_dictionary->Clear();
           }
         };
-      }
-    }
-  }
-	}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 }

@@ -29,8 +29,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       //generic<class TKey, class TValue>
       ref class Pool;
      // generic<class TKey, class TValue>
@@ -63,7 +62,7 @@ namespace Generic
         /// <summary>
         /// Find the pool used by the given region.
         /// </summary>
-        static Pool/*<TKey, TValue>*/^ Find(Generic::Region<Object^, Object^>^ region);
+        static Pool/*<TKey, TValue>*/^ Find(Client::Region<Object^, Object^>^ region);
 
         /// <summary>
         /// Destroys all created pools.
@@ -75,8 +74,7 @@ namespace Generic
         /// </summary>
         static void Close();
       };
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
- } //namespace 

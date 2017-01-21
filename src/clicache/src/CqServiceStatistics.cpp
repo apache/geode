@@ -25,8 +25,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
 	uint32_t CqServiceStatistics::numCqsActive( )
 	{
 	  return NativePtr->numCqsActive( );
@@ -46,8 +45,8 @@ namespace Generic
     uint32_t CqServiceStatistics::numCqsOnClient( )
 	{
 	  return NativePtr->numCqsOnClient( );
-	}
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
  } //namespace 

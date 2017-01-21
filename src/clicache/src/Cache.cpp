@@ -41,9 +41,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
-     
 
       String^ Cache::Name::get( )
       {
@@ -60,7 +57,7 @@ namespace Generic
         apache::geode::client::DistributedSystemPtr& nativeptr(
           NativePtr->getDistributedSystem( ) );
 
-        return Apache::Geode::Client::Generic::DistributedSystem::Create(
+        return Apache::Geode::Client::DistributedSystem::Create(
           nativeptr.ptr( ) );
       }
 
@@ -69,7 +66,7 @@ namespace Generic
         apache::geode::client::InternalCacheTransactionManager2PCPtr& nativeptr = static_cast<InternalCacheTransactionManager2PCPtr>(
           NativePtr->getCacheTransactionManager( ) );
 
-        return Apache::Geode::Client::Generic::CacheTransactionManager::Create(
+        return Apache::Geode::Client::CacheTransactionManager::Create(
           nativeptr.ptr( ) );
       }
 
@@ -82,9 +79,9 @@ namespace Generic
       {
         _GF_MG_EXCEPTION_TRY2
 
-          Apache::Geode::Client::Generic::DistributedSystem::acquireDisconnectLock();
+          Apache::Geode::Client::DistributedSystem::acquireDisconnectLock();
 
-        Apache::Geode::Client::Generic::DistributedSystem::disconnectInstance();
+        Apache::Geode::Client::DistributedSystem::disconnectInstance();
           CacheFactory::m_connected = false;
 
           NativePtr->close( keepalive );
@@ -92,16 +89,16 @@ namespace Generic
           // If DS automatically disconnected due to the new bootstrap API, then cleanup the C++/CLI side
           //if (!apache::geode::client::DistributedSystem::isConnected())
           {
-            Apache::Geode::Client::Generic::DistributedSystem::UnregisterBuiltinManagedTypes();
+            Apache::Geode::Client::DistributedSystem::UnregisterBuiltinManagedTypes();
           }
 
         _GF_MG_EXCEPTION_CATCH_ALL2
         finally
         {
-					Apache::Geode::Client::Generic::Internal::PdxTypeRegistry::clear();
+					Apache::Geode::Client::Internal::PdxTypeRegistry::clear();
           Serializable::Clear();
-          Apache::Geode::Client::Generic::DistributedSystem::releaseDisconnectLock();
-          Apache::Geode::Client::Generic::DistributedSystem::unregisterCliCallback();
+          Apache::Geode::Client::DistributedSystem::releaseDisconnectLock();
+          Apache::Geode::Client::DistributedSystem::unregisterCliCallback();
         }
       }
 
@@ -115,7 +112,7 @@ namespace Generic
       }
 
       generic<class TKey, class TValue>
-      Generic::IRegion<TKey,TValue>^ Cache::GetRegion( String^ path )
+      Client::IRegion<TKey,TValue>^ Cache::GetRegion( String^ path )
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
@@ -123,39 +120,39 @@ namespace Generic
           apache::geode::client::RegionPtr& nativeptr(
             NativePtr->getRegion( mg_path.CharPtr ) );
 
-          return Generic::Region<TKey,TValue>::Create( nativeptr.ptr( ) );
+          return Client::Region<TKey,TValue>::Create( nativeptr.ptr( ) );
 
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
       }
 
       generic<class TKey, class TValue>
-      array<Generic::IRegion<TKey, TValue>^>^ Cache::RootRegions( )
+      array<Client::IRegion<TKey, TValue>^>^ Cache::RootRegions( )
       {
         apache::geode::client::VectorOfRegion vrr;
         NativePtr->rootRegions( vrr );
-        array<Generic::IRegion<TKey, TValue>^>^ rootRegions =
-          gcnew array<Generic::IRegion<TKey, TValue>^>( vrr.size( ) );
+        array<Client::IRegion<TKey, TValue>^>^ rootRegions =
+          gcnew array<Client::IRegion<TKey, TValue>^>( vrr.size( ) );
 
         for( int32_t index = 0; index < vrr.size( ); index++ )
         {
           apache::geode::client::RegionPtr& nativeptr( vrr[ index ] );
-          rootRegions[ index ] = Generic::Region<TKey, TValue>::Create( nativeptr.ptr( ) );
+          rootRegions[ index ] = Client::Region<TKey, TValue>::Create( nativeptr.ptr( ) );
         }
         return rootRegions;
       }
 
       generic<class TKey, class TResult>
-      Generic::QueryService<TKey, TResult>^ Cache::GetQueryService( )
+      Client::QueryService<TKey, TResult>^ Cache::GetQueryService( )
       {
         _GF_MG_EXCEPTION_TRY2
 
-          return Generic::QueryService<TKey, TResult>::Create( NativePtr->getQueryService( ).ptr( ) );
+          return Client::QueryService<TKey, TResult>::Create( NativePtr->getQueryService( ).ptr( ) );
 
         _GF_MG_EXCEPTION_CATCH_ALL2
       }
 
       generic<class TKey, class TResult>
-      Generic::QueryService<TKey, TResult>^ Cache::GetQueryService(String^ poolName )
+      Client::QueryService<TKey, TResult>^ Cache::GetQueryService(String^ poolName )
       {
         _GF_MG_EXCEPTION_TRY2
 
@@ -262,8 +259,8 @@ namespace Generic
         IPdxInstanceFactory^ Cache::CreatePdxInstanceFactory(String^ className)
         {
           return gcnew Internal::PdxInstanceFactoryImpl(className);
-        }
-      } // end namespace Generic
-    }
-  }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 }

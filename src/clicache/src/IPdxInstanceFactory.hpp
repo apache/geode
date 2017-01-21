@@ -25,9 +25,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-			{         
-			
+
         /// <summary>
         /// PdxInstanceFactory gives you a way to create PdxInstances.
         /// Call the write methods to populate the field data and then call <see cref="Create"/>
@@ -342,8 +340,7 @@ namespace Generic
          IPdxInstanceFactory^ MarkIdentityField(String^ fieldName);
 
         };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-			}
-    }
-  }
-}

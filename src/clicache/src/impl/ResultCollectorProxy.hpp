@@ -29,8 +29,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       public interface class ResultCollectorG
       {
       public:
@@ -71,7 +70,7 @@ namespace Generic
           }
 
       };
-    }
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

@@ -33,8 +33,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       ref class CacheableString;
 
       /// <summary>
@@ -184,8 +183,8 @@ namespace Generic
         inline CacheableStringArray(apache::geode::client::Serializable* nativeptr)
           : Serializable(nativeptr) { }
       };
-    }
-  }
-}
- } //namespace 
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 

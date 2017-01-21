@@ -45,9 +45,9 @@ namespace apache
         try
         {
           String^ mg_assemblyPath =
-            Apache::Geode::Client::Generic::ManagedString::Get(assemblyPath);
+            Apache::Geode::Client::ManagedString::Get(assemblyPath);
           String^ mg_factoryFunctionName =
-            Apache::Geode::Client::Generic::ManagedString::Get(factoryFunctionName);
+            Apache::Geode::Client::ManagedString::Get(factoryFunctionName);
           String^ mg_typeName = nullptr;
           Int32 dotIndx = -1;
 
@@ -85,18 +85,18 @@ namespace apache
               BindingFlags::Public | BindingFlags::Static | BindingFlags::IgnoreCase);
             if (mInfo != nullptr)
             {
-              //Apache::Geode::Client::Generic::ResultCollector<Object^>^ managedptr = nullptr;
+              //Apache::Geode::Client::ResultCollector<Object^>^ managedptr = nullptr;
               Object^ userptr = nullptr;
               try
               {
                 throw apache::geode::client::UnsupportedOperationException("Not supported");
-                /*managedptr = dynamic_cast<Apache::Geode::Client::Generic::ResultCollector<Object^>^>(
+                /*managedptr = dynamic_cast<Apache::Geode::Client::ResultCollector<Object^>^>(
                   mInfo->Invoke( typeInst, nullptr ) );*/
                 userptr = mInfo->Invoke(typeInst, nullptr);
               }
               catch (System::Exception^ ex)
               {
-                Apache::Geode::Client::Generic::Log::Debug("{0}: {1}", ex->GetType()->Name, ex->Message);
+                Apache::Geode::Client::Log::Debug("{0}: {1}", ex->GetType()->Name, ex->Message);
                 userptr = nullptr;
               }
               if (userptr == nullptr)
@@ -109,7 +109,7 @@ namespace apache
                 throw apache::geode::client::IllegalArgumentException(ex_str.c_str());
               }
               //TODO::need to pass proper pointer here
-              return new ManagedResultCollectorGeneric(/*(Apache::Geode::Client::Generic::ResultCollector<Object^>^) managedptr*/nullptr);
+              return new ManagedResultCollectorGeneric(/*(Apache::Geode::Client::ResultCollector<Object^>^) managedptr*/nullptr);
             }
             else
             {
@@ -123,7 +123,7 @@ namespace apache
           }
           else
           {
-            Apache::Geode::Client::Generic::ManagedString typeName(mg_typeName);
+            Apache::Geode::Client::ManagedString typeName(mg_typeName);
             std::string ex_str = "ManagedResultCollector: Could not load type [";
             ex_str += typeName.CharPtr;
             ex_str += "] in assembly: ";
@@ -137,7 +137,7 @@ namespace apache
         }
         catch (System::Exception^ ex)
         {
-          Apache::Geode::Client::Generic::ManagedString mg_exStr(ex->ToString());
+          Apache::Geode::Client::ManagedString mg_exStr(ex->ToString());
           std::string ex_str = "ManagedResultCollector: Got an exception while "
             "loading managed library: ";
           ex_str += mg_exStr.CharPtr;
@@ -150,15 +150,15 @@ namespace apache
       {
         try {
           //Apache::Geode::Client::IGFSerializable^ res = SafeUMSerializableConvertGeneric(result.ptr());
-          Object^ rs = Apache::Geode::Client::Generic::Serializable::GetManagedValueGeneric<Object^>(result);
+          Object^ rs = Apache::Geode::Client::Serializable::GetManagedValueGeneric<Object^>(result);
           m_managedptr->AddResult(rs);
           //m_managedptr->AddResult( SafeUMSerializableConvert( result.ptr( ) ) );
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::ManagedString mg_exStr(ex->ToString());
+          Apache::Geode::Client::ManagedString mg_exStr(ex->ToString());
           std::string ex_str = "ManagedResultCollector: Got an exception in"
             "addResult: ";
           ex_str += mg_exStr.CharPtr;
@@ -173,18 +173,18 @@ namespace apache
           //apache::geode::client::CacheableVectorPtr rsptr = apache::geode::client::CacheableVector::create();
           //for( int index = 0; index < rs->Length; index++ )
           //{
-          //  //apache::geode::client::CacheablePtr valueptr(Apache::Geode::Client::Generic::Serializable::GetUnmanagedValueGeneric<IGFSerializable^>(rs[ index]));
+          //  //apache::geode::client::CacheablePtr valueptr(Apache::Geode::Client::Serializable::GetUnmanagedValueGeneric<IGFSerializable^>(rs[ index]));
           //  apache::geode::client::CacheablePtr valueptr (SafeMSerializableConvert(rs[ index]));
           //  rsptr->push_back(valueptr);
           //}
           //return rsptr;
           throw apache::geode::client::IllegalStateException("This should not be get callled.");
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::ManagedString mg_exStr(ex->ToString());
+          Apache::Geode::Client::ManagedString mg_exStr(ex->ToString());
           std::string ex_str = "ManagedResultCollector: Got an exception in"
             "getResult: ";
           ex_str += mg_exStr.CharPtr;
@@ -197,11 +197,11 @@ namespace apache
         try {
           m_managedptr->EndResults();
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::ManagedString mg_exStr(ex->ToString());
+          Apache::Geode::Client::ManagedString mg_exStr(ex->ToString());
           std::string ex_str = "ManagedResultCollector: Got an exception in"
             "endResults: ";
           ex_str += mg_exStr.CharPtr;
@@ -213,11 +213,11 @@ namespace apache
         try {
           m_managedptr->ClearResults(/*false*/);
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::ManagedString mg_exStr(ex->ToString());
+          Apache::Geode::Client::ManagedString mg_exStr(ex->ToString());
           std::string ex_str = "ManagedResultCollector: Got an exception in"
             "clearResults: ";
           ex_str += mg_exStr.CharPtr;

@@ -31,8 +31,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       generic<class TResult>
       ref class Query;
@@ -134,10 +132,10 @@ namespace Generic
         /// <returns>
         /// The managed wrapper object; null if the native pointer is null.
         /// </returns>
-        inline static Apache::Geode::Client::Generic::QueryService<TKey, TResult>^ Create( apache::geode::client::QueryService* nativeptr )
+        inline static Apache::Geode::Client::QueryService<TKey, TResult>^ Create( apache::geode::client::QueryService* nativeptr )
         {
           return ( nativeptr != nullptr ?
-            gcnew Apache::Geode::Client::Generic::QueryService<TKey, TResult>( nativeptr ) : nullptr );
+            gcnew Apache::Geode::Client::QueryService<TKey, TResult>( nativeptr ) : nullptr );
         }
 
 
@@ -150,8 +148,7 @@ namespace Generic
         inline QueryService( apache::geode::client::QueryService* nativeptr )
           : SBWrap( nativeptr ) { }
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

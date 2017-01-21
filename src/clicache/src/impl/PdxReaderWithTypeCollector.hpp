@@ -28,8 +28,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       ref class DataInput;
       namespace Internal
       {
@@ -262,8 +261,8 @@ namespace Generic
 
         
         };
-      }
-			}
-    }
-  }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 }

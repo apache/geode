@@ -30,8 +30,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       /// <summary>
       /// An application plug-in that can be installed on a region.
       /// Defines methods that are called <b>before</b> entry modification,
@@ -167,8 +166,7 @@ namespace Generic
         /// <seealso cref="Region.DestroyRegion" />
         void Close( IRegion<TKey, TValue>^ region );
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

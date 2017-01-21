@@ -30,8 +30,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       /// <summary>
       /// A mutable <c>ICacheableKey</c> to <c>IGFSerializable</c> hash map
       /// that can serve as a distributable object for caching. This class
@@ -123,7 +122,7 @@ namespace Generic
           return gcnew CacheableIdentityHashMap();
         }
       };
-    }
-  }
-}
- } //namespace 
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

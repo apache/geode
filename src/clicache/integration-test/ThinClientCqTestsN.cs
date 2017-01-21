@@ -24,7 +24,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
   using NUnit.Framework;
   using Apache.Geode.DUnitFramework;
   using Apache.Geode.Client.Tests.NewAPI;
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
 
   public class MyCqListener<TKey, TResult> : ICqListener<TKey, TResult>
   {
@@ -319,7 +319,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
       CacheHelper.CreateTCRegion_Pool<object, object>("DistRegionAck", true, true,
         null, locators, "__TESTPOOL1_", true);
       IRegion<object, object> region = CacheHelper.GetRegion<object, object>(QueryRegionNames[0]);
-      Apache.Geode.Client.Generic.RegionAttributes<object, object> regattrs = region.Attributes;
+      Apache.Geode.Client.RegionAttributes<object, object> regattrs = region.Attributes;
       region.CreateSubRegion(QueryRegionNames[1], regattrs);
     }
 

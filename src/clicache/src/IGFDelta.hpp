@@ -25,8 +25,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       ref class DataOutput;
       ref class DataInput;
@@ -74,8 +72,7 @@ namespace Generic
         /// </summary>
         bool HasDelta( );
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

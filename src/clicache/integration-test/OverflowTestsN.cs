@@ -27,7 +27,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
 {
   using NUnit.Framework;
   using Apache.Geode.DUnitFramework;
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
 
   [TestFixture]
   [Category("group4")]
@@ -114,7 +114,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
     // Testing for attibute validation.
     private void ValidateAttributes(IRegion<object, object> region)
     {
-      Apache.Geode.Client.Generic.RegionAttributes<object, object> regAttr = region.Attributes;
+      Apache.Geode.Client.RegionAttributes<object, object> regAttr = region.Attributes;
       int initialCapacity = regAttr.InitialCapacity;
       Assert.AreEqual(1000, initialCapacity, "Expected initial capacity to be 1000");
       Assert.AreEqual(DiskPolicyType.Overflows, regAttr.DiskPolicy,
@@ -490,7 +490,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
           Util.Log('\t' + rg.Name);
         }
 
-        Apache.Geode.Client.Generic.RegionAttributes<object, object> attrs = region1.Attributes;
+        Apache.Geode.Client.RegionAttributes<object, object> attrs = region1.Attributes;
         //Util.Log("Attributes of root region Root1 are: ");
 
         bool cachingEnabled = attrs.CachingEnabled;
@@ -532,7 +532,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
         Assert.AreNotEqual(0, pageSize.Length, "Persistence PageSize should not be empty.");
         Util.Log("****Attributes of Root1 are correctly set****");
 
-        Apache.Geode.Client.Generic.RegionAttributes<object, object> attrs2 = region2.Attributes;
+        Apache.Geode.Client.RegionAttributes<object, object> attrs2 = region2.Attributes;
         string lib2 = attrs2.PersistenceLibrary;
         string libFun2 = attrs2.PersistenceFactory;
         Util.Log(" persistence library2 = " + lib2);
@@ -551,7 +551,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
 
         Util.Log("****Attributes of Root2 are correctly set****");
 
-        Apache.Geode.Client.Generic.RegionAttributes<object, object> attrs3 = region3.Attributes;
+        Apache.Geode.Client.RegionAttributes<object, object> attrs3 = region3.Attributes;
         //Util.Log("Attributes of root region Root1 are: ");
 
         Assert.IsTrue(attrs3.CachingEnabled);

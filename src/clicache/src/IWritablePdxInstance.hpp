@@ -24,8 +24,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-			{     
+
 				/// <summary>
 	      /// WritablePdxInstance is a <see cref="IPdxInstance" /> that also supports field modification 
         /// using the <see cref="SetField" />method. 
@@ -48,7 +47,7 @@ namespace Generic
           
           void SetField(String^ fieldName, Object^ value);
 				};
-			}
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

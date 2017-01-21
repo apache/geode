@@ -27,8 +27,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
 				ref class DataOutput;
       ref class DataInput;
       namespace Internal
@@ -69,8 +68,8 @@ namespace Generic
         private:
           static void CreateMergedType(PdxType^ localType, PdxType^ remoteType, DataInput^ dataInput);
         };
-      }
-			}
-    }
-  }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 }

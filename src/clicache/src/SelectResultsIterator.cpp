@@ -27,11 +27,9 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       generic<class TResult>
-      /*Apache::Geode::Client::Generic::IGFSerializable^*/TResult SelectResultsIterator<TResult>::Current::get( )
+      /*Apache::Geode::Client::IGFSerializable^*/TResult SelectResultsIterator<TResult>::Current::get( )
       {
         //return SafeUMSerializableConvertGeneric( NativePtr->current( ).ptr( ) ); 
         return Serializable::GetManagedValueGeneric<TResult>(NativePtr->current( ));
@@ -50,7 +48,7 @@ namespace Generic
       }
 
       generic<class TResult>
-      /*Apache::Geode::Client::Generic::IGFSerializable^*/TResult SelectResultsIterator<TResult>::Next( )
+      /*Apache::Geode::Client::IGFSerializable^*/TResult SelectResultsIterator<TResult>::Next( )
       {
         //return SafeUMSerializableConvertGeneric( NativePtr->next( ).ptr( ) );
         return Serializable::GetManagedValueGeneric<TResult>(NativePtr->next( ));
@@ -60,9 +58,8 @@ namespace Generic
       bool SelectResultsIterator<TResult>::HasNext::get( )
       {
         return NativePtr->hasNext( );
-      }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
  } //namespace 

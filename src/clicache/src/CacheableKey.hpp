@@ -32,8 +32,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       /// <summary>
       /// This class wraps the native C++ <c>apache::geode::client::Serializable</c> objects
       /// as managed <see cref="../../IGFSerializable" /> objects.
@@ -124,17 +123,17 @@ namespace Generic
         /// Default constructor.
         /// </summary>
         inline CacheableKey()
-          : Generic::Serializable() { }
+          : Client::Serializable() { }
 
         /// <summary>
         /// Internal constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
         inline CacheableKey(apache::geode::client::Serializable* nativeptr)
-          : Generic::Serializable(nativeptr) { }
+          : Client::Serializable(nativeptr) { }
       };
-    }
-  }
-}
-} //namespace 
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+ //namespace 
 

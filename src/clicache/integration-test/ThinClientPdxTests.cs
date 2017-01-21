@@ -28,8 +28,8 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
 {
   using NUnit.Framework;
   using Apache.Geode.DUnitFramework;
-  using Apache.Geode.Client.Generic;
-  using Region = Apache.Geode.Client.Generic.IRegion<Object, Object>;
+  using Apache.Geode.Client;
+  using Region = Apache.Geode.Client.IRegion<Object, Object>;
 
   
   [TestFixture]
@@ -1556,7 +1556,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
          {
              object retVal = localregion[p1];
          }
-         catch (Apache.Geode.Client.Generic.KeyNotFoundException)
+         catch (Apache.Geode.Client.KeyNotFoundException)
          {
              Util.Log("Got expected KeyNotFoundException exception");
          }
@@ -1770,11 +1770,11 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
          region0[1] = pRet;
          if (m_useWeakHashMap == false)
          {
-           Assert.AreEqual(Generic.Internal.PdxTypeRegistry.testNumberOfPreservedData(), 0);
+           Assert.AreEqual(Client.Internal.PdxTypeRegistry.testNumberOfPreservedData(), 0);
          }
          else
          {
-           Assert.IsTrue(Generic.Internal.PdxTypeRegistry.testNumberOfPreservedData() > 0); 
+           Assert.IsTrue(Client.Internal.PdxTypeRegistry.testNumberOfPreservedData() > 0); 
          }
        }
 
@@ -1797,12 +1797,12 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
 
        if (m_useWeakHashMap == false)
        {
-         Assert.AreEqual(Generic.Internal.PdxTypeRegistry.testNumberOfPreservedData(), 0);
+         Assert.AreEqual(Client.Internal.PdxTypeRegistry.testNumberOfPreservedData(), 0);
        }
        else
        {
          //it has extra fields, so no need to preserve data
-         Assert.IsTrue(Generic.Internal.PdxTypeRegistry.testNumberOfPreservedData() == 0); 
+         Assert.IsTrue(Client.Internal.PdxTypeRegistry.testNumberOfPreservedData() == 0); 
        }
      }
 
@@ -1911,7 +1911,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
        {
          pRet = region0.GetLocalView()[key];
        }
-       catch (Apache.Geode.Client.Generic.KeyNotFoundException )
+       catch (Apache.Geode.Client.KeyNotFoundException )
        {
          isKNFE = true;
        }
@@ -2990,7 +2990,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
        ret = region0[2];
        Util.Log("Put from pool-2 completed");
 
-       int pdxIds = Apache.Geode.Client.Generic.Internal.PdxTypeRegistry.testGetNumberOfPdxIds();
+       int pdxIds = Apache.Geode.Client.Internal.PdxTypeRegistry.testGetNumberOfPdxIds();
 
        Assert.AreEqual(3, pdxIds);
      }
@@ -5020,7 +5020,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
               entryFound++;
           }
         }
-        catch (Generic.KeyNotFoundException )
+        catch (Client.KeyNotFoundException )
         {
           entryNotFound++;
         }
@@ -5112,7 +5112,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
                entryFound++;
            }
          }
-         catch (Generic.KeyNotFoundException )
+         catch (Client.KeyNotFoundException )
          {
            entryNotFound++;
          }
@@ -7163,7 +7163,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
 
 namespace javaobject
 {
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
   #region Pdx Delta class
   public class PdxDelta : IPdxSerializable, IGFDelta, ICloneable
   {

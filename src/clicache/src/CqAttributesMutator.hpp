@@ -32,8 +32,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       generic<class TKey, class TResult>
 	  interface class ICqListener;
@@ -41,9 +39,9 @@ namespace Generic
       generic<class TKey, class TResult>
       private ref class CqListenerHelper sealed{
         public:
-        static IDictionary<Generic::ICqListener<TKey, TResult>^, IntPtr>^
+        static IDictionary<Client::ICqListener<TKey, TResult>^, IntPtr>^
           m_ManagedVsUnManagedCqLstrDict = gcnew 
-          Dictionary<Generic::ICqListener<TKey, TResult>^, IntPtr>();
+          Dictionary<Client::ICqListener<TKey, TResult>^, IntPtr>();
 
         static ReaderWriterLock^ g_readerWriterLock = gcnew ReaderWriterLock();
       };
@@ -64,20 +62,20 @@ namespace Generic
         /// <param name="cqListener">
         /// user-defined cq listener, or null for no cache listener
         /// </param>
-        void AddCqListener( Generic::ICqListener<TKey, TResult>^ cqListener );
+        void AddCqListener( Client::ICqListener<TKey, TResult>^ cqListener );
 
         /// <summary>
         /// Remove a CqListener for the cq.
         /// </summary>
         
-        void RemoveCqListener(Generic::ICqListener<TKey, TResult>^ aListener);
+        void RemoveCqListener(Client::ICqListener<TKey, TResult>^ aListener);
 
 
         /// <summary>
 	/// Initialize with an array of listeners
         /// </summary>
         
-        void SetCqListeners(array<Generic::ICqListener<TKey, TResult>^>^ newListeners);
+        void SetCqListeners(array<Client::ICqListener<TKey, TResult>^>^ newListeners);
 
 
       internal:
@@ -89,13 +87,13 @@ namespace Generic
         /// <returns>
         /// The managed wrapper object; null if the native pointer is null.
         /// </returns>
-        inline static Generic::CqAttributesMutator<TKey, TResult>^ Create( apache::geode::client::CqAttributesMutator* nativeptr )
+        inline static Client::CqAttributesMutator<TKey, TResult>^ Create( apache::geode::client::CqAttributesMutator* nativeptr )
         {
           if (nativeptr == nullptr)
           {
             return nullptr;
           }
-          return gcnew Generic::CqAttributesMutator<TKey, TResult>( nativeptr );
+          return gcnew Client::CqAttributesMutator<TKey, TResult>( nativeptr );
         }
 
 
@@ -108,8 +106,7 @@ namespace Generic
         inline CqAttributesMutator<TKey, TResult>( apache::geode::client::CqAttributesMutator* nativeptr )
           : SBWrap( nativeptr ) { }
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

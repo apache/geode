@@ -28,8 +28,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-			{     
+
         namespace Internal
         {
         ref class PdxInstanceFactoryImpl : IPdxInstanceFactory
@@ -387,8 +386,8 @@ namespace Generic
    
 
 				};
-        }
-			}
-    }
-  }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 }

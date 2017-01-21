@@ -33,8 +33,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
      generic<class TResult>
 	   interface class IResultCollector;
@@ -116,8 +114,7 @@ namespace Generic
         //void Silence_LNK2022_BUG() { };
 
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

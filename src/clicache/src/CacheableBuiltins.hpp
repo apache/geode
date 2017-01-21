@@ -36,8 +36,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       //namespace Internal
       
 
@@ -574,7 +573,7 @@ namespace Generic
       /// as a distributable object for caching.
       /// </summary>
       _GFCLI_CACHEABLE_ARRAY_DEF_NEW(CharArray, Char);
-    }
-  }
-}
- } //namespace 
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

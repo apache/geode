@@ -30,11 +30,9 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       generic<class TKey, class TResult>
-      void CqAttributesMutator<TKey, TResult>::AddCqListener( Generic::ICqListener<TKey, TResult>^ cqListener )
+      void CqAttributesMutator<TKey, TResult>::AddCqListener( Client::ICqListener<TKey, TResult>^ cqListener )
       {
         apache::geode::client::CqListenerPtr listenerptr;
         if ( cqListener != nullptr ) {
@@ -82,14 +80,14 @@ namespace Generic
       }
 
       generic<class TKey, class TResult>
-      void CqAttributesMutator<TKey, TResult>::RemoveCqListener( Generic::ICqListener<TKey, TResult>^ cqListener )
+      void CqAttributesMutator<TKey, TResult>::RemoveCqListener( Client::ICqListener<TKey, TResult>^ cqListener )
       {
-        Generic::ICqStatusListener<TKey, TResult>^ lister = dynamic_cast<Generic::ICqStatusListener<TKey, TResult>^>(cqListener);
+        Client::ICqStatusListener<TKey, TResult>^ lister = dynamic_cast<Client::ICqStatusListener<TKey, TResult>^>(cqListener);
         if (lister != nullptr) {
           CqStatusListenerGeneric<TKey, TResult>^ cqlg = gcnew CqStatusListenerGeneric<TKey, TResult>();
           cqlg->AddCqListener(cqListener);
           apache::geode::client::CqStatusListenerPtr lptr(new apache::geode::client::ManagedCqStatusListenerGeneric(
-          (Generic::ICqStatusListener<TKey, TResult>^) lister ));
+          (Client::ICqStatusListener<TKey, TResult>^) lister ));
           ((apache::geode::client::ManagedCqStatusListenerGeneric*)lptr.ptr())->setptr(cqlg);
           try {
             IntPtr value;
@@ -106,7 +104,7 @@ namespace Generic
           CqListenerGeneric<TKey, TResult>^ cqlg = gcnew CqListenerGeneric<TKey, TResult>();
           cqlg->AddCqListener(cqListener);
           apache::geode::client::CqListenerPtr lptr(new apache::geode::client::ManagedCqListenerGeneric(
-            (Generic::ICqListener<TKey, TResult>^) cqListener ));
+            (Client::ICqListener<TKey, TResult>^) cqListener ));
           ((apache::geode::client::ManagedCqListenerGeneric*)lptr.ptr())->setptr(cqlg);
           try {
             IntPtr value;
@@ -122,12 +120,12 @@ namespace Generic
       }
 
       generic<class TKey, class TResult>
-      void CqAttributesMutator<TKey, TResult>::SetCqListeners(array<Generic::ICqListener<TKey, TResult>^>^ newListeners)
+      void CqAttributesMutator<TKey, TResult>::SetCqListeners(array<Client::ICqListener<TKey, TResult>^>^ newListeners)
       {
         apache::geode::client::VectorOfCqListener vrr;
         for( int i = 0; i < newListeners->Length; i++ )
         {
-          Generic::ICqStatusListener<TKey, TResult>^ lister = dynamic_cast<Generic::ICqStatusListener<TKey, TResult>^>(newListeners[i]);
+          Client::ICqStatusListener<TKey, TResult>^ lister = dynamic_cast<Client::ICqStatusListener<TKey, TResult>^>(newListeners[i]);
           if (lister != nullptr) {
             apache::geode::client::CqStatusListenerPtr cptr(new apache::geode::client::ManagedCqStatusListenerGeneric(
               (ICqStatusListener<TKey, TResult>^)lister ));
@@ -148,7 +146,7 @@ namespace Generic
             ((apache::geode::client::ManagedCqStatusListenerGeneric*)vrr[i].ptr())->setptr(cqlg);
           }
           else {
-            Generic::ICqListener<TKey, TResult>^ lister = newListeners[i];
+            Client::ICqListener<TKey, TResult>^ lister = newListeners[i];
             apache::geode::client::CqListenerPtr cptr(new apache::geode::client::ManagedCqListenerGeneric(
               (ICqListener<TKey, TResult>^)lister ));
             vrr.push_back(cptr);
@@ -170,9 +168,8 @@ namespace Generic
         }
 
         NativePtr->setCqListeners( vrr );
-      }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-    }
-  }
 } //namespace 

@@ -36,16 +36,16 @@ namespace apache
     {
       void PdxManagedCacheableKeyBytes::toData(apache::geode::client::DataOutput& output) const
       {
-        // Apache::Geode::Client::Generic::Log::Debug("PdxManagedCacheableKeyBytes::toData: current domain ID: " + System::Threading::Thread::GetDomainID() + " for object: " + System::Convert::ToString((int)this) + " with its domain ID: " + m_domainId );
+        // Apache::Geode::Client::Log::Debug("PdxManagedCacheableKeyBytes::toData: current domain ID: " + System::Threading::Thread::GetDomainID() + " for object: " + System::Convert::ToString((int)this) + " with its domain ID: " + m_domainId );
         try {
           //TODO: I think this should work as it is
           output.writeBytesOnly(m_bytes, m_size);
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GemFireException::ThrowNative(ex);
         }
       }
 
@@ -53,13 +53,13 @@ namespace apache
       {
         try {
 
-          //Apache::Geode::Client::Generic::Log::Debug("PdxManagedCacheableKeyBytes::fromData: classid " + m_classId);
-          Apache::Geode::Client::Generic::DataInput mg_input(&input, true);
+          //Apache::Geode::Client::Log::Debug("PdxManagedCacheableKeyBytes::fromData: classid " + m_classId);
+          Apache::Geode::Client::DataInput mg_input(&input, true);
           const uint8_t* objStartPos = input.currentBufferPosition();
 
-          Apache::Geode::Client::Generic::IPdxSerializable^ obj = Apache::Geode::Client::Generic::Internal::PdxHelper::DeserializePdx(%mg_input, false);
+          Apache::Geode::Client::IPdxSerializable^ obj = Apache::Geode::Client::Internal::PdxHelper::DeserializePdx(%mg_input, false);
 
-          //Apache::Geode::Client::Generic::IGFSerializable^ obj = Apache::Geode::Client::Generic::Serializable::GetTypeFactoryMethodGeneric(m_classId)();
+          //Apache::Geode::Client::IGFSerializable^ obj = Apache::Geode::Client::Serializable::GetTypeFactoryMethodGeneric(m_classId)();
           //obj->FromData(%mg_input);
 
           input.advanceCursor(mg_input.BytesReadInternally);
@@ -70,15 +70,15 @@ namespace apache
 
           //m_size = mg_input.BytesRead;
           m_size = (uint32_t)(objEndPos - objStartPos);
-          // Apache::Geode::Client::Generic::Log::Debug("PdxManagedCacheableKeyBytes::fromData: objectSize = " + m_size + " m_hashCode = " + m_hashCode);
+          // Apache::Geode::Client::Log::Debug("PdxManagedCacheableKeyBytes::fromData: objectSize = " + m_size + " m_hashCode = " + m_hashCode);
           m_bytes = input.getBufferCopyFrom(objStartPos, m_size);
 
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GemFireException::ThrowNative(ex);
         }
         return this;
       }
@@ -89,11 +89,11 @@ namespace apache
           //return m_managedptr->ObjectSize;
           return m_size;
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GemFireException::ThrowNative(ex);
         }
         return 0;
       }
@@ -105,11 +105,11 @@ namespace apache
         //  //classId = m_managedptr->ClassId;
         //  classId = m_classId;
         //}
-        //catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        //catch (Apache::Geode::Client::GemFireException^ ex) {
         //  ex->ThrowNative();
         //}
         //catch (System::Exception^ ex) {
-        //  Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+        //  Apache::Geode::Client::GemFireException::ThrowNative(ex);
         //}
         //return (classId >= 0x80000000 ? 0 : classId);
         return 0;
@@ -133,11 +133,11 @@ namespace apache
         //    return (int8_t)apache::geode::client::GemfireTypeIdsImpl::CacheableUserData4;
         //  }
         //}
-        //catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        //catch (Apache::Geode::Client::GemFireException^ ex) {
         //  ex->ThrowNative();
         //}
         //catch (System::Exception^ ex) {
-        //  Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+        //  Apache::Geode::Client::GemFireException::ThrowNative(ex);
         //}
         return (int8_t)GemfireTypeIdsImpl::PDX;
       }
@@ -161,20 +161,20 @@ namespace apache
       apache::geode::client::CacheableStringPtr PdxManagedCacheableKeyBytes::toString() const
       {
         try {
-          Apache::Geode::Client::Generic::IPdxSerializable^ manageObject = getManagedObject();
+          Apache::Geode::Client::IPdxSerializable^ manageObject = getManagedObject();
           if (manageObject != nullptr)
           {
             apache::geode::client::CacheableStringPtr cStr;
-            Apache::Geode::Client::Generic::CacheableString::GetCacheableString(
+            Apache::Geode::Client::CacheableString::GetCacheableString(
               manageObject->ToString(), cStr);
             return cStr;
           }
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GemFireException::ThrowNative(ex);
         }
         return NULLPTR;
       }
@@ -182,55 +182,55 @@ namespace apache
       bool PdxManagedCacheableKeyBytes::operator ==(const apache::geode::client::CacheableKey& other) const
       {
         try {
-          //  Apache::Geode::Client::Generic::Log::Debug("PdxManagedCacheableKeyBytes::equal");
+          //  Apache::Geode::Client::Log::Debug("PdxManagedCacheableKeyBytes::equal");
           // now checking classId(), typeId(), DSFID() etc. will be much more
           // expensive than just a dynamic_cast
           const PdxManagedCacheableKeyBytes* p_other =
             dynamic_cast<const PdxManagedCacheableKeyBytes*>(&other);
           if (p_other != NULL) {
             apache::geode::client::DataInput di(m_bytes, m_size);
-            Apache::Geode::Client::Generic::DataInput mg_input(&di, true);
-            /* Apache::Geode::Client::Generic::IGFSerializable^ obj =
-               Apache::Geode::Client::Generic::Serializable::GetTypeFactoryMethodGeneric(m_classId)();
+            Apache::Geode::Client::DataInput mg_input(&di, true);
+            /* Apache::Geode::Client::IGFSerializable^ obj =
+               Apache::Geode::Client::Serializable::GetTypeFactoryMethodGeneric(m_classId)();
                obj->FromData(%mg_input);*/
-            Apache::Geode::Client::Generic::IPdxSerializable^ obj = getManagedObject();
+            Apache::Geode::Client::IPdxSerializable^ obj = getManagedObject();
             bool ret = obj->Equals(p_other->ptr());
-            // Apache::Geode::Client::Generic::Log::Debug("PdxManagedCacheableKeyBytes::equal return VAL = " + ret);
+            // Apache::Geode::Client::Log::Debug("PdxManagedCacheableKeyBytes::equal return VAL = " + ret);
             return ret;
           }
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GemFireException::ThrowNative(ex);
         }
-        // Apache::Geode::Client::Generic::Log::Debug("PdxManagedCacheableKeyBytes::equal returns false");
+        // Apache::Geode::Client::Log::Debug("PdxManagedCacheableKeyBytes::equal returns false");
         return false;
       }
 
       bool PdxManagedCacheableKeyBytes::operator ==(const PdxManagedCacheableKeyBytes& other) const
       {
         try {
-          //Apache::Geode::Client::Generic::Log::Debug("PdxManagedCacheableKeyBytes::equal. ");
+          //Apache::Geode::Client::Log::Debug("PdxManagedCacheableKeyBytes::equal. ");
           apache::geode::client::DataInput di(m_bytes, m_size);
-          Apache::Geode::Client::Generic::DataInput mg_input(&di, true);
-          /*Apache::Geode::Client::Generic::IGFSerializable^ obj =
-            Apache::Geode::Client::Generic::Serializable::GetTypeFactoryMethodGeneric(m_classId)();
+          Apache::Geode::Client::DataInput mg_input(&di, true);
+          /*Apache::Geode::Client::IGFSerializable^ obj =
+            Apache::Geode::Client::Serializable::GetTypeFactoryMethodGeneric(m_classId)();
             obj->FromData(%mg_input);*/
-          Apache::Geode::Client::Generic::IPdxSerializable^ obj = getManagedObject();
+          Apache::Geode::Client::IPdxSerializable^ obj = getManagedObject();
           bool ret = obj->Equals(other.ptr());
-          // Apache::Geode::Client::Generic::Log::Debug("PdxManagedCacheableKeyBytes::equal return VAL = " + ret);
+          // Apache::Geode::Client::Log::Debug("PdxManagedCacheableKeyBytes::equal return VAL = " + ret);
           return ret;
           //return obj->Equals(other.ptr());
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GemFireException::ThrowNative(ex);
         }
-        //  Apache::Geode::Client::Generic::Log::Debug("PdxManagedCacheableKeyBytes::equal return false");
+        //  Apache::Geode::Client::Log::Debug("PdxManagedCacheableKeyBytes::equal return false");
         return false;
       }
 
@@ -242,44 +242,44 @@ namespace apache
       size_t PdxManagedCacheableKeyBytes::logString(char* buffer, size_t maxLength) const
       {
         try {
-          Apache::Geode::Client::Generic::IPdxSerializable^ manageObject = getManagedObject();
+          Apache::Geode::Client::IPdxSerializable^ manageObject = getManagedObject();
           if (manageObject != nullptr)
           {
             if (maxLength > 0) {
               String^ logstr = manageObject->GetType()->Name + '(' +
                 manageObject->ToString() + ')';
-              Apache::Geode::Client::Generic::ManagedString mg_str(logstr);
+              Apache::Geode::Client::ManagedString mg_str(logstr);
               return snprintf(buffer, maxLength, "%s", mg_str.CharPtr);
             }
           }
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GemFireException::ThrowNative(ex);
         }
         return 0;
       }
 
-      Apache::Geode::Client::Generic::IPdxSerializable^
+      Apache::Geode::Client::IPdxSerializable^
         PdxManagedCacheableKeyBytes::getManagedObject() const
       {
 
-        // Apache::Geode::Client::Generic::Log::Debug("PdxManagedCacheableKeyBytes::getManagedObject " + m_size);
+        // Apache::Geode::Client::Log::Debug("PdxManagedCacheableKeyBytes::getManagedObject " + m_size);
 
         apache::geode::client::DataInput dinp(m_bytes, m_size);
-        Apache::Geode::Client::Generic::DataInput mg_dinp(&dinp, true);
+        Apache::Geode::Client::DataInput mg_dinp(&dinp, true);
         /*TypeFactoryMethodGeneric^ creationMethod =
-          Apache::Geode::Client::Generic::Serializable::GetTypeFactoryMethodGeneric(m_classId);
-          Apache::Geode::Client::Generic::IGFSerializable^ newObj = creationMethod();
+          Apache::Geode::Client::Serializable::GetTypeFactoryMethodGeneric(m_classId);
+          Apache::Geode::Client::IGFSerializable^ newObj = creationMethod();
           return newObj->FromData(%mg_dinp);*/
-        return  Apache::Geode::Client::Generic::Internal::PdxHelper::DeserializePdx(%mg_dinp, false);
+        return  Apache::Geode::Client::Internal::PdxHelper::DeserializePdx(%mg_dinp, false);
       }
 
       bool PdxManagedCacheableKeyBytes::hasDelta()
       {
-        /* Apache::Geode::Client::Generic::IGFDelta^ deltaObj = dynamic_cast<Apache::Geode::Client::Generic::IGFDelta^>(this->getManagedObject());
+        /* Apache::Geode::Client::IGFDelta^ deltaObj = dynamic_cast<Apache::Geode::Client::IGFDelta^>(this->getManagedObject());
 
          if(deltaObj)
          return deltaObj->HasDelta();*/
@@ -289,38 +289,38 @@ namespace apache
       void PdxManagedCacheableKeyBytes::toDelta(DataOutput& output) const
       {
         try {
-          Apache::Geode::Client::Generic::Log::Debug("PdxManagedCacheableKeyBytes::toDelta: current domain ID: " + System::Threading::Thread::GetDomainID() + " for object: " + System::Convert::ToString((int)this) + " with its domain ID: " + m_domainId);
-          Apache::Geode::Client::Generic::IGFDelta^ deltaObj = dynamic_cast<Apache::Geode::Client::Generic::IGFDelta^>(this->getManagedObject());
-          Apache::Geode::Client::Generic::DataOutput mg_output(&output, true);
+          Apache::Geode::Client::Log::Debug("PdxManagedCacheableKeyBytes::toDelta: current domain ID: " + System::Threading::Thread::GetDomainID() + " for object: " + System::Convert::ToString((int)this) + " with its domain ID: " + m_domainId);
+          Apache::Geode::Client::IGFDelta^ deltaObj = dynamic_cast<Apache::Geode::Client::IGFDelta^>(this->getManagedObject());
+          Apache::Geode::Client::DataOutput mg_output(&output, true);
           deltaObj->ToDelta(%mg_output);
           mg_output.WriteBytesToUMDataOutput();
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GemFireException::ThrowNative(ex);
         }
       }
 
       void PdxManagedCacheableKeyBytes::fromDelta(DataInput& input)
       {
         try {
-          Apache::Geode::Client::Generic::Log::Debug("PdxManagedCacheableKeyBytes::fromDelta:");
-          Apache::Geode::Client::Generic::IGFDelta^ deltaObj = dynamic_cast<Apache::Geode::Client::Generic::IGFDelta^>(this->getManagedObject());
-          Apache::Geode::Client::Generic::DataInput mg_input(&input, true);
+          Apache::Geode::Client::Log::Debug("PdxManagedCacheableKeyBytes::fromDelta:");
+          Apache::Geode::Client::IGFDelta^ deltaObj = dynamic_cast<Apache::Geode::Client::IGFDelta^>(this->getManagedObject());
+          Apache::Geode::Client::DataInput mg_input(&input, true);
           deltaObj->FromDelta(%mg_input);
 
-          Apache::Geode::Client::Generic::IPdxSerializable^ managedptr =
-            dynamic_cast <Apache::Geode::Client::Generic::IPdxSerializable^> (deltaObj);
+          Apache::Geode::Client::IPdxSerializable^ managedptr =
+            dynamic_cast <Apache::Geode::Client::IPdxSerializable^> (deltaObj);
           // if(managedptr != nullptr)
           {
-            Apache::Geode::Client::Generic::Log::Debug("PdxManagedCacheableKeyBytes::fromDelta: current domain ID: " + System::Threading::Thread::GetDomainID() + " for object: " + System::Convert::ToString((int)this) + " with its domain ID: " + m_domainId);
-            //Apache::Geode::Client::Generic::Log::Debug("PdxManagedCacheableKeyBytes::fromDelta: classid " + managedptr->ClassId + " : " + managedptr->ToString());
+            Apache::Geode::Client::Log::Debug("PdxManagedCacheableKeyBytes::fromDelta: current domain ID: " + System::Threading::Thread::GetDomainID() + " for object: " + System::Convert::ToString((int)this) + " with its domain ID: " + m_domainId);
+            //Apache::Geode::Client::Log::Debug("PdxManagedCacheableKeyBytes::fromDelta: classid " + managedptr->ClassId + " : " + managedptr->ToString());
             apache::geode::client::DataOutput dataOut;
-            Apache::Geode::Client::Generic::DataOutput mg_output(&dataOut, true);
+            Apache::Geode::Client::DataOutput mg_output(&dataOut, true);
             //managedptr->ToData( %mg_output );
-            Apache::Geode::Client::Generic::Internal::PdxHelper::SerializePdx(%mg_output, managedptr);
+            Apache::Geode::Client::Internal::PdxHelper::SerializePdx(%mg_output, managedptr);
             //m_managedptr->ToData( %mg_output );
             //this will move the cursor in c++ layer
             mg_output.WriteBytesToUMDataOutput();
@@ -331,26 +331,26 @@ namespace apache
             GF_SAFE_DELETE(m_bytes);
             m_bytes = dataOut.getBufferCopy();
             m_size = dataOut.getBufferLength();
-            Apache::Geode::Client::Generic::Log::Debug("PdxManagedCacheableKeyBytes::fromDelta objectSize = " + m_size + " m_hashCode = " + m_hashCode);
+            Apache::Geode::Client::Log::Debug("PdxManagedCacheableKeyBytes::fromDelta objectSize = " + m_size + " m_hashCode = " + m_hashCode);
             m_hashCode = managedptr->GetHashCode();
           }
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GemFireException::ThrowNative(ex);
         }
       }
 
       DeltaPtr PdxManagedCacheableKeyBytes::clone()
       {
         try {
-          Apache::Geode::Client::Generic::IGFDelta^ deltaObj = dynamic_cast<Apache::Geode::Client::Generic::IGFDelta^>(this->getManagedObject());
-          ICloneable^ cloneable = dynamic_cast<ICloneable^>((Apache::Geode::Client::Generic::IGFDelta^) deltaObj);
+          Apache::Geode::Client::IGFDelta^ deltaObj = dynamic_cast<Apache::Geode::Client::IGFDelta^>(this->getManagedObject());
+          ICloneable^ cloneable = dynamic_cast<ICloneable^>((Apache::Geode::Client::IGFDelta^) deltaObj);
           if (cloneable) {
-            Apache::Geode::Client::Generic::IPdxSerializable^ Mclone =
-              dynamic_cast<Apache::Geode::Client::Generic::IPdxSerializable^>(cloneable->Clone());
+            Apache::Geode::Client::IPdxSerializable^ Mclone =
+              dynamic_cast<Apache::Geode::Client::IPdxSerializable^>(cloneable->Clone());
             return DeltaPtr(static_cast<PdxManagedCacheableKeyBytes*>(
               SafeGenericM2UMConvert(Mclone)));
           }
@@ -358,11 +358,11 @@ namespace apache
             return Delta::clone();
           }
         }
-        catch (Apache::Geode::Client::Generic::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GemFireException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::Generic::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GemFireException::ThrowNative(ex);
         }
         return NULLPTR;
       }

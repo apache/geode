@@ -28,15 +28,13 @@
 
 using namespace System;
 
-//using namespace Apache::Geode::Client::Generic;
+//using namespace Apache::Geode::Client;
 
 namespace Apache
 {
   namespace Geode
   {
     namespace Client
-    {
-namespace Generic
     {
 
       public interface class ICacheLoaderProxy
@@ -81,7 +79,7 @@ namespace Generic
             m_loader->Close(gregion);
           }
       };
-    }
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

@@ -28,8 +28,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       int32_t StatisticDescriptor::ID::get( )
       {
@@ -59,8 +57,8 @@ namespace Generic
       String^ StatisticDescriptor::Unit::get( )
       {
         return ManagedString::Get( NativePtr->getUnit() );
-      }
-    }
-  }
-} } //namespace 
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+ } //namespace 
 

@@ -24,9 +24,9 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
 {
   using NUnit.Framework;
   using Apache.Geode.DUnitFramework;
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
 
-  using GIRegion = Apache.Geode.Client.Generic.IRegion<string, string>;
+  using GIRegion = Apache.Geode.Client.IRegion<string, string>;
 
   class ThinClientTallyLoader : TallyLoader<string, string>
   {
@@ -267,7 +267,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
         IRegion<string, int> region = CacheHelper.CreateLocalRegionWithETTL<string, int>(RegionName,
           ExpirationAction.LocalInvalidate, TimeToLive);
 
-        Apache.Geode.Client.Generic.RegionAttributes<string, int> newAttrs = region.Attributes;
+        Apache.Geode.Client.RegionAttributes<string, int> newAttrs = region.Attributes;
         int ttl = newAttrs.EntryTimeToLive;
         Assert.AreEqual(TimeToLive, ttl);
 

@@ -30,8 +30,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       generic<class TKey, class TResult>
       interface class ICqListener;
 
@@ -47,7 +46,7 @@ namespace Generic
         /// <summary>
         /// get all listeners in this attributes
         /// </summary>
-        virtual array<Generic::ICqListener<TKey, TResult>^>^ getCqListeners();
+        virtual array<Client::ICqListener<TKey, TResult>^>^ getCqListeners();
 
       internal:
 
@@ -78,8 +77,7 @@ namespace Generic
         inline CqAttributes( apache::geode::client::CqAttributes* nativeptr )
           : SBWrap( nativeptr ) { }
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

@@ -25,8 +25,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       namespace Internal
       {
         void PdxRemoteReader::setNextOffsetToRead()
@@ -841,10 +840,8 @@ namespace Generic
         //TODO:
         //void WriteEnum(String^ fieldName, Enum e) ;
         //void WriteInetAddress(String^ fieldName, InetAddress address);
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-        
-      }
-			}
-    }
-  }
 }

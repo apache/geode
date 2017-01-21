@@ -25,7 +25,7 @@ namespace Apache.Geode.Client.FwkLib
 {
   using Apache.Geode.DUnitFramework;
   using Apache.Geode.Client.Tests.NewAPI;
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
 
   public class EntryTxTask<TKey, TVal> : ClientTask
   {
@@ -372,11 +372,11 @@ namespace Apache.Geode.Client.FwkLib
       {
         anObj = aRegion[key];
       }
-      catch (Apache.Geode.Client.Generic.KeyNotFoundException)
+      catch (Apache.Geode.Client.KeyNotFoundException)
       {
         if (!EqualityComparer<TVal>.Default.Equals(anObj, default(TVal)))
         {
-          throw new Apache.Geode.Client.Generic.KeyNotFoundException();
+          throw new Apache.Geode.Client.KeyNotFoundException();
         }
 
       }

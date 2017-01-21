@@ -27,7 +27,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
   using NUnit.Framework;
   using Apache.Geode.DUnitFramework;
   using Apache.Geode.Client.Tests.NewAPI;
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
   using DeltaEx = Apache.Geode.Client.Tests.DeltaEx;
 
   public class CqDeltaListener<TKey, TResult> : ICqListener<TKey, TResult>
@@ -245,7 +245,7 @@ namespace Apache.Geode.Client.UnitTests.NewAPI
     }
     public void CreateRegion(string name, bool enableNotification, bool cloningEnabled)
     {
-      Apache.Geode.Client.Generic.RegionAttributes<object, object> attrs;
+      Apache.Geode.Client.RegionAttributes<object, object> attrs;
       AttributesFactory<object, object> attrFac = new AttributesFactory<object, object>();
       attrFac.SetCacheListener(new SimpleCacheListener<object, object>());
       attrFac.SetCloningEnabled(cloningEnabled);

@@ -18,7 +18,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.SQLite;
-using Apache.Geode.Client.Generic;
+using Apache.Geode.Client;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 namespace Apache.Geode.Plugins.SQLite

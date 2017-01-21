@@ -30,8 +30,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       ref class GFDataInputStream : public Stream
       {
       public:
@@ -132,7 +131,6 @@ namespace Generic
         int m_maxSize;
         DataInput ^ m_buffer;
       };
-    }
-  }
-}
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache

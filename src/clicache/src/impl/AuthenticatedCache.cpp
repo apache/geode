@@ -33,8 +33,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       bool AuthenticatedCache::IsClosed::get( )
       {
         return NativePtr->isClosed( );
@@ -59,17 +58,17 @@ namespace Generic
           apache::geode::client::RegionPtr& nativeptr(
             NativePtr->getRegion( mg_path.CharPtr ) );
 
-          return Generic::Region<TKey, TValue>::Create( nativeptr.ptr( ) );
+          return Client::Region<TKey, TValue>::Create( nativeptr.ptr( ) );
 
         _GF_MG_EXCEPTION_CATCH_ALL2
       }
       
       generic<class TKey, class TResult>
-      Generic::QueryService<TKey, TResult>^ AuthenticatedCache::GetQueryService( )
+      Client::QueryService<TKey, TResult>^ AuthenticatedCache::GetQueryService( )
       {
         _GF_MG_EXCEPTION_TRY2
 
-          return Generic::QueryService<TKey, TResult>::Create( NativePtr->getQueryService( ).ptr( ) );
+          return Client::QueryService<TKey, TResult>::Create( NativePtr->getQueryService( ).ptr( ) );
 
         _GF_MG_EXCEPTION_CATCH_ALL2
       }
@@ -85,7 +84,7 @@ namespace Generic
         for( int32_t index = 0; index < vrr.size( ); index++ )
         {
           apache::geode::client::RegionPtr& nativeptr( vrr[ index ] );
-          rootRegions[ index ] = Generic::Region<TKey, TValue>::Create( nativeptr.ptr( ) );
+          rootRegions[ index ] = Client::Region<TKey, TValue>::Create( nativeptr.ptr( ) );
         }
         return rootRegions;
       }
@@ -93,9 +92,8 @@ namespace Generic
        IPdxInstanceFactory^ AuthenticatedCache::CreatePdxInstanceFactory(String^ className)
         {
           return gcnew Internal::PdxInstanceFactoryImpl(className);;
-        }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-      } // end namespace Generic
-    }
-  }
 }

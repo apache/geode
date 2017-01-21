@@ -32,8 +32,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       /// <summary>
       /// to get the callback from c++ layer
@@ -48,16 +46,14 @@ namespace Generic
 
         void Callback( )
         {
-          Apache::Geode::Client::Generic::Log::Fine("CliCallbackDelgate::Callback( ) ");
-          Apache::Geode::Client::Generic::Internal::PdxTypeRegistry::clear();
+          Apache::Geode::Client::Log::Fine("CliCallbackDelgate::Callback( ) ");
+          Apache::Geode::Client::Internal::PdxTypeRegistry::clear();
         }
 
 
       private:
 
       };
-
-    }
-  }
-}
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache

@@ -27,10 +27,10 @@ using System.Xml;
 namespace Apache.Geode.Client.FwkLib
 {
   using Apache.Geode.DUnitFramework;
-  using Apache.Geode.Client.Generic;
-  //using Region = Apache.Geode.Client.Generic.IRegion<Object, Object>;
-  //using IntRegion = Apache.Geode.Client.Generic.IRegion<int, byte[]>;
-  //using StringRegion = Apache.Geode.Client.Generic.IRegion<string, byte[]>;
+  using Apache.Geode.Client;
+  //using Region = Apache.Geode.Client.IRegion<Object, Object>;
+  //using IntRegion = Apache.Geode.Client.IRegion<int, byte[]>;
+  //using StringRegion = Apache.Geode.Client.IRegion<string, byte[]>;
   using VMW = Apache.Geode.Client;
   public class PropsStringToObject
   {
@@ -456,7 +456,7 @@ namespace Apache.Geode.Client.FwkLib
       }
     }
 
-    public static string RegionTag(Apache.Geode.Client.Generic.RegionAttributes<TKey, TVal> attrs)
+    public static string RegionTag(Apache.Geode.Client.RegionAttributes<TKey, TVal> attrs)
     {
       string tag = string.Empty;
       tag += attrs.CachingEnabled ? "Caching" : "NoCache";
@@ -464,7 +464,7 @@ namespace Apache.Geode.Client.FwkLib
       return tag;
     }
 
-    public static string RegionAttributesToString(Apache.Geode.Client.Generic.RegionAttributes<TKey, TVal> attrs)
+    public static string RegionAttributesToString(Apache.Geode.Client.RegionAttributes<TKey, TVal> attrs)
     {
       StringBuilder attrsSB = new StringBuilder();
       attrsSB.Append(Environment.NewLine + "caching: " +

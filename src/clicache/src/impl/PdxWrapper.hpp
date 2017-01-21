@@ -27,8 +27,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-			{  
+
         ref class PdxWrapper : IPdxSerializable
         {
         private:
@@ -79,7 +78,6 @@ namespace Generic
             return false;
           }
         };
-      }
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache

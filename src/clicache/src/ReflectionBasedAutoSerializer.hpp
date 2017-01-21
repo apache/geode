@@ -30,8 +30,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       /// <summary>
       /// Enumerated type for pdx FieldType
       /// </summary>
@@ -220,7 +219,7 @@ namespace Generic
 
           static Type^ PdxIdentityFieldAttributeType = nullptr;
         };
-      } // end namespace Generic
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

@@ -22,17 +22,6 @@
 #include <gfcpp/CacheListener.hpp>
 #include "../ICacheListener.hpp"
 
-namespace Apache
-{
-  namespace Geode
-  {
-    namespace Client
-    {
-interface class ICacheListener;
-    }
-  }
-}
-
 namespace apache {
   namespace geode {
     namespace client {
@@ -207,12 +196,12 @@ namespace apache {
         /// <summary>
         /// Returns the wrapped managed object reference.
         /// </summary>
-        inline Apache::Geode::Client::Generic::ICacheListener<Object^, Object^>^ ptr() const
+        inline Apache::Geode::Client::ICacheListener<Object^, Object^>^ ptr() const
         {
           return m_managedptr;
         }
 
-        inline void setptr(Apache::Geode::Client::Generic::ICacheListener<Object^, Object^>^ managedptr)
+        inline void setptr(Apache::Geode::Client::ICacheListener<Object^, Object^>^ managedptr)
         {
           m_managedptr = managedptr;
         }
@@ -230,7 +219,7 @@ namespace apache {
         /// to be called which is not what is desired when this object is destroyed. Normally this
         /// managed object may be created by the user and will be handled automatically by the GC.
         /// </summary>
-        gcroot<Apache::Geode::Client::Generic::ICacheListener<Object^, Object^>^> m_managedptr;
+        gcroot<Apache::Geode::Client::ICacheListener<Object^, Object^>^> m_managedptr;
 
         gcroot<Object^> m_userptr;
       };

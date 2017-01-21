@@ -33,8 +33,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       void Statistics::Close()
       {
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
@@ -292,8 +291,8 @@ namespace Generic
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
           return NativePtr->incDouble((char*)mg_name.CharPtr,delta);
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
-      }
-    }
-  }
-} } //namespace 
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+ } //namespace 
 

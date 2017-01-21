@@ -20,8 +20,8 @@ using System;
 namespace Apache.Geode.Client.Tests.NewAPI
 {
   using Apache.Geode.DUnitFramework;
-  using Apache.Geode.Client.Generic;
-  //using Region = Apache.Geode.Client.Generic.IRegion<TKey, TVal>;
+  using Apache.Geode.Client;
+  //using Region = Apache.Geode.Client.IRegion<TKey, TVal>;
 
   /// <summary>
   /// Helper class to populate regions and verify query results.

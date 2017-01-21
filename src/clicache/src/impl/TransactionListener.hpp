@@ -32,8 +32,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       /// <summary>
       /// Contains the generic listener object. Inherits from non generic listener interface.
@@ -45,31 +43,31 @@ namespace Generic
       {
         private:
 
-					Apache::Geode::Client::Generic::ITransactionListener<TKey, TValue>^ m_listener;
+					Apache::Geode::Client::ITransactionListener<TKey, TValue>^ m_listener;
 
         public:
 
-          void SetTransactionListener(Apache::Geode::Client::Generic::ITransactionListener<TKey, TValue>^ listener)
+          void SetTransactionListener(Apache::Geode::Client::ITransactionListener<TKey, TValue>^ listener)
           {
             m_listener = listener;
           }
 
 					virtual void AfterCommit(Apache::Geode::Client::TransactionEvent^ event) override 
           {
-            Apache::Geode::Client::Generic::TransactionEvent<TKey, TValue> gevent(GetNativePtr<apache::geode::client::TransactionEvent>(event));
+            Apache::Geode::Client::TransactionEvent<TKey, TValue> gevent(GetNativePtr<apache::geode::client::TransactionEvent>(event));
             m_listener->AfterCommit(%gevent);
             
           }
 
           virtual void AfterFailedCommit(Apache::Geode::Client::TransactionEvent^ event) override 
           {
-            Apache::Geode::Client::Generic::TransactionEvent<TKey, TValue> gevent(GetNativePtr<apache::geode::client::TransactionEvent>(event));
+            Apache::Geode::Client::TransactionEvent<TKey, TValue> gevent(GetNativePtr<apache::geode::client::TransactionEvent>(event));
             m_listener->AfterFailedCommit(%gevent);
           }
 
           virtual void AfterRollback(Apache::Geode::Client::TransactionEvent^ event) override 
           {
-            Apache::Geode::Client::Generic::TransactionEvent<TKey, TValue> gevent(GetNativePtr<apache::geode::client::TransactionEvent>(event));
+            Apache::Geode::Client::TransactionEvent<TKey, TValue> gevent(GetNativePtr<apache::geode::client::TransactionEvent>(event));
             m_listener->AfterRollback(%gevent);
           }
 
@@ -78,8 +76,8 @@ namespace Generic
             m_listener->Close();
           }
       };
-    }
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 #endif

@@ -29,8 +29,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       generic<class TResult>
       bool StructSet<TResult>::IsModifiable::get( )
@@ -45,7 +43,7 @@ namespace Generic
       }
 
       generic<class TResult>
-      /*Apache::Geode::Client::Generic::IGFSerializable^*/ TResult StructSet<TResult>::default::get( size_t index )
+      /*Apache::Geode::Client::IGFSerializable^*/ TResult StructSet<TResult>::default::get( size_t index )
       {
         //return SafeUMSerializableConvertGeneric((NativePtr->operator[](static_cast<int32_t>(index))).ptr());
         return Serializable::GetManagedValueGeneric<TResult>((NativePtr->operator[](static_cast<int32_t>(index))));
@@ -60,7 +58,7 @@ namespace Generic
       }
 
       generic<class TResult>
-      System::Collections::Generic::IEnumerator</*Apache::Geode::Client::Generic::IGFSerializable^*/TResult>^
+      System::Collections::Generic::IEnumerator</*Apache::Geode::Client::IGFSerializable^*/TResult>^
         StructSet<TResult>::GetEnumerator( )
       {
         return GetIterator( );
@@ -88,9 +86,8 @@ namespace Generic
       String^ StructSet<TResult>::GetFieldName( size_t index )
       {
         return ManagedString::Get( NativePtr->getFieldName( static_cast<int32_t> (index) ) );
-      }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
  } //namespace 

@@ -31,8 +31,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       // Region: IGFSerializable Members
 
       void CacheableUndefined::ToData(DataOutput^ output)
@@ -47,10 +46,8 @@ namespace Generic
       uint32_t CacheableUndefined::ObjectSize::get()
       {
         return static_cast<uint32_t> (sizeof(CacheableUndefined^));
-      }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-      // End Region: IGFSerializable Members
-    }
-  }
-}
  } //namespace 

@@ -33,8 +33,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
       interface class IPdxInstanceFactory;
       /// <summary>
       /// A RegionService provides access to existing regions that exist
@@ -103,7 +102,7 @@ namespace Generic
         /// before actually firing a query.
         /// </remarks>
         generic<class TKey, class TResult>
-        Generic::QueryService<TKey, TResult>^ GetQueryService();
+        Client::QueryService<TKey, TResult>^ GetQueryService();
         /// <summary>
         /// Returns an array of root regions in the cache. This set is a
         /// snapshot and is not backed by the cache.
@@ -123,7 +122,7 @@ namespace Generic
         /// </summary>
         IPdxInstanceFactory^ CreatePdxInstanceFactory(String^ className);
       };
-      } // end namespace Generic
-    }
-  }
-}
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

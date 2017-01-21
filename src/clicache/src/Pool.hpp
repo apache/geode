@@ -30,8 +30,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       //generic<class TKey, class TResult>
       //ref class Properties;
 
@@ -48,7 +47,7 @@ namespace Generic
       /// </remarks>
      // generic<class TKey, class TValue>
       public ref class Pool sealed
-				: public Generic::Internal::SBWrap<apache::geode::client::Pool>
+				: public Client::Internal::SBWrap<apache::geode::client::Pool>
       {
       public:
 
@@ -339,8 +338,7 @@ namespace Generic
         inline Pool( apache::geode::client::Pool* nativeptr )
           : SBWrap( nativeptr ) { }
       };
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-    }
-  }
-}
- } //namespace 

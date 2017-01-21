@@ -20,7 +20,7 @@ using Apache.Geode.DUnitFramework;
 
 namespace Apache.Geode.Client.Tests.NewAPI
 {
-  using Apache.Geode.Client.Generic;
+  using Apache.Geode.Client;
   /// <summary>
   /// Enumeration for the various client server operations.
   /// </summary>

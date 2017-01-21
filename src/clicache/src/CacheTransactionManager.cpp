@@ -29,8 +29,6 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
 
       void CacheTransactionManager::Begin( )
       {
@@ -73,23 +71,23 @@ namespace Generic
         _GF_MG_EXCEPTION_CATCH_ALL2
       }
 
-      Apache::Geode::Client::Generic::TransactionId^ CacheTransactionManager::Suspend( )
+      Apache::Geode::Client::TransactionId^ CacheTransactionManager::Suspend( )
       {
         _GF_MG_EXCEPTION_TRY2
        
-          return Apache::Geode::Client::Generic::TransactionId::Create( NativePtr->suspend().ptr() );
+          return Apache::Geode::Client::TransactionId::Create( NativePtr->suspend().ptr() );
        
         _GF_MG_EXCEPTION_CATCH_ALL2
       }
-			Apache::Geode::Client::Generic::TransactionId^ CacheTransactionManager::TransactionId::get( )
+			Apache::Geode::Client::TransactionId^ CacheTransactionManager::TransactionId::get( )
       {
         _GF_MG_EXCEPTION_TRY2
 
-          return Apache::Geode::Client::Generic::TransactionId::Create( NativePtr->getTransactionId().ptr() );
+          return Apache::Geode::Client::TransactionId::Create( NativePtr->getTransactionId().ptr() );
 
         _GF_MG_EXCEPTION_CATCH_ALL2
       }
-      void CacheTransactionManager::Resume(Apache::Geode::Client::Generic::TransactionId^ transactionId)
+      void CacheTransactionManager::Resume(Apache::Geode::Client::TransactionId^ transactionId)
       {
         _GF_MG_EXCEPTION_TRY2
         
@@ -97,7 +95,7 @@ namespace Generic
 
         _GF_MG_EXCEPTION_CATCH_ALL2
       }
-      bool CacheTransactionManager::IsSuspended(Apache::Geode::Client::Generic::TransactionId^ transactionId)
+      bool CacheTransactionManager::IsSuspended(Apache::Geode::Client::TransactionId^ transactionId)
       {
         _GF_MG_EXCEPTION_TRY2
 
@@ -105,7 +103,7 @@ namespace Generic
 
         _GF_MG_EXCEPTION_CATCH_ALL2
       }
-      bool CacheTransactionManager::TryResume(Apache::Geode::Client::Generic::TransactionId^ transactionId)
+      bool CacheTransactionManager::TryResume(Apache::Geode::Client::TransactionId^ transactionId)
       {
         _GF_MG_EXCEPTION_TRY2
 
@@ -113,7 +111,7 @@ namespace Generic
 
         _GF_MG_EXCEPTION_CATCH_ALL2
       }
-      bool CacheTransactionManager::TryResume(Apache::Geode::Client::Generic::TransactionId^ transactionId, int32_t waitTimeInMilliSec)
+      bool CacheTransactionManager::TryResume(Apache::Geode::Client::TransactionId^ transactionId, int32_t waitTimeInMilliSec)
       {
         _GF_MG_EXCEPTION_TRY2
 
@@ -121,7 +119,7 @@ namespace Generic
 
         _GF_MG_EXCEPTION_CATCH_ALL2
       }
-      bool CacheTransactionManager::Exists(Apache::Geode::Client::Generic::TransactionId^ transactionId)
+      bool CacheTransactionManager::Exists(Apache::Geode::Client::TransactionId^ transactionId)
       {
         _GF_MG_EXCEPTION_TRY2
 
@@ -208,7 +206,7 @@ namespace Generic
         _GF_MG_EXCEPTION_CATCH_ALL2
       }
 #endif
-    }
-  }
-}
- } //namespace 
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+

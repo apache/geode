@@ -32,8 +32,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-    {
+
       ref class StatisticDescriptor;
       ref class StatisticsType;
       ref class Statistics; 
@@ -261,7 +260,8 @@ namespace Generic
            inline StatisticsFactory( apache::geode::statistics::StatisticsFactory* nativeptr )
            : UMWrap( nativeptr, false ) { }
       };
-    }
-  }
-} } //namespace 
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
+
 

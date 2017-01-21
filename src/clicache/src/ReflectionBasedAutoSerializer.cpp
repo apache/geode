@@ -27,8 +27,7 @@ namespace Apache
   {
     namespace Client
     {
-namespace Generic
-      {
+
          ref class FieldWrapper
         {
           private:
@@ -38,8 +37,8 @@ namespace Generic
             delegate void MySetter(Object^ t1, Object^ t2);
             delegate Object^ MyGetter(Object^ t1);
 
-            static Type^ setterDelegateType = Type::GetType("Apache.Geode.Client.Generic.FieldWrapper+MySetter");
-            static Type^ getterDelegateType = Type::GetType("Apache.Geode.Client.Generic.FieldWrapper+MyGetter");
+            static Type^ setterDelegateType = Type::GetType("Apache.Geode.Client.FieldWrapper+MySetter");
+            static Type^ getterDelegateType = Type::GetType("Apache.Geode.Client.FieldWrapper+MyGetter");
 
             FieldInfo^ m_fi;
             String^    m_fieldName;
@@ -558,11 +557,9 @@ namespace Generic
             return FieldType::OBJECT;
             //throw gcnew IllegalStateException("WriteField unable to serialize  " 
 							//																	+ fieldName + " of " + type); 
-          }
-        }
+    }  // namespace Client
+  }  // namespace Geode
+}  // namespace Apache
 
-       
-      } // end namespace Generic
-    }
   }
 }
