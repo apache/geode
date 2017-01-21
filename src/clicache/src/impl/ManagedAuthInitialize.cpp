@@ -58,15 +58,6 @@ namespace apache
           mg_typeName = mg_factoryFunctionName->Substring(0, dotIndx);
           mg_factoryFunctionName = mg_factoryFunctionName->Substring(dotIndx + 1);
 
-          /*
-          String^ mg_genericKey = GemStone::GemFire::ManagedString::Get("string");
-          String^ mg_genericVal = GemStone::GemFire::ManagedString::Get("object");
-
-          StringBuilder^ typeBuilder = gcnew StringBuilder(mg_factoryFunctionName);
-
-          typeBuilder->Append("`2");
-          */
-
           Assembly^ assmb = nullptr;
           try
           {

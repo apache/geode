@@ -48,10 +48,10 @@
 using System;
 using System.Reflection;
 // Use the GemFire namespace
-using Apache.Geode.Client.Generic;
+using Apache.Geode.Client;
 
 
-namespace Apache.Geode.Client.Generic.QuickStart
+namespace Apache.Geode.Client.QuickStart
 {
   public class Person
   {

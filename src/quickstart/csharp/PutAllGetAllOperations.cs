@@ -33,9 +33,9 @@ using System;
 using System.Collections.Generic;
 
 // Use the GemFire namespace
-using Apache.Geode.Client.Generic;
+using Apache.Geode.Client;
 
-namespace Apache.Geode.Client.Generic.QuickStart
+namespace Apache.Geode.Client.QuickStart
 {
   // The PutAllGetAllOperations QuickStart example.
   class PutAllGetAllOperations

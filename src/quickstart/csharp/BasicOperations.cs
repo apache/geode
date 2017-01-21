@@ -35,12 +35,12 @@
 using System;
 
 // Use the GemFire namespace
-using Apache.Geode.Client.Generic;
+using Apache.Geode.Client;
 
 // To check for available memory.
 using System.Diagnostics;
 
-namespace Apache.Geode.Client.Generic.QuickStart
+namespace Apache.Geode.Client.QuickStart
 {
 
   // The BasicOperations QuickStart example.
