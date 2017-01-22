@@ -78,11 +78,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "SunOS")
     set(SOURCES ${SOURCES} $<TARGET_OBJECTS:gfcppasm>)
   endif()
 endif()
-if (${UNIX})
-  target_link_libraries(_gfcppcache INTERFACE
-      z
-  )
-elseif (${WIN32})
+if (${WIN32})
   target_link_libraries(_gfcppcache INTERFACE
       Dbghelp
   )
