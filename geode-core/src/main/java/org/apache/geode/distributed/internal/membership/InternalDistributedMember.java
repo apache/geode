@@ -82,9 +82,6 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
   /** product version bit flag */
   private static final int VERSION_BIT = 0x8;
 
-  /** additional membership data */
-  private static final int NETMBR_DATA_BIT = 0x10;
-
   /**
    * Representing the host name of this member.
    */
@@ -93,7 +90,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
   private transient Version versionObj = Version.CURRENT;
 
   /** The versions in which this message was modified */
-  private static final Version[] dsfidVersions = new Version[] {Version.GFE_71};
+  private static final Version[] dsfidVersions = new Version[] {Version.GFE_71, Version.GFE_90};
 
   private void defaultToCurrentHost() {
     netMbr.setProcessId(OSProcess.getId());
@@ -849,6 +846,14 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
   }
 
   public void toData(DataOutput out) throws IOException {
+    toDataPre_GFE_9_0_0_0(out);
+    if (netMbr.getVersionOrdinal() >= Version.GFE_90.ordinal()) {
+      getNetMember().writeAdditionalData(out);
+    }
+  }
+
+
+  public void toDataPre_GFE_9_0_0_0(DataOutput out) throws IOException {
     // Assert.assertTrue(vmKind > 0);
     // NOTE: If you change the serialized format of this class
     // then bump Connection.HANDSHAKE_VERSION since an
@@ -868,10 +873,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     // always write product version but enable reading from older versions
     // that do not have it
     flags |= VERSION_BIT;
-    boolean writeNetMbrData = netMbr.hasAdditionalData();
-    if (writeNetMbrData) {
-      flags |= NETMBR_DATA_BIT;
-    }
+
     out.writeByte((byte) (flags & 0xff));
 
     out.writeInt(netMbr.getDirectPort());
@@ -891,15 +893,9 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
         .writeString(durableClientAttributes == null ? "" : durableClientAttributes.getId(), out);
     DataSerializer.writeInteger(Integer.valueOf(
         durableClientAttributes == null ? 300 : durableClientAttributes.getTimeout()), out);
+
     short version = netMbr.getVersionOrdinal();
     Version.writeOrdinal(out, version, true);
-
-    Version streamVersion = InternalDataSerializer.getVersionForDataStream(out);
-
-    if (streamVersion.ordinal() >= Version.GFE_90.ordinal() && version >= Version.GFE_90.ordinal()
-        && writeNetMbrData) {
-      getNetMember().writeAdditionalData(out);
-    }
   }
 
   public void toDataPre_GFE_7_1_0_0(DataOutput out) throws IOException {
@@ -949,6 +945,19 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
 
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    fromDataPre_GFE_9_0_0_0(in);
+    // just in case this is just a non-versioned read
+    // from a file we ought to check the version
+    if (getNetMember().getVersionOrdinal() >= Version.GFE_90.ordinal()) {
+      try {
+        netMbr.readAdditionalData(in);
+      } catch (EOFException e) {
+        // nope - it's from a pre-GEODE client or WAN site
+      }
+    }
+  }
+
+  public void fromDataPre_GFE_9_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
     InetAddress inetAddr = DataSerializer.readInetAddress(in);
     int port = in.readInt();
 
@@ -991,15 +1000,6 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
 
     Assert.assertTrue(netMbr.getVmKind() > 0);
     // Assert.assertTrue(getPort() > 0);
-
-    // just in case this is just a non-versioned read
-    // from a file we ought to check the version
-    Version streamVersion = InternalDataSerializer.getVersionForDataStream(in);
-
-    if (streamVersion.ordinal() >= Version.GFE_90.ordinal() && version >= Version.GFE_90.ordinal()
-        && (flags & NETMBR_DATA_BIT) == NETMBR_DATA_BIT) {
-      netMbr.readAdditionalData(in);
-    }
   }
 
   public void fromDataPre_GFE_7_1_0_0(DataInput in) throws IOException, ClassNotFoundException {

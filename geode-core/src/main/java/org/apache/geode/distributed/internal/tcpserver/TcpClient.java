@@ -208,8 +208,10 @@ public class TcpClient {
           logger.debug("received response: {}", response);
           return response;
         } catch (EOFException ex) {
-          throw new EOFException("Locator at " + ipAddr
+          EOFException eof = new EOFException("Locator at " + ipAddr
               + " did not respond. This is normal if the locator was shutdown. If it wasn't check its log for exceptions.");
+          eof.initCause(ex);
+          throw eof;
         }
       } else {
         return null;
