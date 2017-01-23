@@ -1207,7 +1207,7 @@ public class GatewaySenderEventImpl
 
   @Override
   @Released(OffHeapIdentifier.GATEWAY_SENDER_EVENT_IMPL_VALUE)
-  public void release() {
+  public synchronized void release() {
     @Released(OffHeapIdentifier.GATEWAY_SENDER_EVENT_IMPL_VALUE)
     Object vo = this.valueObj;
     if (OffHeapHelper.releaseAndTrackOwner(vo, this)) {
