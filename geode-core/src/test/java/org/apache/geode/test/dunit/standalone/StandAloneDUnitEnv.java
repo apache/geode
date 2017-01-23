@@ -60,13 +60,18 @@ public class StandAloneDUnitEnv extends DUnitEnv {
   }
 
   @Override
-  public BounceResult bounce(int pid) throws RemoteException {
-    return master.bounce(pid);
+  public BounceResult bounce(String version, int pid) throws RemoteException {
+    return master.bounce(version, pid);
   }
 
   @Override
   public File getWorkingDirectory(int pid) {
-    return ProcessManager.getVMDir(pid);
+    return getWorkingDirectory(VersionManager.CURRENT_VERSION, pid);
+  }
+
+  @Override
+  public File getWorkingDirectory(String version, int pid) {
+    return ProcessManager.getVMDir(version, pid);
   }
 
 }

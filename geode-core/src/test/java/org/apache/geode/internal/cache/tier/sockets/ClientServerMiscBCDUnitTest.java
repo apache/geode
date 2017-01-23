@@ -14,22 +14,29 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import org.apache.geode.test.dunit.standalone.VersionManager;
+import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import java.util.Collection;
 
-/**
- * Just like parent but enables server thread pool (ie. selector)
- */
-@Category({DistributedTest.class, ClientServerTest.class})
-public class ClientServerMiscSelectorDUnitTest extends ClientServerMiscDUnitTest {
+@Category({DistributedTest.class, ClientServerTest.class, BackwardCompatibilityTest.class})
+@RunWith(Parameterized.class)
+@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
+public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTest {
+  @Parameterized.Parameters
+  public static Collection<String> data() {
+    return VersionManager.getInstance().getVersionsWithoutCurrent();
+  }
 
-  public ClientServerMiscSelectorDUnitTest() {
+  public ClientServerMiscBCDUnitTest(String version) {
     super();
+    testVersion = version;
   }
 
-  protected int getMaxThreads() {
-    return 2;
-  }
 }

@@ -17,9 +17,12 @@ package org.apache.geode.test.dunit;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.geode.test.dunit.standalone.RemoteDUnitVMIF;
+import org.apache.geode.test.dunit.standalone.VersionManager;
 
 /**
  * <P>
@@ -93,6 +96,22 @@ public abstract class Host implements Serializable {
     }
   }
 
+  /**
+   * Reset all VMs to be using the current version of Geode. Some backward-compatibility tests will
+   * set a VM to a different version. This will ensure that all are using the current build.
+   */
+  public static void setAllVMsToCurrentVersion() {
+    int numHosts = getHostCount();
+    for (int hostIndex = 0; hostIndex < numHosts; hostIndex++) {
+      Host host = Host.getHost(hostIndex);
+      int numVMs = host.getVMCount();
+      for (int i = 0; i < numVMs; i++) {
+        host.getVM(VersionManager.CURRENT_VERSION, i);
+      }
+    }
+
+  }
+
   ///////////////////// Constructors //////////////////////
 
   /**
@@ -142,6 +161,25 @@ public abstract class Host implements Serializable {
     } else {
       return (VM) vms.get(n);
     }
+  }
+
+  /**
+   * return a collection of all VMs
+   */
+  public Set<VM> getAllVMs() {
+    return new HashSet<>(vms);
+  }
+
+  /**
+   * Returns the nth VM of the given version. Optional operation currently supported only in
+   * distributedTests.
+   * 
+   * @param version
+   * @param n
+   * @return the requested VM
+   */
+  public VM getVM(String version, int n) {
+    throw new UnsupportedOperationException("Not supported in this implementation of Host");
   }
 
   /**

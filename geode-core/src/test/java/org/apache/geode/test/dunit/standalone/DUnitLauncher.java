@@ -14,8 +14,15 @@
  */
 package org.apache.geode.test.dunit.standalone;
 
-import batterytest.greplogs.ExpectedStrings;
-import batterytest.greplogs.LogConsumer;
+import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
+
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
@@ -26,8 +33,6 @@ import org.apache.geode.test.dunit.DUnitEnv;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
-import hydra.MethExecutorResult;
-
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -37,36 +42,54 @@ import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.junit.Assert;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.URISyntaxException;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
-import java.rmi.*;
+import java.rmi.AccessException;
+import java.rmi.AlreadyBoundException;
+import java.rmi.NotBoundException;
+import java.rmi.Remote;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
 import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import batterytest.greplogs.ExpectedStrings;
+import batterytest.greplogs.LogConsumer;
+import hydra.MethExecutorResult;
 
 /**
  * A class to build a fake test configuration and launch some DUnit VMS.
- * 
+ *
  * For use within eclipse. This class completely skips hydra and just starts some vms directly,
  * creating a fake test configuration
- * 
+ *
  * Also, it's a good idea to set your working directory, because the test code a lot of files that
  * it leaves around.
  */
 public class DUnitLauncher {
 
-  /** change this to use a different log level in unit tests */
+  /**
+   * change this to use a different log level in unit tests
+   */
   public static final String logLevel = System.getProperty("logLevel", "info");
 
   public static final String LOG4J = System.getProperty("log4j.configurationFile");
+
+  /**
+   * change this to have dunit/vmX directories deleted and recreated when processes are launched
+   */
+  public static final boolean MAKE_NEW_WORKING_DIRS =
+      Boolean.getBoolean("makeNewWorkingDirsOnBounce");
 
   static int locatorPort;
 
@@ -83,12 +106,12 @@ public class DUnitLauncher {
   public static final boolean LOCATOR_LOG_TO_DISK = Boolean.getBoolean("locatorLogToDisk");
 
   static final String MASTER_PARAM = "DUNIT_MASTER";
-  public static final String RMI_PORT_PARAM =
-      DistributionConfig.GEMFIRE_PREFIX + "DUnitLauncher.RMI_PORT";
-  static final String VM_NUM_PARAM = DistributionConfig.GEMFIRE_PREFIX + "DUnitLauncher.VM_NUM";
 
-  private static final String LAUNCHED_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "DUnitLauncher.LAUNCHED";
+  public static final String RMI_PORT_PARAM = GEMFIRE_PREFIX + "DUnitLauncher.RMI_PORT";
+  static final String VM_NUM_PARAM = GEMFIRE_PREFIX + "DUnitLauncher.VM_NUM";
+  static final String VM_VERSION_PARAM = GEMFIRE_PREFIX + "DUnitLauncher.VM_VERSION";
+
+  private static final String LAUNCHED_PROPERTY = GEMFIRE_PREFIX + "DUnitLauncher.LAUNCHED";
 
   private static Master master;
 
@@ -123,6 +146,8 @@ public class DUnitLauncher {
         throw new RuntimeException("Unable to launch dunit VMS", e);
       }
     }
+
+    Host.setAllVMsToCurrentVersion();
   }
 
   /**
@@ -189,7 +214,6 @@ public class DUnitLauncher {
       }
     });
 
-
     // Create a VM for the locator
     processManager.launchVM(LOCATOR_VM_NUM);
 
@@ -201,7 +225,6 @@ public class DUnitLauncher {
     locatorPort = startLocator(registry);
 
     init(master);
-
 
     // Launch an initial set of VMs
     for (int i = 0; i < NUM_VMS; i++) {
@@ -305,7 +328,7 @@ public class DUnitLauncher {
     addSuspectFileAppender(workspaceDir);
 
     // Free off heap memory when disconnecting from the distributed system
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "free-off-heap-memory", "true");
+    System.setProperty(GEMFIRE_PREFIX + "free-off-heap-memory", "true");
 
     // indicate that this CM is controlled by the eclipse dunit.
     System.setProperty(LAUNCHED_PROPERTY, "true");
@@ -368,6 +391,7 @@ public class DUnitLauncher {
     }
   }
 
+
   public interface MasterRemote extends Remote {
     public int getLocatorPort() throws RemoteException;
 
@@ -376,6 +400,8 @@ public class DUnitLauncher {
     public void ping() throws RemoteException;
 
     public BounceResult bounce(int pid) throws RemoteException;
+
+    public BounceResult bounce(String version, int pid) throws RemoteException;
   }
 
   public static class Master extends UnicastRemoteObject implements MasterRemote {
@@ -404,13 +430,19 @@ public class DUnitLauncher {
 
     @Override
     public BounceResult bounce(int pid) {
-      processManager.bounce(pid);
+      return bounce(VersionManager.CURRENT_VERSION, pid);
+    }
+
+    @Override
+    public BounceResult bounce(String version, int pid) {
+      processManager.bounce(version, pid);
 
       try {
         if (!processManager.waitForVMs(STARTUP_TIMEOUT)) {
           throw new RuntimeException("VMs did not start up with 30 seconds");
         }
-        RemoteDUnitVMIF remote = (RemoteDUnitVMIF) registry.lookup("vm" + pid);
+        RemoteDUnitVMIF remote =
+            (RemoteDUnitVMIF) registry.lookup(VM.getVMName(VersionManager.CURRENT_VERSION, pid));
         return new BounceResult(pid, remote);
       } catch (RemoteException | NotBoundException e) {
         throw new RuntimeException("could not lookup name", e);
@@ -447,24 +479,44 @@ public class DUnitLauncher {
 
     @Override
     public VM getVM(int n) {
+      return getVM(VersionManager.CURRENT_VERSION, n);
+    }
 
+    @Override
+    public VM getVM(String version, int n) {
       if (n == DEBUGGING_VM_NUM) {
         // for ease of debugging, pass -1 to get the local VM
         return debuggingVM;
+      }
+
+      if (n < getVMCount()) {
+        VM current = super.getVM(n);
+        if (!current.getVersion().equals(version)) {
+          System.out.println(
+              "Bouncing VM" + n + " from version " + current.getVersion() + " to " + version);
+          current.bounce(version);
+        }
+        return current;
       }
 
       int oldVMCount = getVMCount();
       if (n >= oldVMCount) {
         // If we don't have a VM with that number, dynamically create it.
         try {
-          for (int i = oldVMCount; i <= n; i++) {
+          // first fill in any gaps, to keep the superclass, Host, happy
+          for (int i = oldVMCount; i < n; i++) {
             processManager.launchVM(i);
           }
           processManager.waitForVMs(STARTUP_TIMEOUT);
 
-          for (int i = oldVMCount; i <= n; i++) {
+          for (int i = oldVMCount; i < n; i++) {
             addVM(i, processManager.getStub(i));
           }
+
+          // now create the one we really want
+          processManager.launchVM(version, n, false);
+          processManager.waitForVMs(STARTUP_TIMEOUT);
+          addVM(n, processManager.getStub(n));
 
         } catch (IOException | InterruptedException | NotBoundException e) {
           throw new RuntimeException("Could not dynamically launch vm + " + n, e);

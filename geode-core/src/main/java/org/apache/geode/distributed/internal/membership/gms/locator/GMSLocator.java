@@ -380,6 +380,7 @@ public class GMSLocator implements Locator, NetLocator {
 
   /* package */ boolean recoverFromFile(File file) throws InternalGemFireException {
     if (!file.exists()) {
+      logger.info("recovery file not found: " + file.getAbsolutePath());
       return false;
     }
 

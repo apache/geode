@@ -14,21 +14,16 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
-
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Set;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.geode.GemFireConfigException;
-import org.apache.geode.cache.client.ClientCache;
-import org.apache.geode.cache.client.ClientCacheFactory;
-import org.apache.geode.test.dunit.DistributedTestUtils;
-import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -38,6 +33,7 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
@@ -54,6 +50,7 @@ import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
@@ -62,7 +59,19 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.standalone.VersionManager;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Tests client server corner cases between Region and Pool
@@ -115,11 +124,18 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
   final int removeRange_2Start = 7;
   final int removeRange_2End = 9;
 
+  protected String testVersion; // version for client caches for backward-compatibility
+                                // testing
+
+  public ClientServerMiscDUnitTest() {
+    testVersion = VersionManager.CURRENT_VERSION;
+  }
+
   @Override
   public final void postSetUp() throws Exception {
     host = Host.getHost(0);
-    server1 = host.getVM(0);
-    server2 = host.getVM(1);
+    server1 = host.getVM(2);
+    server2 = host.getVM(3);
   }
 
   private int initServerCache(boolean notifyBySub) {
@@ -140,16 +156,16 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
     int port1 = initServerCache(true); // vm0
     int port2 = initServerCache2(true); // vm1
     String serverName = NetworkUtils.getServerHostName(Host.getHost(0));
-    host.getVM(2).invoke(() -> this.createClientCacheV(serverName, port1));
-    host.getVM(3).invoke(() -> this.createClientCacheV(serverName, port2));
+    host.getVM(testVersion, 0).invoke(() -> this.createClientCacheV(serverName, port1));
+    host.getVM(testVersion, 1).invoke(() -> this.createClientCacheV(serverName, port2));
     LogWriterUtils.getLogWriter()
         .info("Testing concurrent map operations from a client with a distributed region");
-    concurrentMapTest(host.getVM(2), "/" + REGION_NAME1);
-    // TODO add verification in vm3
+    concurrentMapTest(host.getVM(testVersion, 0), "/" + REGION_NAME1);
+    // TODO add verification in vm1
     LogWriterUtils.getLogWriter()
         .info("Testing concurrent map operations from a client with a partitioned region");
-    concurrentMapTest(host.getVM(2), "/" + PR_REGION_NAME);
-    // TODO add verification in vm3
+    concurrentMapTest(host.getVM(testVersion, 0), "/" + PR_REGION_NAME);
+    // TODO add verification in vm1
   }
 
   @Test
@@ -157,16 +173,16 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
     int port1 = initServerCache(true); // vm0
     int port2 = initServerCache2(true); // vm1
     String serverName = NetworkUtils.getServerHostName(Host.getHost(0));
-    host.getVM(2).invoke(() -> this.createEmptyClientCache(serverName, port1));
-    host.getVM(3).invoke(() -> this.createClientCacheV(serverName, port2));
+    host.getVM(testVersion, 0).invoke(() -> this.createEmptyClientCache(serverName, port1));
+    host.getVM(testVersion, 1).invoke(() -> this.createClientCacheV(serverName, port2));
     LogWriterUtils.getLogWriter()
         .info("Testing concurrent map operations from a client with a distributed region");
-    concurrentMapTest(host.getVM(2), "/" + REGION_NAME1);
-    // TODO add verification in vm3
+    concurrentMapTest(host.getVM(testVersion, 0), "/" + REGION_NAME1);
+    // TODO add verification in vm1
     LogWriterUtils.getLogWriter()
         .info("Testing concurrent map operations from a client with a partitioned region");
-    concurrentMapTest(host.getVM(2), "/" + PR_REGION_NAME);
-    // TODO add verification in vm3
+    concurrentMapTest(host.getVM(testVersion, 0), "/" + PR_REGION_NAME);
+    // TODO add verification in vm1
   }
 
   /**

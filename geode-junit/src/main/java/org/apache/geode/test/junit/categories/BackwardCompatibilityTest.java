@@ -12,24 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.tier.sockets;
-
-import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.junit.experimental.categories.Category;
-
+package org.apache.geode.test.junit.categories;
 
 /**
- * Just like parent but enables server thread pool (ie. selector)
+ * JUnit Test Category that specifies a test involving multiple members of a distributed system and
+ * multiple versions of Geode.
  */
-@Category({DistributedTest.class, ClientServerTest.class})
-public class ClientServerMiscSelectorDUnitTest extends ClientServerMiscDUnitTest {
-
-  public ClientServerMiscSelectorDUnitTest() {
-    super();
-  }
-
-  protected int getMaxThreads() {
-    return 2;
-  }
+public interface BackwardCompatibilityTest {
 }

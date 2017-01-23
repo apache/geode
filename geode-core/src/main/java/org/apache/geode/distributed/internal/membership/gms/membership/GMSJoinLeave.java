@@ -506,8 +506,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       logger.warn("detected an attempt to start a peer using an older version of the product {}",
           incomingRequest.getMemberID());
       JoinResponseMessage m =
-          new JoinResponseMessage("Rejecting the attempt of a member using an older version",
-              incomingRequest.getRequestId());
+          new JoinResponseMessage("Rejecting the attempt of a member using an older version of the "
+              + "product to join the distributed system", incomingRequest.getRequestId());
       m.setRecipient(incomingRequest.getMemberID());
       services.getMessenger().send(m);
       return;

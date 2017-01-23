@@ -66,8 +66,10 @@ public abstract class DUnitEnv {
 
   public abstract int getVMID();
 
-  public abstract BounceResult bounce(int pid) throws RemoteException;
+  public abstract BounceResult bounce(String version, int pid) throws RemoteException;
 
   public abstract File getWorkingDirectory(int pid);
+
+  public abstract File getWorkingDirectory(String version, int pid);
 
 }

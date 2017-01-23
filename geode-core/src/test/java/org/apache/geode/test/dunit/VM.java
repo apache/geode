@@ -28,6 +28,7 @@ import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.test.dunit.standalone.BounceResult;
 import org.apache.geode.test.dunit.standalone.RemoteDUnitVMIF;
 import org.apache.geode.test.dunit.standalone.StandAloneDUnitEnv;
+import org.apache.geode.test.dunit.standalone.VersionManager;
 
 /**
  * This class represents a Java Virtual Machine that runs on a host.
@@ -40,6 +41,9 @@ public class VM implements Serializable {
 
   /** The process id of this VM */
   private int pid;
+
+  /** The version of Geode used in this VM */
+  private String version;
 
   /** The hydra client for this VM */
   private RemoteDUnitVMIF client;
@@ -69,13 +73,32 @@ public class VM implements Serializable {
   }
 
   /**
+   * Returns the name of a VM for use in the RMI naming service or working directory on disk
+   */
+  public static String getVMName(String version, int pid) {
+    if (pid == -2) {
+      return "locator";
+    }
+    if (pid < 0 || VersionManager.isCurrentVersion(version)) {
+      return "vm" + pid;
+    } else {
+      return "vm" + pid + "_v" + version;
+    }
+  }
+
+  /**
    * Creates a new {@code VM} that runs on a given host with a given process id.
    *
    * TODO: change pid to reflect value from {@link ProcessUtils#identifyPid()}
    */
   public VM(final Host host, final int pid, final RemoteDUnitVMIF client) {
+    this(host, VersionManager.CURRENT_VERSION, pid, client);
+  }
+
+  public VM(final Host host, final String version, final int pid, final RemoteDUnitVMIF client) {
     this.host = host;
     this.pid = pid;
+    this.version = version;
     this.client = client;
     this.available = true;
   }
@@ -85,6 +108,16 @@ public class VM implements Serializable {
    */
   public Host getHost() {
     return this.host;
+  }
+
+  /**
+   * Returns the version of Geode used in this VM.
+   * 
+   * @see VersionManager#CURRENT_VERSION
+   * @see Host#getVM(String, int)
+   */
+  public String getVersion() {
+    return this.version;
   }
 
   /**
@@ -359,6 +392,10 @@ public class VM implements Serializable {
    *         {@code hydra.Prms#maxClientStartupWaitSec}.
    */
   public synchronized void bounce() {
+    bounce(this.version);
+  }
+
+  public synchronized void bounce(String targetVersion) {
     if (!this.available) {
       throw new RMIException(this, getClass().getName(), "bounceVM",
           new IllegalStateException("VM not available: " + this));
@@ -367,9 +404,10 @@ public class VM implements Serializable {
     this.available = false;
 
     try {
-      BounceResult result = DUnitEnv.get().bounce(this.pid);
+      BounceResult result = DUnitEnv.get().bounce(targetVersion, this.pid);
       this.pid = result.getNewPid();
       this.client = result.getNewClient();
+      this.version = targetVersion;
       this.available = true;
 
     } catch (UnsupportedOperationException e) {
@@ -386,11 +424,12 @@ public class VM implements Serializable {
   }
 
   public String toString() {
-    return "VM " + getPid() + " running on " + getHost();
+    return "VM " + getPid() + " running on " + getHost()
+        + (VersionManager.isCurrentVersion(version) ? "" : (" with version " + version));
   }
 
   public File getWorkingDirectory() {
-    return DUnitEnv.get().getWorkingDirectory(getPid());
+    return DUnitEnv.get().getWorkingDirectory(getVersion(), getPid());
   }
 
   private MethExecutorResult execute(final Class targetClass, final String methodName,
