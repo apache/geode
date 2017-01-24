@@ -20,7 +20,7 @@
 #include <gfcpp/gfcpp_globals.hpp>
 #include <gfcpp/gf_types.hpp>
 #include <gfcpp/Cacheable.hpp>
-#include "GemfireTypeIdsImpl.hpp"
+#include "GeodeTypeIdsImpl.hpp"
 #include "SpinLock.hpp"
 #include <gfcpp/DataOutput.hpp>
 

@@ -16,7 +16,7 @@
  */
 
 #include "QueueConnectionResponse.hpp"
-#include "GemfireTypeIdsImpl.hpp"
+#include "GeodeTypeIdsImpl.hpp"
 #include <gfcpp/DataInput.hpp>
 #include "ServerLocation.hpp"
 using namespace apache::geode::client;

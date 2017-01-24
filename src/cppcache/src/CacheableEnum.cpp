@@ -17,7 +17,7 @@
 #include <gfcpp/CacheableEnum.hpp>
 #include <Utils.hpp>
 #include <PdxHelper.hpp>
-#include <GemfireTypeIdsImpl.hpp>
+#include <GeodeTypeIdsImpl.hpp>
 #include <EnumInfo.hpp>
 
 namespace apache {

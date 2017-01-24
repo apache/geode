@@ -25,8 +25,8 @@
 #include <gfcpp/GemfireCppCache.hpp>
 #include <SerializationRegistry.hpp>
 #include <gfcpp/CacheableString.hpp>
-#include <gfcpp/GemfireTypeIds.hpp>
-#include <GemfireTypeIdsImpl.hpp>
+#include <gfcpp/GeodeTypeIds.hpp>
+#include <GeodeTypeIdsImpl.hpp>
 
 // Use to init lib when testing components.
 #include <CppCacheLibrary.hpp>

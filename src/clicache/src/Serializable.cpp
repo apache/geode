@@ -30,7 +30,7 @@
 #include "CacheableBuiltins.hpp"
 //#include "ExceptionTypes.hpp"
 #include "impl/SafeConvert.hpp"
-//#include <GemfireTypeIdsImpl.hpp>
+//#include <GeodeTypeIds.hpp>
 //#include "CacheableHashMap.hpp"
 #include "CacheableHashTable.hpp"
 #include "Struct.hpp"

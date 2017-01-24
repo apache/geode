@@ -20,7 +20,7 @@
 #include <gfcpp/gfcpp_globals.hpp>
 #include <gfcpp/DataInput.hpp>
 #include "DSMemberForVersionStamp.hpp"
-#include "GemfireTypeIdsImpl.hpp"
+#include "GeodeTypeIdsImpl.hpp"
 
 namespace apache {
 namespace geode {

@@ -16,7 +16,7 @@
  */
 #include <gfcpp/DataInput.hpp>
 #include "EventId.hpp"
-#include "GemfireTypeIdsImpl.hpp"
+#include "GeodeTypeIdsImpl.hpp"
 #include "ClientProxyMembershipID.hpp"
 #include <ace/TSS_T.h>
 

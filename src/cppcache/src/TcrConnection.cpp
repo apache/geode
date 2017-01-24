@@ -26,7 +26,7 @@
 #include <ace/OS.h>
 #include "TcrEndpoint.hpp"
 
-#include "GemfireTypeIdsImpl.hpp"
+#include "GeodeTypeIdsImpl.hpp"
 #include "TcrConnectionManager.hpp"
 #include "DistributedSystemImpl.hpp"
 #include "Version.hpp"

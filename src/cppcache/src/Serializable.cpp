@@ -16,7 +16,7 @@
  */
 #include <gfcpp/gfcpp_globals.hpp>
 #include <gfcpp/Serializable.hpp>
-#include <GemfireTypeIdsImpl.hpp>
+#include <GeodeTypeIdsImpl.hpp>
 #include <SerializationRegistry.hpp>
 #include <Utils.hpp>
 #include <gfcpp/CacheableString.hpp>

@@ -18,7 +18,7 @@
 
 
 //#include "gf_includes.hpp"
-#include <GemfireTypeIdsImpl.hpp>
+#include <GeodeTypeIdsImpl.hpp>
 #include "CacheableObjectArray.hpp"
 #include "DataOutput.hpp"
 #include "DataInput.hpp"

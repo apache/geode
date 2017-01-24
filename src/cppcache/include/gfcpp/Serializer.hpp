@@ -24,7 +24,7 @@
 #include "VectorT.hpp"
 #include "HashMapT.hpp"
 #include "HashSetT.hpp"
-#include "GemfireTypeIds.hpp"
+#include "GeodeTypeIds.hpp"
 #include "TypeHelper.hpp"
 
 namespace apache {

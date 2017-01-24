@@ -20,7 +20,7 @@
 
 #include <gfcpp/gfcpp_globals.hpp>
 #include <gfcpp/DataOutput.hpp>
-#include "GemfireTypeIdsImpl.hpp"
+#include "GeodeTypeIdsImpl.hpp"
 #include "DSMemberForVersionStamp.hpp"
 #include <ace/OS.h>
 #include <string>

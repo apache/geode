@@ -21,7 +21,7 @@
 #include "gf_types.hpp"
 #include "CacheableKey.hpp"
 #include "CacheableString.hpp"
-#include "GemfireTypeIds.hpp"
+#include "GeodeTypeIds.hpp"
 #include "ExceptionTypes.hpp"
 #include <time.h>
 #ifdef _WIN32

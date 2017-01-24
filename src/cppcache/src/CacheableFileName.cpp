@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 #include <gfcpp/CacheableFileName.hpp>
-#include <gfcpp/GemfireTypeIds.hpp>
+#include <gfcpp/GeodeTypeIds.hpp>
 #include <gfcpp/DataOutput.hpp>
 #include <gfcpp/DataInput.hpp>
 

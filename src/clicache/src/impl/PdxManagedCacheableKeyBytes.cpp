@@ -21,7 +21,7 @@
 #include "../DataOutput.hpp"
 #include "../Serializable.hpp"
 #include "../CacheableString.hpp"
-#include <GemfireTypeIdsImpl.hpp>
+#include <GeodeTypeIdsImpl.hpp>
 #include "../ExceptionTypes.hpp"
 #include "ManagedString.hpp"
 #include "SafeConvert.hpp"

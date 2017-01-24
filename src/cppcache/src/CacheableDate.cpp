@@ -21,7 +21,7 @@
 #include <gfcpp/DataOutput.hpp>
 #include <gfcpp/DataInput.hpp>
 #include <gfcpp/ExceptionTypes.hpp>
-#include <gfcpp/GemfireTypeIds.hpp>
+#include <gfcpp/GeodeTypeIds.hpp>
 
 #include <cwchar>
 #include <ace/OS.h>

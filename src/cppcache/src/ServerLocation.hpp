@@ -22,7 +22,7 @@
 #include "Utils.hpp"
 #include <gfcpp/DataOutput.hpp>
 #include <gfcpp/CacheableString.hpp>
-#include "GemfireTypeIdsImpl.hpp"
+#include "GeodeTypeIdsImpl.hpp"
 #include <ace/INET_Addr.h>
 #include <gfcpp/CacheableBuiltins.hpp>
 namespace apache {

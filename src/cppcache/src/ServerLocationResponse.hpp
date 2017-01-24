@@ -17,7 +17,7 @@
 #ifndef __SERVER_LOCATION__RESPONSE__
 #define __SERVER_LOCATION__RESPONSE__
 #include <gfcpp/Serializable.hpp>
-#include "GemfireTypeIdsImpl.hpp"
+#include "GeodeTypeIdsImpl.hpp"
 namespace apache {
 namespace geode {
 namespace client {

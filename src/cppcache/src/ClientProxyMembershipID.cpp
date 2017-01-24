@@ -19,8 +19,8 @@
 #include <time.h>
 #include <ace/OS.h>
 #include <gfcpp/DistributedSystem.hpp>
-#include <gfcpp/GemfireTypeIds.hpp>
-#include "GemfireTypeIdsImpl.hpp"
+#include <gfcpp/GeodeTypeIds.hpp>
+#include "GeodeTypeIdsImpl.hpp"
 #include <gfcpp/CacheableBuiltins.hpp>
 #include "Version.hpp"
 #include <string>

@@ -21,7 +21,7 @@
 #include "CacheableStack.hpp"
 #include "DataOutput.hpp"
 #include "DataInput.hpp"
-#include <GemfireTypeIdsImpl.hpp>
+#include <GeodeTypeIdsImpl.hpp>
 #include "impl/SafeConvert.hpp"
 #include "GemFireClassIds.hpp"
 

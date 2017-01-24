@@ -20,7 +20,7 @@
 #include "../gf_defs.hpp"
 #include <vcclr.h>
 #include <gfcpp/CacheableKey.hpp>
-#include <GemfireTypeIdsImpl.hpp>
+#include <GeodeTypeIdsImpl.hpp>
 #include "../IPdxSerializable.hpp"
 #include <gfcpp/Delta.hpp>
 #include "../IGFDelta.hpp"

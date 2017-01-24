@@ -17,7 +17,7 @@
 
 #pragma once
 #include "PdxFieldType.hpp"
-#include <gfcpp/GemfireTypeIds.hpp>
+#include <gfcpp/GeodeTypeIds.hpp>
 
 using namespace System;
 

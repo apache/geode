@@ -18,7 +18,7 @@
 #define __GATEWAYEVENTCALLBACKARGUMENT_HPP__
 
 #include <gfcpp/Serializable.hpp>
-#include "GemfireTypeIdsImpl.hpp"
+#include "GeodeTypeIdsImpl.hpp"
 
 namespace apache {
 namespace geode {

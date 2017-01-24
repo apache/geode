@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 #include <gfcpp/Properties.hpp>
-#include <gfcpp/GemfireTypeIds.hpp>
+#include <gfcpp/GeodeTypeIds.hpp>
 
 #include <string>
 #include <ace/Hash_Map_Manager.h>

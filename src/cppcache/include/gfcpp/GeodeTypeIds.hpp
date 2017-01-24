@@ -24,7 +24,7 @@ namespace client {
 class GemfireTypeIds {
  public:
   // User visible IDs here
-  // Internal IDs are in GemfireTypeIdsImpl.hpp
+  // Internal IDs are in GeodeTypeIds.hpp
 
   enum IdValues {
     // Do not use IDs 5 and 6 which are used by .NET

@@ -21,8 +21,8 @@
 //#include "CacheFactory.hpp"
 #include "Cache.hpp"
 #include <vcclr.h>
-//#include <gfcpp/GemfireTypeIds.hpp>
-#include <GemfireTypeIdsImpl.hpp>
+//#include <gfcpp/GeodeTypeIds.hpp>
+#include <GeodeTypeIdsImpl.hpp>
 #include "CacheableString.hpp"
 #include "CacheableHashMap.hpp"
 #include "CacheableStack.hpp"

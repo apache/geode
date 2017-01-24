@@ -17,7 +17,7 @@
 #include "LocatorListRequest.hpp"
 #include <gfcpp/DataInput.hpp>
 #include <gfcpp/DataOutput.hpp>
-#include "GemfireTypeIdsImpl.hpp"
+#include "GeodeTypeIdsImpl.hpp"
 #include <gfcpp/CacheableString.hpp>
 using namespace apache::geode::client;
 LocatorListRequest::LocatorListRequest(const std::string& servergroup)

@@ -22,7 +22,7 @@
  */
 
 #include "PdxInstantiator.hpp"
-#include "GemfireTypeIdsImpl.hpp"
+#include "GeodeTypeIdsImpl.hpp"
 #include <gfcpp/CacheableString.hpp>
 #include <gfcpp/DataInput.hpp>
 #include "PdxHelper.hpp"

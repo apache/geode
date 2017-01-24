@@ -17,7 +17,7 @@
 
 //#include "gf_includes.hpp"
 #include "DataOutput.hpp"
-#include <GemfireTypeIdsImpl.hpp>
+#include <GeodeTypeIdsImpl.hpp>
 #include <vcclr.h>
 
 #include "IGFSerializable.hpp"

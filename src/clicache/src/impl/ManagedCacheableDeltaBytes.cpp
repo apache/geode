@@ -20,7 +20,7 @@
 #include "../DataInput.hpp"
 #include "../DataOutput.hpp"
 #include "../CacheableString.hpp"
-#include <GemfireTypeIdsImpl.hpp>
+#include <GeodeTypeIdsImpl.hpp>
 #include "../ExceptionTypes.hpp"
 #include "SafeConvert.hpp"
 

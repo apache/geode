@@ -22,7 +22,7 @@
  */
 
 #include "PdxFieldType.hpp"
-#include "GemfireTypeIdsImpl.hpp"
+#include "GeodeTypeIdsImpl.hpp"
 #include "PdxTypes.hpp"
 #include <gfcpp/PdxFieldTypes.hpp>
 //#include <malloc.h>

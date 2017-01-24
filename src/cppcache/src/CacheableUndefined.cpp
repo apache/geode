@@ -17,8 +17,8 @@
 #include <gfcpp/CacheableUndefined.hpp>
 #include <gfcpp/DataOutput.hpp>
 #include <gfcpp/DataInput.hpp>
-#include <gfcpp/GemfireTypeIds.hpp>
-#include <GemfireTypeIdsImpl.hpp>
+#include <gfcpp/GeodeTypeIds.hpp>
+#include <GeodeTypeIdsImpl.hpp>
 
 namespace apache {
 namespace geode {

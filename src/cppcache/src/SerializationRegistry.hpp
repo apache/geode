@@ -25,8 +25,8 @@
 #include <ace/Hash_Map_Manager.h>
 #include <ace/Thread_Mutex.h>
 #include <ace/Null_Mutex.h>
-#include <gfcpp/GemfireTypeIds.hpp>
-#include "GemfireTypeIdsImpl.hpp"
+#include <gfcpp/GeodeTypeIds.hpp>
+#include "GeodeTypeIdsImpl.hpp"
 #include <gfcpp/DataOutput.hpp>
 #include <gfcpp/ExceptionTypes.hpp>
 #include <gfcpp/Delta.hpp>

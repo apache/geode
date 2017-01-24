@@ -28,7 +28,7 @@
 #include "RemoteQuery.hpp"
 #include <gfcpp/SelectResultsIterator.hpp>
 #include <gfcpp/Struct.hpp>
-#include "GemfireTypeIdsImpl.hpp"
+#include "GeodeTypeIdsImpl.hpp"
 #include "AutoDelete.hpp"
 #include <gfcpp/PoolManager.hpp>
 #include "UserAttributes.hpp"
