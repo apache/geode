@@ -16,31 +16,10 @@ package org.apache.geode.test.junit.rules.serializable;
 
 import java.io.Serializable;
 
-import org.junit.rules.ExternalResource;
-import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 /**
- * Serializable subclass of {@link org.junit.rules.ExternalResource ExternalResource}.
+ * Serializable subclass of {@link Statement}.
  */
-public abstract class SerializableExternalResource extends ExternalResource
-    implements SerializableTestRule {
-
-  public Statement apply(Statement base, Description description) {
-    return statement(base);
-  }
-
-  private Statement statement(final Statement base) {
-    return new SerializableStatement() {
-      @Override
-      public void evaluate() throws Throwable {
-        before();
-        try {
-          base.evaluate();
-        } finally {
-          after();
-        }
-      }
-    };
-  }
+public abstract class SerializableStatement extends Statement implements Serializable {
 }

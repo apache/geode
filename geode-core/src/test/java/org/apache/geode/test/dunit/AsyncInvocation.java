@@ -316,6 +316,58 @@ public class AsyncInvocation<V> implements Future<V> {
   }
 
   /**
+   * Waits if necessary for at most the given time for the computation to complete.
+   *
+   * @param timeout the maximum time to wait
+   * @param unit the time unit of the timeout argument
+   *
+   * @return this {@code AsyncInvocation}
+   *
+   * @throws AssertionError wrapping any {@code Exception} thrown by this {@code AsyncInvocation}.
+   *
+   * @throws CancellationException if the computation was cancelled
+   *
+   * @throws ExecutionException if the computation threw an exception
+   *
+   * @throws InterruptedException if the current thread is interrupted.
+   *
+   * @throws TimeoutException if the wait timed out
+   */
+  public AsyncInvocation<V> await(final long timeout, final TimeUnit unit)
+      throws ExecutionException, InterruptedException, TimeoutException {
+    long millis = unit.toMillis(timeout);
+    join(millis);
+    timeoutIfAlive(millis);
+    checkException();
+    return this;
+  }
+
+  /**
+   * Waits if necessary for at most the given time for the computation to complete.
+   *
+   * @return this {@code AsyncInvocation}
+   *
+   * @throws AssertionError wrapping any {@code Exception} thrown by this {@code AsyncInvocation}.
+   *
+   * @throws AssertionError wrapping a {@code TimeoutException} if this {@code AsyncInvocation}
+   *         fails to complete within the default timeout of 60 seconds as defined by
+   *         {@link #DEFAULT_JOIN_MILLIS}.
+   *
+   * @throws CancellationException if the computation was cancelled
+   *
+   * @throws ExecutionException if the computation threw an exception
+   *
+   * @throws InterruptedException if the current thread is interrupted.
+   */
+  public AsyncInvocation<V> await() throws ExecutionException, InterruptedException {
+    try {
+      return await(DEFAULT_JOIN_MILLIS, TimeUnit.MILLISECONDS);
+    } catch (TimeoutException timeoutException) {
+      throw new AssertionError(timeoutException);
+    }
+  }
+
+  /**
    * Waits if necessary for the work to complete, and then returns the result of this
    * {@code AsyncInvocation}.
    *
@@ -352,10 +404,6 @@ public class AsyncInvocation<V> implements Future<V> {
    * @return the result of this {@code AsyncInvocation}
    *
    * @throws AssertionError wrapping any {@code Exception} thrown by this {@code AsyncInvocation}.
-   *
-   * @throws AssertionError wrapping a {@code TimeoutException} if this {@code AsyncInvocation}
-   *         fails to complete within the default timeout of 60 seconds as defined by
-   *         {@link #DEFAULT_JOIN_MILLIS}.
    *
    * @throws CancellationException if the computation was cancelled
    *

@@ -15,6 +15,7 @@
 package org.apache.geode.management;
 
 import java.beans.ConstructorProperties;
+import java.io.Serializable;
 
 /**
  * Composite data type used to distribute metrics for the operating system hosting a member of the
@@ -23,7 +24,7 @@ import java.beans.ConstructorProperties;
  * @since GemFire 7.0
  *
  */
-public class OSMetrics {
+public class OSMetrics implements Serializable {
 
   /**
    * Maximum number file descriptor which can be opened

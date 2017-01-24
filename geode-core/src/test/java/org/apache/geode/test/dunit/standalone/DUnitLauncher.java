@@ -14,33 +14,8 @@
  */
 package org.apache.geode.test.dunit.standalone;
 
-import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
-import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
-import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
-
-import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.test.dunit.DUnitEnv;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.SerializableCallable;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.appender.FileAppender;
-import org.apache.logging.log4j.core.config.LoggerConfig;
-import org.apache.logging.log4j.core.layout.PatternLayout;
-import org.junit.Assert;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.internal.DistributionConfig.*;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -63,9 +38,29 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.List;
 import java.util.Properties;
+
 import batterytest.greplogs.ExpectedStrings;
 import batterytest.greplogs.LogConsumer;
 import hydra.MethExecutorResult;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.FileAppender;
+import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.junit.Assert;
+
+import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.test.dunit.DUnitEnv;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.SerializableCallable;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 
 /**
  * A class to build a fake test configuration and launch some DUnit VMS.
@@ -98,6 +93,9 @@ public class DUnitLauncher {
   private static final int LOCATOR_VM_NUM = -2;
 
   static final long STARTUP_TIMEOUT = 120 * 1000;
+  private static final String STARTUP_TIMEOUT_MESSAGE =
+      "VMs did not start up within " + (STARTUP_TIMEOUT / 1000) + " seconds";
+
   private static final String SUSPECT_FILENAME = "dunit_suspect.log";
   private static File DUNIT_SUSPECT_FILE;
 
@@ -219,7 +217,7 @@ public class DUnitLauncher {
 
     // wait for the VM to start up
     if (!processManager.waitForVMs(STARTUP_TIMEOUT)) {
-      throw new RuntimeException("VMs did not start up with 30 seconds");
+      throw new RuntimeException("VMs did not start up within 30 seconds");
     }
 
     locatorPort = startLocator(registry);
@@ -233,7 +231,7 @@ public class DUnitLauncher {
 
     // wait for the VMS to start up
     if (!processManager.waitForVMs(STARTUP_TIMEOUT)) {
-      throw new RuntimeException("VMs did not start up with 30 seconds");
+      throw new RuntimeException("VMs did not start up within 30 seconds");
     }
 
     // populate the Host class with our stubs. The tests use this host class

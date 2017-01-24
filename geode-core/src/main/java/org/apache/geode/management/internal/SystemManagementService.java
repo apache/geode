@@ -350,7 +350,8 @@ public final class SystemManagementService extends BaseManagementService {
   }
 
 
-  public <T> T getMBeanProxy(ObjectName objectName, Class<T> interfaceClass) {
+  public <T> T getMBeanProxy(ObjectName objectName, Class<T> interfaceClass) { // TODO: this is too
+                                                                               // generic
     if (!isStartedAndOpen()) {
       return null;
     }

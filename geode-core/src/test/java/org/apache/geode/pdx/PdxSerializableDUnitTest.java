@@ -37,10 +37,8 @@ import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.cache.DistributedCacheOperation;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.pdx.internal.EnumId;
 import org.apache.geode.pdx.internal.EnumInfo;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
-import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DUnitBlackboard;
 import org.apache.geode.test.dunit.Host;
@@ -59,16 +57,6 @@ import java.util.concurrent.TimeoutException;
 
 @Category({DistributedTest.class, SerializationTest.class})
 public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
-
-  public Cache getCache(Properties properties) {
-    getSystem(properties);
-    return getCache();
-  }
-
-
-  public PdxSerializableDUnitTest() {
-    super();
-  }
 
   @Test
   public void testSimplePut() {

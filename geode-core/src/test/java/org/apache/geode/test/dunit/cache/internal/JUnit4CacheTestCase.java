@@ -245,6 +245,11 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
     return getCache(false, factory);
   }
 
+  public final Cache getCache(final Properties properties) {
+    getSystem(properties);
+    return getCache();
+  }
+
   public final Cache getCache(final boolean client) {
     return getCache(client, null);
   }
