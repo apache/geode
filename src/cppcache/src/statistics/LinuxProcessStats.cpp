@@ -18,7 +18,7 @@
 #include <ace/Thread_Mutex.h>
 #include <ace/Singleton.h>
 #include "LinuxProcessStats.hpp"
-#include "GemfireStatisticsFactory.hpp"
+#include "GeodeStatisticsFactory.hpp"
 #include "HostStatHelperLinux.hpp"
 using namespace apache::geode::statistics;
 
@@ -29,8 +29,8 @@ using namespace apache::geode::statistics;
  */
 
 LinuxProcessStats::LinuxProcessStats(int64 pid, const char* name) {
-  GemfireStatisticsFactory* statFactory =
-      GemfireStatisticsFactory::getExistingInstance();
+  GeodeStatisticsFactory* statFactory =
+      GeodeStatisticsFactory::getExistingInstance();
 
   // Create Statistics Type
   createType(statFactory);

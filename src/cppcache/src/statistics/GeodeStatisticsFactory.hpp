@@ -47,7 +47,7 @@ class StatisticsManager;
  * Gemfire's implementation of {@link StatisticsFactory}.
  *
  */
-class GemfireStatisticsFactory : public StatisticsFactory {
+class GeodeStatisticsFactory : public StatisticsFactory {
  private:
   //--------------------Properties-------------------------------------------------
 
@@ -57,11 +57,11 @@ class GemfireStatisticsFactory : public StatisticsFactory {
 
   StatisticsManager* m_statMngr;
 
-  static GemfireStatisticsFactory* s_singleton;
+  static GeodeStatisticsFactory* s_singleton;
 
   //------------------  methods ------------------------------
 
-  GemfireStatisticsFactory(StatisticsManager* statMngr);
+  GeodeStatisticsFactory(StatisticsManager* statMngr);
 
   int64 m_statsListUniqueId;  // Creates a unique id for each stats object in
                               // the list
@@ -77,7 +77,7 @@ class GemfireStatisticsFactory : public StatisticsFactory {
   //////////////////////////public member functions///////////////////////////
 
  public:
-  ~GemfireStatisticsFactory();
+  ~GeodeStatisticsFactory();
 
   static void clean();
 
@@ -85,9 +85,9 @@ class GemfireStatisticsFactory : public StatisticsFactory {
 
   int64 getId();
 
-  static GemfireStatisticsFactory* initInstance(StatisticsManager* statMngr);
+  static GeodeStatisticsFactory* initInstance(StatisticsManager* statMngr);
 
-  static GemfireStatisticsFactory* getExistingInstance();
+  static GeodeStatisticsFactory* getExistingInstance();
 
   //------------ StatisticsFactory methods: Statistics
   //------------------------------

@@ -19,7 +19,7 @@
 
 #include <ace/OS_NS_sys_utsname.h>
 #include "HostStatHelper.hpp"
-#include "GemfireStatisticsFactory.hpp"
+#include "GeodeStatisticsFactory.hpp"
 
 using namespace apache::geode::statistics;
 
