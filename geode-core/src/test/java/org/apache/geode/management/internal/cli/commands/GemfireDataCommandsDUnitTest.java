@@ -738,6 +738,87 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
+  /**
+   * Test remove an a region with a zero length string GEODE-2269
+   * 
+   * @author Gregory Green
+   */
+  @Test
+  public void testRemoveEmptyKey() {
+    // set the test region/data
+    setupForGetPutRemoveLocateEntry("testRemoveEmptyKey");
+
+    // Test across two virtual machines
+    final VM vm1 = Host.getHost(0).getVM(1);
+    final VM vm2 = Host.getHost(0).getVM(2);
+
+    // Initial empty key/value
+    String key = "";
+    String value = "";
+
+    // Get empty key in region
+    SerializableRunnable checkPutKeys = new SerializableRunnable() {
+      @Override
+      public void run() {
+        Cache cache = getCache();
+        Region<Object, Object> region = cache.getRegion(DATA_REGION_NAME_PATH);
+        assertNotNull(region);
+        region.put(key, value);
+      }
+    };
+
+    vm1.invoke(checkPutKeys);
+    vm2.invoke(checkPutKeys);
+
+    // Check if keys were put correctly
+    SerializableRunnable checkPutKeysExists = new SerializableRunnable() {
+      @Override
+      public void run() {
+        Cache cache = getCache();
+        Region<Object, Object> region = cache.getRegion(DATA_REGION_NAME_PATH);
+        assertNotNull(region);
+        assertEquals(value, region.get(key));
+      }
+    };
+
+    vm1.invoke(checkPutKeysExists);
+    vm2.invoke(checkPutKeysExists);
+
+    // Remove empty key entry using gfsh remove command
+    String command = "remove ";
+
+    command = command + " " + "--key=\"'" + key + "'\" --region=" + DATA_REGION_NAME_PATH;
+    CommandResult cmdResult = executeCommand(command);
+    printCommandOutput(cmdResult);
+
+    assertNotNull(cmdResult);
+    assertNotNull(cmdResult.getResultData());
+    assertNotNull(cmdResult.getResultData().getGfJsonObject());
+    assertTrue(
+        cmdResult.getResultData().getGfJsonObject() + " not contains message:"
+            + CliStrings.REMOVE__MSG__KEY_EMPTY,
+        !cmdResult.getResultData().getGfJsonObject().toString()
+            .contains(CliStrings.REMOVE__MSG__KEY_EMPTY));
+
+    validateResult(cmdResult, true);
+    assertEquals(Result.Status.OK, cmdResult.getStatus());
+
+    // Check that key were removed
+    SerializableRunnable checkPutKeysDoesNotExists = new SerializableRunnable() {
+      @Override
+      public void run() {
+        Cache cache = getCache();
+        Region<Object, Object> region = cache.getRegion(DATA_REGION_NAME_PATH);
+        assertNotNull(region);
+        assertFalse(value, region.containsKey(key));
+      }
+    };
+
+    vm1.invoke(checkPutKeysDoesNotExists);
+    vm2.invoke(checkPutKeysDoesNotExists);
+  }
+
+
   @Test
   public void testSimplePutCommand() {
     final String keyPrefix = "testKey";

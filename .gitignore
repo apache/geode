@@ -12,6 +12,12 @@ build/
 .idea/
 build-eclipse/
 /tags
+bin
+runtime
+*.gitignore
+geode-assembly/.gitignore
+.externalToolBuilders
+ConfigDiskDir_local
 
 
 
