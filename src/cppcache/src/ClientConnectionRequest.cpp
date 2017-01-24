@@ -17,7 +17,7 @@
 #include "ClientConnectionRequest.hpp"
 #include <gfcpp/DataOutput.hpp>
 #include <gfcpp/DataInput.hpp>
-#include "GemfireTypeIdsImpl.hpp"
+#include "GeodeTypeIdsImpl.hpp"
 using namespace apache::geode::client;
 void ClientConnectionRequest::toData(DataOutput& output) const {
   // output.writeASCII( m_servergroup.c_str() );

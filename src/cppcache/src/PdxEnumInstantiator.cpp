@@ -19,7 +19,7 @@
 */
 
 #include "PdxEnumInstantiator.hpp"
-#include "GemfireTypeIdsImpl.hpp"
+#include "GeodeTypeIdsImpl.hpp"
 #include <gfcpp/CacheableString.hpp>
 #include <gfcpp/DataInput.hpp>
 

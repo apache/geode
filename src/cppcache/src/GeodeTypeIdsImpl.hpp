@@ -24,7 +24,7 @@ namespace client {
 class GemfireTypeIdsImpl {
  public:
   // Internal IDs here
-  // User visible IDs are in GemfireTypeIds.hpp
+  // User visible IDs are in GeodeTypeIds.hpp
 
   enum IdValues {
     // keep the following in alphabetical order please.

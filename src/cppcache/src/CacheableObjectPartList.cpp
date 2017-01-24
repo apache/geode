@@ -16,7 +16,7 @@
  */
 #include "CacheableObjectPartList.hpp"
 #include <gfcpp/ExceptionTypes.hpp>
-#include "GemfireTypeIdsImpl.hpp"
+#include "GeodeTypeIdsImpl.hpp"
 #include <gfcpp/CacheableString.hpp>
 #include "ThinClientRegion.hpp"
 #include "CacheableToken.hpp"

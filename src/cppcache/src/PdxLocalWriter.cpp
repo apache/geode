@@ -25,7 +25,7 @@
 #include "PdxHelper.hpp"
 #include "PdxTypeRegistry.hpp"
 #include <gfcpp/CacheableEnum.hpp>
-#include "GemfireTypeIdsImpl.hpp"
+#include "GeodeTypeIdsImpl.hpp"
 
 namespace apache {
 namespace geode {

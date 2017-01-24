@@ -23,7 +23,7 @@
 
 #include "PdxType.hpp"
 #include "PdxHelper.hpp"
-#include "GemfireTypeIdsImpl.hpp"
+#include "GeodeTypeIdsImpl.hpp"
 #include "PdxFieldType.hpp"
 #include "Utils.hpp"
 #include "PdxTypeRegistry.hpp"

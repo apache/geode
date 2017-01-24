@@ -27,7 +27,7 @@
 #include <gfcpp/Struct.hpp>
 #include <gfcpp/DataInput.hpp>
 #include <gfcpp/DataOutput.hpp>
-#include <gfcpp/GemfireTypeIds.hpp>
+#include <gfcpp/GeodeTypeIds.hpp>
 #include "CacheableToken.hpp"
 #include <gfcpp/Region.hpp>
 #include "EventId.hpp"
@@ -104,7 +104,7 @@ class TheTypeMap : private NonCopyable, private NonAssignable {
 
   inline void setup() {
     // Register GemFire builtins here!!
-    // update type ids in GemfireTypeIds.hpp
+    // update type ids in GeodeTypeIds.hpp
 
     bind(CacheableByte::createDeserializable);
     bind(CacheableBoolean::createDeserializable);

@@ -20,7 +20,7 @@
 #include <gfcpp/Cacheable.hpp>
 #include <gfcpp/DataInput.hpp>
 #include <gfcpp/ExceptionTypes.hpp>
-#include "GemfireTypeIdsImpl.hpp"
+#include "GeodeTypeIdsImpl.hpp"
 
 namespace apache {
 namespace geode {

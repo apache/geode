@@ -18,7 +18,7 @@
 #include "TcrMessage.hpp"
 #include "ResultSetImpl.hpp"
 #include "StructSetImpl.hpp"
-#include <gfcpp/GemfireTypeIds.hpp>
+#include <gfcpp/GeodeTypeIds.hpp>
 #include "ReadWriteLock.hpp"
 #include "ThinClientRegion.hpp"
 #include "UserAttributes.hpp"

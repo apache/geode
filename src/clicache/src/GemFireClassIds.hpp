@@ -20,7 +20,7 @@
 
 
 #include "gf_defs.hpp"
-#include <gfcpp/GemfireTypeIds.hpp>
+#include <gfcpp/GeodeTypeIds.hpp>
 
 
 namespace Apache

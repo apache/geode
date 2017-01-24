@@ -22,7 +22,7 @@
  * @see
 */
 #include <gfcpp/CacheableBuiltins.hpp>
-#include <gfcpp/GemfireTypeIds.hpp>
+#include <gfcpp/GeodeTypeIds.hpp>
 #include "TestCacheCallback.hpp"
 #include "ExampleObject.hpp"
 #include "User.hpp"

@@ -16,7 +16,7 @@
  */
 
 #include "PdxReaderWithTypeCollector.hpp"
-#include <gfcpp/GemfireTypeIds.hpp>
+#include <gfcpp/GeodeTypeIds.hpp>
 #include "../GemFireClassIds.hpp"
 using namespace System;
 

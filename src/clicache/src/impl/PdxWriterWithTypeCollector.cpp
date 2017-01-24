@@ -17,7 +17,7 @@
 
 #include "PdxWriterWithTypeCollector.hpp"
 #include "../DataOutput.hpp"
-#include <gfcpp/GemfireTypeIds.hpp>
+#include <gfcpp/GeodeTypeIds.hpp>
 #include "../GemFireClassIds.hpp"
 #include "PdxHelper.hpp"
 

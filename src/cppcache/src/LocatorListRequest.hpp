@@ -18,7 +18,7 @@
 #define __LOCATORLISTREQUEST__
 #include <string>
 #include "ServerLocationRequest.hpp"
-#include "GemfireTypeIdsImpl.hpp"
+#include "GeodeTypeIdsImpl.hpp"
 namespace apache {
 namespace geode {
 namespace client {

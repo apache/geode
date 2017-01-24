@@ -20,7 +20,7 @@
 #include <gfcpp/DataOutput.hpp>
 #include <string.h>
 #include <stdlib.h>
-#include <gfcpp/GemfireTypeIds.hpp>
+#include <gfcpp/GeodeTypeIds.hpp>
 #include <CacheXmlParser.hpp>
 #include <ace/DLL.h>
 #include <ace/OS.h>

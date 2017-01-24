@@ -18,7 +18,7 @@
 #include "ClientReplacementRequest.hpp"
 #include <gfcpp/DataOutput.hpp>
 #include <gfcpp/DataInput.hpp>
-#include "GemfireTypeIdsImpl.hpp"
+#include "GeodeTypeIdsImpl.hpp"
 using namespace apache::geode::client;
 void ClientReplacementRequest::toData(DataOutput& output) const {
   ClientConnectionRequest::toData(output);

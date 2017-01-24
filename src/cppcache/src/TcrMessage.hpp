@@ -32,7 +32,7 @@
 #include <gfcpp/CacheableBuiltins.hpp>
 #include "TcrChunkedContext.hpp"
 #include <gfcpp/VectorT.hpp>
-#include "GemfireTypeIdsImpl.hpp"
+#include "GeodeTypeIdsImpl.hpp"
 #include "BucketServerLocation.hpp"
 #include "FixedPartitionAttributesImpl.hpp"
 #include "VersionTag.hpp"

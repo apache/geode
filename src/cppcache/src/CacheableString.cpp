@@ -18,7 +18,7 @@
 #include <gfcpp/DataOutput.hpp>
 #include <gfcpp/DataInput.hpp>
 #include <gfcpp/ExceptionTypes.hpp>
-#include <gfcpp/GemfireTypeIds.hpp>
+#include <gfcpp/GeodeTypeIds.hpp>
 #include <Utils.hpp>
 
 #include <cwchar>

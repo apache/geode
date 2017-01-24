@@ -17,7 +17,7 @@
 #ifndef ENUM_INFO_HPP
 #define ENUM_INFO_HPP
 
-#include <gfcpp/GemfireTypeIds.hpp>
+#include <gfcpp/GeodeTypeIds.hpp>
 #include <gfcpp/CacheableString.hpp>
 #include <gfcpp/CacheableKey.hpp>
 

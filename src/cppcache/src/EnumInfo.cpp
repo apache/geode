@@ -16,7 +16,7 @@
  */
 #include "EnumInfo.hpp"
 #include "Utils.hpp"
-#include "GemfireTypeIdsImpl.hpp"
+#include "GeodeTypeIdsImpl.hpp"
 
 namespace apache {
 namespace geode {

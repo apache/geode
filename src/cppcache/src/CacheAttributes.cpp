@@ -18,7 +18,7 @@
 #include <Utils.hpp>
 #include <string.h>
 #include <stdlib.h>
-#include <gfcpp/GemfireTypeIds.hpp>
+#include <gfcpp/GeodeTypeIds.hpp>
 #include <gfcpp/CacheAttributes.hpp>
 
 using namespace apache::geode::client;

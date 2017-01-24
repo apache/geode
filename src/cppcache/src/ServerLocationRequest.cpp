@@ -16,7 +16,7 @@
  */
 
 #include "ServerLocationRequest.hpp"
-#include "GemfireTypeIdsImpl.hpp"
+#include "GeodeTypeIdsImpl.hpp"
 using namespace apache::geode::client;
 /*int8_t ServerLocationRequest::typeId( ) const
 {

@@ -21,7 +21,7 @@
 #include <gfcpp/DataInput.hpp>
 #include <gfcpp/DataOutput.hpp>
 #include <gfcpp/CacheableString.hpp>
-#include "GemfireTypeIdsImpl.hpp"
+#include "GeodeTypeIdsImpl.hpp"
 
 using namespace apache::geode::client;
 

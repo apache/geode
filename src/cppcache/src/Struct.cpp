@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 #include <gfcpp/Struct.hpp>
-#include <GemfireTypeIdsImpl.hpp>
+#include <GeodeTypeIdsImpl.hpp>
 #include <gfcpp/DataInput.hpp>
 
 namespace apache {

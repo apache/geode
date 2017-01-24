@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 #include "QueueConnectionRequest.hpp"
-#include "GemfireTypeIdsImpl.hpp"
+#include "GeodeTypeIdsImpl.hpp"
 #include <gfcpp/DataInput.hpp>
 #include <gfcpp/DataOutput.hpp>
 using namespace apache::geode::client;

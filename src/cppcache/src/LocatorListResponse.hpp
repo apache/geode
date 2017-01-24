@@ -17,7 +17,7 @@
 #ifndef _LOCATOR_LIST_RESPONSE_
 #define _LOCATOR_LIST_RESPONSE_
 #include <vector>
-#include "GemfireTypeIdsImpl.hpp"
+#include "GeodeTypeIdsImpl.hpp"
 #include "ServerLocationResponse.hpp"
 #include "ServerLocation.hpp"
 namespace apache {

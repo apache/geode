@@ -44,7 +44,7 @@
 #include <gfcpp/CacheListener.hpp>
 #include <gfcpp/FixedPartitionResolver.hpp>
 #include <gfcpp/CacheWriter.hpp>
-#include <gfcpp/GemfireTypeIds.hpp>
+#include <gfcpp/GeodeTypeIds.hpp>
 #include <CacheImpl.hpp>
 #include <PooledBasePool.hpp>
 #include <CacheXmlParser.hpp>

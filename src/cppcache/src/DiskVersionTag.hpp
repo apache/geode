@@ -18,7 +18,7 @@
 #define __DISKVERSIONTAG_HPP__
 
 #include "VersionTag.hpp"
-#include "GemfireTypeIdsImpl.hpp"
+#include "GeodeTypeIdsImpl.hpp"
 #include "DiskStoreId.hpp"
 
 namespace apache {

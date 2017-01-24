@@ -22,7 +22,7 @@
  */
 
 #include <gfcpp/PdxSerializable.hpp>
-#include <GemfireTypeIdsImpl.hpp>
+#include <GeodeTypeIdsImpl.hpp>
 #include <gfcpp/CacheableString.hpp>
 #include <PdxHelper.hpp>
 #include <gfcpp/CacheableKeys.hpp>

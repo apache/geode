@@ -21,7 +21,7 @@
 #include "gfcpp_globals.hpp"
 #include "gf_types.hpp"
 #include "CacheableKey.hpp"
-#include "GemfireTypeIds.hpp"
+#include "GeodeTypeIds.hpp"
 #include "ExceptionTypes.hpp"
 
 /** @file

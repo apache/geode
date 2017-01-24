@@ -18,7 +18,7 @@
 #define __VERSIONTAG_HPP__
 
 #include <gfcpp/Cacheable.hpp>
-#include "GemfireTypeIdsImpl.hpp"
+#include "GeodeTypeIdsImpl.hpp"
 #include "MemberListForVersionStamp.hpp"
 namespace apache {
 namespace geode {
