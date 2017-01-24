@@ -20,28 +20,10 @@ import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 /**
  * AcceptorImplObserver is an observer/visitor for AcceptorImpl that is used for testing.
  */
-public abstract class AcceptorImplObserver {
-  private static AcceptorImplObserver instance;
+public interface AcceptorImplObserver {
+  void beforeClose(AcceptorImpl acceptorImpl);
 
-  /**
-   * Set the instance of the observer. Setting to null will clear the observer.
-   *
-   * @param instance
-   * @return the old observer, or null if there was no old observer.
-   */
-  public static final AcceptorImplObserver setInstance(AcceptorImplObserver instance) {
-    AcceptorImplObserver oldInstance = AcceptorImplObserver.instance;
-    AcceptorImplObserver.instance = instance;
-    return oldInstance;
-  }
+  void normalCloseTermination(AcceptorImpl acceptorImpl);
 
-  public static final AcceptorImplObserver getInstance() {
-    return instance;
-  }
-
-  public void beforeClose(AcceptorImpl acceptorImpl) {}
-
-  public void normalCloseTermination(AcceptorImpl acceptorImpl) {}
-
-  public void afterClose(AcceptorImpl acceptorImpl) {}
+  void afterClose(AcceptorImpl acceptorImpl);
 }

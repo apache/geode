@@ -112,7 +112,7 @@ public class AcceptorImplDUnitTest extends JUnit4DistributedTestCase {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
 
-    AcceptorImplObserver.setInstance(new AcceptorImplObserver() {
+    AcceptorImpl.setObserver_TESTONLY(new AcceptorImplObserver() {
       @Override
       public void beforeClose(AcceptorImpl acceptorImpl) {
         Thread.currentThread().interrupt();
@@ -158,7 +158,16 @@ public class AcceptorImplDUnitTest extends JUnit4DistributedTestCase {
       assertTrue(passedPostConditions.get());
 
       // cleanup.
-      AcceptorImplObserver.setInstance(null);
+      AcceptorImpl.setObserver_TESTONLY(new AcceptorImplObserver() {
+        @Override
+        public void beforeClose(AcceptorImpl acceptorImpl) {}
+
+        @Override
+        public void normalCloseTermination(AcceptorImpl acceptorImpl) {}
+
+        @Override
+        public void afterClose(AcceptorImpl acceptorImpl) {}
+      });
     }
   }
 }
