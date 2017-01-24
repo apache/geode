@@ -9122,6 +9122,12 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       lockRIReadLock(); // bug #40871 - test sees wrong size for region during RI
     }
     try {
+      if (isClient && getDataPolicy() == DataPolicy.EMPTY) {
+        ServerRegionProxy srp = getServerProxy();
+        if (srp != null) {
+          return srp.size();
+        }
+      }
       return entryCount();
     } finally {
       if (isClient) {
