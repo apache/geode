@@ -20,7 +20,7 @@
 #define __UDPIPC_HPP__
 
 // ----------------------------------------------------------------------------
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 
 #include "fwklib/FrameworkTest.hpp"
 

@@ -1,5 +1,5 @@
-#ifndef __GEMFIRE_GEMFIRECPPCACHE_H__
-#define __GEMFIRE_GEMFIRECPPCACHE_H__
+#ifndef __APACHE_GEODECPPCACHE_H__
+#define __APACHE_GEODECPPCACHE_H__
 /*=========================================================================
  * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
  * This product is protected by U.S. and international copyright
@@ -70,5 +70,5 @@
 #include "CqStatusListener.hpp"
 #include "PdxFieldTypes.hpp"
 
-#include "GemfireCppCache.inl"
-#endif  // define __GEMFIRE_GEMFIRECPPCACHE_H__
+#include "GeodeCppCache.inl"
+#endif  // define __APACHE_GEODECPPCACHE_H__

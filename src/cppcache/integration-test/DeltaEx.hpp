@@ -9,7 +9,7 @@
 #define __DELTAEX_HPP
 
 #include "fw_dunit.hpp"
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <ace/OS.h>
 #include "CacheHelper.hpp"
 class DeltaEx : public Cacheable, public Delta {

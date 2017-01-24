@@ -6,7 +6,7 @@
  *=========================================================================
  */
 
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 
 #include "fw_helper.hpp"
 

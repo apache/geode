@@ -1,7 +1,7 @@
 #ifndef __Delta_Example__
 #define __Delta_Example__
 
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 
 using namespace gemfire;
 

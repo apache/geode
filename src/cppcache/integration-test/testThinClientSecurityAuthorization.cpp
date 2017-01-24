@@ -6,7 +6,7 @@
  *=========================================================================
  */
 #include "fw_dunit.hpp"
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 
 #define ROOT_NAME "testThinClientSecurityAuthentication"
 #define ROOT_SCOPE DISTRIBUTED_ACK

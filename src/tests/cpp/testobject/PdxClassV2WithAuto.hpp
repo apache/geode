@@ -9,7 +9,7 @@
 #define __PDX_CLASSV2_WITH_AUTO_HPP__
 
 #include <gfcpp/PdxSerializable.hpp>
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <gfcpp/PdxWriter.hpp>
 #include <gfcpp/PdxReader.hpp>
 

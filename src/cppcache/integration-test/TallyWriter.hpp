@@ -8,7 +8,7 @@
 #ifndef _TEST_TALLYWRITER_HPP_
 #define _TEST_TALLYWRITER_HPP_ 1
 
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 
 using namespace gemfire;
 using namespace test;

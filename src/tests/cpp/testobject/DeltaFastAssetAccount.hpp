@@ -13,7 +13,7 @@
 #ifndef __DELTAFASTASSETACT__HPP__
 #define __DELTAFASTASSETACT__HPP__
 
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <string.h>
 #include "fwklib/FrameworkTest.hpp"
 #include <ace/ACE.h>

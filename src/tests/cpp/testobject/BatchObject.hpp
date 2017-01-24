@@ -13,7 +13,7 @@
 #ifndef __BATCHOBJECT_HPP__
 #define __BATCHOBJECT_HPP__
 
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <string.h>
 #include "fwklib/Timer.hpp"
 #include "fwklib/FrameworkTest.hpp"

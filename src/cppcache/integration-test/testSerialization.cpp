@@ -13,7 +13,7 @@
 
 #define ROOT_SCOPE DISTRIBUTED_ACK
 
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <SerializationRegistry.hpp>
 #include <gfcpp/CacheableString.hpp>
 #include <gfcpp/GemfireTypeIds.hpp>

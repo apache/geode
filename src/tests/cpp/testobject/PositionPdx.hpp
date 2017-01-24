@@ -13,7 +13,7 @@
 #ifndef __POSITIONPDX_HPP__
 #define __POSITIONPDX_HPP__
 
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <gfcpp/PdxSerializable.hpp>
 #include <gfcpp/PdxWriter.hpp>
 #include <gfcpp/PdxReader.hpp>

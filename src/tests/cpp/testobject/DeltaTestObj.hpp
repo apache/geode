@@ -8,7 +8,7 @@
 #ifndef __DeltaTestObj_HPP__
 #define __DeltaTestObj_HPP__
 
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include "DeltaTestImpl.hpp"
 
 #ifdef _WIN32

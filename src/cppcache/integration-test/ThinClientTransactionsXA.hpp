@@ -9,7 +9,7 @@
 #define THINCLIENTTRANSACTIONS_HPP_
 
 #include "fw_dunit.hpp"
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <ace/Auto_Event.h>
 #include <ace/OS.h>
 #include <ace/High_Res_Timer.h>

@@ -1,5 +1,5 @@
-#ifndef __GEMFIRE_GEMFIRECPPCACHE_I__
-#define __GEMFIRE_GEMFIRECPPCACHE_I__
+#ifndef __APACHE_GEODECPPCACHE_I__
+#define __APACHE_GEODECPPCACHE_I__
 /*=========================================================================
  * Copyright (c) 2002-2014 Pivotal Software, Inc. All Rights Reserved.
  * This product is protected by U.S. and international copyright
@@ -15,4 +15,4 @@
 #include "Cacheable.inl"
 #include "CacheableKey.inl"
 
-#endif //define __GEMFIRE_GEMFIRECPPCACHE_I__
+#endif //define __APACHE_GEODECPPCACHE_I__

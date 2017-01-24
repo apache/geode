@@ -9,7 +9,7 @@
 #define ROOT_NAME "testLogger"
 
 #include "fw_helper.hpp"
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 
 #ifndef WIN32
 #include <unistd.h>

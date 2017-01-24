@@ -8,7 +8,7 @@
 
 #define ROOT_NAME "testRegionTemplateArgs"
 
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <CacheRegionHelper.hpp>
 #include "fw_helper.hpp"
 

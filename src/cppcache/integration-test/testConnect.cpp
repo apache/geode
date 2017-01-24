@@ -9,7 +9,7 @@
 #define ROOT_NAME "testConnect"
 
 #include "fw_dunit.hpp"
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 
 using namespace gemfire;
 

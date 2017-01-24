@@ -6,7 +6,7 @@
  *=========================================================================
  */
 #include "fw_dunit.hpp"
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <gfcpp/CqAttributesFactory.hpp>
 #include <gfcpp/CqAttributes.hpp>
 #include <gfcpp/CqListener.hpp>

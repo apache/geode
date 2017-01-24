@@ -15,7 +15,7 @@
 #ifndef __NONPDXTYPE_HPP__
 #define __NONPDXTYPE_HPP__
 
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 
 #ifdef _WIN32
 #ifdef BUILD_TESTOBJECT

@@ -8,7 +8,7 @@
 
 #define ROOT_NAME "testOverflowPutGetSqLite"
 
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 
 #include "fw_helper.hpp"
 #include <CacheableToken.hpp>

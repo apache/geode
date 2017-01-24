@@ -9,7 +9,7 @@
 
 #include "sqlite3.h"
 #include <gfcpp/PersistenceManager.hpp>
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <sys/types.h>
 #ifndef WIN32
 #include <unistd.h>

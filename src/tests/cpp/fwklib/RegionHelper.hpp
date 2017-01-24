@@ -9,7 +9,7 @@
 #ifndef __REGION_HELPER_HPP__
 #define __REGION_HELPER_HPP__
 
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <AtomicInc.hpp>
 #include "fwklib/FrameworkTest.hpp"
 #include "fwklib/FwkObjects.hpp"

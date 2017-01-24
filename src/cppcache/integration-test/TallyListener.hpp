@@ -9,7 +9,7 @@
 #ifndef _TEST_TALLYLISTENER_HPP_
 #define _TEST_TALLYLISTENER_HPP_
 
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <string>
 
 using namespace gemfire;

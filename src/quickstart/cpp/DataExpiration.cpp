@@ -18,7 +18,7 @@
  */
 
 // Include the GemFire library.
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 
 // Include the SimpleCacheListener plugin.
 #include "plugins/SimpleCacheListener.hpp"

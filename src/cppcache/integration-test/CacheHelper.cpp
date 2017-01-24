@@ -5,7 +5,7 @@
  * one or more patents listed at http://www.pivotal.io/patents.
  *=========================================================================
  */
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <stdlib.h>
 #include <gfcpp/SystemProperties.hpp>
 #include <ace/OS.h>

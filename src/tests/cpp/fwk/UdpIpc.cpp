@@ -16,7 +16,7 @@
 
 // ----------------------------------------------------------------------------
 
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <gfcpp/gfcpp_globals.hpp>
 
 #include "fwklib/UDPIpc.hpp"

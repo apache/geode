@@ -9,7 +9,7 @@
 #define ROOT_NAME "testDunit"
 
 #include "fw_dunit.hpp"
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 
 int getSlaveTest() {
   return dunit::globals()->getIntValue("test_alive_slaves");

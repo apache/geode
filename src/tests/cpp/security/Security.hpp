@@ -21,7 +21,7 @@
 
 // ----------------------------------------------------------------------------
 
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 
 #include <gfcpp/CacheableString.hpp>
 #include <gfcpp/Cache.hpp>
