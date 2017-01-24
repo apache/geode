@@ -1,4 +1,3 @@
-<<<<<<< 2d8e4040353c0e8d840a145550b9265760862b73:src/cppcache/include/gfcpp/GeodeCppCache.inl
 #ifndef __APACHE_GEODECPPCACHE_I__
 #define __APACHE_GEODECPPCACHE_I__
 /*
