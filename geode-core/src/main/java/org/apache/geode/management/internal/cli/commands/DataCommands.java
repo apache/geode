@@ -1093,7 +1093,7 @@ public class DataCommands implements CommandMarker {
           null, CliStrings.REMOVE__MSG__REGIONNAME_EMPTY, false));
     }
 
-    if (!removeAllKeys && (key == null || key.isEmpty())) {
+    if (!removeAllKeys && (key == null)) {
       return makePresentationResult(dataResult = DataCommandResult.createRemoveResult(key, null,
           null, CliStrings.REMOVE__MSG__KEY_EMPTY, false));
     }

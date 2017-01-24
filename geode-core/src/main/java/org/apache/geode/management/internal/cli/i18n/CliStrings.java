@@ -1888,7 +1888,7 @@ public class CliStrings {
   public static final String REMOVE__ALL__HELP =
       "Clears the region by removing all entries. Partitioned region does not support remove-all";
   public static final String REMOVE__MSG__REGIONNAME_EMPTY = "Region name is either empty or Null";
-  public static final String REMOVE__MSG__KEY_EMPTY = "Key is either empty or Null";
+  public static final String REMOVE__MSG__KEY_EMPTY = "Key is Null";
   public static final String REMOVE__MSG__VALUE_EMPTY = "Value is either empty or Null";
   public static final String REMOVE__MSG__REGION_NOT_FOUND_ON_ALL_MEMBERS =
       "Region <{0}> not found in any of the members";

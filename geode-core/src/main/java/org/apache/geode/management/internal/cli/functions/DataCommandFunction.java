@@ -384,7 +384,7 @@ public class DataCommandFunction extends FunctionAdapter implements InternalEnti
     }
 
     boolean allKeysFlag = (removeAllKeys == null || removeAllKeys.isEmpty());
-    if (allKeysFlag && (key == null || key.isEmpty())) {
+    if (allKeysFlag && (key == null)) {
       return DataCommandResult.createRemoveResult(key, null, null,
           CliStrings.REMOVE__MSG__KEY_EMPTY, false);
     }
