@@ -3,6 +3,7 @@ $pass = "p1votal!"
 
 net.exe user $user $pass /add
 net.exe localgroup Administrators $user /add
+wmic.exe UserAccount where "Name='$user'" set PasswordExpires=False
 
 $spw = ConvertTo-SecureString $pass -AsPlainText -Force
 $cred = New-Object System.Management.Automation.PSCredential -ArgumentList $user,$spw
