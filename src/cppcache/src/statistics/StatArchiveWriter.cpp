@@ -25,7 +25,7 @@
 #include <ace/OS_NS_sys_time.h>
 
 #include "StatArchiveWriter.hpp"
-#include "GemfireStatisticsFactory.hpp"
+#include "GeodeStatisticsFactory.hpp"
 #include <NanoTimer.hpp>
 
 using namespace apache::geode::client;

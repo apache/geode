@@ -27,7 +27,7 @@
 #include <gfcpp/Exception.hpp>
 #include "StatisticsManager.hpp"
 #include <gfcpp/Log.hpp>
-#include "GemfireStatisticsFactory.hpp"
+#include "GeodeStatisticsFactory.hpp"
 #include <string>
 #include "AtomicStatisticsImpl.hpp"
 #include "OsStatisticsImpl.hpp"
@@ -47,7 +47,7 @@ StatisticsManager::StatisticsManager(const char* filePath, int64 sampleInterval,
   m_sampleIntervalMs =
       static_cast<int32_t>(sampleInterval) * 1000; /* convert to millis */
   m_newlyAddedStatsList.reserve(16);               // Allocate initial sizes
-  GemfireStatisticsFactory::initInstance(this);
+  GeodeStatisticsFactory::initInstance(this);
 
   try {
     if (m_sampler == NULL && enabled) {
@@ -120,7 +120,7 @@ StatisticsManager::~StatisticsManager() {
     }
 
     // Clean Factory: clean Type map etc.
-    GemfireStatisticsFactory::clean();
+    GeodeStatisticsFactory::clean();
 
   } catch (const Exception& ex) {
     Log::warningCatch("~StatisticsManager swallowing GemFire exception", ex);

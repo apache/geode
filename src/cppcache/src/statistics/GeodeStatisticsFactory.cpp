@@ -23,7 +23,7 @@
 #include <ace/Thread_Mutex.h>
 #include <ace/Guard_T.h>
 #include <gfcpp/Exception.hpp>
-#include "GemfireStatisticsFactory.hpp"
+#include "GeodeStatisticsFactory.hpp"
 #include <gfcpp/Log.hpp>
 #include <string>
 #include "AtomicStatisticsImpl.hpp"
@@ -36,27 +36,27 @@ using namespace apache::geode::statistics;
 /**
  * static member initialization
  */
-GemfireStatisticsFactory* GemfireStatisticsFactory::s_singleton = NULL;
+GeodeStatisticsFactory* GeodeStatisticsFactory::s_singleton = NULL;
 
-GemfireStatisticsFactory::GemfireStatisticsFactory(
+GeodeStatisticsFactory::GeodeStatisticsFactory(
     StatisticsManager* statMngr) {
-  m_name = "GemfireStatisticsFactory";
+  m_name = "GeodeStatisticsFactory";
   m_id = ACE_OS::getpid();
   m_statsListUniqueId = 1;
 
   m_statMngr = statMngr;
 }
 
-GemfireStatisticsFactory* GemfireStatisticsFactory::initInstance(
+GeodeStatisticsFactory* GeodeStatisticsFactory::initInstance(
     StatisticsManager* statMngr) {
   if (!s_singleton) {
-    s_singleton = new GemfireStatisticsFactory(statMngr);
+    s_singleton = new GeodeStatisticsFactory(statMngr);
   }
 
   return s_singleton;
 }
 
-GemfireStatisticsFactory* GemfireStatisticsFactory::getExistingInstance() {
+GeodeStatisticsFactory* GeodeStatisticsFactory::getExistingInstance() {
   GF_D_ASSERT(!!s_singleton);
 
   s_singleton->getId();  // should fault if !s_singleton
@@ -65,14 +65,14 @@ GemfireStatisticsFactory* GemfireStatisticsFactory::getExistingInstance() {
 }
 
 /**************************Dtor*******************************************/
-void GemfireStatisticsFactory::clean() {
+void GeodeStatisticsFactory::clean() {
   if (s_singleton != NULL) {
     delete s_singleton;
     s_singleton = NULL;
   }
 }
 
-GemfireStatisticsFactory::~GemfireStatisticsFactory() {
+GeodeStatisticsFactory::~GeodeStatisticsFactory() {
   try {
     m_statMngr = NULL;
 
@@ -90,39 +90,39 @@ GemfireStatisticsFactory::~GemfireStatisticsFactory() {
     statsTypeMap.unbind_all();
 
   } catch (const Exception& ex) {
-    Log::warningCatch("~GemfireStatisticsFactory swallowing GemFire exception",
+    Log::warningCatch("~GeodeStatisticsFactory swallowing GemFire exception",
                       ex);
 
   } catch (const std::exception& ex) {
-    std::string what = "~GemfireStatisticsFactory swallowing std::exception: ";
+    std::string what = "~GeodeStatisticsFactory swallowing std::exception: ";
     what += ex.what();
     LOGWARN(what.c_str());
 
   } catch (...) {
-    LOGERROR("~GemfireStatisticsFactory swallowing unknown exception");
+    LOGERROR("~GeodeStatisticsFactory swallowing unknown exception");
   }
 }
 
-const char* GemfireStatisticsFactory::getName() { return m_name; }
+const char* GeodeStatisticsFactory::getName() { return m_name; }
 
-int64 GemfireStatisticsFactory::getId() { return m_id; }
+int64 GeodeStatisticsFactory::getId() { return m_id; }
 
-Statistics* GemfireStatisticsFactory::createStatistics(StatisticsType* type) {
+Statistics* GeodeStatisticsFactory::createStatistics(StatisticsType* type) {
   return createAtomicStatistics(type, NULL, 0);
 }
 
-Statistics* GemfireStatisticsFactory::createStatistics(StatisticsType* type,
+Statistics* GeodeStatisticsFactory::createStatistics(StatisticsType* type,
                                                        const char* textId) {
   return createAtomicStatistics(type, textId, 0);
 }
 
-Statistics* GemfireStatisticsFactory::createStatistics(StatisticsType* type,
+Statistics* GeodeStatisticsFactory::createStatistics(StatisticsType* type,
                                                        const char* textId,
                                                        int64 numericId) {
   return createAtomicStatistics(type, textId, 0);
 }
 
-Statistics* GemfireStatisticsFactory::createOsStatistics(StatisticsType* type,
+Statistics* GeodeStatisticsFactory::createOsStatistics(StatisticsType* type,
                                                          const char* textId,
                                                          int64 numericId) {
   // Validate input
@@ -143,17 +143,17 @@ Statistics* GemfireStatisticsFactory::createOsStatistics(StatisticsType* type,
   return result;
 }
 
-Statistics* GemfireStatisticsFactory::createAtomicStatistics(
+Statistics* GeodeStatisticsFactory::createAtomicStatistics(
     StatisticsType* type) {
   return createAtomicStatistics(type, NULL, 0);
 }
 
-Statistics* GemfireStatisticsFactory::createAtomicStatistics(
+Statistics* GeodeStatisticsFactory::createAtomicStatistics(
     StatisticsType* type, const char* textId) {
   return createAtomicStatistics(type, textId, 0);
 }
 
-Statistics* GemfireStatisticsFactory::createAtomicStatistics(
+Statistics* GeodeStatisticsFactory::createAtomicStatistics(
     StatisticsType* type, const char* textId, int64 numericId) {
   // Validate input
   if (type == NULL) {
@@ -174,12 +174,12 @@ Statistics* GemfireStatisticsFactory::createAtomicStatistics(
   return result;
 }
 
-Statistics* GemfireStatisticsFactory::findFirstStatisticsByType(
+Statistics* GeodeStatisticsFactory::findFirstStatisticsByType(
     StatisticsType* type) {
   return (m_statMngr->findFirstStatisticsByType(type));
 }
 
-StatisticsTypeImpl* GemfireStatisticsFactory::addType(StatisticsTypeImpl* st) {
+StatisticsTypeImpl* GeodeStatisticsFactory::addType(StatisticsTypeImpl* st) {
   StatisticsTypeImpl* st1;
   std::string temp(st->getName());
   int status;
@@ -193,7 +193,7 @@ StatisticsTypeImpl* GemfireStatisticsFactory::addType(StatisticsTypeImpl* st) {
   if (status == 1) {
   } else if (status == -1) {
     throw IllegalArgumentException(
-        "GemfireStatisticsFactory::addType: failed "
+        "GeodeStatisticsFactory::addType: failed "
         "to add new type %s",
         temp.c_str());
   }
@@ -203,7 +203,7 @@ StatisticsTypeImpl* GemfireStatisticsFactory::addType(StatisticsTypeImpl* st) {
 /**
  * Creates  a StatisticType for the given shared class.
  */
-StatisticsType* GemfireStatisticsFactory::createType(
+StatisticsType* GeodeStatisticsFactory::createType(
     const char* name, const char* description, StatisticDescriptor** stats,
     int32 statsLength) {
   StatisticsTypeImpl* st =
@@ -213,12 +213,12 @@ StatisticsType* GemfireStatisticsFactory::createType(
     st = addType(st);
   } else {
     throw OutOfMemoryException(
-        "GemfireStatisticsFactory::createType :: out memory");
+        "GeodeStatisticsFactory::createType :: out memory");
   }
   return st;
 }
 
-StatisticsType* GemfireStatisticsFactory::findType(const char* name) {
+StatisticsType* GeodeStatisticsFactory::findType(const char* name) {
   std::string statName = name;
   StatisticsTypeImpl* st = NULL;
   int status = statsTypeMap.find(statName, st);
@@ -233,42 +233,42 @@ StatisticsType* GemfireStatisticsFactory::findType(const char* name) {
   }
 }
 
-StatisticDescriptor* GemfireStatisticsFactory::createIntCounter(
+StatisticDescriptor* GeodeStatisticsFactory::createIntCounter(
     const char* name, const char* description, const char* units,
     int8 largerBetter) {
   return StatisticDescriptorImpl::createIntCounter(name, description, units,
                                                    largerBetter);
 }
 
-StatisticDescriptor* GemfireStatisticsFactory::createLongCounter(
+StatisticDescriptor* GeodeStatisticsFactory::createLongCounter(
     const char* name, const char* description, const char* units,
     int8 largerBetter) {
   return StatisticDescriptorImpl::createLongCounter(name, description, units,
                                                     largerBetter);
 }
 
-StatisticDescriptor* GemfireStatisticsFactory::createDoubleCounter(
+StatisticDescriptor* GeodeStatisticsFactory::createDoubleCounter(
     const char* name, const char* description, const char* units,
     int8 largerBetter) {
   return StatisticDescriptorImpl::createDoubleCounter(name, description, units,
                                                       largerBetter);
 }
 
-StatisticDescriptor* GemfireStatisticsFactory::createIntGauge(
+StatisticDescriptor* GeodeStatisticsFactory::createIntGauge(
     const char* name, const char* description, const char* units,
     int8 largerBetter) {
   return StatisticDescriptorImpl::createIntGauge(name, description, units,
                                                  largerBetter);
 }
 
-StatisticDescriptor* GemfireStatisticsFactory::createLongGauge(
+StatisticDescriptor* GeodeStatisticsFactory::createLongGauge(
     const char* name, const char* description, const char* units,
     int8 largerBetter) {
   return StatisticDescriptorImpl::createLongGauge(name, description, units,
                                                   largerBetter);
 }
 
-StatisticDescriptor* GemfireStatisticsFactory::createDoubleGauge(
+StatisticDescriptor* GeodeStatisticsFactory::createDoubleGauge(
     const char* name, const char* description, const char* units,
     int8 largerBetter) {
   return StatisticDescriptorImpl::createDoubleGauge(name, description, units,

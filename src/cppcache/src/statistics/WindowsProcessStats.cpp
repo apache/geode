@@ -19,14 +19,14 @@
 #include <ace/Singleton.h>
 #include "WindowsProcessStats.hpp"
 #include "HostStatHelperWin.hpp"
-#include "GemfireStatisticsFactory.hpp"
+#include "GeodeStatisticsFactory.hpp"
 #include "HostStatHelper.hpp"
 
 using namespace apache::geode::statistics;
 
 WindowsProcessStats::WindowsProcessStats(int64 pid, const char* name) {
-  GemfireStatisticsFactory* statFactory =
-      GemfireStatisticsFactory::getExistingInstance();
+  GeodeStatisticsFactory* statFactory =
+      GeodeStatisticsFactory::getExistingInstance();
 
   // Create for Statistics Type
   createType(statFactory);

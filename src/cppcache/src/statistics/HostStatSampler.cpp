@@ -35,7 +35,7 @@
 #include <gfcpp/DistributedSystem.hpp>
 #include <gfcpp/SystemProperties.hpp>
 #include <gfcpp/Log.hpp>
-#include "GemfireStatisticsFactory.hpp"
+#include "GeodeStatisticsFactory.hpp"
 #include <ClientHealthStats.hpp>
 #include <ClientProxyMembershipID.hpp>
 using namespace apache::geode::statistics;
@@ -541,8 +541,8 @@ void HostStatSampler::putStatsInAdminRegion() {
         int puts = 0, gets = 0, misses = 0, numListeners = 0, numThreads = 0,
             creates = 0;
         int64 cpuTime = 0;
-        GemfireStatisticsFactory* gf =
-            GemfireStatisticsFactory::getExistingInstance();
+        GeodeStatisticsFactory* gf =
+            GeodeStatisticsFactory::getExistingInstance();
         if (gf) {
           StatisticsType* cacheStatType = gf->findType("CachePerfStats");
           if (cacheStatType) {

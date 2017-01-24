@@ -18,7 +18,7 @@
 #include <ace/Thread_Mutex.h>
 #include <ace/Singleton.h>
 #include "NullProcessStats.hpp"
-#include "GemfireStatisticsFactory.hpp"
+#include "GeodeStatisticsFactory.hpp"
 #include "HostStatHelperNull.hpp"
 using namespace apache::geode::statistics;
 

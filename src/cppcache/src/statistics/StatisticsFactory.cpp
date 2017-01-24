@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-#include "GemfireStatisticsFactory.hpp"
+#include "GeodeStatisticsFactory.hpp"
 
 namespace apache {
 namespace geode {
 namespace statistics {
 
 StatisticsFactory* StatisticsFactory::getExistingInstance() {
-  return GemfireStatisticsFactory::getExistingInstance();
+  return GeodeStatisticsFactory::getExistingInstance();
 }
 }  // namespace client
 }  // namespace geode
