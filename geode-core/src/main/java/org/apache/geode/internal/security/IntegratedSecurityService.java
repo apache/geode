@@ -25,6 +25,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.security.shiro.CustomAuthRealm;
 import org.apache.geode.internal.security.shiro.GeodeAuthenticationToken;
 import org.apache.geode.internal.security.shiro.ShiroPrincipal;
@@ -47,6 +48,8 @@ import org.apache.shiro.config.Ini.Section;
 import org.apache.shiro.config.IniSecurityManagerFactory;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.realm.Realm;
+import org.apache.shiro.session.mgt.DefaultSessionManager;
+import org.apache.shiro.session.mgt.SessionManager;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.subject.support.SubjectThreadState;
 import org.apache.shiro.util.ThreadContext;
@@ -420,11 +423,28 @@ public class IntegratedSecurityService implements SecurityService {
 
     this.securityManager = securityManager;
     Realm realm = new CustomAuthRealm(securityManager);
-    org.apache.shiro.mgt.SecurityManager shiroManager = new DefaultSecurityManager(realm);
+    DefaultSecurityManager shiroManager = new DefaultSecurityManager(realm);
     SecurityUtils.setSecurityManager(shiroManager);
+    increaseShiroGlobalSessionTimeout(shiroManager);
+
     isIntegratedSecurity = true;
     isClientAuthenticator = false;
     isPeerAuthenticator = false;
+  }
+
+  private void increaseShiroGlobalSessionTimeout(final DefaultSecurityManager shiroManager) {
+    SessionManager sessionManager = shiroManager.getSessionManager();
+    if (DefaultSessionManager.class.isInstance(sessionManager)) {
+      DefaultSessionManager defaultSessionManager = (DefaultSessionManager) sessionManager;
+      defaultSessionManager.setGlobalSessionTimeout(Long.MAX_VALUE);
+      long value = defaultSessionManager.getGlobalSessionTimeout();
+      if (value != Long.MAX_VALUE) {
+        logger.error("Unable to set Shiro Global Session Timeout. Current value is '{}'.", value);
+      }
+    } else {
+      logger.error("Unable to set Shiro Global Session Timeout. Current SessionManager is '{}'.",
+          sessionManager == null ? "null" : sessionManager.getClass());
+    }
   }
 
   public PostProcessor getPostProcessor() {
