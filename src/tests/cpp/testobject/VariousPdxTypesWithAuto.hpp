@@ -18,7 +18,7 @@
 #define __VARIOUS_PDX_TYPES_WITH_AUTO_HPP_
 
 #include <gfcpp/PdxSerializable.hpp>
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <gfcpp/PdxWriter.hpp>
 #include <gfcpp/PdxReader.hpp>
 

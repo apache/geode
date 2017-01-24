@@ -18,7 +18,7 @@
 #define ROOT_NAME "testSharedPtr"
 
 #include "fw_dunit.hpp"
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 
 #include <HostAsm.hpp>
 

@@ -31,7 +31,7 @@
  */
 
 // Include the GemFire library.
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 
 // Include our Query objects, viz. Portfolio and Position.
 #include "queryobjects/Portfolio.hpp"

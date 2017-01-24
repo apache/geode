@@ -18,7 +18,7 @@
 #define ROOT_NAME "testSystemProperties"
 
 #include "fw_helper.hpp"
-#include "gfcpp/GemfireCppCache.hpp"
+#include "gfcpp/GeodeCppCache.hpp"
 #include "gfcpp/SystemProperties.hpp"
 #include "gfcpp/Properties.hpp"
 

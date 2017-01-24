@@ -34,7 +34,7 @@
  *
  */
 
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 
 #include "deltaobjects/DeltaExample.hpp"
 

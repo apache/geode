@@ -18,7 +18,7 @@
 #ifndef __ClientTask_hpp__
 #define __ClientTask_hpp__
 
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <AtomicInc.hpp>
 #include "fwklib/PerfFwk.hpp"
 #include "fwklib/FwkObjects.hpp"

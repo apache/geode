@@ -1,5 +1,5 @@
-#ifndef __GEMFIRE_GEMFIRECPPCACHE_H__
-#define __GEMFIRE_GEMFIRECPPCACHE_H__
+#ifndef __APACHE_GEODECPPCACHE_H__
+#define __APACHE_GEODECPPCACHE_H__
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -79,5 +79,5 @@
 #include "CqStatusListener.hpp"
 #include "PdxFieldTypes.hpp"
 
-#include "GemfireCppCache.inl"
-#endif  // define __GEMFIRE_GEMFIRECPPCACHE_H__
+#include "GeodeCppCache.inl"
+#endif  // define __APACHE_GEODECPPCACHE_H__

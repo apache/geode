@@ -16,7 +16,7 @@
  */
 #include "fw_dunit.hpp"
 #include "ThinClientHelper.hpp"
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <ace/Task.h>
 #include <ace/Recursive_Thread_Mutex.h>
 

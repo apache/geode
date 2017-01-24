@@ -22,7 +22,7 @@
 #ifndef __FASTASSETACT__HPP__
 #define __FASTASSETACT__HPP__
 
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <string.h>
 #include "fwklib/Timer.hpp"
 #include "fwklib/FrameworkTest.hpp"

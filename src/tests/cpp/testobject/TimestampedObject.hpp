@@ -17,7 +17,7 @@
 #ifndef __TimestampedObjectHPP__
 #define __TimestampedObjectHPP__
 
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 
 #ifdef _WIN32
 #ifdef BUILD_TESTOBJECT

@@ -24,7 +24,7 @@
  */
 
 // Include the GemFire library.
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <gfcpp/CacheWriter.hpp>
 
 // Use the "gemfire" namespace.

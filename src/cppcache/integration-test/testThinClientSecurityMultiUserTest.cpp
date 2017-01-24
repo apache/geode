@@ -17,7 +17,7 @@
 #include "fw_dunit.hpp"
 #include <string>
 #include <stdlib.h>
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <gfcpp/FunctionService.hpp>
 #include <gfcpp/Execution.hpp>
 

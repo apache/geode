@@ -33,7 +33,7 @@
 
 #include <ace/ACE.h>
 
-// #include <gfcpp/GemfireCppCache.hpp>
+// #include <gfcpp/GeodeCppCache.hpp>
 
 #include <typeinfo>
 

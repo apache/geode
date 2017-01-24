@@ -22,7 +22,7 @@
 #ifndef __POSITION_HPP__
 #define __POSITION_HPP__
 
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <string.h>
 
 #ifdef _WIN32

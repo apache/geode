@@ -30,7 +30,7 @@
  */
 
 // Include the GemFire library.
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 
 // Include cachelistener
 #include "plugins/DurableCacheListener.hpp"

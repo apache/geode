@@ -18,7 +18,7 @@
 #define TESTTHINCLIENTREMOVEOPS_HPP_
 
 #include "fw_dunit.hpp"
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <ace/OS.h>
 #include <ace/High_Res_Timer.h>
 #include "testobject/PdxType.hpp"

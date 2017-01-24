@@ -22,7 +22,7 @@
 #ifndef __PORTFOLIO_HPP__
 #define __PORTFOLIO_HPP__
 
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include "Position.hpp"
 
 using namespace apache::geode::client;

@@ -30,7 +30,7 @@ END_TEST(NotOnWindows)
 //#define BUILD_CPPCACHE
 
 #include <LRUList.cpp>
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 
 using namespace apache::geode::client;
 using namespace test;

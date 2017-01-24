@@ -23,7 +23,7 @@
 #define TEST_THIN_CLIENT_PDX_ENUM_HPP_
 
 #include "fw_dunit.hpp"
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include "testobject/NestedPdxObject.hpp"
 #include "ThinClientHelper.hpp"
 #include "QueryStrings.hpp"

@@ -28,7 +28,7 @@ END_TEST(NotOnWindows)
 #else
 
 //#define BUILD_CPPCACHE 1
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <LRUEntriesMap.hpp>
 #include <LRUMapEntry.hpp>
 #include <VersionTag.hpp>

@@ -16,7 +16,7 @@
  */
 #ifndef __UNIT_TEST_TEST_UTILS__
 #define __UNIT_TEST_TEST_UTILS__
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 
 /* use CacheHelper to gain the impl pointer from cache or region object
  */
