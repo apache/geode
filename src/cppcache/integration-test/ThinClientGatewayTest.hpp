@@ -32,7 +32,7 @@
 using namespace apache::geode::client;
 using namespace test;
 
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <string>
 
 class MyListener : public CacheListener {

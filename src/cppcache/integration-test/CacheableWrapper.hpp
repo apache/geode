@@ -17,7 +17,7 @@
 #ifndef _GF_TEST_CACHEABLEWRAPPER_HPP_
 #define _GF_TEST_CACHEABLEWRAPPER_HPP_
 
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <string>
 #include <map>
 #include <vector>

@@ -18,7 +18,7 @@
 #define ROOT_NAME "testAttributesMutator"
 
 #include "fw_dunit.hpp"
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <CacheRegionHelper.hpp>
 
 // this is a test.

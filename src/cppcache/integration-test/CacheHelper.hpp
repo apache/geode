@@ -17,7 +17,7 @@
 #ifndef TEST_CACHEHELPER_HPP
 #define TEST_CACHEHELPER_HPP
 
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <stdlib.h>
 #include <gfcpp/SystemProperties.hpp>
 #include <ace/OS.h>

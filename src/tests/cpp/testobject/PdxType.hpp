@@ -25,7 +25,7 @@
 #define __PDXOBJECT_HPP__
 
 #include <gfcpp/PdxSerializable.hpp>
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <gfcpp/PdxWriter.hpp>
 #include <gfcpp/PdxReader.hpp>
 

@@ -17,7 +17,7 @@
 #ifndef __ArrayOfByte_HPP__
 #define __ArrayOfByte_HPP__
 
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <string.h>
 #include "fwklib/FwkLog.hpp"
 #include "fwklib/FrameworkTest.hpp"

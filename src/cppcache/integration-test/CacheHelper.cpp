@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <stdlib.h>
 #include <gfcpp/SystemProperties.hpp>
 #include <ace/OS.h>

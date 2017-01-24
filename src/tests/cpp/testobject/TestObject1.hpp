@@ -24,7 +24,7 @@
 #ifndef TESTOBJECT1_HPP_
 #define TESTOBJECT1_HPP_
 
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <string>
 
 #ifdef _WIN32

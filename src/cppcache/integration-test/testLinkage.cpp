@@ -17,7 +17,7 @@
 
 #define ROOT_NAME "testLinkage"
 
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include "fw_helper.hpp"
 
 using namespace apache::geode::client;

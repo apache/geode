@@ -22,7 +22,7 @@
 #ifndef __POSITIONPDX_AUTO__HPP__
 #define __POSITIONPDX_AUTO__HPP__
 
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <gfcpp/PdxSerializable.hpp>
 #include <gfcpp/PdxWriter.hpp>
 #include <gfcpp/PdxReader.hpp>

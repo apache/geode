@@ -16,7 +16,7 @@
  */
 
 #include "fw_dunit.hpp"
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 
 #define ROOT_SCOPE DISTRIBUTED_ACK
 

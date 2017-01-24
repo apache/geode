@@ -22,7 +22,7 @@
 #ifndef __EQSTRUCT_HPP__
 #define __EQSTRUCT_HPP__
 
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <string.h>
 #include "fwklib/Timer.hpp"
 #include "fwklib/FrameworkTest.hpp"

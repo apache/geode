@@ -24,7 +24,7 @@
  */
 
 #include "fw_dunit.hpp"
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include "CacheHelper.hpp"
 #include "ThinClientHelper.hpp"
 #include <ace/Process.h>

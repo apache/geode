@@ -18,7 +18,7 @@
 #define ROOT_NAME "testAttributesFactory"
 
 #include "fw_helper.hpp"
-#include <gfcpp/GemfireCppCache.hpp>
+#include <gfcpp/GeodeCppCache.hpp>
 #include <CacheRegionHelper.hpp>
 
 using namespace apache::geode::client;
