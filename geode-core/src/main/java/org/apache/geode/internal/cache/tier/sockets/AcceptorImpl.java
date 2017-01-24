@@ -57,6 +57,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.net.ssl.SSLException;
 
+import org.apache.geode.internal.cache.tier.sockets.command.AcceptorImplObserver;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
@@ -1528,8 +1529,12 @@ public class AcceptorImpl extends Acceptor implements Runnable {
 
   @Override
   public void close() {
+    AcceptorImplObserver acceptorImplObserver = AcceptorImplObserver.getInstance();
     try {
       synchronized (syncLock) {
+        if (acceptorImplObserver != null) {
+          acceptorImplObserver.beforeClose(this);
+        }
         if (!isRunning()) {
           return;
         }
@@ -1608,9 +1613,16 @@ public class AcceptorImpl extends Acceptor implements Runnable {
             }
           }
         }
+        if (acceptorImplObserver != null) {
+          acceptorImplObserver.normalCloseTermination(this);
+        }
       } // synchronized
     } catch (RuntimeException e) {/* ignore and log */
       logger.warn(LocalizedMessage.create(LocalizedStrings.AcceptorImpl_UNEXPECTED), e);
+    } finally {
+      if (acceptorImplObserver != null) {
+        acceptorImplObserver.afterClose(this);
+      }
     }
   }
 

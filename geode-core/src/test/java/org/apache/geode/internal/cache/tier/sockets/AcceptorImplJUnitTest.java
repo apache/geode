@@ -15,9 +15,13 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ServerRefusedConnectionException;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
@@ -42,29 +46,15 @@ import java.net.BindException;
 import java.net.Socket;
 import java.util.Collections;
 import java.util.Properties;
+import java.util.Set;
 
+import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID.system;
 import static org.junit.Assert.*;
 
 @Category({IntegrationTest.class, ClientServerTest.class})
 public class AcceptorImplJUnitTest {
-
-  DistributedSystem system;
-  InternalCache cache;
-
-  @Before
-  public void setUp() throws Exception {
-    Properties p = new Properties();
-    p.setProperty(MCAST_PORT, "0");
-    this.system = DistributedSystem.connect(p);
-    this.cache = (InternalCache) CacheFactory.create(system);
-  }
-
-  @After
-  public void tearDown() throws Exception {
-    this.cache.close();
-    this.system.disconnect();
-  }
 
   /*
    * Test method for 'org.apache.geode.internal.cache.tier.sockets.AcceptorImpl(int, int, boolean,
@@ -74,15 +64,16 @@ public class AcceptorImplJUnitTest {
   @Test
   public void testConstructor() throws CacheException, IOException {
     AcceptorImpl a1 = null, a2 = null, a3 = null;
-    try {
+    Properties props = new Properties();
+    props.setProperty(MCAST_PORT, "0");
+    try (InternalCache cache = (InternalCache) new CacheFactory(props).create()) {
       final int[] freeTCPPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
       int port1 = freeTCPPorts[0];
       int port2 = freeTCPPorts[1];
 
-
       try {
         new AcceptorImpl(port1, null, false, CacheServer.DEFAULT_SOCKET_BUFFER_SIZE,
-            CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, this.cache,
+            CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, cache,
             AcceptorImpl.MINIMUM_MAX_CONNECTIONS - 1, CacheServer.DEFAULT_MAX_THREADS,
             CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT, CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE,
             null, null, false, Collections.EMPTY_LIST, CacheServer.DEFAULT_TCP_NO_DELAY);
@@ -92,7 +83,7 @@ public class AcceptorImplJUnitTest {
 
       try {
         new AcceptorImpl(port2, null, false, CacheServer.DEFAULT_SOCKET_BUFFER_SIZE,
-            CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, this.cache, 0,
+            CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, cache, 0,
             CacheServer.DEFAULT_MAX_THREADS, CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT,
             CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE, null, null, false, Collections.EMPTY_LIST,
             CacheServer.DEFAULT_TCP_NO_DELAY);
@@ -102,12 +93,12 @@ public class AcceptorImplJUnitTest {
 
       try {
         a1 = new AcceptorImpl(port1, null, false, CacheServer.DEFAULT_SOCKET_BUFFER_SIZE,
-            CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, this.cache,
+            CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, cache,
             AcceptorImpl.MINIMUM_MAX_CONNECTIONS, CacheServer.DEFAULT_MAX_THREADS,
             CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT, CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE,
             null, null, false, Collections.EMPTY_LIST, CacheServer.DEFAULT_TCP_NO_DELAY);
         a2 = new AcceptorImpl(port1, null, false, CacheServer.DEFAULT_SOCKET_BUFFER_SIZE,
-            CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, this.cache,
+            CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, cache,
             AcceptorImpl.MINIMUM_MAX_CONNECTIONS, CacheServer.DEFAULT_MAX_THREADS,
             CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT, CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE,
             null, null, false, Collections.EMPTY_LIST, CacheServer.DEFAULT_TCP_NO_DELAY);
@@ -116,13 +107,12 @@ public class AcceptorImplJUnitTest {
       }
 
       a3 = new AcceptorImpl(port2, null, false, CacheServer.DEFAULT_SOCKET_BUFFER_SIZE,
-          CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, this.cache,
+          CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, cache,
           AcceptorImpl.MINIMUM_MAX_CONNECTIONS, CacheServer.DEFAULT_MAX_THREADS,
           CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT, CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE, null,
           null, false, Collections.EMPTY_LIST, CacheServer.DEFAULT_TCP_NO_DELAY);
       assertEquals(port2, a3.getPort());
-      InternalDistributedSystem isystem =
-          (InternalDistributedSystem) this.cache.getDistributedSystem();
+      InternalDistributedSystem isystem = (InternalDistributedSystem) cache.getDistributedSystem();
       DistributionConfig config = isystem.getConfig();
       String bindAddress = config.getBindAddress();
       if (bindAddress == null || bindAddress.length() <= 0) {
