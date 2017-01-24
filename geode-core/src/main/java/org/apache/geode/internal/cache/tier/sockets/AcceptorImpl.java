@@ -271,6 +271,33 @@ public class AcceptorImpl extends Acceptor implements Runnable {
 
   private SecurityService securityService = IntegratedSecurityService.getSecurityService();
 
+  // Assumed non-null. Do not set this to null.
+  private static AcceptorImplObserver acceptorImplObserver_do_not_access_directly =
+      new AcceptorImplObserver() {
+        @Override
+        public void beforeClose(AcceptorImpl acceptorImpl) {}
+
+        @Override
+        public void normalCloseTermination(AcceptorImpl acceptorImpl) {}
+
+        @Override
+        public void afterClose(AcceptorImpl acceptorImpl) {}
+      };
+
+  private static AcceptorImplObserver getAcceptorImplObserver() {
+    synchronized (AcceptorImpl.class) {
+      return acceptorImplObserver_do_not_access_directly;
+    }
+  }
+
+  public static void setObserver_TESTONLY(AcceptorImplObserver observer) {
+    synchronized (AcceptorImpl.class) {
+      if (observer != null) {
+        acceptorImplObserver_do_not_access_directly = observer;
+      }
+    }
+  }
+
   /**
    * Initializes this acceptor thread to listen for connections on the given port.
    * 
@@ -1529,12 +1556,10 @@ public class AcceptorImpl extends Acceptor implements Runnable {
 
   @Override
   public void close() {
-    AcceptorImplObserver acceptorImplObserver = AcceptorImplObserver.getInstance();
+    AcceptorImplObserver acceptorImplObserver = getAcceptorImplObserver();
     try {
       synchronized (syncLock) {
-        if (acceptorImplObserver != null) {
-          acceptorImplObserver.beforeClose(this);
-        }
+        acceptorImplObserver.beforeClose(this);
         if (!isRunning()) {
           return;
         }
@@ -1613,16 +1638,12 @@ public class AcceptorImpl extends Acceptor implements Runnable {
             }
           }
         }
-        if (acceptorImplObserver != null) {
-          acceptorImplObserver.normalCloseTermination(this);
-        }
+        acceptorImplObserver.normalCloseTermination(this);
       } // synchronized
     } catch (RuntimeException e) {/* ignore and log */
       logger.warn(LocalizedMessage.create(LocalizedStrings.AcceptorImpl_UNEXPECTED), e);
     } finally {
-      if (acceptorImplObserver != null) {
-        acceptorImplObserver.afterClose(this);
-      }
+      acceptorImplObserver.afterClose(this);
     }
   }
 
