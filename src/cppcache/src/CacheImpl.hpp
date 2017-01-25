@@ -247,10 +247,6 @@ class CPPCACHE_EXPORT CacheImpl : private NonCopyable, private NonAssignable {
 
   void processMarker();
 
-  // Version ordinal accessors for unit tests
-  static void setVersionOrdinalForTest(int8_t newVer);
-  static int8_t getVersionOrdinalForTest();
-
   // Pool helpers for unit tests
   static int getPoolSize(const char* poolName);
 

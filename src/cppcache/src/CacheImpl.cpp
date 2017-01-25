@@ -836,14 +836,6 @@ void CacheImpl::processMarker() {
   }
 }
 
-// Version ordinal accessor for unit tests
-void CacheImpl::setVersionOrdinalForTest(int8_t newVer) {
-  Version::m_ordinal = newVer;
-}
-
-// Version ordinal accessor for unit tests
-int8_t CacheImpl::getVersionOrdinalForTest() { return Version::m_ordinal; }
-
 int CacheImpl::getPoolSize(const char* poolName) {
   PoolPtr pool = PoolManager::find(poolName);
   if (pool == NULLPTR) {
