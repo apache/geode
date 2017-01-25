@@ -20,7 +20,7 @@
  *
  * This example takes the following steps:
  *
- *  1. Create a GemFire Cache.
+ *  1. Create a Geode Cache.
  *  2. Get the example Region from the Cache.
  *  3. Set the SimpleCacheLoader, SimpleCacheListener and SimpleCacheWriter
  * plugins on the Region.
@@ -34,7 +34,7 @@
  *
  */
 
-// Include the GemFire library.
+// Include the Geode library.
 #include <gfcpp/GeodeCppCache.hpp>
 
 // Include the SimpleCacheLoader, SimpleCacheListener and SimpleCacheWriter
@@ -43,7 +43,6 @@
 #include "plugins/SimpleCacheListener.hpp"
 #include "plugins/SimpleCacheWriter.hpp"
 
-// Use the "gemfire" namespace.
 using namespace apache::geode::client;
 
 // The LoaderListenerWriter QuickStart example.
@@ -51,14 +50,14 @@ int main(int argc, char** argv) {
   try {
     CacheFactoryPtr cacheFactory = CacheFactory::createCacheFactory();
 
-    // Create a GemFire Cache with the "clientLoaderListenerWriter.xml" Cache
+    // Create a Geode Cache with the "clientLoaderListenerWriter.xml" Cache
     // XML file.
     CachePtr cachePtr =
         cacheFactory
             ->set("cache-xml-file", "XMLs/clientLoaderListenerWriter.xml")
             ->create();
 
-    LOGINFO("Created the GemFire Cache");
+    LOGINFO("Created the Geode Cache");
 
     // Get the example Region from the Cache which is declared in the Cache XML
     // file.
@@ -98,17 +97,17 @@ int main(int argc, char** argv) {
     // Get a destroyed Key.
     regionPtr->get("Key3");
 
-    // Close the GemFire Cache.
+    // Close the Geode Cache.
     cachePtr->close();
 
-    LOGINFO("Closed the GemFire Cache");
+    LOGINFO("Closed the Geode Cache");
 
     return 0;
   }
   // An exception should not occur
-  catch (const Exception& gemfireExcp) {
-    LOGERROR("LoaderListenerWriter GemFire Exception: %s",
-             gemfireExcp.getMessage());
+  catch (const Exception& geodeExcp) {
+    LOGERROR("LoaderListenerWriter Geode Exception: %s",
+             geodeExcp.getMessage());
 
     return 1;
   }

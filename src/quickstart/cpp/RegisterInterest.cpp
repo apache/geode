@@ -22,7 +22,7 @@
  *
  * 1. Create CacheFactory using the user specified properties or from the
  * gfcpp.properties file by default.
- * 2. Create a GemFire Cache.
+ * 2. Create a Geode Cache.
  * 3. Get the example Region from the Cache.
  * 4. Call registerAllKeys() and unregisterAllKeys() on the Region.
  * 5. Call registerKeys() and unregisterKeys() on the Region.
@@ -31,10 +31,9 @@
  *
  */
 
-// Include the GemFire library.
+// Include the Geode library.
 #include <gfcpp/GeodeCppCache.hpp>
 
-// Use the "gemfire" namespace.
 using namespace apache::geode::client;
 
 // The RegisterInterest QuickStart example.
@@ -49,11 +48,11 @@ int main(int argc, char** argv) {
 
     LOGINFO("Created CacheFactory");
 
-    // Create a GemFire Cache with the "clientRegisterInterest.xml" Cache XML
+    // Create a Geode Cache with the "clientRegisterInterest.xml" Cache XML
     // file.
     CachePtr cachePtr = cacheFactory->create();
 
-    LOGINFO("Created the GemFire Cache");
+    LOGINFO("Created the Geode Cache");
 
     // Get the example Region from the Cache which is declared in the Cache XML
     // file.
@@ -115,17 +114,17 @@ int main(int argc, char** argv) {
         "Called registerRegex() and unregisterRegex() with getInitialValues "
         "argument");
 
-    // Close the GemFire Cache.
+    // Close the Geode Cache.
     cachePtr->close();
 
-    LOGINFO("Closed the GemFire Cache");
+    LOGINFO("Closed the Geode Cache");
 
     return 0;
   }
   // An exception should not occur
-  catch (const Exception& gemfireExcp) {
-    LOGERROR("RegisterInterest GemFire Exception: %s",
-             gemfireExcp.getMessage());
+  catch (const Exception& geodeExcp) {
+    LOGERROR("RegisterInterest Geode Exception: %s",
+             geodeExcp.getMessage());
 
     return 1;
   }

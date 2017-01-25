@@ -20,7 +20,7 @@
  *
  * This example takes the following steps:
  *
- * 1. Create a GemFire Cache Programmatically.
+ * 1. Create a Geode Cache Programmatically.
  * 2. Create the example Region Programmatically.
  * 3. Populate some query objects on the Region.
  * 4. Execute a query that returns a Result Set.
@@ -30,14 +30,13 @@
  *
  */
 
-// Include the GemFire library.
+// Include the Geode library.
 #include <gfcpp/GeodeCppCache.hpp>
 
 // Include our Query objects, viz. Portfolio and Position.
 #include "queryobjects/Portfolio.hpp"
 #include "queryobjects/Position.hpp"
 
-// Use the "gemfire" namespace.
 using namespace apache::geode::client;
 
 // Use the "testobject" namespace for the query objects.
@@ -46,11 +45,11 @@ using namespace testobject;
 // The RemoteQuery QuickStart example.
 int main(int argc, char** argv) {
   try {
-    // Create a GemFire Cache Programmatically.
+    // Create a Geode Cache Programmatically.
     CacheFactoryPtr cacheFactory = CacheFactory::createCacheFactory();
     CachePtr cachePtr = cacheFactory->setSubscriptionEnabled(true)->create();
 
-    LOGINFO("Created the GemFire Cache");
+    LOGINFO("Created the Geode Cache");
 
     RegionFactoryPtr regionFactory =
         cachePtr->createRegionFactory(CACHING_PROXY);
@@ -152,17 +151,17 @@ int main(int argc, char** argv) {
               pst->getFieldName(1), (*pst)[1]->toString()->asChar());
     }
 
-    // Close the GemFire Cache.
+    // Close the Geode Cache.
     cachePtr->close();
 
-    LOGINFO("Closed the GemFire Cache");
+    LOGINFO("Closed the Geode Cache");
 
     return 0;
 
   }
   // An exception should not occur
-  catch (const Exception& gemfireExcp) {
-    LOGERROR("RemoteQuery GemFire Exception: %s", gemfireExcp.getMessage());
+  catch (const Exception& geodeExcp) {
+    LOGERROR("RemoteQuery Geode Exception: %s", geodeExcp.getMessage());
 
     return 1;
   }

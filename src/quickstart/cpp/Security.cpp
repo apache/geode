@@ -27,10 +27,9 @@
  *
  */
 
-// Include the GemFire library.
+// Include the Geode library.
 #include <gfcpp/GeodeCppCache.hpp>
 
-// Use the "gemfire" namespace.
 using namespace apache::geode::client;
 
 // The Security QuickStart example.
@@ -42,20 +41,20 @@ int main(int argc, char** argv) {
     properties->insert("security-client-auth-factory",
                        "createPKCSAuthInitInstance");
     properties->insert("security-client-auth-library", "securityImpl");
-    properties->insert("security-keystorepath", "keystore/gemfire6.keystore");
-    properties->insert("security-alias", "gemfire6");
-    properties->insert("security-keystorepass", "gemfire");
+    properties->insert("security-keystorepath", "keystore/geode6.keystore");
+    properties->insert("security-alias", "geode6");
+    properties->insert("security-keystorepass", "geode");
     properties->insert("cache-xml-file", "XMLs/clientSecurity.xml");
 
     // overriding secProp properties.
     CacheFactoryPtr cacheFactory = CacheFactory::createCacheFactory(properties);
 
-    LOGINFO("Connected to the GemFire Distributed System");
+    LOGINFO("Connected to the Geode Distributed System");
 
-    // Create a GemFire Cache with the "clientSecurity.xml" Cache XML file.
+    // Create a Geode Cache with the "clientSecurity.xml" Cache XML file.
     CachePtr cachePtr = cacheFactory->create();
 
-    LOGINFO("Created the GemFire Cache");
+    LOGINFO("Created the Geode Cache");
 
     // Get the example Region from the Cache which is declared in the Cache XML
     // file.
@@ -80,16 +79,16 @@ int main(int argc, char** argv) {
           expected.getMessage());
     }
 
-    // Close the GemFire Cache.
+    // Close the Geode Cache.
     cachePtr->close();
 
-    LOGINFO("Closed the GemFire Cache");
+    LOGINFO("Closed the Geode Cache");
 
     return 0;
   }
   // An exception should not occur
-  catch (const Exception& gemfireExcp) {
-    LOGERROR("Security GemFire Exception: %s", gemfireExcp.getMessage());
+  catch (const Exception& geodeExcp) {
+    LOGERROR("Security Geode Exception: %s", geodeExcp.getMessage());
 
     return 1;
   }

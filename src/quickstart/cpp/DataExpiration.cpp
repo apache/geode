@@ -20,7 +20,7 @@
  *
  * This example takes the following steps:
  *
- *  1. Create a GemFire Cache programmatically.
+ *  1. Create a Geode Cache programmatically.
  *  2. Create the example Region programmatically.
  *  3. Set the SimpleCacheListener plugin on the Region.
  *  4. Put 3 Entries into the Region.
@@ -34,24 +34,23 @@
  *
  */
 
-// Include the GemFire library.
+// Include the Geode library.
 #include <gfcpp/GeodeCppCache.hpp>
 
 // Include the SimpleCacheListener plugin.
 #include "plugins/SimpleCacheListener.hpp"
 
-// Use the "gemfire" namespace.
 using namespace apache::geode::client;
 
 // The DataExpiration QuickStart example.
 int main(int argc, char** argv) {
   try {
-    // Create a GemFire Cache Programmatically.
+    // Create a Geode Cache Programmatically.
     CacheFactoryPtr cacheFactory = CacheFactory::createCacheFactory();
 
     CachePtr cachePtr = cacheFactory->setSubscriptionEnabled(true)->create();
 
-    LOGINFO("Created the GemFire Cache");
+    LOGINFO("Created the Geode Cache");
 
     RegionFactoryPtr regionFactory =
         cachePtr->createRegionFactory(CACHING_PROXY);
@@ -111,16 +110,16 @@ int main(int argc, char** argv) {
     LOGINFO("Got %d keys after the Entry Idle Timeout duration elapsed",
             keys.size());
 
-    // Close the GemFire Cache.
+    // Close the Geode Cache.
     cachePtr->close();
 
-    LOGINFO("Closed the GemFire Cache");
+    LOGINFO("Closed the Geode Cache");
 
     return 0;
   }
   // An exception should not occur
-  catch (const Exception& gemfireExcp) {
-    LOGERROR("DataExpiration GemFire Exception: %s", gemfireExcp.getMessage());
+  catch (const Exception& geodeExcp) {
+    LOGERROR("DataExpiration Geode Exception: %s", geodeExcp.getMessage());
 
     return 1;
   }
