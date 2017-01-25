@@ -15,9 +15,10 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
-import org.apache.geode.cache.Cache;
+import com.jayway.awaitility.Awaitility;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
@@ -27,22 +28,21 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.tier.sockets.command.AcceptorImplObserver;
 import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.ThreadInfo;
-import java.lang.management.ThreadMXBean;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicBoolean;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 import static org.junit.Assert.*;
@@ -52,41 +52,76 @@ import static org.junit.Assert.*;
  */
 @Category(DistributedTest.class)
 public class AcceptorImplDUnitTest extends JUnit4DistributedTestCase {
-  private static Cache cache;
 
   public AcceptorImplDUnitTest() {
     super();
   }
 
-  @Override
-  public void postTearDown() throws Exception {
-    if (cache != null) {
-      cache.close();
-      cache = null;
-    }
-    super.postTearDown();
-  }
+  // SleepyCacheWriter will block indefinitely.
+  // Anyone who has a handle on the SleepyCacheWriter can interrupt it by calling wakeUp.
+  class SleepyCacheWriter<K, V> extends CacheWriterAdapter<K, V> {
+    private boolean setOnStart;
+    private boolean setOnInterrupt;
+    private boolean stopWaiting;
+    // locks the above three booleans.
+    private final Object lock = new Object();
 
-  public static class SleepyCacheWriter<K, V> extends CacheWriterAdapter<K, V> {
-    @Override
-    public void beforeCreate(EntryEvent<K, V> event) {
-      while (true) {
-        System.out.println("Sleeping a long time.");
-        try {
-          Thread.sleep(100000000);
-        } catch (InterruptedException ignore) {
-        }
+    public void notifyStart() {
+      synchronized (lock) {
+        setOnStart = true;
       }
     }
-  }
 
-  /**
-   * Dump threads to standard out. For debugging.
-   */
-  private void dumpThreads() {
-    ThreadMXBean bean = ManagementFactory.getThreadMXBean();
-    ThreadInfo[] infos = bean.dumpAllThreads(true, true);
-    System.out.println("infos = " + Arrays.toString(infos));
+    public boolean isStarted() {
+      synchronized (lock) {
+        return setOnStart;
+      }
+    }
+
+    public void notifyInterrupt() {
+      synchronized (lock) {
+        setOnInterrupt = true;
+      }
+    }
+
+    public boolean isInterrupted() {
+      synchronized (lock) {
+        return setOnInterrupt;
+      }
+    }
+
+    public void stopWaiting() {
+      synchronized (lock) {
+        this.stopWaiting = true;
+        lock.notify();
+      }
+    }
+
+    public boolean isReadyToQuit() {
+      synchronized (lock) {
+        return stopWaiting;
+      }
+    }
+
+    SleepyCacheWriter() {}
+
+    @Override
+    public void beforeCreate(EntryEvent<K, V> event) {
+      System.out.println("Sleeping a long time.");
+      notifyStart();
+      while (!isReadyToQuit()) {
+        try {
+          synchronized (lock) {
+            lock.wait();
+          }
+        } catch (InterruptedException ex) {
+          notifyInterrupt();
+        }
+      }
+      if (isInterrupted()) {
+        Thread.currentThread().interrupt();
+      }
+    }
   }
 
   /**
@@ -100,40 +135,19 @@ public class AcceptorImplDUnitTest extends JUnit4DistributedTestCase {
    * since the fields are private) and implementation-dependent.
    */
   @Test
-  public void testShutdownCatchesException() throws Exception {
+  public void testAcceptorImplCloseCleansUpWithHangingConnection() throws Exception {
     final String hostname = Host.getHost(0).getHostName();
     final VM clientVM = Host.getHost(0).getVM(0);
 
-    // AtomicBooleans can be set from wherever they are, including an anonymous class or other
-    // thread.
-    AtomicBoolean terminatedNormally = new AtomicBoolean(false);
-    AtomicBoolean passedPostConditions = new AtomicBoolean(false);
-
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
-
-    AcceptorImpl.setObserver_TESTONLY(new AcceptorImplObserver() {
-      @Override
-      public void beforeClose(AcceptorImpl acceptorImpl) {
-        Thread.currentThread().interrupt();
-      }
-
-      @Override
-      public void normalCloseTermination(AcceptorImpl acceptorImpl) {
-        terminatedNormally.set(true);
-      }
-
-      @Override
-      public void afterClose(AcceptorImpl acceptorImpl) {
-        passedPostConditions.set(!acceptorImpl.isRunning());
-      }
-    });
 
     try (InternalCache cache = (InternalCache) new CacheFactory(props).create()) {
       RegionFactory<Object, Object> regionFactory =
           cache.createRegionFactory(RegionShortcut.PARTITION);
 
-      regionFactory.setCacheWriter(new SleepyCacheWriter<>());
+      SleepyCacheWriter<Object, Object> sleepyCacheWriter = new SleepyCacheWriter<>();
+      regionFactory.setCacheWriter(sleepyCacheWriter);
 
       final CacheServer server = cache.addCacheServer();
       final int port = AvailablePortHelper.getRandomAvailableTCPPort();
@@ -142,32 +156,93 @@ public class AcceptorImplDUnitTest extends JUnit4DistributedTestCase {
 
       regionFactory.create("region1");
 
+      assertTrue(cache.isServer());
+      assertFalse(cache.isClosed());
+
+      Awaitility.await("Acceptor is up and running").atMost(10, SECONDS)
+          .until(() -> getAcceptorImplFromCache(cache) != null);
+      AcceptorImpl acceptorImpl = getAcceptorImplFromCache(cache);
+
+
       clientVM.invokeAsync(() -> {
+        // System.setProperty("gemfire.PoolImpl.TRY_SERVERS_ONCE", "true");
         ClientCacheFactory clientCacheFactory = new ClientCacheFactory();
         clientCacheFactory.addPoolServer(hostname, port);
+        clientCacheFactory.setPoolReadTimeout(5000);
+        clientCacheFactory.setPoolRetryAttempts(1);
+        clientCacheFactory.setPoolMaxConnections(1);
+        clientCacheFactory.setPoolFreeConnectionTimeout(1000);
         ClientCache clientCache = clientCacheFactory.create();
         Region<Object, Object> clientRegion1 =
             clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY).create("region1");
         clientRegion1.put("foo", "bar");
       });
 
+      Awaitility.await("Cache writer starts").atMost(10, SECONDS)
+          .until(sleepyCacheWriter::isStarted);
+
       cache.close();
 
-      dumpThreads();
-      assertTrue(terminatedNormally.get());
-      assertTrue(passedPostConditions.get());
+      Awaitility.await("Cache writer interrupted").atMost(10, SECONDS)
+          .until(sleepyCacheWriter::isInterrupted);
 
-      // cleanup.
-      AcceptorImpl.setObserver_TESTONLY(new AcceptorImplObserver() {
-        @Override
-        public void beforeClose(AcceptorImpl acceptorImpl) {}
+      sleepyCacheWriter.stopWaiting();
 
-        @Override
-        public void normalCloseTermination(AcceptorImpl acceptorImpl) {}
+      Awaitility.await("Acceptor shuts down properly").atMost(10, SECONDS)
+          .until(() -> acceptorImpl.isShutdownProperly());
 
-        @Override
-        public void afterClose(AcceptorImpl acceptorImpl) {}
-      });
+      ThreadUtils.dumpMyThreads(); // for debugging.
+
+      regionFactory.setCacheWriter(null);
     }
+  }
+
+
+  @Test
+  public void testAcceptorImplCloseCleansUp() throws Exception {
+    Properties props = new Properties();
+    props.setProperty(MCAST_PORT, "0");
+
+    try (InternalCache cache = (InternalCache) new CacheFactory(props).create()) {
+      RegionFactory<Object, Object> regionFactory =
+          cache.createRegionFactory(RegionShortcut.PARTITION);
+
+      final CacheServer server = cache.addCacheServer();
+      final int port = AvailablePortHelper.getRandomAvailableTCPPort();
+      server.setPort(port);
+      server.start();
+
+      regionFactory.create("region1");
+
+      assertTrue(cache.isServer());
+      assertFalse(cache.isClosed());
+      Awaitility.await("Acceptor is up and running").atMost(10, SECONDS)
+          .until(() -> getAcceptorImplFromCache(cache) != null);
+
+      AcceptorImpl acceptorImpl = getAcceptorImplFromCache(cache);
+
+      cache.close();
+      Awaitility.await("Acceptor shuts down properly").atMost(10, SECONDS)
+          .until(acceptorImpl::isShutdownProperly);
+
+      assertTrue(cache.isClosed());
+      assertFalse(acceptorImpl.isRunning());
+    }
+  }
+
+  /**
+   *
+   * @param cache
+   * @return the cache's Acceptor, if there is exactly one CacheServer. Otherwise null.
+   */
+  public AcceptorImpl getAcceptorImplFromCache(GemFireCache cache) {
+    GemFireCacheImpl gemFireCache = (GemFireCacheImpl) cache;
+    List<CacheServer> cacheServers = gemFireCache.getCacheServers();
+    if (cacheServers.size() != 1) {
+      return null;
+    }
+
+    CacheServerImpl cacheServerImpl = (CacheServerImpl) cacheServers.get(0);
+    return cacheServerImpl.getAcceptor();
   }
 }
