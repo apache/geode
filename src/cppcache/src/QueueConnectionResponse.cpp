@@ -26,7 +26,7 @@ QueueConnectionResponse* QueueConnectionResponse::fromData(DataInput& input) {
   return this;
 }
 int8_t QueueConnectionResponse::typeId() const {
-  return static_cast<int8_t>(GemfireTypeIdsImpl::QueueConnectionResponse);
+  return static_cast<int8_t>(GeodeTypeIdsImpl::QueueConnectionResponse);
 }
 
 uint32_t QueueConnectionResponse::objectSize() const {

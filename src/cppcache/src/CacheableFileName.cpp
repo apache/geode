@@ -40,7 +40,7 @@ Serializable* CacheableFileName::fromData(DataInput& input) {
 int32_t CacheableFileName::classId() const { return 0; }
 
 int8_t CacheableFileName::typeId() const {
-  return GemfireTypeIds::CacheableFileName;
+  return GeodeTypeIds::CacheableFileName;
 }
 
 uint32_t CacheableFileName::hashcode() const {

@@ -252,11 +252,11 @@ CachePtr CacheFactory::create() {
     }
   }
 
-  SerializationRegistry::addType(GemfireTypeIdsImpl::PDX,
+  SerializationRegistry::addType(GeodeTypeIdsImpl::PDX,
                                  PdxInstantiator::createDeserializable);
-  SerializationRegistry::addType(GemfireTypeIds::CacheableEnum,
+  SerializationRegistry::addType(GeodeTypeIds::CacheableEnum,
                                  PdxEnumInstantiator::createDeserializable);
-  SerializationRegistry::addType(GemfireTypeIds::PdxType,
+  SerializationRegistry::addType(GeodeTypeIds::PdxType,
                                  PdxType::CreateDeserializable);
   PdxTypeRegistry::setPdxIgnoreUnreadFields(cache->getPdxIgnoreUnreadFields());
   PdxTypeRegistry::setPdxReadSerialized(cache->getPdxReadSerialized());

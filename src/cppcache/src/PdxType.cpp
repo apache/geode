@@ -93,13 +93,13 @@ PdxType::PdxType(const char* pdxDomainClassName, bool isLocal)
 
 void PdxType::toData(DataOutput& output) const {
   output.write(
-      static_cast<int8_t>(GemfireTypeIdsImpl::DataSerializable));  // 45
-  output.write(static_cast<int8_t>(GemfireTypeIdsImpl::Class));    // 43
-  output.write(static_cast<int8_t>(GemfireTypeIds::CacheableASCIIString));
+      static_cast<int8_t>(GeodeTypeIdsImpl::DataSerializable));  // 45
+  output.write(static_cast<int8_t>(GeodeTypeIdsImpl::Class));    // 43
+  output.write(static_cast<int8_t>(GeodeTypeIds::CacheableASCIIString));
   output.writeUTF(m_javaPdxClass);
 
   // m_className
-  output.write(static_cast<int8_t>(GemfireTypeIds::CacheableASCIIString));
+  output.write(static_cast<int8_t>(GeodeTypeIds::CacheableASCIIString));
   output.writeUTF(m_className);
 
   // m_noJavaClass

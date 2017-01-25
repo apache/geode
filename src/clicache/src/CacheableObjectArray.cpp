@@ -42,8 +42,8 @@ namespace Apache
       void CacheableObjectArray::ToData(DataOutput^ output)
       {
         output->WriteArrayLen((int32_t)Count);
-        output->WriteByte((int8_t)apache::geode::client::GemfireTypeIdsImpl::Class);
-        output->WriteByte((int8_t)apache::geode::client::GemfireTypeIds::CacheableASCIIString);
+        output->WriteByte((int8_t)apache::geode::client::GeodeTypeIdsImpl::Class);
+        output->WriteByte((int8_t)apache::geode::client::GeodeTypeIds::CacheableASCIIString);
         output->WriteUTF("java.lang.Object");
 
         for each (Object^ obj in this) {
@@ -55,8 +55,8 @@ namespace Apache
 
           apache::geode::client::DataOutput& nativeOutput = *(output->_NativePtr);
           nativeOutput.writeArrayLen((int32_t)Count);
-          nativeOutput.write((int8_t)apache::geode::client::GemfireTypeIdsImpl::Class);
-          nativeOutput.write((int8_t)apache::geode::client::GemfireTypeIds::CacheableASCIIString);
+          nativeOutput.write((int8_t)apache::geode::client::GeodeTypeIdsImpl::Class);
+          nativeOutput.write((int8_t)apache::geode::client::GeodeTypeIds::CacheableASCIIString);
           nativeOutput.writeASCII("java.lang.Object");
           for each (IGFSerializable^ obj in this) {
             apache::geode::client::SerializablePtr objPtr(SafeMSerializableConvert(obj));

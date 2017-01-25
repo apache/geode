@@ -135,7 +135,7 @@ class PdxType : public Serializable,
 
   virtual Serializable* fromData(DataInput& input);
 
-  virtual int32_t classId() const { return GemfireTypeIds::PdxType; }
+  virtual int32_t classId() const { return GeodeTypeIds::PdxType; }
 
   static Serializable* CreateDeserializable() { return new PdxType(); }
 

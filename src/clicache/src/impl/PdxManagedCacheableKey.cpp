@@ -114,15 +114,15 @@ namespace apache
           return (int8_t)((m_classId - 0x80000000) % 0x20000000);
           }
           else if (m_classId <= 0x7F) {
-          return (int8_t)GemfireTypeIdsImpl::CacheableUserData;
+          return (int8_t)GeodeTypeIdsImpl::CacheableUserData;
           }
           else if (m_classId <= 0x7FFF) {
-          return (int8_t)GemfireTypeIdsImpl::CacheableUserData2;
+          return (int8_t)GeodeTypeIdsImpl::CacheableUserData2;
           }
           else {
-          return (int8_t)GemfireTypeIdsImpl::CacheableUserData4;
+          return (int8_t)GeodeTypeIdsImpl::CacheableUserData4;
           }*/
-        return (int8_t)GemfireTypeIdsImpl::PDX;
+        return (int8_t)GeodeTypeIdsImpl::PDX;
       }
 
       int8_t PdxManagedCacheableKey::DSFID() const

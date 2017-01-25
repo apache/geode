@@ -86,7 +86,7 @@ class CPPCACHE_EXPORT CacheableEnum : public CacheableKey {
   */
   virtual int8_t typeId() const {
     // return 0;
-    return static_cast<int8_t>(GemfireTypeIds::CacheableEnum);
+    return static_cast<int8_t>(GeodeTypeIds::CacheableEnum);
   }
 
   /**

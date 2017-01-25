@@ -98,7 +98,7 @@ class CPPCACHE_EXPORT EventId : public Cacheable {
   /**
    * Internal Data Serializable Fixed ID size type - since GFE 5.7
    */
-  virtual int8_t DSFID() const { return GemfireTypeIdsImpl::FixedIDByte; };
+  virtual int8_t DSFID() const { return GeodeTypeIdsImpl::FixedIDByte; };
 
   /** Returns a pointer to a new eventid value. */
   static EventIdPtr create(char* memId, uint32_t memIdLen, int64_t thr,

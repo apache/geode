@@ -31,11 +31,11 @@ Serializable* CacheableUndefined::fromData(DataInput& input) { return this; }
 int32_t CacheableUndefined::classId() const { return 0; }
 
 int8_t CacheableUndefined::typeId() const {
-  return GemfireTypeIds::CacheableUndefined;
+  return GeodeTypeIds::CacheableUndefined;
 }
 
 int8_t CacheableUndefined::DSFID() const {
-  return GemfireTypeIdsImpl::FixedIDByte;
+  return GeodeTypeIdsImpl::FixedIDByte;
 }
 
 uint32_t CacheableUndefined::objectSize() const { return 0; }

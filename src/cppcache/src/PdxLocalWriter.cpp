@@ -267,17 +267,17 @@ PdxWriterPtr PdxLocalWriter::writeString(const char* fieldName,
   addOffset();
   if (value == NULL) {
     m_dataOutput->write(
-        static_cast<int8_t>(GemfireTypeIds::CacheableNullString));
+        static_cast<int8_t>(GeodeTypeIds::CacheableNullString));
   } else {
     int32_t len = DataOutput::getEncodedLength(value);
     if (len > 0xffff) {
       // write HugUTF
       m_dataOutput->write(
-          static_cast<int8_t>(GemfireTypeIds::CacheableStringHuge));
+          static_cast<int8_t>(GeodeTypeIds::CacheableStringHuge));
       m_dataOutput->writeUTFHuge(value);
     } else {
       // Write normal UTF
-      m_dataOutput->write(static_cast<int8_t>(GemfireTypeIds::CacheableString));
+      m_dataOutput->write(static_cast<int8_t>(GeodeTypeIds::CacheableString));
       m_dataOutput->writeUTF(value);
     }
   }
@@ -289,17 +289,17 @@ PdxWriterPtr PdxLocalWriter::writeWideString(const char* fieldName,
   addOffset();
   if (value == NULL) {
     m_dataOutput->write(
-        static_cast<int8_t>(GemfireTypeIds::CacheableNullString));
+        static_cast<int8_t>(GeodeTypeIds::CacheableNullString));
   } else {
     int32_t len = DataOutput::getEncodedLength(value);
     if (len > 0xffff) {
       // write HugUTF
       m_dataOutput->write(
-          static_cast<int8_t>(GemfireTypeIds::CacheableStringHuge));
+          static_cast<int8_t>(GeodeTypeIds::CacheableStringHuge));
       m_dataOutput->writeUTFHuge(value);
     } else {
       // Write normal UTF
-      m_dataOutput->write(static_cast<int8_t>(GemfireTypeIds::CacheableString));
+      m_dataOutput->write(static_cast<int8_t>(GeodeTypeIds::CacheableString));
       m_dataOutput->writeUTF(value);
     }
   }
@@ -309,17 +309,17 @@ PdxWriterPtr PdxLocalWriter::writeWideString(const char* fieldName,
 PdxWriterPtr PdxLocalWriter::writeStringwithoutOffset(const char* value) {
   if (value == NULL) {
     m_dataOutput->write(
-        static_cast<int8_t>(GemfireTypeIds::CacheableNullString));
+        static_cast<int8_t>(GeodeTypeIds::CacheableNullString));
   } else {
     int32_t len = DataOutput::getEncodedLength(value);
     if (len > 0xffff) {
       // write HugUTF
       m_dataOutput->write(
-          static_cast<int8_t>(GemfireTypeIds::CacheableStringHuge));
+          static_cast<int8_t>(GeodeTypeIds::CacheableStringHuge));
       m_dataOutput->writeUTFHuge(value);
     } else {
       // Write normal UTF
-      m_dataOutput->write(static_cast<int8_t>(GemfireTypeIds::CacheableString));
+      m_dataOutput->write(static_cast<int8_t>(GeodeTypeIds::CacheableString));
       m_dataOutput->writeUTF(value);
     }
   }
@@ -330,17 +330,17 @@ PdxWriterPtr PdxLocalWriter::writeWideStringwithoutOffset(
     const wchar_t* value) {
   if (value == NULL) {
     m_dataOutput->write(
-        static_cast<int8_t>(GemfireTypeIds::CacheableNullString));
+        static_cast<int8_t>(GeodeTypeIds::CacheableNullString));
   } else {
     int32_t len = DataOutput::getEncodedLength(value);
     if (len > 0xffff) {
       // write HugUTF
       m_dataOutput->write(
-          static_cast<int8_t>(GemfireTypeIds::CacheableStringHuge));
+          static_cast<int8_t>(GeodeTypeIds::CacheableStringHuge));
       m_dataOutput->writeUTFHuge(value);
     } else {
       // Write normal UTF
-      m_dataOutput->write(static_cast<int8_t>(GemfireTypeIds::CacheableString));
+      m_dataOutput->write(static_cast<int8_t>(GeodeTypeIds::CacheableString));
       m_dataOutput->writeUTF(value);
     }
   }
@@ -391,7 +391,7 @@ PdxWriterPtr PdxLocalWriter::writeObject(const char* fieldName,
   }*/
 
   if (value != NULLPTR &&
-      value->typeId() == static_cast<int8_t>(GemfireTypeIds::CacheableEnum)) {
+      value->typeId() == static_cast<int8_t>(GeodeTypeIds::CacheableEnum)) {
     enumValPtr = dynCast<CacheableEnumPtr>(value);
   }
 
@@ -399,18 +399,18 @@ PdxWriterPtr PdxLocalWriter::writeObject(const char* fieldName,
     enumValPtr->toData(*m_dataOutput);
   } else {
     if (value != NULLPTR &&
-        value->typeId() == GemfireTypeIds::CacheableObjectArray) {
+        value->typeId() == GeodeTypeIds::CacheableObjectArray) {
       objArrPtr = dynCast<CacheableObjectArrayPtr>(value);
       m_dataOutput->write(
-          static_cast<int8_t>(GemfireTypeIds::CacheableObjectArray));
+          static_cast<int8_t>(GeodeTypeIds::CacheableObjectArray));
       m_dataOutput->writeArrayLen(objArrPtr->length());
-      m_dataOutput->write(static_cast<int8_t>(GemfireTypeIdsImpl::Class));
+      m_dataOutput->write(static_cast<int8_t>(GeodeTypeIdsImpl::Class));
 
       _VectorOfCacheable::Iterator iter = objArrPtr->begin();
       PdxSerializablePtr actualObjPtr = dynCast<PdxSerializablePtr>(*iter);
 
       m_dataOutput->write(
-          static_cast<int8_t>(GemfireTypeIds::CacheableASCIIString));
+          static_cast<int8_t>(GeodeTypeIds::CacheableASCIIString));
       m_dataOutput->writeASCII(actualObjPtr->getClassName());
 
       for (; iter != objArrPtr->end(); ++iter) {

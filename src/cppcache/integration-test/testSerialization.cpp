@@ -208,16 +208,16 @@ DUNIT_TASK(NoDist, OtherTypeInMemory)
     ASSERT(copy->classId() == g_classIdToReturn, "unexpected classId");
     if (copy->classId() > 0xFFFF) {
       ASSERT(
-          copy->typeId() == GemfireTypeIdsImpl::CacheableUserData4,
-          "typeId should be equal to GemfireTypeIdsImpl::CacheableUserData4.");
+          copy->typeId() == GeodeTypeIdsImpl::CacheableUserData4,
+          "typeId should be equal to GeodeTypeIdsImpl::CacheableUserData4.");
     } else if (copy->classId() > 0xFF) {
       ASSERT(
-          copy->typeId() == GemfireTypeIdsImpl::CacheableUserData2,
-          "typeId should be equal to GemfireTypeIdsImpl::CacheableUserData2.");
+          copy->typeId() == GeodeTypeIdsImpl::CacheableUserData2,
+          "typeId should be equal to GeodeTypeIdsImpl::CacheableUserData2.");
     } else {
       ASSERT(
-          copy->typeId() == GemfireTypeIdsImpl::CacheableUserData,
-          "typeId should be equal to GemfireTypeIdsImpl::CacheableUserData.");
+          copy->typeId() == GeodeTypeIdsImpl::CacheableUserData,
+          "typeId should be equal to GeodeTypeIdsImpl::CacheableUserData.");
     }
     ASSERT(copy != ot, "expected different instance.");
     ASSERT(copy->m_struct.a == 1, "a == 1");

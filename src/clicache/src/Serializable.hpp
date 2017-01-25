@@ -651,53 +651,53 @@ namespace Apache
 
           {
           Dictionary<Object^, Object^>^ dic = gcnew Dictionary<Object^, Object^>();
-          ManagedTypeMappingGeneric[dic->GetType()] = apache::geode::client::GemfireTypeIds::CacheableHashMap;
-          ManagedTypeMappingGeneric[dic->GetType()->GetGenericTypeDefinition()] = apache::geode::client::GemfireTypeIds::CacheableHashMap;
+          ManagedTypeMappingGeneric[dic->GetType()] = apache::geode::client::GeodeTypeIds::CacheableHashMap;
+          ManagedTypeMappingGeneric[dic->GetType()->GetGenericTypeDefinition()] = apache::geode::client::GeodeTypeIds::CacheableHashMap;
           }
 
           {
           System::Collections::ArrayList^ arr = gcnew System::Collections::ArrayList();
-          ManagedTypeMappingGeneric[arr->GetType()] = apache::geode::client::GemfireTypeIds::CacheableVector;
+          ManagedTypeMappingGeneric[arr->GetType()] = apache::geode::client::GeodeTypeIds::CacheableVector;
           }
 		  
           {
           System::Collections::Generic::LinkedList<Object^>^ linketList = gcnew  System::Collections::Generic::LinkedList<Object^>();
-          ManagedTypeMappingGeneric[linketList->GetType()] = apache::geode::client::GemfireTypeIds::CacheableLinkedList;
-          ManagedTypeMappingGeneric[linketList->GetType()->GetGenericTypeDefinition()] = apache::geode::client::GemfireTypeIds::CacheableLinkedList;
+          ManagedTypeMappingGeneric[linketList->GetType()] = apache::geode::client::GeodeTypeIds::CacheableLinkedList;
+          ManagedTypeMappingGeneric[linketList->GetType()->GetGenericTypeDefinition()] = apache::geode::client::GeodeTypeIds::CacheableLinkedList;
           }
 		  
           {
           System::Collections::Generic::IList<Object^>^ iList = gcnew System::Collections::Generic::List<Object^>();
-          ManagedTypeMappingGeneric[iList->GetType()] = apache::geode::client::GemfireTypeIds::CacheableArrayList;
-          ManagedTypeMappingGeneric[iList->GetType()->GetGenericTypeDefinition()] = apache::geode::client::GemfireTypeIds::CacheableArrayList;
+          ManagedTypeMappingGeneric[iList->GetType()] = apache::geode::client::GeodeTypeIds::CacheableArrayList;
+          ManagedTypeMappingGeneric[iList->GetType()->GetGenericTypeDefinition()] = apache::geode::client::GeodeTypeIds::CacheableArrayList;
           }
 
           //TODO: Linked list, non generic stack, some other map types and see if more
 
           {
             System::Collections::Generic::Stack<Object^>^ stack = gcnew System::Collections::Generic::Stack<Object^>();
-            ManagedTypeMappingGeneric[stack->GetType()] = apache::geode::client::GemfireTypeIds::CacheableStack;
-            ManagedTypeMappingGeneric[stack->GetType()->GetGenericTypeDefinition()] = apache::geode::client::GemfireTypeIds::CacheableStack;
+            ManagedTypeMappingGeneric[stack->GetType()] = apache::geode::client::GeodeTypeIds::CacheableStack;
+            ManagedTypeMappingGeneric[stack->GetType()->GetGenericTypeDefinition()] = apache::geode::client::GeodeTypeIds::CacheableStack;
           }
           {
-            ManagedTypeMappingGeneric[SByte::typeid] = apache::geode::client::GemfireTypeIds::CacheableByte;
-            ManagedTypeMappingGeneric[Boolean::typeid] = apache::geode::client::GemfireTypeIds::CacheableBoolean;
-            ManagedTypeMappingGeneric[Char::typeid] = apache::geode::client::GemfireTypeIds::CacheableWideChar;
-            ManagedTypeMappingGeneric[Double::typeid] = apache::geode::client::GemfireTypeIds::CacheableDouble;
-            ManagedTypeMappingGeneric[String::typeid] = apache::geode::client::GemfireTypeIds::CacheableASCIIString;
-            ManagedTypeMappingGeneric[float::typeid] = apache::geode::client::GemfireTypeIds::CacheableFloat;
-            ManagedTypeMappingGeneric[Int16::typeid] = apache::geode::client::GemfireTypeIds::CacheableInt16;
-            ManagedTypeMappingGeneric[Int32::typeid] = apache::geode::client::GemfireTypeIds::CacheableInt32;
-            ManagedTypeMappingGeneric[Int64::typeid] = apache::geode::client::GemfireTypeIds::CacheableInt64;
-            ManagedTypeMappingGeneric[Type::GetType("System.Byte[]")] = apache::geode::client::GemfireTypeIds::CacheableBytes;
-            ManagedTypeMappingGeneric[Type::GetType("System.Double[]")] = apache::geode::client::GemfireTypeIds::CacheableDoubleArray;
-            ManagedTypeMappingGeneric[Type::GetType("System.Single[]")] = apache::geode::client::GemfireTypeIds::CacheableFloatArray;
-            ManagedTypeMappingGeneric[Type::GetType("System.Int16[]")] = apache::geode::client::GemfireTypeIds::CacheableInt16Array;
-            ManagedTypeMappingGeneric[Type::GetType("System.Int32[]")] = apache::geode::client::GemfireTypeIds::CacheableInt32Array;
-            ManagedTypeMappingGeneric[Type::GetType("System.Int64[]")] = apache::geode::client::GemfireTypeIds::CacheableInt64Array;
-            ManagedTypeMappingGeneric[Type::GetType("System.String[]")] = apache::geode::client::GemfireTypeIds::CacheableStringArray;
-            ManagedTypeMappingGeneric[Type::GetType("System.DateTime")] = apache::geode::client::GemfireTypeIds::CacheableDate;
-            ManagedTypeMappingGeneric[Type::GetType("System.Collections.Hashtable")] = apache::geode::client::GemfireTypeIds::CacheableHashTable;
+            ManagedTypeMappingGeneric[SByte::typeid] = apache::geode::client::GeodeTypeIds::CacheableByte;
+            ManagedTypeMappingGeneric[Boolean::typeid] = apache::geode::client::GeodeTypeIds::CacheableBoolean;
+            ManagedTypeMappingGeneric[Char::typeid] = apache::geode::client::GeodeTypeIds::CacheableWideChar;
+            ManagedTypeMappingGeneric[Double::typeid] = apache::geode::client::GeodeTypeIds::CacheableDouble;
+            ManagedTypeMappingGeneric[String::typeid] = apache::geode::client::GeodeTypeIds::CacheableASCIIString;
+            ManagedTypeMappingGeneric[float::typeid] = apache::geode::client::GeodeTypeIds::CacheableFloat;
+            ManagedTypeMappingGeneric[Int16::typeid] = apache::geode::client::GeodeTypeIds::CacheableInt16;
+            ManagedTypeMappingGeneric[Int32::typeid] = apache::geode::client::GeodeTypeIds::CacheableInt32;
+            ManagedTypeMappingGeneric[Int64::typeid] = apache::geode::client::GeodeTypeIds::CacheableInt64;
+            ManagedTypeMappingGeneric[Type::GetType("System.Byte[]")] = apache::geode::client::GeodeTypeIds::CacheableBytes;
+            ManagedTypeMappingGeneric[Type::GetType("System.Double[]")] = apache::geode::client::GeodeTypeIds::CacheableDoubleArray;
+            ManagedTypeMappingGeneric[Type::GetType("System.Single[]")] = apache::geode::client::GeodeTypeIds::CacheableFloatArray;
+            ManagedTypeMappingGeneric[Type::GetType("System.Int16[]")] = apache::geode::client::GeodeTypeIds::CacheableInt16Array;
+            ManagedTypeMappingGeneric[Type::GetType("System.Int32[]")] = apache::geode::client::GeodeTypeIds::CacheableInt32Array;
+            ManagedTypeMappingGeneric[Type::GetType("System.Int64[]")] = apache::geode::client::GeodeTypeIds::CacheableInt64Array;
+            ManagedTypeMappingGeneric[Type::GetType("System.String[]")] = apache::geode::client::GeodeTypeIds::CacheableStringArray;
+            ManagedTypeMappingGeneric[Type::GetType("System.DateTime")] = apache::geode::client::GeodeTypeIds::CacheableDate;
+            ManagedTypeMappingGeneric[Type::GetType("System.Collections.Hashtable")] = apache::geode::client::GeodeTypeIds::CacheableHashTable;
           }
         }
       };

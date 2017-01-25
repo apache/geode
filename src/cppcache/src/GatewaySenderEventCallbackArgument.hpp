@@ -29,7 +29,7 @@ class GatewaySenderEventCallbackArgument : public Serializable {
 
   virtual int32_t classId() const {
     return static_cast<int16_t>(
-        GemfireTypeIdsImpl::GatewaySenderEventCallbackArgument);
+        GeodeTypeIdsImpl::GatewaySenderEventCallbackArgument);
     ;
   }
 
@@ -40,7 +40,7 @@ class GatewaySenderEventCallbackArgument : public Serializable {
   }
 
   virtual int8_t DSFID() const {
-    return static_cast<int32_t>(GemfireTypeIdsImpl::FixedIDShort);
+    return static_cast<int32_t>(GeodeTypeIdsImpl::FixedIDShort);
   }
 
   virtual uint32_t objectSize() const { return 0; }

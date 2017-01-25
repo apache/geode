@@ -122,13 +122,13 @@ namespace apache
         }
         else if (m_classId <= 0x7F) {
           //Apache::Geode::Client::Log::Debug("ManagedCacheableKeyGeneric::typeId inin"); 
-          return (int8_t)GemfireTypeIdsImpl::CacheableUserData;
+          return (int8_t)GeodeTypeIdsImpl::CacheableUserData;
         }
         else if (m_classId <= 0x7FFF) {
-          return (int8_t)GemfireTypeIdsImpl::CacheableUserData2;
+          return (int8_t)GeodeTypeIdsImpl::CacheableUserData2;
         }
         else {
-          return (int8_t)GemfireTypeIdsImpl::CacheableUserData4;
+          return (int8_t)GeodeTypeIdsImpl::CacheableUserData4;
         }
       }
 

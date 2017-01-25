@@ -126,11 +126,11 @@ Serializable* CacheableObjectPartList::fromData(DataInput& input) {
 int32_t CacheableObjectPartList::classId() const { return 0; }
 
 int8_t CacheableObjectPartList::typeId() const {
-  return GemfireTypeIdsImpl::CacheableObjectPartList;
+  return GeodeTypeIdsImpl::CacheableObjectPartList;
 }
 
 int8_t CacheableObjectPartList::DSFID() const {
-  return GemfireTypeIdsImpl::FixedIDByte;
+  return GeodeTypeIdsImpl::FixedIDByte;
 }
 
 uint32_t CacheableObjectPartList::objectSize() const { return 0; }

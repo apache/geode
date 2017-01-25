@@ -30,6 +30,6 @@ void LocatorListRequest::toData(DataOutput& output) const {
 }
 Serializable* LocatorListRequest::fromData(DataInput& input) { return NULL; }
 int8_t LocatorListRequest::typeId() const {
-  return static_cast<int8_t>(GemfireTypeIdsImpl::LocatorListRequest);
+  return static_cast<int8_t>(GeodeTypeIdsImpl::LocatorListRequest);
 }
 uint32_t LocatorListRequest::objectSize() const { return 0; }

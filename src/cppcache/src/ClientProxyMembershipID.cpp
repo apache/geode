@@ -107,7 +107,7 @@ durableClntTimeOut)
 {
   if( durableClientId != NULL && durableClntTimeOut != 0 ) {
     DataOutput  m_memID;
-    m_memID.write((int8_t)GemfireTypeIds::CacheableASCIIString);
+    m_memID.write((int8_t)GeodeTypeIds::CacheableASCIIString);
     m_memID.writeASCII(durableClientId);
     CacheableInt32Ptr int32ptr = CacheableInt32::create(durableClntTimeOut);
     int32ptr->toData(m_memID);
@@ -174,9 +174,9 @@ void ClientProxyMembershipID::initObjectVars(
   }
 
   m_vmViewId = vmViewId;
-  m_memID.write(static_cast<int8_t>(GemfireTypeIdsImpl::FixedIDByte));
+  m_memID.write(static_cast<int8_t>(GeodeTypeIdsImpl::FixedIDByte));
   m_memID.write(
-      static_cast<int8_t>(GemfireTypeIdsImpl::InternalDistributedMember));
+      static_cast<int8_t>(GeodeTypeIdsImpl::InternalDistributedMember));
   m_memID.writeArrayLen(ADDRSIZE);
   // writing first 4 bytes of the address. This will be same until
   // IPV6 support is added in the client
@@ -185,7 +185,7 @@ void ClientProxyMembershipID::initObjectVars(
   m_memID.writeInt(static_cast<int32_t>(temp));
   // m_memID.writeInt((int32_t)hostPort);
   m_memID.writeInt((int32_t)synch_counter);
-  m_memID.write(static_cast<int8_t>(GemfireTypeIds::CacheableASCIIString));
+  m_memID.write(static_cast<int8_t>(GeodeTypeIds::CacheableASCIIString));
   m_memID.writeASCII(hostname);
   m_memID.write(splitBrainFlag);  // splitbrain flags
 
@@ -194,13 +194,13 @@ void ClientProxyMembershipID::initObjectVars(
   m_memID.writeInt(vPID);
   m_memID.write(vmkind);
   m_memID.writeArrayLen(ROLEARRLENGTH);
-  m_memID.write(static_cast<int8_t>(GemfireTypeIds::CacheableASCIIString));
+  m_memID.write(static_cast<int8_t>(GeodeTypeIds::CacheableASCIIString));
   m_memID.writeASCII(dsname);
-  m_memID.write(static_cast<int8_t>(GemfireTypeIds::CacheableASCIIString));
+  m_memID.write(static_cast<int8_t>(GeodeTypeIds::CacheableASCIIString));
   m_memID.writeASCII(uniqueTag);
 
   if (durableClientId != NULL && durableClntTimeOut != 0) {
-    m_memID.write(static_cast<int8_t>(GemfireTypeIds::CacheableASCIIString));
+    m_memID.write(static_cast<int8_t>(GeodeTypeIds::CacheableASCIIString));
     m_memID.writeASCII(durableClientId);
     CacheableInt32Ptr int32ptr = CacheableInt32::create(durableClntTimeOut);
     int32ptr->toData(m_memID);

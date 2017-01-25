@@ -1125,7 +1125,7 @@ class TcrMessageHelper {
     int32_t compId = partType;
 
     //  ugly hack to check for exception chunk
-    if (partType == GemfireTypeIdsImpl::JavaSerializable) {
+    if (partType == GeodeTypeIdsImpl::JavaSerializable) {
       input.reset();
       if (TcrMessageHelper::readExceptionPart(msg, input, isLastChunk)) {
         msg.setMessageType(TcrMessage::EXCEPTION);
@@ -1139,7 +1139,7 @@ class TcrMessageHelper {
             methodName);
         throw MessageException(exMsg);
       }
-    } else if (partType == GemfireTypeIds::NullObj) {
+    } else if (partType == GeodeTypeIds::NullObj) {
       // special null object is case for scalar query result
       return NULL_OBJECT;
     }
@@ -1154,12 +1154,12 @@ class TcrMessageHelper {
         throw MessageException(exMsg);
       }
       // This is for GETALL
-      if (expectedFirstType == GemfireTypeIdsImpl::FixedIDShort) {
+      if (expectedFirstType == GeodeTypeIdsImpl::FixedIDShort) {
         int16_t shortId;
         input.readInt(&shortId);
         compId = shortId;
       }  // This is for QUERY or REGISTER INTEREST.
-      else if (expectedFirstType == GemfireTypeIdsImpl::FixedIDByte ||
+      else if (expectedFirstType == GeodeTypeIdsImpl::FixedIDByte ||
                expectedFirstType == 0) {
         input.read(&partType);
         compId = partType;
@@ -1199,7 +1199,7 @@ class TcrMessageHelper {
     int8_t partType;
     input.read(&partType);
     //  ugly hack to check for exception chunk
-    if (partType == GemfireTypeIdsImpl::JavaSerializable) {
+    if (partType == GeodeTypeIdsImpl::JavaSerializable) {
       input.reset();
       if (TcrMessageHelper::readExceptionPart(msg, input, isLastChunk)) {
         msg.setMessageType(TcrMessage::EXCEPTION);
@@ -1213,7 +1213,7 @@ class TcrMessageHelper {
             methodName);
         throw MessageException(exMsg);
       }
-    } else if (partType == GemfireTypeIds::NullObj) {
+    } else if (partType == GeodeTypeIds::NullObj) {
       // special null object is case for scalar query result
       return static_cast<int8_t>(NULL_OBJECT);
     }

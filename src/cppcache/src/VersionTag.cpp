@@ -49,7 +49,7 @@ VersionTag::~VersionTag() {}
 int32_t VersionTag::classId() const { return 0; }
 
 int8_t VersionTag::typeId() const {
-  return static_cast<int8_t>(GemfireTypeIdsImpl::VersionTag);
+  return static_cast<int8_t>(GeodeTypeIdsImpl::VersionTag);
 }
 
 void VersionTag::toData(DataOutput& output) const {

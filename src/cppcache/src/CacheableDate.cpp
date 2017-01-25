@@ -56,10 +56,10 @@ Serializable* CacheableDate::createDeserializable() {
 
 int32_t CacheableDate::classId() const { return 0; }
 
-int8_t CacheableDate::typeId() const { return GemfireTypeIds::CacheableDate; }
+int8_t CacheableDate::typeId() const { return GeodeTypeIds::CacheableDate; }
 
 bool CacheableDate::operator==(const CacheableKey& other) const {
-  if (other.typeId() != GemfireTypeIds::CacheableDate) {
+  if (other.typeId() != GeodeTypeIds::CacheableDate) {
     return false;
   }
 

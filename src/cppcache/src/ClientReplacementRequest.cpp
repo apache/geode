@@ -29,5 +29,5 @@ Serializable* ClientReplacementRequest::fromData(DataInput& input) {
                 // needed.
 }
 int8_t ClientReplacementRequest::typeId() const {
-  return static_cast<int8_t>(GemfireTypeIdsImpl::ClientReplacementRequest);
+  return static_cast<int8_t>(GeodeTypeIdsImpl::ClientReplacementRequest);
 }

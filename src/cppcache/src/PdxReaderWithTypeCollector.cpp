@@ -622,11 +622,11 @@ CacheableDatePtr PdxReaderWithTypeCollector::readDate(const char* fieldName) {
 void PdxReaderWithTypeCollector::readCollection(
     const char* fieldName, CacheableArrayListPtr& collection) {
   checkType(fieldName,
-            apache::geode::client::GemfireTypeIds::CacheableArrayList,
+            apache::geode::client::GeodeTypeIds::CacheableArrayList,
             "Collection");
   m_newPdxType->addVariableLengthTypeField(
       fieldName, "Collection",
-      apache::geode::client::GemfireTypeIds::CacheableArrayList);
+      apache::geode::client::GeodeTypeIds::CacheableArrayList);
   int position = m_pdxType->getFieldPosition(fieldName, m_offsetsBuffer,
                                              m_offsetSize, m_serializedLength);
   LOGDEBUG("PdxReaderWithTypeCollector::readCollection() position = %d",

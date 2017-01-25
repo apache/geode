@@ -415,50 +415,50 @@ namespace Apache
 				{
 					switch(typeId)
 					{
-					case apache::geode::client::GemfireTypeIds::CacheableByte:
+					case apache::geode::client::GeodeTypeIds::CacheableByte:
 						{
 							return ReadSByte();
 						}
-					case apache::geode::client::GemfireTypeIds::CacheableBoolean:
+					case apache::geode::client::GeodeTypeIds::CacheableBoolean:
 						{
 							bool obj;
 							ReadObject(obj);
 							return obj;
 						}
-					case apache::geode::client::GemfireTypeIds::CacheableWideChar:
+					case apache::geode::client::GeodeTypeIds::CacheableWideChar:
 						{
 							Char obj;
 							ReadObject(obj);
 							return obj;
 						}
-					case apache::geode::client::GemfireTypeIds::CacheableDouble:
+					case apache::geode::client::GeodeTypeIds::CacheableDouble:
 						{
 							Double obj;
 							ReadObject(obj);
 							return obj;
 						}
-					case apache::geode::client::GemfireTypeIds::CacheableASCIIString:
+					case apache::geode::client::GeodeTypeIds::CacheableASCIIString:
 						{
 						/*	CacheableString^ cs = static_cast<CacheableString^>(CacheableString::CreateDeserializable());
 							cs->FromData(this);
 							return cs->Value;*/
               return ReadUTF();
 						}
-					case apache::geode::client::GemfireTypeIds::CacheableASCIIStringHuge:
+					case apache::geode::client::GeodeTypeIds::CacheableASCIIStringHuge:
 						{
 							/*CacheableString^ cs = static_cast<CacheableString^>(CacheableString::createDeserializableHuge());
 							cs->FromData(this);
 							return cs->Value;*/
               return ReadASCIIHuge();
 						}
-					case apache::geode::client::GemfireTypeIds::CacheableString:
+					case apache::geode::client::GeodeTypeIds::CacheableString:
 						{
 							/*CacheableString^ cs = static_cast<CacheableString^>(CacheableString::createUTFDeserializable());
 							cs->FromData(this);
 							return cs->Value;*/
               return ReadUTF();
 						}
-					case apache::geode::client::GemfireTypeIds::CacheableStringHuge:
+					case apache::geode::client::GeodeTypeIds::CacheableStringHuge:
 						{
 							//TODO: need to look all strings types
 							/*CacheableString^ cs = static_cast<CacheableString^>(CacheableString::createUTFDeserializableHuge());
@@ -466,103 +466,103 @@ namespace Apache
 							return cs->Value;*/
               return ReadUTFHuge();
 						}
-					case apache::geode::client::GemfireTypeIds::CacheableFloat:
+					case apache::geode::client::GeodeTypeIds::CacheableFloat:
 						{
 							float obj;
 							ReadObject(obj);
 							return obj;
 						}
-					case apache::geode::client::GemfireTypeIds::CacheableInt16:
+					case apache::geode::client::GeodeTypeIds::CacheableInt16:
 						{
 							Int16 obj;
 							ReadObject(obj);
 							return obj;
 						}
-					case apache::geode::client::GemfireTypeIds::CacheableInt32:
+					case apache::geode::client::GeodeTypeIds::CacheableInt32:
 						{
 							Int32 obj;
 							ReadObject(obj);
 							return obj;
 						}
-					case apache::geode::client::GemfireTypeIds::CacheableInt64:
+					case apache::geode::client::GeodeTypeIds::CacheableInt64:
 						{
 							Int64 obj;
 							ReadObject(obj);
 							return obj;
 						}
-					case apache::geode::client::GemfireTypeIds::CacheableDate:
+					case apache::geode::client::GeodeTypeIds::CacheableDate:
 						{
 							CacheableDate^ cd = CacheableDate::Create();
 							cd->FromData(this);
 							return cd->Value;
 						}
-					case apache::geode::client::GemfireTypeIds::CacheableBytes:
+					case apache::geode::client::GeodeTypeIds::CacheableBytes:
 						{
 							return ReadBytes();
 						}
-					case apache::geode::client::GemfireTypeIds::CacheableDoubleArray:
+					case apache::geode::client::GeodeTypeIds::CacheableDoubleArray:
 						{
 							array<Double>^ obj;
 							ReadObject(obj);
 							return obj;
 						}
-					case apache::geode::client::GemfireTypeIds::CacheableFloatArray:
+					case apache::geode::client::GeodeTypeIds::CacheableFloatArray:
 						{
 							array<float>^ obj;
 							ReadObject(obj);
 							return obj;
 						}
-					case apache::geode::client::GemfireTypeIds::CacheableInt16Array:
+					case apache::geode::client::GeodeTypeIds::CacheableInt16Array:
 						{
 							array<Int16>^ obj;
 							ReadObject(obj);
 							return obj;
 						}
-					case apache::geode::client::GemfireTypeIds::CacheableInt32Array:
+					case apache::geode::client::GeodeTypeIds::CacheableInt32Array:
 						{
 							array<Int32>^ obj;
 							ReadObject(obj);
 							return obj;
 						}
-					case apache::geode::client::GemfireTypeIds::BooleanArray:
+					case apache::geode::client::GeodeTypeIds::BooleanArray:
 						{
 							array<bool>^ obj;
 							ReadObject(obj);
 							return obj;
 						}
-					case apache::geode::client::GemfireTypeIds::CharArray:
+					case apache::geode::client::GeodeTypeIds::CharArray:
 						{
 							array<Char>^ obj;
 							ReadObject(obj);
 							return obj;
 						}
-					case apache::geode::client::GemfireTypeIds::CacheableInt64Array:
+					case apache::geode::client::GeodeTypeIds::CacheableInt64Array:
 						{
 							array<Int64>^ obj;
 							ReadObject(obj);
 							return obj;
 						}
-					case apache::geode::client::GemfireTypeIds::CacheableStringArray:
+					case apache::geode::client::GeodeTypeIds::CacheableStringArray:
 						{
 							return ReadStringArray();
 						}
-					case apache::geode::client::GemfireTypeIds::CacheableHashTable:
+					case apache::geode::client::GeodeTypeIds::CacheableHashTable:
 						{
 							return ReadHashtable();
 						}
-					case apache::geode::client::GemfireTypeIds::CacheableHashMap:
+					case apache::geode::client::GeodeTypeIds::CacheableHashMap:
 						{
 							CacheableHashMap^ chm = static_cast<CacheableHashMap^>(CacheableHashMap::CreateDeserializable());
 							chm->FromData(this);
 							return chm->Value;
 						}
-					case apache::geode::client::GemfireTypeIds::CacheableIdentityHashMap:
+					case apache::geode::client::GeodeTypeIds::CacheableIdentityHashMap:
 						{
 							CacheableIdentityHashMap^ chm = static_cast<CacheableIdentityHashMap^>(CacheableIdentityHashMap::CreateDeserializable());
 							chm->FromData(this);
 							return chm->Value;
 						}
-					case apache::geode::client::GemfireTypeIds::CacheableVector:
+					case apache::geode::client::GeodeTypeIds::CacheableVector:
 						{
 							/*CacheableVector^ cv = static_cast<CacheableVector^>(CacheableVector::CreateDeserializable());
 							cv->FromData(this);
@@ -576,7 +576,7 @@ namespace Apache
               }
               return retA;
 						}
-					case apache::geode::client::GemfireTypeIds::CacheableArrayList:
+					case apache::geode::client::GeodeTypeIds::CacheableArrayList:
 						{
 							/*CacheableArrayList^ cv = static_cast<CacheableArrayList^>(CacheableArrayList::CreateDeserializable());
 							cv->FromData(this);
@@ -590,7 +590,7 @@ namespace Apache
               return retA;
 
 						}
-          case apache::geode::client::GemfireTypeIds::CacheableLinkedList:
+          case apache::geode::client::GeodeTypeIds::CacheableLinkedList:
 						{
 							/*CacheableArrayList^ cv = static_cast<CacheableArrayList^>(CacheableArrayList::CreateDeserializable());
 							cv->FromData(this);
@@ -604,7 +604,7 @@ namespace Apache
               return retA;
 
 						}
-					case apache::geode::client::GemfireTypeIds::CacheableStack:
+					case apache::geode::client::GeodeTypeIds::CacheableStack:
 						{
 							CacheableStack^ cv = static_cast<CacheableStack^>(CacheableStack::CreateDeserializable());
 							cv->FromData(this);
@@ -623,7 +623,7 @@ namespace Apache
 					int64_t compId = typeId;
 					TypeFactoryMethodGeneric^ createType = nullptr;
 
-					if (compId == GemfireTypeIds::NullObj) {
+					if (compId == GeodeTypeIds::NullObj) {
 						return nullptr;
 					}
 					else if(compId == GemFireClassIds::PDX)
@@ -659,32 +659,32 @@ namespace Apache
             Object^ enumVal = Internal::PdxHelper::GetEnum(enumId);
             return enumVal;
           }
-					else if (compId == GemfireTypeIds::CacheableNullString) {
+					else if (compId == GeodeTypeIds::CacheableNullString) {
 						//return SerializablePtr(CacheableString::createDeserializable());
 						//TODO::
 						return nullptr;
 					}
-					else if (compId == GemfireTypeIdsImpl::CacheableUserData) {
+					else if (compId == GeodeTypeIdsImpl::CacheableUserData) {
 						int8_t classId = ReadByte();
 						//compId |= ( ( (int64_t)classId ) << 32 );
 						compId = (int64_t)classId;
-					} else if ( compId == GemfireTypeIdsImpl::CacheableUserData2 ) {
+					} else if ( compId == GeodeTypeIdsImpl::CacheableUserData2 ) {
 						int16_t classId = ReadInt16();
 						//compId |= ( ( (int64_t)classId ) << 32 );
 						compId = (int64_t)classId;
-					} else if ( compId == GemfireTypeIdsImpl::CacheableUserData4 ) {
+					} else if ( compId == GeodeTypeIdsImpl::CacheableUserData4 ) {
 						int32_t classId = ReadInt32();
 						//compId |= ( ( (int64_t)classId ) << 32 );
 						compId = (int64_t)classId;
-					}else if (compId == GemfireTypeIdsImpl::FixedIDByte) {//TODO: need to verify again
+					}else if (compId == GeodeTypeIdsImpl::FixedIDByte) {//TODO: need to verify again
 						int8_t fixedId = ReadByte();
 						compId = fixedId;
 						findinternal = true;
-					} else if (compId == GemfireTypeIdsImpl::FixedIDShort) {
+					} else if (compId == GeodeTypeIdsImpl::FixedIDShort) {
 						int16_t fixedId = ReadInt16();
 						compId = fixedId;
 						findinternal = true;
-					} else if (compId == GemfireTypeIdsImpl::FixedIDInt) {
+					} else if (compId == GeodeTypeIdsImpl::FixedIDInt) {
 						int32_t fixedId = ReadInt32();
 						compId = fixedId;
 						findinternal = true;
@@ -701,7 +701,7 @@ namespace Apache
 								if(retVal != nullptr)
 									return retVal;
 
-                if(m_ispdxDesrialization && typeId == apache::geode::client::GemfireTypeIds::CacheableObjectArray)
+                if(m_ispdxDesrialization && typeId == apache::geode::client::GeodeTypeIds::CacheableObjectArray)
                 {//object array and pdxSerialization
                   return readDotNetObjectArray();
                 }
@@ -767,39 +767,39 @@ namespace Apache
 					int64_t compId = typeId;
 					TypeFactoryMethodGeneric^ createType = nullptr;
 
-					if (compId == GemfireTypeIds::NullObj) {
+					if (compId == GeodeTypeIds::NullObj) {
 						return nullptr;
 					}
 					else if(compId == GemFireClassIds::PDX)
 					{
 						return Internal::PdxHelper::DeserializePdx(this, false);
 					}
-					else if (compId == GemfireTypeIds::CacheableNullString) {
+					else if (compId == GeodeTypeIds::CacheableNullString) {
 						//return SerializablePtr(CacheableString::createDeserializable());
 						//TODO::
 						return nullptr;
 					}
-					else if (compId == GemfireTypeIdsImpl::CacheableUserData) {
+					else if (compId == GeodeTypeIdsImpl::CacheableUserData) {
 						int8_t classId = ReadByte();
 						//compId |= ( ( (int64_t)classId ) << 32 );
 						compId = (int64_t)classId;
-					} else if ( compId == GemfireTypeIdsImpl::CacheableUserData2 ) {
+					} else if ( compId == GeodeTypeIdsImpl::CacheableUserData2 ) {
 						int16_t classId = ReadInt16();
 						//compId |= ( ( (int64_t)classId ) << 32 );
 						compId = (int64_t)classId;
-					} else if ( compId == GemfireTypeIdsImpl::CacheableUserData4 ) {
+					} else if ( compId == GeodeTypeIdsImpl::CacheableUserData4 ) {
 						int32_t classId = ReadInt32();
 						//compId |= ( ( (int64_t)classId ) << 32 );
 						compId = (int64_t)classId;
-					}else if (compId == GemfireTypeIdsImpl::FixedIDByte) {//TODO: need to verify again
+					}else if (compId == GeodeTypeIdsImpl::FixedIDByte) {//TODO: need to verify again
 						int8_t fixedId = ReadByte();
 						compId = fixedId;
 						findinternal = true;
-					} else if (compId == GemfireTypeIdsImpl::FixedIDShort) {
+					} else if (compId == GeodeTypeIdsImpl::FixedIDShort) {
 						int16_t fixedId = ReadInt16();
 						compId = fixedId;
 						findinternal = true;
-					} else if (compId == GemfireTypeIdsImpl::FixedIDInt) {
+					} else if (compId == GeodeTypeIdsImpl::FixedIDInt) {
 						int32_t fixedId = ReadInt32();
 						compId = fixedId;
 						findinternal = true;
@@ -1070,15 +1070,15 @@ namespace Apache
 				{
 					UInt32 typeId = (Int32)ReadByte() ;
 
-					if(typeId == GemfireTypeIds::CacheableNullString)
+					if(typeId == GeodeTypeIds::CacheableNullString)
 						return nullptr;
 
-				  if (typeId == GemfireTypeIds::CacheableASCIIString ||
-              typeId == GemfireTypeIds::CacheableString)
+				  if (typeId == GeodeTypeIds::CacheableASCIIString ||
+              typeId == GeodeTypeIds::CacheableString)
           {
             return ReadUTF();
           }
-          else if (typeId == GemfireTypeIds::CacheableASCIIStringHuge)
+          else if (typeId == GeodeTypeIds::CacheableASCIIStringHuge)
           {
             return ReadASCIIHuge();
           }

@@ -60,7 +60,7 @@ class DiskVersionTag : public VersionTag {
   virtual int32_t classId() const { return 0; }
 
   virtual int8_t typeId() const {
-    return static_cast<int8_t>(GemfireTypeIdsImpl::DiskVersionTag);
+    return static_cast<int8_t>(GeodeTypeIdsImpl::DiskVersionTag);
   }
 
   static Serializable* createDeserializable() { return new DiskVersionTag(); }

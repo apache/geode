@@ -318,11 +318,11 @@ Serializable* VersionedCacheableObjectPartList::fromData(DataInput& input) {
 int32_t VersionedCacheableObjectPartList::classId() const { return 0; }
 
 int8_t VersionedCacheableObjectPartList::typeId() const {
-  return GemfireTypeIdsImpl::VersionedObjectPartList;
+  return GeodeTypeIdsImpl::VersionedObjectPartList;
 }
 
 int8_t VersionedCacheableObjectPartList::DSFID() const {
-  return GemfireTypeIdsImpl::FixedIDByte;
+  return GeodeTypeIdsImpl::FixedIDByte;
 }
 
 uint32_t VersionedCacheableObjectPartList::objectSize() const { return 0; }

@@ -24,7 +24,7 @@ LocatorListResponse* LocatorListResponse::fromData(DataInput& input) {
   return this;
 }
 int8_t LocatorListResponse::typeId() const {
-  return static_cast<int8_t>(GemfireTypeIdsImpl::LocatorListResponse);
+  return static_cast<int8_t>(GeodeTypeIdsImpl::LocatorListResponse);
 }
 uint32_t LocatorListResponse::objectSize() const { return 0; }
 void LocatorListResponse::readList(DataInput& input) {

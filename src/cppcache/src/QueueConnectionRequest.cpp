@@ -24,9 +24,9 @@ void QueueConnectionRequest::toData(DataOutput& output) const {
   // CacheableStringPtr abe = CacheableString::create(m_serverGp.c_str());
   // output.writeObject(abe);// changed
   output.writeNativeString(m_serverGp.c_str());
-  output.write(static_cast<int8_t>(GemfireTypeIdsImpl::FixedIDByte));
+  output.write(static_cast<int8_t>(GeodeTypeIdsImpl::FixedIDByte));
   output.write(
-      static_cast<int8_t>(GemfireTypeIdsImpl::ClientProxyMembershipId));
+      static_cast<int8_t>(GeodeTypeIdsImpl::ClientProxyMembershipId));
   uint32_t buffLen;
   const char* buff = m_membershipID.getDSMemberId(buffLen);
   output.writeBytes((uint8_t*)buff, buffLen);
@@ -41,7 +41,7 @@ QueueConnectionRequest* QueueConnectionRequest::fromData(
   return NULL;
 }
 int8_t QueueConnectionRequest::typeId() const {
-  return static_cast<int8_t>(GemfireTypeIdsImpl::QueueConnectionRequest);
+  return static_cast<int8_t>(GeodeTypeIdsImpl::QueueConnectionRequest);
 }
 uint32_t QueueConnectionRequest::objectSize() const {
   return 0;  // will implement later.

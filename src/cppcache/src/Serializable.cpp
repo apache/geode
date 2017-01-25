@@ -28,16 +28,16 @@ namespace client {
 int8_t Serializable::typeId() const {
   int32_t classIdToCheck = classId();
   if (classIdToCheck <= 127 && classIdToCheck >= -128) {
-    return static_cast<int8_t>(GemfireTypeIdsImpl::CacheableUserData);
+    return static_cast<int8_t>(GeodeTypeIdsImpl::CacheableUserData);
   } else if (classIdToCheck <= 32767 && classIdToCheck >= -32768) {
-    return static_cast<int8_t>(GemfireTypeIdsImpl::CacheableUserData2);
+    return static_cast<int8_t>(GeodeTypeIdsImpl::CacheableUserData2);
   } else {
-    return static_cast<int8_t>(GemfireTypeIdsImpl::CacheableUserData4);
+    return static_cast<int8_t>(GeodeTypeIdsImpl::CacheableUserData4);
   }
 }
 
 int8_t Serializable::DSFID() const {
-  return static_cast<int8_t>(GemfireTypeIdsImpl::FixedIDDefault);
+  return static_cast<int8_t>(GeodeTypeIdsImpl::FixedIDDefault);
 }
 
 uint32_t Serializable::objectSize() const { return 0; }

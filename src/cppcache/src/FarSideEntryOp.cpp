@@ -67,7 +67,7 @@ void FarSideEntryOp::fromData(DataInput& input, bool largeModCount,
   }
   uint8_t firstByte;
   input.read(&firstByte);
-  if (firstByte != GemfireTypeIds::NullObj) {
+  if (firstByte != GeodeTypeIds::NullObj) {
     input.rewindCursor(1);
     input.readObject(m_callbackArg);
   }
@@ -87,7 +87,7 @@ void FarSideEntryOp::fromData(DataInput& input, bool largeModCount,
         int32_t rewind = 1;
         int16_t fixedId = 0;
         input.read(&objType);
-        if (objType == GemfireTypeIdsImpl::FixedIDShort) {
+        if (objType == GeodeTypeIdsImpl::FixedIDShort) {
           input.readInt(&fixedId);
           rewind += 2;
         }
@@ -140,9 +140,9 @@ void FarSideEntryOp::skipFilterRoutingInfo(DataInput& input) {
   CacheablePtr tmp;
   input.read(&structType);  // this is DataSerializable (45)
 
-  if (structType == GemfireTypeIds::NullObj) {
+  if (structType == GeodeTypeIds::NullObj) {
     return;
-  } else if (structType == GemfireTypeIdsImpl::DataSerializable) {
+  } else if (structType == GeodeTypeIdsImpl::DataSerializable) {
     input.read(&classByte);
     input.readObject(tmp);
     int32_t size;

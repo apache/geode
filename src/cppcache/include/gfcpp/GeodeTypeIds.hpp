@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef _GEMFIRE_GEMFIRETYPEIDS_HPP_
-#define _GEMFIRE_GEMFIRETYPEIDS_HPP_
+#ifndef _GEODE_GEODETYPEIDS_HPP_
+#define _GEODE_GEODETYPEIDS_HPP_
 
 namespace apache {
 namespace geode {
 namespace client {
 
-class GemfireTypeIds {
+class GeodeTypeIds {
  public:
   // User visible IDs here
   // Internal IDs are in GeodeTypeIds.hpp
@@ -29,7 +29,7 @@ class GemfireTypeIds {
   enum IdValues {
     // Do not use IDs 5 and 6 which are used by .NET
     // ManagedObject and ManagedObjectXml. If those are
-    // required then change those in GemfireTypeIdsM.hpp
+    // required then change those in GeodeTypeIdsM.hpp
 
     // keep the following in alphabetical order please.
     EnumInfo = 9,

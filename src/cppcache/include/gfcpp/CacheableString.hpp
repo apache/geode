@@ -31,10 +31,10 @@ namespace apache {
 namespace geode {
 namespace client {
 
-#define GF_STRING (int8_t) GemfireTypeIds::CacheableASCIIString
-#define GF_STRING_HUGE (int8_t) GemfireTypeIds::CacheableASCIIStringHuge
-#define GF_WIDESTRING (int8_t) GemfireTypeIds::CacheableString
-#define GF_WIDESTRING_HUGE (int8_t) GemfireTypeIds::CacheableStringHuge
+#define GF_STRING (int8_t) GeodeTypeIds::CacheableASCIIString
+#define GF_STRING_HUGE (int8_t) GeodeTypeIds::CacheableASCIIStringHuge
+#define GF_WIDESTRING (int8_t) GeodeTypeIds::CacheableString
+#define GF_WIDESTRING_HUGE (int8_t) GeodeTypeIds::CacheableStringHuge
 
 /**
  * Implement a immutable C string wrapper that can serve as a distributable
@@ -85,13 +85,13 @@ class CPPCACHE_EXPORT CacheableString : public CacheableKey {
    * type to create and deserialize into.
    *
    * For a <code>CacheableString</code> this shall return
-   * <code>GemfireTypeIds::CacheableNullString</code> if the underlying
-   * string is null, <code>GemfireTypeIds::CacheableASCIIString</code>
+   * <code>GeodeTypeIds::CacheableNullString</code> if the underlying
+   * string is null, <code>GeodeTypeIds::CacheableASCIIString</code>
    * if the underlying string is a char*, and
-   * <code>GemfireTypeIds::CacheableString</code> if it is a wchar_t*.
+   * <code>GeodeTypeIds::CacheableString</code> if it is a wchar_t*.
    * For strings larger than 64K it will return
-   * <code>GemfireTypeIds::CacheableASCIIStringHuge</code> and
-   * <code>GemfireTypeIds::CacheableStringHuge</code> for char* and wchar_t*
+   * <code>GeodeTypeIds::CacheableASCIIStringHuge</code> and
+   * <code>GeodeTypeIds::CacheableStringHuge</code> for char* and wchar_t*
    * respectively.
    */
   virtual int8_t typeId() const;

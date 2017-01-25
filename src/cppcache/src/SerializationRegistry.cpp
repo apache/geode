@@ -157,8 +157,8 @@ class TheTypeMap : private NonCopyable, private NonAssignable {
     bind2(TXCommitMessage::create);
     bind2(EnumInfo::createDeserializable);
     bind2(VersionTag::createDeserializable);
-    rebind2(GemfireTypeIdsImpl::DiskStoreId, DiskStoreId::createDeserializable);
-    rebind2(GemfireTypeIdsImpl::DiskVersionTag,
+    rebind2(GeodeTypeIdsImpl::DiskStoreId, DiskStoreId::createDeserializable);
+    rebind2(GeodeTypeIdsImpl::DiskVersionTag,
             DiskVersionTag::createDeserializable);
     bind2(CachedDeserializableHelper::createForVmCachedDeserializable);
     bind2(CachedDeserializableHelper::createForPreferBytesDeserializable);
@@ -190,9 +190,9 @@ class TheTypeMap : private NonCopyable, private NonAssignable {
     Serializable* obj = func();
     SpinLockGuard guard(m_mapLock);
     int64_t compId = static_cast<int64_t>(obj->typeId());
-    if (compId == GemfireTypeIdsImpl::CacheableUserData ||
-        compId == GemfireTypeIdsImpl::CacheableUserData2 ||
-        compId == GemfireTypeIdsImpl::CacheableUserData4) {
+    if (compId == GeodeTypeIdsImpl::CacheableUserData ||
+        compId == GeodeTypeIdsImpl::CacheableUserData2 ||
+        compId == GeodeTypeIdsImpl::CacheableUserData4) {
       compId |= ((static_cast<int64_t>(obj->classId())) << 32);
     }
     delete obj;
@@ -241,7 +241,7 @@ class TheTypeMap : private NonCopyable, private NonAssignable {
     int8_t dsfid = obj->DSFID();
 
     int64_t compId = 0;
-    if (dsfid == GemfireTypeIdsImpl::FixedIDShort) {
+    if (dsfid == GeodeTypeIdsImpl::FixedIDShort) {
       compId = compId = static_cast<int64_t>(obj->classId());
     } else {
       compId = static_cast<int64_t>(obj->typeId());
@@ -352,19 +352,19 @@ SerializablePtr SerializationRegistry::deserialize(DataInput& input,
 
   LOGDEBUG("SerializationRegistry::deserialize typeid = %d currentTypeId= %d ",
            typeId, currentTypeId);
-  if (compId == GemfireTypeIds::NullObj) {
+  if (compId == GeodeTypeIds::NullObj) {
     return NULLPTR;
-  } else if (compId == GemfireTypeIds::CacheableNullString) {
+  } else if (compId == GeodeTypeIds::CacheableNullString) {
     return SerializablePtr(CacheableString::createDeserializable());
-  } else if (compId == GemfireTypeIdsImpl::CacheableUserData) {
+  } else if (compId == GeodeTypeIdsImpl::CacheableUserData) {
     int8_t classId = 0;
     input.read(&classId);
     compId |= ((static_cast<int64_t>(classId)) << 32);
-  } else if (compId == GemfireTypeIdsImpl::CacheableUserData2) {
+  } else if (compId == GeodeTypeIdsImpl::CacheableUserData2) {
     int16_t classId = 0;
     input.readInt(&classId);
     compId |= ((static_cast<int64_t>(classId)) << 32);
-  } else if (compId == GemfireTypeIdsImpl::CacheableUserData4) {
+  } else if (compId == GeodeTypeIdsImpl::CacheableUserData4) {
     int32_t classId = 0;
     input.readInt(&classId);
     compId |= ((static_cast<int64_t>(classId)) << 32);
@@ -372,17 +372,17 @@ SerializablePtr SerializationRegistry::deserialize(DataInput& input,
 
   TypeFactoryMethod createType = NULL;
 
-  if (compId == GemfireTypeIdsImpl::FixedIDByte) {
+  if (compId == GeodeTypeIdsImpl::FixedIDByte) {
     int8_t fixedId;
     input.read(&fixedId);
     compId = fixedId;
     findinternal = true;
-  } else if (compId == GemfireTypeIdsImpl::FixedIDShort) {
+  } else if (compId == GeodeTypeIdsImpl::FixedIDShort) {
     int16_t fixedId;
     input.readInt(&fixedId);
     compId = fixedId;
     findinternal = true;
-  } else if (compId == GemfireTypeIdsImpl::FixedIDInt) {
+  } else if (compId == GeodeTypeIdsImpl::FixedIDInt) {
     int32_t fixedId;
     input.readInt(&fixedId);
     compId = fixedId;

@@ -119,13 +119,13 @@ namespace apache
             return (int8_t)((classId - 0x80000000) % 0x20000000);
           }
           else if (classId <= 0x7F) {
-            return (int8_t)GemfireTypeIdsImpl::CacheableUserData;
+            return (int8_t)GeodeTypeIdsImpl::CacheableUserData;
           }
           else if (classId <= 0x7FFF) {
-            return (int8_t)GemfireTypeIdsImpl::CacheableUserData2;
+            return (int8_t)GeodeTypeIdsImpl::CacheableUserData2;
           }
           else {
-            return (int8_t)GemfireTypeIdsImpl::CacheableUserData4;
+            return (int8_t)GeodeTypeIdsImpl::CacheableUserData4;
           }
         }
         catch (Apache::Geode::Client::GemFireException^ ex) {

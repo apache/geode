@@ -119,8 +119,8 @@ namespace Apache
             return SafeUMSerializableConvert( value.ptr( ) );
           } 
           else {
-            if(cs->typeId() == (int8_t)apache::geode::client::GemfireTypeIds::CacheableASCIIString
-              || cs->typeId() == (int8_t)apache::geode::client::GemfireTypeIds::CacheableASCIIStringHuge) {
+            if(cs->typeId() == (int8_t)apache::geode::client::GeodeTypeIds::CacheableASCIIString
+              || cs->typeId() == (int8_t)apache::geode::client::GeodeTypeIds::CacheableASCIIStringHuge) {
               String^ str = gcnew String(cs->asChar());
               return CacheableString::Create(str);
             }

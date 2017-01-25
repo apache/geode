@@ -57,7 +57,7 @@ class DiskStoreId : public DSMemberForVersionStamp {
   virtual int32_t classId() const { return 0; }
 
   virtual int8_t typeId() const {
-    return static_cast<int8_t>(GemfireTypeIdsImpl::DiskStoreId);
+    return static_cast<int8_t>(GeodeTypeIdsImpl::DiskStoreId);
   }
 
   virtual int16_t compareTo(DSMemberForVersionStampPtr tagID) {

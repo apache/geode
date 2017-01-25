@@ -36,7 +36,7 @@ Struct::Struct(StructSet* ssPtr, VectorT<SerializablePtr>& fieldValues) {
 void Struct::skipClassName(DataInput& input) {
   uint8_t classByte;
   input.read(&classByte);
-  if (classByte == GemfireTypeIdsImpl::Class) {
+  if (classByte == GeodeTypeIdsImpl::Class) {
     uint8_t stringType;
     input.read(&stringType);  // ignore string type id - assuming its a normal
                               // (under 64k) string.
@@ -51,9 +51,9 @@ void Struct::skipClassName(DataInput& input) {
 
 int32_t Struct::classId() const { return 0; }
 
-int8_t Struct::typeId() const { return GemfireTypeIds::Struct; }
+int8_t Struct::typeId() const { return GeodeTypeIds::Struct; }
 
-int8_t Struct::DSFID() const { return GemfireTypeIdsImpl::FixedIDByte; }
+int8_t Struct::DSFID() const { return GeodeTypeIdsImpl::FixedIDByte; }
 
 void Struct::toData(DataOutput& output) const {
   throw UnsupportedOperationException("Struct::toData: should not be called.");

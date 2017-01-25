@@ -42,7 +42,7 @@ CacheableEnum::CacheableEnum(const char* enumClassName, const char* enumName,
 void CacheableEnum::toData(apache::geode::client::DataOutput& output) const {
   int enumVal = PdxHelper::getEnumValue(m_enumClassName->asChar(),
                                         m_enumName->asChar(), m_ordinal);
-  output.write(static_cast<int8_t>(GemfireTypeIds::CacheableEnum));
+  output.write(static_cast<int8_t>(GeodeTypeIds::CacheableEnum));
   output.write(int8_t(enumVal >> 24));
   output.writeArrayLen(enumVal & 0xFFFFFF);
 }

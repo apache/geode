@@ -20,10 +20,10 @@
 using namespace apache::geode::client;
 /*int8_t ServerLocationRequest::typeId( ) const
 {
-  return (int8_t)GemfireTypeIdsImpl::FixedIDByte;
+  return (int8_t)GeodeTypeIdsImpl::FixedIDByte;
 }*/
 int8_t ServerLocationRequest::DSFID() const {
-  return static_cast<int8_t>(GemfireTypeIdsImpl::FixedIDByte);
+  return static_cast<int8_t>(GeodeTypeIdsImpl::FixedIDByte);
 }
 
 int32_t ServerLocationRequest::classId() const { return 0; }

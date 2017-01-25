@@ -282,8 +282,8 @@ namespace Apache
 
         void PdxReaderWithTypeCollector::ReadCollection( String^ fieldName, System::Collections::IList^ obj)
         {
-					checkType(fieldName, apache::geode::client::GemfireTypeIds::CacheableArrayList, "Collection");
-          m_newPdxType->AddVariableLengthTypeField(fieldName, /*obj->GetType()->FullName*/"Collection", apache::geode::client::GemfireTypeIds::CacheableArrayList);
+					checkType(fieldName, apache::geode::client::GeodeTypeIds::CacheableArrayList, "Collection");
+          m_newPdxType->AddVariableLengthTypeField(fieldName, /*obj->GetType()->FullName*/"Collection", apache::geode::client::GeodeTypeIds::CacheableArrayList);
           int position = m_pdxType->GetFieldPosition(fieldName, m_offsetsBuffer, m_offsetSize, m_serializedLength);
           if(position != -1)
           {
