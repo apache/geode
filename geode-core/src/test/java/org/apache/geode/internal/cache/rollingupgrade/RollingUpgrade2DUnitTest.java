@@ -529,7 +529,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
   // at
   // org.apache.geode.internal.cache.rollingupgrade.RollingUpgrade2DUnitTest.testOplogMagicSeqBackwardCompactibility(RollingUpgrade2DUnitTest.java:568)
 
-  @Ignore("test fails consistently")
+  @Ignore("GEODE-2355: test fails consistently")
   @Test
   public void testOplogMagicSeqBackwardCompactibility() throws Exception {
     String objectType = "strings";
@@ -759,7 +759,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
   }
 
   // TODO file a JIRA ticket
-  @Ignore("test fails when index creation succeeds")
+  @Ignore("GEODE_2356: test fails when index creation succeeds")
   @Test
   public void testCreateMultiIndexesMixedServersOnPartitionedRegions() throws Exception {
     doTestCreateIndexes(true, true, oldVersion);
