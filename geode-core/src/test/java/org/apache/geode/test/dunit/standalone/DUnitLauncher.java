@@ -141,7 +141,7 @@ public class DUnitLauncher {
       try {
         launch();
       } catch (Exception e) {
-        throw new RuntimeException("Unable to launch dunit VMS", e);
+        throw new RuntimeException("Unable to launch dunit VMs", e);
       }
     }
 
@@ -217,7 +217,7 @@ public class DUnitLauncher {
 
     // wait for the VM to start up
     if (!processManager.waitForVMs(STARTUP_TIMEOUT)) {
-      throw new RuntimeException("VMs did not start up within 30 seconds");
+      throw new RuntimeException(STARTUP_TIMEOUT_MESSAGE);
     }
 
     locatorPort = startLocator(registry);
@@ -231,7 +231,7 @@ public class DUnitLauncher {
 
     // wait for the VMS to start up
     if (!processManager.waitForVMs(STARTUP_TIMEOUT)) {
-      throw new RuntimeException("VMs did not start up within 30 seconds");
+      throw new RuntimeException(STARTUP_TIMEOUT_MESSAGE);
     }
 
     // populate the Host class with our stubs. The tests use this host class
@@ -437,7 +437,7 @@ public class DUnitLauncher {
 
       try {
         if (!processManager.waitForVMs(STARTUP_TIMEOUT)) {
-          throw new RuntimeException("VMs did not start up with 30 seconds");
+          throw new RuntimeException(STARTUP_TIMEOUT_MESSAGE);
         }
         RemoteDUnitVMIF remote =
             (RemoteDUnitVMIF) registry.lookup(VM.getVMName(VersionManager.CURRENT_VERSION, pid));
