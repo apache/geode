@@ -387,6 +387,7 @@ Serializable* ClientProxyMembershipID::fromData(DataInput& input) {
   input.readInt(&durableClntTimeOut);  // durable client timeout
   int32_t vmViewId = 0;
   readVersion(splitbrain, input);
+
   if (vmKind != ClientProxyMembershipID::LONER_DM_TYPE) {
     vmViewId = atoi(uniqueTag.ptr()->asChar());
     initObjectVars(hostname->asChar(), hostAddr, len, true, hostPort,
@@ -399,6 +400,8 @@ Serializable* ClientProxyMembershipID::fromData(DataInput& input) {
                    vmKind, splitbrain, dsName->asChar(), uniqueTag->asChar(),
                    0);
   }
+
+  readAdditionalData(input);
 
   return this;
 }
@@ -449,7 +452,14 @@ Serializable* ClientProxyMembershipID::readEssentialData(DataInput& input) {
                    0, dsName->asChar(), uniqueTag->asChar(), vmViewId);
   }
 
+  readAdditionalData(input);
+
   return this;
+}
+
+void ClientProxyMembershipID::readAdditionalData(DataInput& input) {
+  // Skip unused UUID (16) and weight (0);
+  input.advanceCursor(17);
 }
 
 void ClientProxyMembershipID::increaseSynchCounter() { ++synch_counter; }

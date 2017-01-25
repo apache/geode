@@ -153,7 +153,7 @@ bool TcrConnection::InitTcrConnection(
     ACE_TCHAR hostName[256];
     ACE_OS::hostname(hostName, sizeof(hostName) - 1);
 
-    ACE_INET_Addr driver("", hostName, "tcp");
+    ACE_INET_Addr driver(hostName);
     uint32_t hostAddr = driver.get_ip_address();
     uint16_t hostPort = 0;
 
@@ -1277,36 +1277,6 @@ CacheableBytesPtr TcrConnection::readHandshakeRawData(int32_t msgLength,
 // read a byte array
 CacheableBytesPtr TcrConnection::readHandshakeByteArray(
     uint32_t connectTimeout) {
-  /*CacheableBytesPtr codeBytes = readHandshakeData(1, connectTimeout);
-  DataInput codeDI(codeBytes->value(), codeBytes->length());
-  uint8_t code = 0;
-  codeDI.read(&code);
-  uint32_t arraySize = 0;
-  if (code == 0xFF) {
-  return NULLPTR;
-  } else {
-  int32_t tempLen = code;
-  if (tempLen > 252) {  // 252 is java's ((byte)-4 && 0xFF)
-  if (code == 0xFE) {
-  CacheableBytesPtr lenBytes = readHandshakeData(2, connectTimeout);
-  DataInput lenDI(lenBytes->value(), lenBytes->length());
-  uint16_t val;
-  lenDI.readInt(&val);
-  tempLen = val;
-  } else if (code == 0xFD) {
-  CacheableBytesPtr lenBytes = readHandshakeData(4, connectTimeout);
-  DataInput lenDI(lenBytes->value(), lenBytes->length());
-  uint32_t val;
-  lenDI.readInt(&val);
-  tempLen = val;
-  } else {
-  GF_SAFE_DELETE(m_conn);
-  throwException(IllegalStateException("unexpected array length code"));
-  }
-  }
-  arraySize = tempLen;
-  }*/
-
   uint32_t arraySize = readHandshakeArraySize(connectTimeout);
   return readHandshakeRawData(arraySize, connectTimeout);
 }
