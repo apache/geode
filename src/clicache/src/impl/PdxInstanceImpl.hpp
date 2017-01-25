@@ -49,8 +49,8 @@ namespace Apache
          static array<SByte>^ Float_DefaultBytes = gcnew array<SByte>{0, 0, 0, 0};
          static array<SByte>^ Double_DefaultBytes = gcnew array<SByte>{0, 0, 0, 0, 0, 0, 0, 0};
          static array<SByte>^ Date_DefaultBytes = gcnew array<SByte>{-1, -1, -1, -1, -1, -1, -1, -1};
-         static array<SByte>^ String_DefaultBytes = gcnew array<SByte>{apache::geode::client::GemfireTypeIds::CacheableNullString};
-         static array<SByte>^ Object_DefaultBytes = gcnew array<SByte>{apache::geode::client::GemfireTypeIds::NullObj};
+         static array<SByte>^ String_DefaultBytes = gcnew array<SByte>{apache::geode::client::GeodeTypeIds::CacheableNullString};
+         static array<SByte>^ Object_DefaultBytes = gcnew array<SByte>{apache::geode::client::GeodeTypeIds::NullObj};
          static array<SByte>^ NULL_ARRAY_DefaultBytes = gcnew array<SByte>{-1};
 
          static PdxFieldType^ Default_PdxFieldType = gcnew PdxFieldType("default", "default", -1,

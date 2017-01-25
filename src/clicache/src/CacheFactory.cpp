@@ -85,7 +85,7 @@ namespace Apache
           SafeConvertClassGeneric::SetAppDomainEnabled(appDomainEnable);
 
             Serializable::RegisterTypeGeneric(
-              apache::geode::client::GemfireTypeIds::PdxType,
+              apache::geode::client::GeodeTypeIds::PdxType,
               gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::Internal::PdxType::CreateDeserializable),
               nullptr);
 

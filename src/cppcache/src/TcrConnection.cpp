@@ -138,11 +138,11 @@ bool TcrConnection::InitTcrConnection(
   }
 
   // Write header for byte FixedID since GFE 5.7
-  handShakeMsg.write(static_cast<int8_t>(GemfireTypeIdsImpl::FixedIDByte));
+  handShakeMsg.write(static_cast<int8_t>(GeodeTypeIdsImpl::FixedIDByte));
   // Writing byte for ClientProxyMembershipID class id=38 as registered on the
   // java server.
   handShakeMsg.write(
-      static_cast<int8_t>(GemfireTypeIdsImpl::ClientProxyMembershipId));
+      static_cast<int8_t>(GeodeTypeIdsImpl::ClientProxyMembershipId));
   if (endpointObj->getPoolHADM()) {
     ClientProxyMembershipID* memId =
         endpointObj->getPoolHADM()->getMembershipId();
@@ -274,7 +274,7 @@ bool TcrConnection::InitTcrConnection(
 
         // Send the symmetric key algorithm name string
         handShakeMsg.write(
-            static_cast<int8_t>(GemfireTypeIds::CacheableString));
+            static_cast<int8_t>(GeodeTypeIds::CacheableString));
         handShakeMsg.writeASCII(tmpSystemProperties->securityClientDhAlgo());
 
         // Send the client's DH public key to the server
@@ -1454,7 +1454,7 @@ CacheableStringPtr TcrConnection::readHandshakeString(uint32_t connectTimeout) {
 
   uint32_t length = 0;
   switch (static_cast<int8_t>(cstypeid)) {
-    case GemfireTypeIds::CacheableNullString: {
+    case GeodeTypeIds::CacheableNullString: {
       return NULLPTR;
       break;
     }

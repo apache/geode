@@ -162,16 +162,16 @@ inline uint32_t crc32Array(const TPRIM* arr, uint32_t len) {
 }
 
 inline bool isContainerTypeId(int8_t typeId) {
-  return (typeId == GemfireTypeIds::CacheableObjectArray) ||
-         (typeId == GemfireTypeIds::CacheableVector) ||
-         (typeId == GemfireTypeIds::CacheableHashMap) ||
-         (typeId == GemfireTypeIds::CacheableHashSet) ||
-         (typeId == GemfireTypeIds::CacheableStack) ||
-         (typeId == GemfireTypeIds::CacheableArrayList) ||
-         (typeId == GemfireTypeIds::CacheableHashTable) ||
-         (typeId == GemfireTypeIds::CacheableIdentityHashMap) ||
-         (typeId == GemfireTypeIds::CacheableLinkedHashSet) ||
-         (typeId == GemfireTypeIds::CacheableLinkedList);
+  return (typeId == GeodeTypeIds::CacheableObjectArray) ||
+         (typeId == GeodeTypeIds::CacheableVector) ||
+         (typeId == GeodeTypeIds::CacheableHashMap) ||
+         (typeId == GeodeTypeIds::CacheableHashSet) ||
+         (typeId == GeodeTypeIds::CacheableStack) ||
+         (typeId == GeodeTypeIds::CacheableArrayList) ||
+         (typeId == GeodeTypeIds::CacheableHashTable) ||
+         (typeId == GeodeTypeIds::CacheableIdentityHashMap) ||
+         (typeId == GeodeTypeIds::CacheableLinkedHashSet) ||
+         (typeId == GeodeTypeIds::CacheableLinkedList);
 }
 }  // namespace CacheableHelper
 
@@ -710,18 +710,18 @@ class CacheableHashMapTypeWrapper : public CacheableWrapper {
         if (CacheableHelper::isContainerTypeId(*valIter)) {
           continue;
         }
-        if ((*valIter == GemfireTypeIds::CacheableASCIIStringHuge ||
-             *valIter == GemfireTypeIds::CacheableStringHuge) &&
-            !(*keyIter == GemfireTypeIds::CacheableBoolean)) {
+        if ((*valIter == GeodeTypeIds::CacheableASCIIStringHuge ||
+             *valIter == GeodeTypeIds::CacheableStringHuge) &&
+            !(*keyIter == GeodeTypeIds::CacheableBoolean)) {
           continue;
         }
-        if ((*keyIter == GemfireTypeIds::CacheableASCIIStringHuge ||
-             *keyIter == GemfireTypeIds::CacheableStringHuge) &&
-            !(*valIter == GemfireTypeIds::CacheableBoolean)) {
+        if ((*keyIter == GeodeTypeIds::CacheableASCIIStringHuge ||
+             *keyIter == GeodeTypeIds::CacheableStringHuge) &&
+            !(*valIter == GeodeTypeIds::CacheableBoolean)) {
           continue;
         }
         // null object does not work on server side during deserialization
-        if (*valIter == GemfireTypeIds::CacheableNullString) {
+        if (*valIter == GeodeTypeIds::CacheableNullString) {
           continue;
         }
 
@@ -1202,110 +1202,110 @@ void registerBuiltins(bool isRegisterFileName = false) {
   srand(getpid() + static_cast<int>(time(0)));
 
   // Register the builtin cacheable keys
-  CacheableWrapperFactory::registerType(GemfireTypeIds::CacheableBoolean,
+  CacheableWrapperFactory::registerType(GeodeTypeIds::CacheableBoolean,
                                         "CacheableBoolean",
                                         CacheableBooleanWrapper::create, true);
-  CacheableWrapperFactory::registerType(GemfireTypeIds::CacheableByte,
+  CacheableWrapperFactory::registerType(GeodeTypeIds::CacheableByte,
                                         "CacheableByte",
                                         CacheableByteWrapper::create, true);
-  CacheableWrapperFactory::registerType(GemfireTypeIds::CacheableDouble,
+  CacheableWrapperFactory::registerType(GeodeTypeIds::CacheableDouble,
                                         "CacheableDouble",
                                         CacheableDoubleWrapper::create, true);
-  CacheableWrapperFactory::registerType(GemfireTypeIds::CacheableDate,
+  CacheableWrapperFactory::registerType(GeodeTypeIds::CacheableDate,
                                         "CacheableDate",
                                         CacheableDateWrapper::create, true);
   if (isRegisterFileName) {
 #ifdef _WIN32
     // TODO: windows requires some serious tweaking to get this to work
     CacheableWrapperFactory::registerType(
-        GemfireTypeIds::CacheableFileName, "CacheableFileName",
+        GeodeTypeIds::CacheableFileName, "CacheableFileName",
         CacheableFileNameWrapper::create, true);
 #endif
   }
-  CacheableWrapperFactory::registerType(GemfireTypeIds::CacheableFloat,
+  CacheableWrapperFactory::registerType(GeodeTypeIds::CacheableFloat,
                                         "CacheableFloat",
                                         CacheableFloatWrapper::create, true);
-  CacheableWrapperFactory::registerType(GemfireTypeIds::CacheableInt16,
+  CacheableWrapperFactory::registerType(GeodeTypeIds::CacheableInt16,
                                         "CacheableInt16",
                                         CacheableInt16Wrapper::create, true);
-  CacheableWrapperFactory::registerType(GemfireTypeIds::CacheableInt32,
+  CacheableWrapperFactory::registerType(GeodeTypeIds::CacheableInt32,
                                         "CacheableInt32",
                                         CacheableInt32Wrapper::create, true);
-  CacheableWrapperFactory::registerType(GemfireTypeIds::CacheableInt64,
+  CacheableWrapperFactory::registerType(GeodeTypeIds::CacheableInt64,
                                         "CacheableInt64",
                                         CacheableInt64Wrapper::create, true);
-  CacheableWrapperFactory::registerType(GemfireTypeIds::CacheableASCIIString,
+  CacheableWrapperFactory::registerType(GeodeTypeIds::CacheableASCIIString,
                                         "CacheableString",
                                         CacheableStringWrapper::create, true);
   CacheableWrapperFactory::registerType(
-      GemfireTypeIds::CacheableString, "CacheableUnicodeString",
+      GeodeTypeIds::CacheableString, "CacheableUnicodeString",
       CacheableUnicodeStringWrapper::create, true);
   CacheableWrapperFactory::registerType(
-      GemfireTypeIds::CacheableASCIIStringHuge, "CacheableHugeString",
+      GeodeTypeIds::CacheableASCIIStringHuge, "CacheableHugeString",
       CacheableHugeStringWrapper::create, true);
   CacheableWrapperFactory::registerType(
-      GemfireTypeIds::CacheableStringHuge, "CacheableHugeUnicodeString",
+      GeodeTypeIds::CacheableStringHuge, "CacheableHugeUnicodeString",
       CacheableHugeUnicodeStringWrapper::create, true);
-  CacheableWrapperFactory::registerType(GemfireTypeIds::CacheableWideChar,
+  CacheableWrapperFactory::registerType(GeodeTypeIds::CacheableWideChar,
                                         "CacheableWideChar",
                                         CacheableWideCharWrapper::create, true);
 
   // Register other builtin cacheables
-  CacheableWrapperFactory::registerType(GemfireTypeIds::CacheableHashMap,
+  CacheableWrapperFactory::registerType(GeodeTypeIds::CacheableHashMap,
                                         "CacheableHashMap",
                                         CacheableHashMapWrapper::create, false);
-  CacheableWrapperFactory::registerType(GemfireTypeIds::CacheableHashSet,
+  CacheableWrapperFactory::registerType(GeodeTypeIds::CacheableHashSet,
                                         "CacheableHashSet",
                                         CacheableHashSetWrapper::create, false);
   CacheableWrapperFactory::registerType(
-      GemfireTypeIds::CacheableHashTable, "CacheableHashTable",
+      GeodeTypeIds::CacheableHashTable, "CacheableHashTable",
       CacheableHashTableWrapper::create, false);
   CacheableWrapperFactory::registerType(
-      GemfireTypeIds::CacheableIdentityHashMap, "CacheableIdentityHashMap",
+      GeodeTypeIds::CacheableIdentityHashMap, "CacheableIdentityHashMap",
       CacheableIdentityHashMapWrapper::create, false);
   CacheableWrapperFactory::registerType(
-      GemfireTypeIds::CacheableLinkedHashSet, "CacheableLinkedHashSet",
+      GeodeTypeIds::CacheableLinkedHashSet, "CacheableLinkedHashSet",
       CacheableLinkedHashSetWrapper::create, false);
-  CacheableWrapperFactory::registerType(GemfireTypeIds::CacheableBytes,
+  CacheableWrapperFactory::registerType(GeodeTypeIds::CacheableBytes,
                                         "CacheableBytes",
                                         CacheableBytesWrapper::create, false);
   CacheableWrapperFactory::registerType(
-      GemfireTypeIds::CacheableDoubleArray, "CacheableDoubleArray",
+      GeodeTypeIds::CacheableDoubleArray, "CacheableDoubleArray",
       CacheableDoubleArrayWrapper::create, false);
   CacheableWrapperFactory::registerType(
-      GemfireTypeIds::CacheableFloatArray, "CacheableFloatArray",
+      GeodeTypeIds::CacheableFloatArray, "CacheableFloatArray",
       CacheableFloatArrayWrapper::create, false);
   CacheableWrapperFactory::registerType(
-      GemfireTypeIds::CacheableInt16Array, "CacheableInt16Array",
+      GeodeTypeIds::CacheableInt16Array, "CacheableInt16Array",
       CacheableInt16ArrayWrapper::create, false);
   CacheableWrapperFactory::registerType(
-      GemfireTypeIds::CacheableInt32Array, "CacheableInt32Array",
+      GeodeTypeIds::CacheableInt32Array, "CacheableInt32Array",
       CacheableInt32ArrayWrapper::create, false);
   CacheableWrapperFactory::registerType(
-      GemfireTypeIds::CacheableInt64Array, "CacheableInt64Array",
+      GeodeTypeIds::CacheableInt64Array, "CacheableInt64Array",
       CacheableInt64ArrayWrapper::create, false);
   CacheableWrapperFactory::registerType(
-      GemfireTypeIds::CacheableNullString, "CacheableNullString",
+      GeodeTypeIds::CacheableNullString, "CacheableNullString",
       CacheableNullStringWrapper::create, false);
   CacheableWrapperFactory::registerType(
-      GemfireTypeIds::CacheableObjectArray, "CacheableObjectArray",
+      GeodeTypeIds::CacheableObjectArray, "CacheableObjectArray",
       CacheableObjectArrayWrapper::create, false);
   CacheableWrapperFactory::registerType(
-      GemfireTypeIds::CacheableStringArray, "CacheableStringArray",
+      GeodeTypeIds::CacheableStringArray, "CacheableStringArray",
       CacheableStringArrayWrapper::create, false);
   CacheableWrapperFactory::registerType(
-      GemfireTypeIds::CacheableUndefined, "CacheableUndefined",
+      GeodeTypeIds::CacheableUndefined, "CacheableUndefined",
       CacheableUndefinedWrapper::create, false);
-  CacheableWrapperFactory::registerType(GemfireTypeIds::CacheableVector,
+  CacheableWrapperFactory::registerType(GeodeTypeIds::CacheableVector,
                                         "CacheableVector",
                                         CacheableVectorWrapper::create, false);
   CacheableWrapperFactory::registerType(
-      GemfireTypeIds::CacheableArrayList, "CacheableArrayList",
+      GeodeTypeIds::CacheableArrayList, "CacheableArrayList",
       CacheableArrayListWrapper::create, false);
   CacheableWrapperFactory::registerType(
-      GemfireTypeIds::CacheableLinkedList, "CacheableLinkedList",
+      GeodeTypeIds::CacheableLinkedList, "CacheableLinkedList",
       CacheableLinkedListWrapper::create, false);
-  CacheableWrapperFactory::registerType(GemfireTypeIds::CacheableStack,
+  CacheableWrapperFactory::registerType(GeodeTypeIds::CacheableStack,
                                         "CacheableStack",
                                         CacheableStackWrapper::create, false);
 }

@@ -3527,7 +3527,7 @@ void ChunkedInterestResponse::handleChunk(const uint8_t* chunk,
 
   uint32_t partLen;
   if (TcrMessageHelper::readChunkPartHeader(
-          m_msg, input, 0, GemfireTypeIds::CacheableArrayList,
+          m_msg, input, 0, GeodeTypeIds::CacheableArrayList,
           "ChunkedInterestResponse", partLen,
           isLastChunkWithSecurity) != TcrMessageHelper::OBJECT) {
     // encountered an exception part, so return without reading more
@@ -3557,7 +3557,7 @@ void ChunkedKeySetResponse::handleChunk(const uint8_t* chunk, int32_t chunkLen,
 
   uint32_t partLen;
   if (TcrMessageHelper::readChunkPartHeader(
-          m_msg, input, 0, GemfireTypeIds::CacheableArrayList,
+          m_msg, input, 0, GeodeTypeIds::CacheableArrayList,
           "ChunkedKeySetResponse", partLen,
           isLastChunkWithSecurity) != TcrMessageHelper::OBJECT) {
     // encountered an exception part, so return without reading more
@@ -3607,9 +3607,9 @@ void ChunkedQueryResponse::readObjectPartList(DataInput& input,
       } else {
         int8_t arrayType;
         input.read(&arrayType);
-        if (arrayType == GemfireTypeIdsImpl::FixedIDByte) {
+        if (arrayType == GeodeTypeIdsImpl::FixedIDByte) {
           input.read(&arrayType);
-          if (arrayType != GemfireTypeIdsImpl::CacheableObjectPartList) {
+          if (arrayType != GeodeTypeIdsImpl::CacheableObjectPartList) {
             LOGERROR(
                 "Query response got unhandled message format %d while "
                 "expecting struct set object part list; possible serialization "
@@ -3643,8 +3643,8 @@ void ChunkedQueryResponse::handleChunk(const uint8_t* chunk, int32_t chunkLen,
   int8_t isObj;
   TcrMessageHelper::ChunkObjectType objType;
   if ((objType = TcrMessageHelper::readChunkPartHeader(
-           m_msg, input, GemfireTypeIdsImpl::FixedIDByte,
-           static_cast<uint8_t>(GemfireTypeIdsImpl::CollectionTypeImpl),
+           m_msg, input, GeodeTypeIdsImpl::FixedIDByte,
+           static_cast<uint8_t>(GeodeTypeIdsImpl::CollectionTypeImpl),
            "ChunkedQueryResponse", partLen, isLastChunkWithSecurity)) ==
       TcrMessageHelper::EXCEPTION) {
     // encountered an exception part, so return without reading more
@@ -3726,7 +3726,7 @@ void ChunkedQueryResponse::handleChunk(const uint8_t* chunk, int32_t chunkLen,
   int8_t arrayType;
   input.read(&arrayType);
 
-  if (arrayType == GemfireTypeIds::CacheableObjectArray) {
+  if (arrayType == GeodeTypeIds::CacheableObjectArray) {
     int32_t arraySize;
     input.readArrayLen(&arraySize);
     skipClass(input);
@@ -3746,9 +3746,9 @@ void ChunkedQueryResponse::handleChunk(const uint8_t* chunk, int32_t chunkLen,
         }
       }
     }
-  } else if (arrayType == GemfireTypeIdsImpl::FixedIDByte) {
+  } else if (arrayType == GeodeTypeIdsImpl::FixedIDByte) {
     input.read(&arrayType);
-    if (arrayType != GemfireTypeIdsImpl::CacheableObjectPartList) {
+    if (arrayType != GeodeTypeIdsImpl::CacheableObjectPartList) {
       LOGERROR(
           "Query response got unhandled message format %d while expecting "
           "object part list; possible serialization mismatch",
@@ -3774,7 +3774,7 @@ void ChunkedQueryResponse::handleChunk(const uint8_t* chunk, int32_t chunkLen,
 void ChunkedQueryResponse::skipClass(DataInput& input) {
   uint8_t classByte;
   input.read(&classByte);
-  if (classByte == GemfireTypeIdsImpl::Class) {
+  if (classByte == GeodeTypeIdsImpl::Class) {
     uint8_t stringType;
     // ignore string type id - assuming its a normal (under 64k) string.
     input.read(&stringType);
@@ -3840,7 +3840,7 @@ void ChunkedFunctionExecutionResponse::handleChunk(
       "ChunkedFunctionExecutionResponse::handleChunk chunkLen = %d & partLen = "
       "%d ",
       chunkLen, partLen);
-  if (partType == GemfireTypeIdsImpl::JavaSerializable) {
+  if (partType == GeodeTypeIdsImpl::JavaSerializable) {
     isExceptionPart = true;
     // reset the input.
     input.reset();
@@ -3940,8 +3940,8 @@ void ChunkedGetAllResponse::handleChunk(const uint8_t* chunk, int32_t chunkLen,
   input.setPoolName(m_msg.getPoolName());
   uint32_t partLen;
   if (TcrMessageHelper::readChunkPartHeader(
-          m_msg, input, GemfireTypeIdsImpl::FixedIDByte,
-          GemfireTypeIdsImpl::VersionedObjectPartList, "ChunkedGetAllResponse",
+          m_msg, input, GeodeTypeIdsImpl::FixedIDByte,
+          GeodeTypeIdsImpl::VersionedObjectPartList, "ChunkedGetAllResponse",
           partLen, isLastChunkWithSecurity) != TcrMessageHelper::OBJECT) {
     // encountered an exception part, so return without reading more
     m_msg.readSecureObjectPart(input, false, true, isLastChunkWithSecurity);
@@ -4001,8 +4001,8 @@ void ChunkedPutAllResponse::handleChunk(const uint8_t* chunk, int32_t chunkLen,
   int8_t chunkType;
   if ((chunkType = (TcrMessageHelper::ChunkObjectType)
            TcrMessageHelper::readChunkPartHeader(
-               m_msg, input, GemfireTypeIdsImpl::FixedIDByte,
-               GemfireTypeIdsImpl::VersionedObjectPartList,
+               m_msg, input, GeodeTypeIdsImpl::FixedIDByte,
+               GeodeTypeIdsImpl::VersionedObjectPartList,
                "ChunkedPutAllResponse", partLen, isLastChunkWithSecurity)) ==
       TcrMessageHelper::NULL_OBJECT) {
     LOGDEBUG("ChunkedPutAllResponse::handleChunk NULL object");
@@ -4064,8 +4064,8 @@ void ChunkedRemoveAllResponse::handleChunk(const uint8_t* chunk,
   int8_t chunkType;
   if ((chunkType = (TcrMessageHelper::ChunkObjectType)
            TcrMessageHelper::readChunkPartHeader(
-               m_msg, input, GemfireTypeIdsImpl::FixedIDByte,
-               GemfireTypeIdsImpl::VersionedObjectPartList,
+               m_msg, input, GeodeTypeIdsImpl::FixedIDByte,
+               GeodeTypeIdsImpl::VersionedObjectPartList,
                "ChunkedRemoveAllResponse", partLen, isLastChunkWithSecurity)) ==
       TcrMessageHelper::NULL_OBJECT) {
     LOGDEBUG("ChunkedRemoveAllResponse::handleChunk NULL object");

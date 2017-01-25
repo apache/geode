@@ -51,10 +51,10 @@ Serializable* ClientHealthStats::createDeserializable() {
 int32_t ClientHealthStats::classId() const { return 0; }
 
 int8_t ClientHealthStats::DSFID() const {
-  return static_cast<int8_t>(GemfireTypeIdsImpl::FixedIDByte);
+  return static_cast<int8_t>(GeodeTypeIdsImpl::FixedIDByte);
 }
 int8_t ClientHealthStats::typeId() const {
-  return static_cast<int8_t>(GemfireTypeIdsImpl::ClientHealthStats);
+  return static_cast<int8_t>(GeodeTypeIdsImpl::ClientHealthStats);
 }
 
 ClientHealthStats::ClientHealthStats()

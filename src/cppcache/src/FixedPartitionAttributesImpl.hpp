@@ -86,7 +86,7 @@ class FixedPartitionAttributesImpl : public Serializable {
   }
 
   int8_t DSFID() const {
-    return static_cast<int8_t>(GemfireTypeIdsImpl::FixedIDByte);  // Never used
+    return static_cast<int8_t>(GeodeTypeIdsImpl::FixedIDByte);  // Never used
   }
 
   int32_t classId() const {

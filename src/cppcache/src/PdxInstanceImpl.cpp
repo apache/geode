@@ -59,9 +59,9 @@ int8_t PdxInstanceImpl::m_FloatDefaultBytes[] = {0, 0, 0, 0};
 int8_t PdxInstanceImpl::m_DoubleDefaultBytes[] = {0, 0, 0, 0, 0, 0, 0, 0};
 int8_t PdxInstanceImpl::m_DateDefaultBytes[] = {-1, -1, -1, -1, -1, -1, -1, -1};
 int8_t PdxInstanceImpl::m_StringDefaultBytes[] = {
-    apache::geode::client::GemfireTypeIds::CacheableNullString};
+    apache::geode::client::GeodeTypeIds::CacheableNullString};
 int8_t PdxInstanceImpl::m_ObjectDefaultBytes[] = {
-    apache::geode::client::GemfireTypeIds::NullObj};
+    apache::geode::client::GeodeTypeIds::NullObj};
 int8_t PdxInstanceImpl::m_NULLARRAYDefaultBytes[] = {-1};
 PdxFieldTypePtr PdxInstanceImpl::m_DefaultPdxFieldType(
     new PdxFieldType("default", "default", static_cast<uint8_t>(-1),
@@ -494,42 +494,42 @@ bool PdxInstanceImpl::deepArrayEquals(CacheablePtr obj, CacheablePtr otherObj) {
 
   int8_t typeId = obj->typeId();
   switch (typeId) {
-    case GemfireTypeIds::CacheableObjectArray: {
+    case GeodeTypeIds::CacheableObjectArray: {
       CacheableObjectArrayPtr objArrayPtr =
           dynCast<CacheableObjectArrayPtr>(obj);
       CacheableObjectArrayPtr otherObjArrayPtr =
           dynCast<CacheableObjectArrayPtr>(otherObj);
       return enumerateObjectArrayEquals(objArrayPtr, otherObjArrayPtr);
     }
-    case GemfireTypeIds::CacheableVector: {
+    case GeodeTypeIds::CacheableVector: {
       CacheableVectorPtr vec = dynCast<CacheableVectorPtr>(obj);
       CacheableVectorPtr otherVec = dynCast<CacheableVectorPtr>(otherObj);
       return enumerateVectorEquals(vec, otherVec);
     }
-    case GemfireTypeIds::CacheableArrayList: {
+    case GeodeTypeIds::CacheableArrayList: {
       CacheableArrayListPtr arrList = dynCast<CacheableArrayListPtr>(obj);
       CacheableArrayListPtr otherArrList =
           dynCast<CacheableArrayListPtr>(otherObj);
       return enumerateArrayListEquals(arrList, otherArrList);
     }
-    case GemfireTypeIds::CacheableHashMap: {
+    case GeodeTypeIds::CacheableHashMap: {
       CacheableHashMapPtr map = dynCast<CacheableHashMapPtr>(obj);
       CacheableHashMapPtr otherMap = dynCast<CacheableHashMapPtr>(otherObj);
       return enumerateMapEquals(map, otherMap);
     }
-    case GemfireTypeIds::CacheableHashSet: {
+    case GeodeTypeIds::CacheableHashSet: {
       CacheableHashSetPtr hashset = dynCast<CacheableHashSetPtr>(obj);
       CacheableHashSetPtr otherHashset = dynCast<CacheableHashSetPtr>(otherObj);
       return enumerateSetEquals(hashset, otherHashset);
     }
-    case GemfireTypeIds::CacheableLinkedHashSet: {
+    case GeodeTypeIds::CacheableLinkedHashSet: {
       CacheableLinkedHashSetPtr linkedHashset =
           dynCast<CacheableLinkedHashSetPtr>(obj);
       CacheableLinkedHashSetPtr otherLinkedHashset =
           dynCast<CacheableLinkedHashSetPtr>(otherObj);
       return enumerateLinkedSetEquals(linkedHashset, otherLinkedHashset);
     }
-    case GemfireTypeIds::CacheableHashTable: {
+    case GeodeTypeIds::CacheableHashTable: {
       CacheableHashTablePtr hashTable = dynCast<CacheableHashTablePtr>(obj);
       CacheableHashTablePtr otherhashTable =
           dynCast<CacheableHashTablePtr>(otherObj);
@@ -661,37 +661,37 @@ int PdxInstanceImpl::deepArrayHashCode(CacheablePtr obj) {
 
   int8_t typeId = obj->typeId();
   switch (typeId) {
-    case GemfireTypeIds::CacheableObjectArray: {
+    case GeodeTypeIds::CacheableObjectArray: {
       CacheableObjectArrayPtr objArrayPtr =
           dynCast<CacheableObjectArrayPtr>(obj);
       return enumerateObjectArrayHashCode(objArrayPtr);
     }
-    case GemfireTypeIds::CacheableVector: {
+    case GeodeTypeIds::CacheableVector: {
       CacheableVectorPtr vec = dynCast<CacheableVectorPtr>(obj);
       return enumerateVectorHashCode(vec);
     }
-    case GemfireTypeIds::CacheableArrayList: {
+    case GeodeTypeIds::CacheableArrayList: {
       CacheableArrayListPtr arrList = dynCast<CacheableArrayListPtr>(obj);
       return enumerateArrayListHashCode(arrList);
     }
-    case GemfireTypeIds::CacheableLinkedList: {
+    case GeodeTypeIds::CacheableLinkedList: {
       CacheableLinkedListPtr linkedList = dynCast<CacheableLinkedListPtr>(obj);
       return enumerateLinkedListHashCode(linkedList);
     }
-    case GemfireTypeIds::CacheableHashMap: {
+    case GeodeTypeIds::CacheableHashMap: {
       CacheableHashMapPtr map = dynCast<CacheableHashMapPtr>(obj);
       return enumerateMapHashCode(map);
     }
-    case GemfireTypeIds::CacheableHashSet: {
+    case GeodeTypeIds::CacheableHashSet: {
       CacheableHashSetPtr hashset = dynCast<CacheableHashSetPtr>(obj);
       return enumerateSetHashCode(hashset);
     }
-    case GemfireTypeIds::CacheableLinkedHashSet: {
+    case GeodeTypeIds::CacheableLinkedHashSet: {
       CacheableLinkedHashSetPtr linkedHashSet =
           dynCast<CacheableLinkedHashSetPtr>(obj);
       return enumerateLinkedSetHashCode(linkedHashSet);
     }
-    case GemfireTypeIds::CacheableHashTable: {
+    case GeodeTypeIds::CacheableHashTable: {
       CacheableHashTablePtr hashTable = dynCast<CacheableHashTablePtr>(obj);
       return enumerateHashTableCode(hashTable);
     }

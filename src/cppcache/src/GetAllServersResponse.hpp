@@ -36,10 +36,10 @@ class GetAllServersResponse : public Serializable {
   virtual Serializable* fromData(DataInput& input);
   virtual int32_t classId() const { return 0; }
   virtual int8_t typeId() const {
-    return GemfireTypeIdsImpl::GetAllServersResponse;
+    return GeodeTypeIdsImpl::GetAllServersResponse;
   }
   virtual int8_t DSFID() const {
-    return static_cast<int8_t>(GemfireTypeIdsImpl::FixedIDByte);
+    return static_cast<int8_t>(GeodeTypeIdsImpl::FixedIDByte);
   }
   virtual uint32_t objectSize() const {
     return static_cast<uint32_t>(m_servers.size());

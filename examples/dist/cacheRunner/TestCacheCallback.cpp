@@ -94,7 +94,7 @@ std::string TestCacheCallback::printEntryValue(CacheablePtr& valueBytes)
 
    if (valueBytes != NULLPTR) {
      int32_t id = valueBytes->typeId();
-     if (id == GemfireTypeIds::CacheableBytes) {
+     if (id == GeodeTypeIds::CacheableBytes) {
        cBytePtr = staticCast<CacheableBytesPtr>(valueBytes);
        const uint8_t* bytType = cBytePtr->value();
        const uint32_t len = cBytePtr->length();
@@ -104,7 +104,7 @@ std::string TestCacheCallback::printEntryValue(CacheablePtr& valueBytes)
        std::string byteType(buff);
        sValue = byteType;
      }
-     else if (id == GemfireTypeIds::CacheableInt32) {
+     else if (id == GeodeTypeIds::CacheableInt32) {
        cIntPtr= staticCast<CacheableInt32Ptr>(valueBytes);
        int32_t intval = cIntPtr->value();
        int len = sizeof(intval);

@@ -625,28 +625,28 @@ class CPPCACHE_EXPORT DataInput {
     int8_t typeId = 0;
     read(&typeId);
     int64_t compId = typeId;
-    if (compId == GemfireTypeIds::NullObj) {
+    if (compId == GeodeTypeIds::NullObj) {
       csPtr = NULLPTR;
-    } else if (compId == GemfireTypeIds::CacheableNullString) {
+    } else if (compId == GeodeTypeIds::CacheableNullString) {
       csPtr = CacheableStringPtr(dynamic_cast<CacheableString*>(
           CacheableString::createDeserializable()));
     } else if (compId ==
-               apache::geode::client::GemfireTypeIds::CacheableASCIIString) {
+               apache::geode::client::GeodeTypeIds::CacheableASCIIString) {
       csPtr = CacheableStringPtr(dynamic_cast<CacheableString*>(
           CacheableString::createDeserializable()));
       csPtr.ptr()->fromData(*this);
-    } else if (compId == apache::geode::client::GemfireTypeIds::
+    } else if (compId == apache::geode::client::GeodeTypeIds::
                              CacheableASCIIStringHuge) {
       csPtr = CacheableStringPtr(dynamic_cast<CacheableString*>(
           CacheableString::createDeserializableHuge()));
       csPtr.ptr()->fromData(*this);
     } else if (compId ==
-               apache::geode::client::GemfireTypeIds::CacheableString) {
+               apache::geode::client::GeodeTypeIds::CacheableString) {
       csPtr = CacheableStringPtr(dynamic_cast<CacheableString*>(
           CacheableString::createUTFDeserializable()));
       csPtr.ptr()->fromData(*this);
     } else if (compId ==
-               apache::geode::client::GemfireTypeIds::CacheableStringHuge) {
+               apache::geode::client::GeodeTypeIds::CacheableStringHuge) {
       csPtr = CacheableStringPtr(dynamic_cast<CacheableString*>(
           CacheableString::createUTFDeserializableHuge()));
       csPtr.ptr()->fromData(*this);
@@ -743,26 +743,26 @@ class CPPCACHE_EXPORT DataInput {
     read(&typeId);
 
     // Check for NULL String
-    if (typeId == GemfireTypeIds::CacheableNullString) {
+    if (typeId == GeodeTypeIds::CacheableNullString) {
       *value = NULL;
       return;
     }
     /*
-    if (typeId == GemfireTypeIds::CacheableString) {
+    if (typeId == GeodeTypeIds::CacheableString) {
       readUTF(value);
     } else {
       readUTFHuge(value);
     }
     */
-    if (typeId == static_cast<int8_t>(GemfireTypeIds::CacheableASCIIString) ||
-        typeId == static_cast<int8_t>(GemfireTypeIds::CacheableString)) {
+    if (typeId == static_cast<int8_t>(GeodeTypeIds::CacheableASCIIString) ||
+        typeId == static_cast<int8_t>(GeodeTypeIds::CacheableString)) {
       // readUTF( value);
       readASCII(value);
       // m_len = shortLen;
     } else if (typeId == static_cast<int8_t>(
-                             GemfireTypeIds::CacheableASCIIStringHuge) ||
+                             GeodeTypeIds::CacheableASCIIStringHuge) ||
                typeId ==
-                   static_cast<int8_t>(GemfireTypeIds::CacheableStringHuge)) {
+                   static_cast<int8_t>(GeodeTypeIds::CacheableStringHuge)) {
       // readUTFHuge( value);
       readASCIIHuge(value);
     } else {
@@ -776,18 +776,18 @@ class CPPCACHE_EXPORT DataInput {
     read(&typeId);
 
     // Check for NULL String
-    if (typeId == GemfireTypeIds::CacheableNullString) {
+    if (typeId == GeodeTypeIds::CacheableNullString) {
       *value = NULL;
       return;
     }
 
-    if (typeId == static_cast<int8_t>(GemfireTypeIds::CacheableASCIIString) ||
-        typeId == static_cast<int8_t>(GemfireTypeIds::CacheableString)) {
+    if (typeId == static_cast<int8_t>(GeodeTypeIds::CacheableASCIIString) ||
+        typeId == static_cast<int8_t>(GeodeTypeIds::CacheableString)) {
       readUTF(value);
     } else if (typeId == static_cast<int8_t>(
-                             GemfireTypeIds::CacheableASCIIStringHuge) ||
+                             GeodeTypeIds::CacheableASCIIStringHuge) ||
                typeId ==
-                   static_cast<int8_t>(GemfireTypeIds::CacheableStringHuge)) {
+                   static_cast<int8_t>(GeodeTypeIds::CacheableStringHuge)) {
       readUTFHuge(value);
     } else {
       throw IllegalArgumentException(

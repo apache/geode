@@ -77,7 +77,7 @@ Serializable *EnumInfo::fromData(apache::geode::client::DataInput &input) {
 }
 
 int8_t EnumInfo::DSFID() const {
-  return static_cast<int8_t>(GemfireTypeIdsImpl::FixedIDByte);
+  return static_cast<int8_t>(GeodeTypeIdsImpl::FixedIDByte);
 }
 }  // namespace client
 }  // namespace geode

@@ -67,7 +67,7 @@ class CachedDeserializableHelper : public Cacheable,
    */
   inline static Serializable* createForPreferBytesDeserializable() {
     return new CachedDeserializableHelper(
-        GemfireTypeIdsImpl::PreferBytesCachedDeserializable);
+        GeodeTypeIdsImpl::PreferBytesCachedDeserializable);
   }
 
   /**
@@ -75,7 +75,7 @@ class CachedDeserializableHelper : public Cacheable,
    */
   inline static Serializable* createForVmCachedDeserializable() {
     return new CachedDeserializableHelper(
-        GemfireTypeIdsImpl::VmCachedDeserializable);
+        GeodeTypeIdsImpl::VmCachedDeserializable);
   }
 
   /**
@@ -89,7 +89,7 @@ class CachedDeserializableHelper : public Cacheable,
    * Return the data serializable fixed ID size type for internal use.
    * @since GFE 5.7
    */
-  virtual int8_t DSFID() const { return GemfireTypeIdsImpl::FixedIDByte; }
+  virtual int8_t DSFID() const { return GeodeTypeIdsImpl::FixedIDByte; }
 
   int32_t classId() const { return 0; }
 };

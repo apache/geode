@@ -124,13 +124,13 @@ namespace apache
         //    return (int8_t)((classId - 0x80000000) % 0x20000000);
         //  }
         //  else if (classId <= 0x7F) {
-        //    return (int8_t)apache::geode::client::GemfireTypeIdsImpl::CacheableUserData;
+        //    return (int8_t)apache::geode::client::GeodeTypeIdsImpl::CacheableUserData;
         //  }
         //  else if (classId <= 0x7FFF) {
-        //    return (int8_t)apache::geode::client::GemfireTypeIdsImpl::CacheableUserData2;
+        //    return (int8_t)apache::geode::client::GeodeTypeIdsImpl::CacheableUserData2;
         //  }
         //  else {
-        //    return (int8_t)apache::geode::client::GemfireTypeIdsImpl::CacheableUserData4;
+        //    return (int8_t)apache::geode::client::GeodeTypeIdsImpl::CacheableUserData4;
         //  }
         //}
         //catch (Apache::Geode::Client::GemFireException^ ex) {
@@ -139,7 +139,7 @@ namespace apache
         //catch (System::Exception^ ex) {
         //  Apache::Geode::Client::GemFireException::ThrowNative(ex);
         //}
-        return (int8_t)GemfireTypeIdsImpl::PDX;
+        return (int8_t)GeodeTypeIdsImpl::PDX;
       }
 
       int8_t PdxManagedCacheableKeyBytes::DSFID() const

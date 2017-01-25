@@ -26,7 +26,7 @@ ClientConnectionResponse* ClientConnectionResponse::fromData(DataInput& input) {
   return this;
 }
 int8_t ClientConnectionResponse::typeId() const {
-  return static_cast<int8_t>(GemfireTypeIdsImpl::ClientConnectionResponse);
+  return static_cast<int8_t>(GeodeTypeIdsImpl::ClientConnectionResponse);
 }
 uint32_t ClientConnectionResponse::objectSize() const {
   return (m_server.objectSize());

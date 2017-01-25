@@ -35,7 +35,7 @@ PdxSerializable::PdxSerializable() {}
 PdxSerializable::~PdxSerializable() {}
 
 int8_t PdxSerializable::typeId() const {
-  return static_cast<int8_t>(GemfireTypeIdsImpl::PDX);
+  return static_cast<int8_t>(GeodeTypeIdsImpl::PDX);
 }
 
 void PdxSerializable::toData(DataOutput& output) const {

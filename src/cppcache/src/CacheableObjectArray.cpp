@@ -28,8 +28,8 @@ namespace client {
 void CacheableObjectArray::toData(DataOutput& output) const {
   int32_t len = size();
   output.writeArrayLen(len);
-  output.write(static_cast<int8_t>(GemfireTypeIdsImpl::Class));
-  output.write(static_cast<int8_t>(GemfireTypeIds::CacheableASCIIString));
+  output.write(static_cast<int8_t>(GeodeTypeIdsImpl::Class));
+  output.write(static_cast<int8_t>(GeodeTypeIds::CacheableASCIIString));
   output.writeASCII("java.lang.Object");
   for (Iterator iter = begin(); iter != end(); ++iter) {
     output.writeObject(*iter);
@@ -58,7 +58,7 @@ Serializable* CacheableObjectArray::fromData(DataInput& input) {
 int32_t CacheableObjectArray::classId() const { return 0; }
 
 int8_t CacheableObjectArray::typeId() const {
-  return GemfireTypeIds::CacheableObjectArray;
+  return GeodeTypeIds::CacheableObjectArray;
 }
 
 uint32_t CacheableObjectArray::objectSize() const {

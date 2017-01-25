@@ -30,11 +30,11 @@ class GatewayEventCallbackArgument : public Serializable {
 
   virtual int8_t typeId() const {
     return static_cast<int8_t>(
-        GemfireTypeIdsImpl::GatewayEventCallbackArgument);
+        GeodeTypeIdsImpl::GatewayEventCallbackArgument);
   }
 
   virtual int8_t DSFID() const {
-    return static_cast<int32_t>(GemfireTypeIdsImpl::FixedIDByte);
+    return static_cast<int32_t>(GeodeTypeIdsImpl::FixedIDByte);
   }
 
   virtual uint32_t objectSize() const { return 0; }

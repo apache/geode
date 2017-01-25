@@ -65,20 +65,20 @@ class CPPCACHE_EXPORT SerializationRegistry {
   inline static void serialize(const Serializable* obj, DataOutput& output,
                                bool isDelta = false) {
     if (obj == NULL) {
-      output.write(static_cast<int8_t>(GemfireTypeIds::NullObj));
+      output.write(static_cast<int8_t>(GeodeTypeIds::NullObj));
     } else {
       int8_t typeId = obj->typeId();
       switch (obj->DSFID()) {
-        case GemfireTypeIdsImpl::FixedIDByte:
-          output.write(static_cast<int8_t>(GemfireTypeIdsImpl::FixedIDByte));
+        case GeodeTypeIdsImpl::FixedIDByte:
+          output.write(static_cast<int8_t>(GeodeTypeIdsImpl::FixedIDByte));
           output.write(typeId);  // write the type ID.
           break;
-        case GemfireTypeIdsImpl::FixedIDShort:
-          output.write(static_cast<int8_t>(GemfireTypeIdsImpl::FixedIDShort));
+        case GeodeTypeIdsImpl::FixedIDShort:
+          output.write(static_cast<int8_t>(GeodeTypeIdsImpl::FixedIDShort));
           output.writeInt(static_cast<int16_t>(typeId));  // write the type ID.
           break;
-        case GemfireTypeIdsImpl::FixedIDInt:
-          output.write(static_cast<int8_t>(GemfireTypeIdsImpl::FixedIDInt));
+        case GeodeTypeIdsImpl::FixedIDInt:
+          output.write(static_cast<int8_t>(GeodeTypeIdsImpl::FixedIDInt));
           output.writeInt(static_cast<int32_t>(typeId));  // write the type ID.
           break;
         default:
@@ -87,13 +87,13 @@ class CPPCACHE_EXPORT SerializationRegistry {
       }
 
       if (static_cast<int32_t>(typeId) ==
-          GemfireTypeIdsImpl::CacheableUserData) {
+          GeodeTypeIdsImpl::CacheableUserData) {
         output.write(static_cast<int8_t>(obj->classId()));
       } else if (static_cast<int32_t>(typeId) ==
-                 GemfireTypeIdsImpl::CacheableUserData2) {
+                 GeodeTypeIdsImpl::CacheableUserData2) {
         output.writeInt(static_cast<int16_t>(obj->classId()));
       } else if (static_cast<int32_t>(typeId) ==
-                 GemfireTypeIdsImpl::CacheableUserData4) {
+                 GeodeTypeIdsImpl::CacheableUserData4) {
         output.writeInt(obj->classId());
       }
       if (isDelta) {

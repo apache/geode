@@ -67,7 +67,7 @@ PdxFieldType::~PdxFieldType() {}
 
 void PdxFieldType::toData(DataOutput& output) const {
   // LOGINFO("DEBUG:PdxFieldType::toData:LN_28");
-  output.write(static_cast<int8_t>(GemfireTypeIds::CacheableASCIIString));
+  output.write(static_cast<int8_t>(GeodeTypeIds::CacheableASCIIString));
   output.writeUTF(m_fieldName.c_str());
   output.writeInt(m_sequenceId);
   output.writeInt(m_varLenFieldIdx);
@@ -126,7 +126,7 @@ int32_t PdxFieldType::getFixedTypeSize() const {
     }
     case PdxFieldTypes::SHORT:
     case PdxFieldTypes::CHAR:
-      // case apache::geode::client::GemfireTypeIds::CacheableChar: //TODO
+      // case apache::geode::client::GeodeTypeIds::CacheableChar: //TODO
       { return PdxTypes::CHAR_SIZE; }
     case PdxFieldTypes::INT:
     case PdxFieldTypes::FLOAT:

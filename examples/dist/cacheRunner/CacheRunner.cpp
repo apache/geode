@@ -1347,7 +1347,7 @@ void CacheRunner::printEntry(CacheableKeyPtr& sKey, CacheablePtr& valueBytes)
    if (valueBytes != NULLPTR) {
      int8_t typeId = valueBytes->typeId();
      std::string objType;
-     if (typeId == GemfireTypeIds::CacheableBytes) {
+     if (typeId == GeodeTypeIds::CacheableBytes) {
        objType = "Bytes: ";
        CacheableBytesPtr cBytePtr = staticCast<CacheableBytesPtr>( valueBytes );
        const uint8_t* bytType = cBytePtr->value();
@@ -1361,13 +1361,13 @@ void CacheRunner::printEntry(CacheableKeyPtr& sKey, CacheablePtr& valueBytes)
      else {
        switch (typeId)
        {
-         case GemfireTypeIds::CacheableASCIIString: objType = "String: "; break;
-         case GemfireTypeIds::CacheableInt16: objType = "Int16: "; break;
-         case GemfireTypeIds::CacheableInt32: objType = "Int32: "; break;
-         case GemfireTypeIds::CacheableInt64: objType = "Int64: "; break;
-         case GemfireTypeIds::CacheableDouble: objType = "Double: "; break;
-         case GemfireTypeIds::CacheableFloat: objType = "Float: "; break;
-         case GemfireTypeIds::CacheableByte: objType = "Byte: "; break;
+         case GeodeTypeIds::CacheableASCIIString: objType = "String: "; break;
+         case GeodeTypeIds::CacheableInt16: objType = "Int16: "; break;
+         case GeodeTypeIds::CacheableInt32: objType = "Int32: "; break;
+         case GeodeTypeIds::CacheableInt64: objType = "Int64: "; break;
+         case GeodeTypeIds::CacheableDouble: objType = "Double: "; break;
+         case GeodeTypeIds::CacheableFloat: objType = "Float: "; break;
+         case GeodeTypeIds::CacheableByte: objType = "Byte: "; break;
          default: objType = ""; break;
        }
        sValue = objType + valueBytes->toString()->asChar();

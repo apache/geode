@@ -30,7 +30,7 @@ class ServerLocationResponse : public Serializable {
   virtual int32_t classId() const { return 0; }
   virtual int8_t typeId() const = 0;  // Has to be implemented by concrete class
   virtual int8_t DSFID() const {
-    return static_cast<int8_t>(GemfireTypeIdsImpl::FixedIDByte);
+    return static_cast<int8_t>(GeodeTypeIdsImpl::FixedIDByte);
   }
   virtual uint32_t objectSize()
       const = 0;  // Has to be implemented by concrete class

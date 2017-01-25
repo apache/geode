@@ -32,7 +32,7 @@ PdxEnumInstantiator::PdxEnumInstantiator() {}
 PdxEnumInstantiator::~PdxEnumInstantiator() {}
 
 int8_t PdxEnumInstantiator::typeId() const {
-  return static_cast<int8_t>(GemfireTypeIds::CacheableEnum);
+  return static_cast<int8_t>(GeodeTypeIds::CacheableEnum);
 }
 
 void PdxEnumInstantiator::toData(DataOutput& output) const {

@@ -434,7 +434,7 @@ Serializable* RegionAttributes::createDeserializable() {
 int32_t RegionAttributes::classId() const { return 0; }
 
 int8_t RegionAttributes::typeId() const {
-  return GemfireTypeIds::RegionAttributes;
+  return GeodeTypeIds::RegionAttributes;
 }
 
 namespace apache {

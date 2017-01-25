@@ -37,7 +37,7 @@ PdxInstantiator::PdxInstantiator() {}
 PdxInstantiator::~PdxInstantiator() {}
 
 int8_t PdxInstantiator::typeId() const {
-  return static_cast<int8_t>(GemfireTypeIdsImpl::PDX);
+  return static_cast<int8_t>(GeodeTypeIdsImpl::PDX);
 }
 
 void PdxInstantiator::toData(DataOutput& output) const {

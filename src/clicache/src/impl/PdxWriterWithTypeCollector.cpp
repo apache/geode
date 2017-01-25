@@ -216,7 +216,7 @@ namespace Apache
 
           IPdxWriter^ PdxWriterWithTypeCollector::WriteCollection( String^ fieldName, System::Collections::IList^ obj)
           {
-            m_pdxType->AddVariableLengthTypeField(fieldName, /*obj->GetType()->FullName*/"Collection", apache::geode::client::GemfireTypeIds::CacheableArrayList);
+            m_pdxType->AddVariableLengthTypeField(fieldName, /*obj->GetType()->FullName*/"Collection", apache::geode::client::GeodeTypeIds::CacheableArrayList);
             PdxLocalWriter::WriteCollection(fieldName, obj);            
             return this;
           }

@@ -65,11 +65,11 @@ class ClientProxyMembershipID : public DSMemberForVersionStamp {
   Serializable* fromData(DataInput& input);
   int32_t classId() const { return 0; }
   int8_t typeId() const {
-    return GemfireTypeIdsImpl::InternalDistributedMember;
+    return GeodeTypeIdsImpl::InternalDistributedMember;
   }
   uint32_t objectSize() const { return 0; }
   int8_t DSFID() const {
-    return static_cast<int8_t>(GemfireTypeIdsImpl::FixedIDByte);
+    return static_cast<int8_t>(GeodeTypeIdsImpl::FixedIDByte);
   }
   void initObjectVars(const char* hostname, uint8_t* hostAddr,
                       uint32_t hostAddrLen, bool hostAddrLocalMem,

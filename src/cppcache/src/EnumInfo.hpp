@@ -46,7 +46,7 @@ class CPPCACHE_EXPORT EnumInfo : public CacheableKey {
     return size;
   }
   virtual int32_t classId() const { return 0; }
-  virtual int8_t typeId() const { return GemfireTypeIds::EnumInfo; }
+  virtual int8_t typeId() const { return GeodeTypeIds::EnumInfo; }
   virtual CacheableStringPtr toString() const {
     return CacheableString::create("EnumInfo");
   }

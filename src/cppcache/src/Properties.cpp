@@ -280,7 +280,7 @@ Serializable* Properties::createDeserializable() { return new Properties(); }
 
 int32_t Properties::classId() const { return 0; }
 
-int8_t Properties::typeId() const { return GemfireTypeIds::Properties; }
+int8_t Properties::typeId() const { return GeodeTypeIds::Properties; }
 
 void Properties::toData(DataOutput& output) const {
   CacheableKeyCacheableMapGuard guard(MAP->mutex());

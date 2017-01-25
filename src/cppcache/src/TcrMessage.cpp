@@ -93,9 +93,9 @@ void TcrMessage::setKeepAlive(bool keepalive) {
 void TcrMessage::writeInterestResultPolicyPart(InterestResultPolicy policy) {
   m_request->writeInt((int32_t)3);           // size
   m_request->write(static_cast<int8_t>(1));  // isObject
-  m_request->write(static_cast<int8_t>(GemfireTypeIdsImpl::FixedIDByte));
+  m_request->write(static_cast<int8_t>(GeodeTypeIdsImpl::FixedIDByte));
   m_request->write(
-      static_cast<int8_t>(GemfireTypeIdsImpl::InterestResultPolicy));
+      static_cast<int8_t>(GeodeTypeIdsImpl::InterestResultPolicy));
   m_request->write(static_cast<int8_t>(policy.getOrdinal()));
 }
 
@@ -177,21 +177,21 @@ VersionTagPtr TcrMessage::readVersionTagPart(DataInput& input,
   input.read(&isObj);
   VersionTagPtr versionTag;
 
-  if (isObj == GemfireTypeIds::NullObj) return versionTag;
+  if (isObj == GeodeTypeIds::NullObj) return versionTag;
 
-  if (isObj == GemfireTypeIdsImpl::FixedIDByte) {
+  if (isObj == GeodeTypeIdsImpl::FixedIDByte) {
     versionTag = new VersionTag();
     int8_t fixedId;
     input.read(&fixedId);
-    if (fixedId == GemfireTypeIdsImpl::VersionTag) {
+    if (fixedId == GeodeTypeIdsImpl::VersionTag) {
       versionTag->fromData(input);
       versionTag->replaceNullMemberId(endpointMemId);
       return versionTag;
     }
-  } else if (isObj == GemfireTypeIdsImpl::FixedIDShort) {
+  } else if (isObj == GeodeTypeIdsImpl::FixedIDShort) {
     int16_t fixedId;
     input.readInt(&fixedId);
-    if (fixedId == GemfireTypeIdsImpl::DiskVersionTag) {
+    if (fixedId == GeodeTypeIdsImpl::DiskVersionTag) {
       DiskVersionTag* disk = new DiskVersionTag();
       disk->fromData(input);
       versionTag = disk;
@@ -484,7 +484,7 @@ SerializablePtr TcrMessage::readCacheableString(DataInput& input, int lenObj) {
       input.readDirectObject(
           sPtr,
           static_cast<int8_t>(
-              apache::geode::client::GemfireTypeIds::CacheableASCIIString));
+              apache::geode::client::GeodeTypeIds::CacheableASCIIString));
     } else {
       input.rewindCursor(4);
       writeInt(const_cast<uint8_t*>(input.currentBufferPosition()),
@@ -492,7 +492,7 @@ SerializablePtr TcrMessage::readCacheableString(DataInput& input, int lenObj) {
       input.readDirectObject(
           sPtr,
           static_cast<int8_t>(
-              apache::geode::client::GemfireTypeIds::CacheableASCIIStringHuge));
+              apache::geode::client::GeodeTypeIds::CacheableASCIIStringHuge));
     }
   } else {
     if (decodedLen <= 0xffff) {
@@ -501,7 +501,7 @@ SerializablePtr TcrMessage::readCacheableString(DataInput& input, int lenObj) {
                static_cast<uint16_t>(lenObj));
       input.readDirectObject(
           sPtr, static_cast<int8_t>(
-                    apache::geode::client::GemfireTypeIds::CacheableString));
+                    apache::geode::client::GeodeTypeIds::CacheableString));
     } else {
       input.rewindCursor(4);
       writeInt(const_cast<uint8_t*>(input.currentBufferPosition()),
@@ -509,7 +509,7 @@ SerializablePtr TcrMessage::readCacheableString(DataInput& input, int lenObj) {
       input.readDirectObject(
           sPtr,
           static_cast<int8_t>(
-              apache::geode::client::GemfireTypeIds::CacheableStringHuge));
+              apache::geode::client::GeodeTypeIds::CacheableStringHuge));
     }
   }
 
@@ -537,7 +537,7 @@ SerializablePtr TcrMessage::readCacheableBytes(DataInput& input, int lenObj) {
 
   input.readDirectObject(
       sPtr, static_cast<int8_t>(
-                apache::geode::client::GemfireTypeIds::CacheableBytes));
+                apache::geode::client::GeodeTypeIds::CacheableBytes));
 
   return sPtr;
 }
@@ -585,7 +585,7 @@ void TcrMessage::writeObjectPart(const SerializablePtr& se, bool isDelta,
   // check if the type is a CacheableBytes
   int8_t isObject = 1;
 
-  if (se != NULLPTR && se->typeId() == GemfireTypeIds::CacheableBytes) {
+  if (se != NULLPTR && se->typeId() == GeodeTypeIds::CacheableBytes) {
     // for an emty byte array write EMPTY_BYTEARRAY_CODE(2) to is object
     try {
       int byteArrLength = -1;
@@ -625,13 +625,13 @@ void TcrMessage::writeObjectPart(const SerializablePtr& se, bool isDelta,
   } else if (isObject) {
     if (!callToData) {
       if (getAllKeyList != NULL) {
-        int8_t typeId = GemfireTypeIds::CacheableObjectArray;
+        int8_t typeId = GeodeTypeIds::CacheableObjectArray;
         m_request->write(typeId);
         int32_t len = getAllKeyList->size();
         m_request->writeArrayLen(len);
-        m_request->write(static_cast<int8_t>(GemfireTypeIdsImpl::Class));
+        m_request->write(static_cast<int8_t>(GeodeTypeIdsImpl::Class));
         m_request->write(
-            static_cast<int8_t>(GemfireTypeIds::CacheableASCIIString));
+            static_cast<int8_t>(GeodeTypeIds::CacheableASCIIString));
         m_request->writeASCII("java.lang.Object");
         for (int32_t index = 0; index < getAllKeyList->size(); ++index) {
           m_request->writeObject(getAllKeyList->operator[](index));
@@ -1066,7 +1066,7 @@ void TcrMessage::handleByteArrayResponse(const char* bytearray, int32_t len,
         // PdxType will come in response
         input.advanceCursor(5);  // part header
         m_value =
-            SerializationRegistry::deserialize(input, GemfireTypeIds::PdxType);
+            SerializationRegistry::deserialize(input, GeodeTypeIds::PdxType);
       } else if (m_msgTypeRequest == TcrMessage::GET_PDX_ENUM_BY_ID) {
         // PdxType will come in response
         input.advanceCursor(5);  // part header
@@ -1360,7 +1360,7 @@ void TcrMessage::handleByteArrayResponse(const char* bytearray, int32_t len,
         input.read(&bits8);  // isObj;
         input.read(&bits8);  // cacheable vector typeid
         LOGDEBUG("Expected typeID %d, got %d",
-                 GemfireTypeIds::CacheableArrayList, bits8);
+                 GeodeTypeIds::CacheableArrayList, bits8);
 
         input.readArrayLen(&bits32);  // array length
         LOGDEBUG("Array length = %d ", bits32);
@@ -2944,7 +2944,7 @@ DSMemberForVersionStampPtr TcrMessage::readDSMember(
   if (typeidLen == 1) {
     uint8_t typeidofMember;
     input.read(&typeidofMember);
-    if (typeidofMember != GemfireTypeIdsImpl::InternalDistributedMember) {
+    if (typeidofMember != GeodeTypeIdsImpl::InternalDistributedMember) {
       throw Exception(
           "Reading DSMember. Expecting type id 92 for "
           "InternalDistributedMember. ");
@@ -2957,7 +2957,7 @@ DSMemberForVersionStampPtr TcrMessage::readDSMember(
   } else if (typeidLen == 2) {
     uint16_t typeidofMember;
     input.readInt(&typeidofMember);
-    if (typeidofMember != GemfireTypeIdsImpl::DiskStoreId) {
+    if (typeidofMember != GeodeTypeIdsImpl::DiskStoreId) {
       throw Exception(
           "Reading DSMember. Expecting type id 2133 for DiskStoreId. ");
     }
@@ -2975,7 +2975,7 @@ void TcrMessage::readHashMapForGCVersions(
   uint8_t hashmaptypeid;
 
   input.read(&hashmaptypeid);
-  if (hashmaptypeid != GemfireTypeIds::CacheableHashMap) {
+  if (hashmaptypeid != GeodeTypeIds::CacheableHashMap) {
     throw Exception(
         "Reading HashMap For GC versions. Expecting type id of hash map. ");
   }
@@ -3012,7 +3012,7 @@ void TcrMessage::readHashSetForGCVersions(
   uint8_t hashsettypeid;
 
   input.read(&hashsettypeid);
-  if (hashsettypeid != GemfireTypeIds::CacheableHashSet) {
+  if (hashsettypeid != GeodeTypeIds::CacheableHashSet) {
     throw Exception(
         "Reading HashSet For GC versions. Expecting type id of hash set. ");
   }

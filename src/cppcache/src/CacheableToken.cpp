@@ -81,7 +81,7 @@ Serializable* CacheableToken::fromData(DataInput& input) {
 int32_t CacheableToken::classId() const { return 0; }
 
 int8_t CacheableToken::typeId() const {
-  return static_cast<int8_t>(GemfireTypeIdsImpl::CacheableToken);
+  return static_cast<int8_t>(GeodeTypeIdsImpl::CacheableToken);
 }
 
 //------ ctor

@@ -35,11 +35,11 @@ namespace Apache
       void CacheableFileName::ToData(DataOutput^ output)
       {
         if (m_str->Length <= 0xFFFF) {
-          output->WriteByte(apache::geode::client::GemfireTypeIds::CacheableString);
+          output->WriteByte(apache::geode::client::GeodeTypeIds::CacheableString);
           output->WriteUTF(m_str);
         }
         else {
-          output->WriteByte(apache::geode::client::GemfireTypeIds::CacheableStringHuge);
+          output->WriteByte(apache::geode::client::GeodeTypeIds::CacheableStringHuge);
           output->WriteUTFHuge(m_str);
         }
       }
@@ -47,7 +47,7 @@ namespace Apache
       IGFSerializable^ CacheableFileName::FromData(DataInput^ input)
       {
         unsigned char filetype = input->ReadByte();
-        if (filetype == apache::geode::client::GemfireTypeIds::CacheableString) {
+        if (filetype == apache::geode::client::GeodeTypeIds::CacheableString) {
           m_str = input->ReadUTF();
         }
         else {

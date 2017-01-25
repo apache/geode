@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef _GEMFIRE_GEMFIRETYPEIDSIMPL_HPP_
-#define _GEMFIRE_GEMFIRETYPEIDSIMPL_HPP_
+#ifndef _GEODE_GEODETYPEIDSIMPL_HPP_
+#define _GEODE_GEODETYPEIDSIMPL_HPP_
 
 namespace apache {
 namespace geode {
 namespace client {
 
-class GemfireTypeIdsImpl {
+class GeodeTypeIdsImpl {
  public:
   // Internal IDs here
   // User visible IDs are in GeodeTypeIds.hpp

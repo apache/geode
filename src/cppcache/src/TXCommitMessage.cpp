@@ -95,10 +95,10 @@ m_processorId = -1;
 
   int8_t fixedId;
   input.read(&fixedId);
-  if (fixedId == GemfireTypeIdsImpl::FixedIDByte) {
+  if (fixedId == GeodeTypeIdsImpl::FixedIDByte) {
     int8_t dfsid;
     input.read(&dfsid);
-    if (dfsid == GemfireTypeIdsImpl::ClientProxyMembershipId) {
+    if (dfsid == GeodeTypeIdsImpl::ClientProxyMembershipId) {
       ClientProxyMembershipID memId1;
       /* adongre
        * CID 28816: Resource leak (RESOURCE_LEAK)
@@ -129,7 +129,7 @@ m_processorId = -1;
           "TXCommitMessage::fromData Unable to handle commit response",
           GF_CACHE_ILLEGAL_STATE_EXCEPTION);
     }
-  } else if (fixedId != GemfireTypeIds::NullObj) {
+  } else if (fixedId != GeodeTypeIds::NullObj) {
     LOGERROR(
         "TXCommitMessage::fromData Unexpected type id: %d while desirializing "
         "commit response",
@@ -156,7 +156,7 @@ void TXCommitMessage::toData(DataOutput& output) const {}
 int32_t TXCommitMessage::classId() const { return 0; }
 
 int8_t TXCommitMessage::typeId() const {
-  return static_cast<int8_t>(GemfireTypeIdsImpl::TXCommitMessage);
+  return static_cast<int8_t>(GeodeTypeIdsImpl::TXCommitMessage);
 }
 
 Serializable* TXCommitMessage::create() { return new TXCommitMessage(); }
