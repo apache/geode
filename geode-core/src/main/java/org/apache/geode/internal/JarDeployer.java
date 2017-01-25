@@ -14,6 +14,10 @@
  */
 package org.apache.geode.internal;
 
+import org.apache.geode.SystemFailure;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.logging.log4j.Logger;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -38,19 +42,16 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.logging.log4j.Logger;
-
-import org.apache.geode.SystemFailure;
-import org.apache.geode.internal.logging.LogService;
-
 public class JarDeployer implements Serializable {
   private static final long serialVersionUID = 1L;
   private static final Logger logger = LogService.getLogger();
   public static final String JAR_PREFIX = "vf.gf#";
+  public static final String JAR_PREFIX_FOR_REGEX = "^vf\\.gf#";
   private static final Lock lock = new ReentrantLock();
 
   // Split a versioned filename into its name and version
-  public static final Pattern versionedPattern = Pattern.compile("^(.*)#(\\d++)$");
+  public static final Pattern versionedPattern =
+      Pattern.compile(JAR_PREFIX_FOR_REGEX + "(.*)#(\\d++)$");
 
   private final File deployDirectory;
 
@@ -341,17 +342,17 @@ public class JarDeployer implements Serializable {
   /**
    * Figure out the next version of a JAR file
    * 
-   * @param latestJarName The previous most recent version of the JAR file or original name if there
-   *        wasn't one
+   * @param latestVersionedJarName The previous most recent version of the JAR file or original name
+   *        if there wasn't one
    * @return The file that represents the next version
    */
-  private File getNextVersionJarFile(final String latestJarName) {
+  protected File getNextVersionJarFile(final String latestVersionedJarName) {
     String newFileName;
-    final Matcher matcher = versionedPattern.matcher(latestJarName);
+    final Matcher matcher = versionedPattern.matcher(latestVersionedJarName);
     if (matcher.find()) {
-      newFileName = matcher.group(1) + "#" + (Integer.parseInt(matcher.group(2)) + 1);
+      newFileName = JAR_PREFIX + matcher.group(1) + "#" + (Integer.parseInt(matcher.group(2)) + 1);
     } else {
-      newFileName = JAR_PREFIX + latestJarName + "#1";
+      newFileName = JAR_PREFIX + latestVersionedJarName + "#1";
     }
 
     if (logger.isDebugEnabled()) {
@@ -529,26 +530,25 @@ public class JarDeployer implements Serializable {
    * @return The version number embedded in the filename
    */
   int extractVersionFromFilename(final File file) {
-    final Matcher matcher = versionedPattern.matcher(file.getAbsolutePath());
+    final Matcher matcher = versionedPattern.matcher(file.getName());
     matcher.find();
     return Integer.parseInt(matcher.group(2));
   }
 
-  private Set<String> findDistinctDeployedJars() {
-    final Pattern pattern = Pattern.compile("^" + JAR_PREFIX + "(.*)#\\d++$");
+  protected Set<String> findDistinctDeployedJars() {
 
     // Find all deployed JAR files
     final File[] oldFiles = this.deployDirectory.listFiles(new FilenameFilter() {
       @Override
       public boolean accept(final File file, final String name) {
-        return pattern.matcher(name).matches();
+        return versionedPattern.matcher(name).matches();
       }
     });
 
     // Now add just the original JAR name to the set
     final Set<String> jarNames = new HashSet<String>();
     for (File oldFile : oldFiles) {
-      Matcher matcher = pattern.matcher(oldFile.getName());
+      Matcher matcher = versionedPattern.matcher(oldFile.getName());
       matcher.find();
       jarNames.add(matcher.group(1));
     }
@@ -562,9 +562,9 @@ public class JarDeployer implements Serializable {
    * @param jarFilename Name of the JAR file that we want old versions of
    * @return Sorted array of files that are older versions of the given JAR
    */
-  private File[] findSortedOldVersionsOfJar(final String jarFilename) {
+  protected File[] findSortedOldVersionsOfJar(final String jarFilename) {
     // Find all matching files
-    final Pattern pattern = Pattern.compile("^" + JAR_PREFIX + jarFilename + "#\\d++$");
+    final Pattern pattern = Pattern.compile(JAR_PREFIX_FOR_REGEX + jarFilename + "#\\d++$");
     final File[] oldJarFiles = this.deployDirectory.listFiles(new FilenameFilter() {
       @Override
       public boolean accept(final File file, final String name) {
