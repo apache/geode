@@ -789,9 +789,9 @@ public class OpExecutorImpl implements ExecutablePool {
         final String msg = sb.toString();
         if (logEnabled) {
           if (warn) {
-            logger.warn(msg /* , e */);
+            logger.warn(msg);
           } else {
-            logger.debug(msg /* , e */);
+            logger.debug(msg, e);
           }
         }
         if (forceThrow || finalAttempt) {
