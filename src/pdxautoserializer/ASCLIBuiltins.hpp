@@ -26,12 +26,9 @@
 using namespace System;
 using namespace System::Collections::Generic;
 
-namespace Apache
-{
-  namespace Geode
-  {
-    namespace Client
-    {
+namespace Apache {
+namespace Geode {
+namespace Client {
 namespace Serializer {
 
 /**

@@ -38,8 +38,7 @@ using namespace apache::geode::statistics;
  */
 GeodeStatisticsFactory* GeodeStatisticsFactory::s_singleton = NULL;
 
-GeodeStatisticsFactory::GeodeStatisticsFactory(
-    StatisticsManager* statMngr) {
+GeodeStatisticsFactory::GeodeStatisticsFactory(StatisticsManager* statMngr) {
   m_name = "GeodeStatisticsFactory";
   m_id = ACE_OS::getpid();
   m_statsListUniqueId = 1;
@@ -112,19 +111,19 @@ Statistics* GeodeStatisticsFactory::createStatistics(StatisticsType* type) {
 }
 
 Statistics* GeodeStatisticsFactory::createStatistics(StatisticsType* type,
-                                                       const char* textId) {
+                                                     const char* textId) {
   return createAtomicStatistics(type, textId, 0);
 }
 
 Statistics* GeodeStatisticsFactory::createStatistics(StatisticsType* type,
-                                                       const char* textId,
-                                                       int64 numericId) {
+                                                     const char* textId,
+                                                     int64 numericId) {
   return createAtomicStatistics(type, textId, 0);
 }
 
 Statistics* GeodeStatisticsFactory::createOsStatistics(StatisticsType* type,
-                                                         const char* textId,
-                                                         int64 numericId) {
+                                                       const char* textId,
+                                                       int64 numericId) {
   // Validate input
   if (type == NULL) {
     throw IllegalArgumentException("StatisticsType* is Null");
@@ -148,13 +147,14 @@ Statistics* GeodeStatisticsFactory::createAtomicStatistics(
   return createAtomicStatistics(type, NULL, 0);
 }
 
-Statistics* GeodeStatisticsFactory::createAtomicStatistics(
-    StatisticsType* type, const char* textId) {
+Statistics* GeodeStatisticsFactory::createAtomicStatistics(StatisticsType* type,
+                                                           const char* textId) {
   return createAtomicStatistics(type, textId, 0);
 }
 
-Statistics* GeodeStatisticsFactory::createAtomicStatistics(
-    StatisticsType* type, const char* textId, int64 numericId) {
+Statistics* GeodeStatisticsFactory::createAtomicStatistics(StatisticsType* type,
+                                                           const char* textId,
+                                                           int64 numericId) {
   // Validate input
   if (type == NULL) {
     throw IllegalArgumentException("StatisticsType* is Null");
@@ -203,9 +203,10 @@ StatisticsTypeImpl* GeodeStatisticsFactory::addType(StatisticsTypeImpl* st) {
 /**
  * Creates  a StatisticType for the given shared class.
  */
-StatisticsType* GeodeStatisticsFactory::createType(
-    const char* name, const char* description, StatisticDescriptor** stats,
-    int32 statsLength) {
+StatisticsType* GeodeStatisticsFactory::createType(const char* name,
+                                                   const char* description,
+                                                   StatisticDescriptor** stats,
+                                                   int32 statsLength) {
   StatisticsTypeImpl* st =
       new StatisticsTypeImpl(name, description, stats, statsLength);
 
