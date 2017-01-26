@@ -41,18 +41,6 @@
       "destination":"gemfire.tar.gz"
     },
     {
-      "pause_before":"30s",
-      "type":"file",
-      "source":"windows/init-user-build.ps1",
-      "destination":"C:/Users/build/init-user-build.ps1"
-    },
-    {
-      "pause_before":"30s",
-      "type":"file",
-      "source":"windows/buildenv.bat",
-      "destination":"C:/Users/build/buildenv.bat"
-    },
-    {
       "type":"powershell",
       "inline":[
         "choco install jdk8 -confirm",
@@ -84,6 +72,16 @@
         "windows/add-user-build.ps1",
         "windows/run-sshd-as-build.ps1"
       ]
+    },
+    {
+      "type":"file",
+      "source":"windows/init-user-build.ps1",
+      "destination":"C:/Users/build/init-user-build.ps1"
+    },
+    {
+      "type":"file",
+      "source":"windows/buildenv.bat",
+      "destination":"C:/Users/build/buildenv.bat"
     },
     {
       "type":"powershell",
