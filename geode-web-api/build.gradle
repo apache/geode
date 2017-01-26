@@ -61,6 +61,8 @@ dependencies {
     exclude module: 'spring-beans'
   }
 
+  testCompile project(':geode-junit')
+
   provided 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
   provided project(':geode-core')
 }

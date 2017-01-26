@@ -67,8 +67,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
@@ -739,14 +737,11 @@ public abstract class AbstractBaseController {
   }
 
   protected String convertErrorAsJson(String errorMessage) {
-    return ("{" + "\"cause\"" + ":" + "\"" + errorMessage + "\"" + "}");
+    return ("{" + "\"message\"" + ":" + "\"" + errorMessage + "\"" + "}");
   }
 
   protected String convertErrorAsJson(Throwable t) {
-    StringWriter writer = new StringWriter();
-    t.printStackTrace(new PrintWriter(writer));
-    return String.format("{\"message\" : \"%1$s\", \"stackTrace\" : \"%2$s\"}", t.getMessage(),
-        writer.toString());
+    return String.format("{\"message\" : \"%1$s\"}", t.getMessage());
   }
 
   protected Map<?, ?> convertJsonToMap(final String jsonString) {
