@@ -20,14 +20,23 @@ import org.apache.geode.cache.lucene.internal.directory.RegionDirectory;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepositoryImpl;
 import org.apache.geode.cache.lucene.internal.repository.serializer.LuceneSerializer;
+import org.apache.geode.cache.partition.PartitionRegionHelper;
+import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.PartitionedRegionHelper;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.jgroups.blocks.locking.LockService;
 
 public class IndexRepositoryFactory {
+
+  private static final Logger logger = LogService.getLogger();
+  public static final String FILE_REGION_LOCK_FOR_BUCKET_ID = "FileRegionLockForBucketId:";
 
   public IndexRepositoryFactory() {}
 
@@ -38,16 +47,37 @@ public class IndexRepositoryFactory {
     BucketRegion fileBucket = getMatchingBucket(indexForPR.getFileRegion(), bucketId);
     BucketRegion chunkBucket = getMatchingBucket(indexForPR.getChunkRegion(), bucketId);
     BucketRegion dataBucket = getMatchingBucket(userRegion, bucketId);
+    boolean success = false;
     if (fileBucket == null || chunkBucket == null) {
       return null;
     }
-    RegionDirectory dir =
-        new RegionDirectory(fileBucket, chunkBucket, indexForPR.getFileSystemStats());
-    IndexWriterConfig config = new IndexWriterConfig(indexForPR.getAnalyzer());
-    IndexWriter writer = new IndexWriter(dir, config);
-    repo = new IndexRepositoryImpl(fileBucket, writer, serializer, indexForPR.getIndexStats(),
-        dataBucket);
-    return repo;
+    if (!fileBucket.getBucketAdvisor().isPrimary()) {
+      throw new IOException("Not creating the index because we are not the primary");
+    }
+    DistributedLockService lockService =
+        DistributedLockService.getServiceNamed(PartitionedRegionHelper.PARTITION_LOCK_SERVICE_NAME);
+    String lockName = FILE_REGION_LOCK_FOR_BUCKET_ID + fileBucket.getFullPath() + bucketId;
+    if (lockService != null) {
+      // lockService will be null for testing at this point
+      lockService.lock(lockName, -1, -1);
+    }
+    try {
+      RegionDirectory dir =
+          new RegionDirectory(fileBucket, chunkBucket, indexForPR.getFileSystemStats());
+      IndexWriterConfig config = new IndexWriterConfig(indexForPR.getAnalyzer());
+      IndexWriter writer = new IndexWriter(dir, config);
+      repo = new IndexRepositoryImpl(fileBucket, writer, serializer, indexForPR.getIndexStats(),
+          dataBucket, lockService, lockName);
+      success = true;
+      return repo;
+    } finally {
+      if (!success) {
+        if (lockService != null) {
+          lockService.unlock(lockName);
+        }
+      }
+    }
+
   }
 
   /**

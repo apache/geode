@@ -71,6 +71,16 @@ public interface PartitionListener {
   public void afterPrimary(int bucketId);
 
   /**
+   * Callback invoked when any bucket in a partitioned region stops being primary
+   *
+   * @param bucketId id of the bucket which stopped being primary
+   * @since Geode 1.1
+   */
+  default public void afterSecondary(int bucketId) {
+
+  }
+
+  /**
    * Callback invoked when a partition region is created
    * 
    * @param region handle of the region which is created
@@ -99,4 +109,5 @@ public interface PartitionListener {
    * @since GemFire 6.6.1
    */
   public void afterBucketCreated(int bucketId, Iterable<?> keys);
+
 }

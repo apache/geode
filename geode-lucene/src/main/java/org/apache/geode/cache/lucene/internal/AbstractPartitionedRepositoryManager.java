@@ -18,7 +18,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.Region;
@@ -91,16 +94,8 @@ public abstract class AbstractPartitionedRepositoryManager implements Repository
       LuceneSerializer serializer, LuceneIndexImpl index, PartitionedRegion userRegion)
       throws IOException;
 
-  /**
-   * Return the repository for a given user bucket
-   */
-  protected IndexRepository getRepository(Integer bucketId) throws BucketNotFoundException {
-    IndexRepository repo = indexRepositories.get(bucketId);
-    if (repo != null && !repo.isClosed()) {
-      return repo;
-    }
-
-    repo = indexRepositories.compute(bucketId, (key, oldRepository) -> {
+  protected IndexRepository createRepository(Integer bucketId) throws BucketNotFoundException {
+    IndexRepository repo = indexRepositories.compute(bucketId, (key, oldRepository) -> {
       if (oldRepository != null && !oldRepository.isClosed()) {
         return oldRepository;
       }
@@ -115,12 +110,26 @@ public abstract class AbstractPartitionedRepositoryManager implements Repository
       }
 
     });
+    return repo;
+  }
 
-    if (repo == null) {
-      throw new BucketNotFoundException(
-          "Colocated index buckets not found for bucket id " + bucketId);
+  /**
+   * Return the repository for a given user bucket
+   */
+  protected IndexRepository getRepository(Integer bucketId) throws BucketNotFoundException {
+    IndexRepository repo = indexRepositories.get(bucketId);
+    if (repo != null && !repo.isClosed()) {
+      return repo;
     }
 
-    return repo;
+    throw new BucketNotFoundException(
+        "Colocated index buckets not found for bucket id " + bucketId);
+  }
+
+  protected void cleanRepository(Integer bucketId) throws BucketNotFoundException {
+    IndexRepository repo = indexRepositories.remove(bucketId);
+    if (repo != null) {
+      repo.cleanup();
+    }
   }
 }

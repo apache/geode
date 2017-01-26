@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
-
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
@@ -91,7 +91,7 @@ public class LuceneEventListener implements AsyncEventListener {
     } catch (BucketNotFoundException | RegionDestroyedException | PrimaryBucketException e) {
       logger.debug("Bucket not found while saving to lucene index: " + e.getMessage());
       return false;
-    } catch (IOException e) {
+    } catch (IOException | CacheClosedException e) {
       logger.error("Unable to save to lucene index", e);
       return false;
     } finally {

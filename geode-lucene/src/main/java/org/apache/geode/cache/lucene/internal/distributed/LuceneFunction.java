@@ -98,8 +98,11 @@ public class LuceneFunction extends FunctionAdapter implements InternalEntity {
     TopEntriesCollector mergedResult = null;
     try {
       long start = stats.startQuery();
+      Collection<IndexRepository> repositories = null;
+
       try {
-        Collection<IndexRepository> repositories = repoManager.getRepositories(ctx);
+        repositories = repoManager.getRepositories(ctx);
+
         for (IndexRepository repo : repositories) {
           IndexResultCollector collector = manager.newCollector(repo.toString());
           if (logger.isDebugEnabled()) {

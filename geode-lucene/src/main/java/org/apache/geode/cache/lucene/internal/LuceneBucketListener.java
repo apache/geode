@@ -22,12 +22,12 @@ import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.logging.log4j.Logger;
 
-public class LucenePrimaryBucketListener extends PartitionListenerAdapter {
+public class LuceneBucketListener extends PartitionListenerAdapter {
   private static final Logger logger = LogService.getLogger();
   private PartitionedRepositoryManager lucenePartitionRepositoryManager;
   private final DM dm;
 
-  public LucenePrimaryBucketListener(PartitionedRepositoryManager partitionedRepositoryManager,
+  public LuceneBucketListener(PartitionedRepositoryManager partitionedRepositoryManager,
       final DM dm) {
     lucenePartitionRepositoryManager = partitionedRepositoryManager;
     this.dm = dm;
@@ -37,12 +37,26 @@ public class LucenePrimaryBucketListener extends PartitionListenerAdapter {
   public void afterPrimary(int bucketId) {
     dm.getWaitingThreadPool().execute(() -> {
       try {
-        lucenePartitionRepositoryManager.getRepository(bucketId);
+        lucenePartitionRepositoryManager.createRepository(bucketId);
       } catch (BucketNotFoundException e) {
         logger.warn(
             "Index repository could not be created when index chunk region bucket became primary. "
                 + "Deferring index repository to be created lazily during lucene query execution."
                 + e);
+      }
+    });
+  }
+
+  public void afterBucketRemoved(int bucketId, Iterable<?> keys) {
+    afterSecondary(bucketId);
+  }
+
+  public void afterSecondary(int bucketId) {
+    dm.getWaitingThreadPool().execute(() -> {
+      try {
+        lucenePartitionRepositoryManager.cleanRepository(bucketId);
+      } catch (Exception e) {
+        logger.warn("Exception while cleaning up Lucene Index Repository", e);
       }
     });
   }

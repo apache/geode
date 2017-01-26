@@ -209,19 +209,20 @@ public class LuceneFunctionJUnitTest {
     function.execute(mockContext);
   }
 
-  @Test(expected = FunctionException.class)
-  public void testBucketNotFound() throws Exception {
-    when(mockContext.getDataSet()).thenReturn(mockRegion);
-    when(mockContext.getArguments()).thenReturn(searchArgs);
-    when(mockContext.<TopEntriesCollector>getResultSender()).thenReturn(mockResultSender);
-    when(mockRepoManager.getRepositories(eq(mockContext)))
-        .thenThrow(new BucketNotFoundException(""));
-    LuceneFunction function = new LuceneFunction();
-
-    function.execute(mockContext);
-
-    verify(mockResultSender).sendException(any(BucketNotFoundException.class));
-  }
+  // Disabled currently as we are retrying the function if a bucket is not found
+  // @Test(expected = FunctionException.class)
+  // public void testBucketNotFound() throws Exception {
+  // when(mockContext.getDataSet()).thenReturn(mockRegion);
+  // when(mockContext.getArguments()).thenReturn(searchArgs);
+  // when(mockContext.<TopEntriesCollector>getResultSender()).thenReturn(mockResultSender);
+  // when(mockRepoManager.getRepositories(eq(mockContext)))
+  // .thenThrow(new BucketNotFoundException(""));
+  // LuceneFunction function = new LuceneFunction();
+  //
+  // function.execute(mockContext);
+  //
+  // verify(mockResultSender).sendException(any(BucketNotFoundException.class));
+  // }
 
   @Test(expected = FunctionException.class)
   public void testReduceError() throws Exception {

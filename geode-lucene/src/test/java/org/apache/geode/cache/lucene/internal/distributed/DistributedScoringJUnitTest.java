@@ -139,7 +139,7 @@ public class DistributedScoringJUnitTest {
     IndexWriterConfig config = new IndexWriterConfig(analyzer);
     IndexWriter writer = new IndexWriter(dir, config);
 
-    return new IndexRepositoryImpl(region, writer, mapper, indexStats, null);
+    return new IndexRepositoryImpl(region, writer, mapper, indexStats, null, null, "");
   }
 
   private static class TestType {

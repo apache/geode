@@ -27,6 +27,9 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.geode.distributed.DistributedLockService;
+import org.apache.geode.internal.cache.BucketAdvisor;
+import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.IndexWriter;
 import org.junit.Before;
@@ -228,7 +231,7 @@ public class PartitionedRepositoryManagerJUnitTest {
     assertEquals(serializer, repo0.getSerializer());
   }
 
-  protected BucketRegion setUpMockBucket(int id) {
+  protected BucketRegion setUpMockBucket(int id) throws BucketNotFoundException {
     BucketRegion mockBucket = Mockito.mock(BucketRegion.class);
     BucketRegion fileBucket = Mockito.mock(BucketRegion.class);
     // Allowing the fileBucket to behave like a map so that the IndexWriter operations don't fail
@@ -245,6 +248,13 @@ public class PartitionedRepositoryManagerJUnitTest {
     fileBuckets.put(id, fileBucket);
     chunkBuckets.put(id, chunkBucket);
     dataBuckets.put(id, mockBucket);
+
+    BucketAdvisor mockBucketAdvisor = Mockito.mock(BucketAdvisor.class);
+    DistributedLockService lockService = Mockito.mock(DistributedLockService.class);
+    when(fileBucket.getLockService()).thenReturn(lockService);
+    when(fileBucket.getBucketAdvisor()).thenReturn(mockBucketAdvisor);
+    when(mockBucketAdvisor.isPrimary()).thenReturn(true);
+    repoManager.createRepository(mockBucket.getId());
     return mockBucket;
   }
 }

@@ -46,7 +46,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -953,6 +952,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
       }
     } finally {
       if (lostPrimary) {
+        invokeAfterSecondaryInPartitionListeners();
         Bucket br = this.regionAdvisor.getBucket(getBucket().getId());
         if (br != null && br instanceof BucketRegion) {
           ((BucketRegion) br).beforeReleasingPrimaryLockDuringDemotion();
@@ -1279,6 +1279,19 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
       PartitionListener listener = listeners[i];
       if (listener != null) {
         listener.afterPrimary(getBucket().getId());
+      }
+    }
+  }
+
+  private void invokeAfterSecondaryInPartitionListeners() {
+    PartitionListener[] listeners = this.pRegion.getPartitionListeners();
+    if (listeners == null || listeners.length == 0) {
+      return;
+    }
+    for (int i = 0; i < listeners.length; i++) {
+      PartitionListener listener = listeners[i];
+      if (listener != null) {
+        listener.afterSecondary(getBucket().getId());
       }
     }
   }

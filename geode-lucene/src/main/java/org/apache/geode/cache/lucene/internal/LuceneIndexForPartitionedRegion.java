@@ -17,14 +17,11 @@ package org.apache.geode.cache.lucene.internal;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
-import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.lucene.internal.directory.DumpDirectoryFiles;
@@ -86,8 +83,8 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     PartitionedRepositoryManager partitionedRepositoryManager =
         new PartitionedRepositoryManager(this, mapper);
     DM dm = ((GemFireCacheImpl) getCache()).getDistributedSystem().getDistributionManager();
-    LucenePrimaryBucketListener lucenePrimaryBucketListener =
-        new LucenePrimaryBucketListener(partitionedRepositoryManager, dm);
+    LuceneBucketListener lucenePrimaryBucketListener =
+        new LuceneBucketListener(partitionedRepositoryManager, dm);
     if (!chunkRegionExists(chunkRegionName)) {
       chunkRegion = createChunkRegion(regionShortCut, fileRegionName, partitionAttributes,
           chunkRegionName, regionAttributes, lucenePrimaryBucketListener);

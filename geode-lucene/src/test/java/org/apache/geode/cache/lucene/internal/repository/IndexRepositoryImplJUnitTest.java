@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.IntSupplier;
 
+import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -85,7 +86,8 @@ public class IndexRepositoryImplJUnitTest {
     Mockito.when(((BucketRegion) userRegion).getBucketAdvisor().isPrimary()).thenReturn(true);
     stats = Mockito.mock(LuceneIndexStats.class);
     Mockito.when(userRegion.isDestroyed()).thenReturn(false);
-    repo = new IndexRepositoryImpl(region, writer, mapper, stats, userRegion);
+    repo = new IndexRepositoryImpl(region, writer, mapper, stats, userRegion,
+        mock(DistributedLockService.class), "lockName");
   }
 
   @Test

@@ -53,7 +53,8 @@ public class RawIndexRepositoryFactory extends IndexRepositoryFactory {
     }
     IndexWriterConfig config = new IndexWriterConfig(indexForRaw.getAnalyzer());
     IndexWriter writer = new IndexWriter(dir, config);
+
     return new IndexRepositoryImpl(null, writer, serializer, indexForRaw.getIndexStats(),
-        dataBucket);
+        dataBucket, null, "");
   }
 }

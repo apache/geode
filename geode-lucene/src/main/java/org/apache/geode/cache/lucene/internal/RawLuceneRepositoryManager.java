@@ -16,6 +16,7 @@ package org.apache.geode.cache.lucene.internal;
 
 import java.io.IOException;
 
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.serializer.LuceneSerializer;
 import org.apache.geode.internal.cache.BucketNotFoundException;
@@ -32,6 +33,24 @@ public class RawLuceneRepositoryManager extends AbstractPartitionedRepositoryMan
     for (IndexRepository repo : indexRepositories.values()) {
       repo.cleanup();
     }
+  }
+
+  @Override
+  protected IndexRepository getRepository(Integer bucketId) throws BucketNotFoundException {
+    IndexRepository repo = indexRepositories.get(bucketId);
+    if (repo != null && !repo.isClosed()) {
+      return repo;
+    }
+
+    try {
+      repo = createOneIndexRepository(bucketId, this.serializer, this.index, this.userRegion);
+      return repo;
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    throw new BucketNotFoundException(
+        "Colocated index buckets not found for bucket id " + bucketId);
   }
 
   @Override

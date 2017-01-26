@@ -19,8 +19,10 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
 import org.apache.geode.cache.lucene.internal.repository.serializer.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.repository.serializer.SerializerUtil;
+import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
@@ -28,6 +30,7 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.AlreadyClosedException;
+import org.apache.geode.distributed.LockNotHeldException;
 
 import java.io.IOException;
 import java.util.function.IntSupplier;
@@ -48,11 +51,21 @@ public class IndexRepositoryImpl implements IndexRepository {
   private Region<?, ?> userRegion;
   private LuceneIndexStats stats;
   private DocumentCountSupplier documentCountSupplier;
+  private DistributedLockService lockService;
+  private String lockName;
 
   private static final Logger logger = LogService.getLogger();
 
-  public IndexRepositoryImpl(Region<?, ?> region, IndexWriter writer, LuceneSerializer serializer,
+  // For test purposes
+  IndexRepositoryImpl(Region<?, ?> region, IndexWriter writer, LuceneSerializer serializer,
       LuceneIndexStats stats, Region<?, ?> userRegion) throws IOException {
+    this(region, writer, serializer, stats, userRegion,
+        ((DistributedRegion) region).getLockService(), "NoLockFile");
+  }
+
+  public IndexRepositoryImpl(Region<?, ?> region, IndexWriter writer, LuceneSerializer serializer,
+      LuceneIndexStats stats, Region<?, ?> userRegion, DistributedLockService lockService,
+      String lockName) throws IOException {
     this.region = region;
     this.userRegion = userRegion;
     this.writer = writer;
@@ -61,6 +74,8 @@ public class IndexRepositoryImpl implements IndexRepository {
     this.stats = stats;
     documentCountSupplier = new DocumentCountSupplier();
     stats.addDocumentsSupplier(documentCountSupplier);
+    this.lockService = lockService;
+    this.lockName = lockName;
   }
 
   @Override
@@ -148,16 +163,26 @@ public class IndexRepositoryImpl implements IndexRepository {
 
   @Override
   public boolean isClosed() {
-    return userRegion.isDestroyed();
+    return userRegion.isDestroyed() || !writer.isOpen();
   }
 
   @Override
   public void cleanup() {
-    stats.removeDocumentsSupplier(documentCountSupplier);
     try {
-      writer.close();
-    } catch (IOException e) {
-      logger.warn("Unable to clean up index repository", e);
+      stats.removeDocumentsSupplier(documentCountSupplier);
+      try {
+        writer.close();
+      } catch (IOException e) {
+        logger.warn("Unable to clean up index repository", e);
+      }
+    } finally {
+      try {
+        if (lockService != null) {
+          lockService.unlock(lockName);
+        }
+      } catch (LockNotHeldException e) {
+        logger.debug("Tried to unlock file region lock(" + lockName + ") that we did not hold", e);
+      }
     }
   }
 
