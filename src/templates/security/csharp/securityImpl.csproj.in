@@ -32,7 +32,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Apache.Gedoe.Client">
-      <HintPath>${GFCPP}\bin\Apache.Geode.Client.dll</HintPath>
+      <HintPath>${GFCPP}\bin\Apache.Geode.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

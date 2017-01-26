@@ -34,9 +34,9 @@ BEGIN
             VALUE "CompanyName",      PRODUCT_VENDOR_NAME
             VALUE "FileDescription",  PRODUCT_NAME " .NET Library"
             VALUE "FileVersion",      PRODUCT_VERSION
-            VALUE "InternalName",     "Apache.Geode.Client"
+            VALUE "InternalName",     "Apache.Geode"
             VALUE "LegalCopyright",   "Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements.  See the NOTICE file distributed with this work for additional information regarding copyright ownership."
-            VALUE "OriginalFilename", "Apache.Geode.Client.dll"
+            VALUE "OriginalFilename", "Apache.Geode.dll"
             VALUE "ProductName",      PRODUCT_NAME
             VALUE "ProductVersion",   PRODUCT_VERSION
         END
