@@ -227,7 +227,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     dataStore2.invoke(() -> initDataStore(createIndex));
   }
 
-  private final Object[] getIndexes() {
+  protected final Object[] getIndexes() {
     return $(new Object[] {getFieldsIndexWithOneField()},
         new Object[] {getFieldsIndexWithTwoFields()}, new Object[] {get2FieldsIndexes()},
         new Object[] {getAnalyzersIndexWithOneField()},
@@ -272,7 +272,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
 
 
 
-  private final Object[] getXmlAndExceptionMessages() {
+  protected final Object[] getXmlAndExceptionMessages() {
     return $(
         new Object[] {"verifyDifferentFieldsFails", CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_FIELDS},
         new Object[] {"verifyDifferentFieldAnalyzerSizesFails1",
@@ -312,12 +312,17 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     dataStore2.invoke(() -> initDataStore(createIndex2));
   }
 
-  private String getXmlFileForTest(String testName) {
+  protected String getXmlFileForTest(String testName) {
     return TestUtil.getResourcePath(getClass(),
-        getClass().getSimpleName() + "." + testName + ".cache.xml");
+        getClassSimpleName() + "." + testName + ".cache.xml");
   }
 
-  private void initDataStore(SerializableRunnableIF createIndex, String message) throws Exception {
+  protected String getClassSimpleName() {
+    return getClass().getSimpleName();
+  }
+
+  protected void initDataStore(SerializableRunnableIF createIndex, String message)
+      throws Exception {
     createIndex.run();
     try {
       getCache().createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
@@ -327,11 +332,11 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     }
   }
 
-  private void initCache(String cacheXmlFileName) throws FileNotFoundException {
+  protected void initCache(String cacheXmlFileName) throws FileNotFoundException {
     getCache().loadCacheXml(new FileInputStream(cacheXmlFileName));
   }
 
-  private void initCache(String cacheXmlFileName, String message) throws FileNotFoundException {
+  protected void initCache(String cacheXmlFileName, String message) throws FileNotFoundException {
     try {
       getCache().loadCacheXml(new FileInputStream(cacheXmlFileName));
       fail("Should not have been able to create cache");
@@ -340,21 +345,21 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     }
   }
 
-  private SerializableRunnableIF getFieldsIndexWithOneField() {
+  protected SerializableRunnableIF getFieldsIndexWithOneField() {
     return () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       luceneService.createIndex(INDEX_NAME, REGION_NAME, "field1");
     };
   }
 
-  private SerializableRunnableIF getFieldsIndexWithTwoFields() {
+  protected SerializableRunnableIF getFieldsIndexWithTwoFields() {
     return () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       luceneService.createIndex(INDEX_NAME, REGION_NAME, "field1", "field2");
     };
   }
 
-  private SerializableRunnableIF get2FieldsIndexes() {
+  protected SerializableRunnableIF get2FieldsIndexes() {
     return () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       luceneService.createIndex(INDEX_NAME + "_1", REGION_NAME, "field1");
@@ -362,7 +367,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     };
   }
 
-  private SerializableRunnableIF getMultipleIndexes(final int numberOfIndexes) {
+  protected SerializableRunnableIF getMultipleIndexes(final int numberOfIndexes) {
     return () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       for (int count = 1; count <= numberOfIndexes; count++) {
@@ -371,13 +376,13 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     };
   }
 
-  private void verifyIndexList(final int expectedSize) {
+  protected void verifyIndexList(final int expectedSize) {
     LuceneService luceneService = LuceneServiceProvider.get(getCache());
     Collection<LuceneIndex> indexList = luceneService.getAllIndexes();
     assertEquals(indexList.size(), expectedSize);
   }
 
-  private void verifyIndexes(final int numberOfIndexes) {
+  protected void verifyIndexes(final int numberOfIndexes) {
     LuceneService luceneService = LuceneServiceProvider.get(getCache());
     for (int count = 1; count <= numberOfIndexes; count++) {
       assertEquals(luceneService.getIndex(INDEX_NAME + "_" + count, REGION_NAME).getName(),
@@ -385,7 +390,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     }
   }
 
-  private SerializableRunnableIF getAnalyzersIndexWithNullField1() {
+  protected SerializableRunnableIF getAnalyzersIndexWithNullField1() {
     return () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       Map<String, Analyzer> analyzers = new HashMap<>();
@@ -395,7 +400,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     };
   }
 
-  private SerializableRunnableIF getAnalyzersIndexWithNullField2() {
+  protected SerializableRunnableIF getAnalyzersIndexWithNullField2() {
     return () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       Map<String, Analyzer> analyzers = new HashMap<>();
@@ -405,7 +410,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     };
   }
 
-  private SerializableRunnableIF getAnalyzersIndexWithOneField(
+  protected SerializableRunnableIF getAnalyzersIndexWithOneField(
       Class<? extends Analyzer> analyzerClass) {
     return () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
@@ -415,7 +420,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     };
   }
 
-  private SerializableRunnableIF getAnalyzersIndexWithOneField() {
+  protected SerializableRunnableIF getAnalyzersIndexWithOneField() {
     return () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       Map<String, Analyzer> analyzers = new HashMap<>();
@@ -424,7 +429,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     };
   }
 
-  private SerializableRunnableIF getAnalyzersIndexWithTwoFields() {
+  protected SerializableRunnableIF getAnalyzersIndexWithTwoFields() {
     return () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       Map<String, Analyzer> analyzers = new HashMap<>();
@@ -434,7 +439,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     };
   }
 
-  private SerializableRunnableIF getAnalyzersIndexWithTwoFields2() {
+  protected SerializableRunnableIF getAnalyzersIndexWithTwoFields2() {
     return () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       Map<String, Analyzer> analyzers = new HashMap<>();

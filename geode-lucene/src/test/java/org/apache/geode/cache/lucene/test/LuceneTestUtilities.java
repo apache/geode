@@ -14,16 +14,25 @@
  */
 package org.apache.geode.cache.lucene.test;
 
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
+import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.EntryOperation;
+import org.apache.geode.cache.FixedPartitionAttributes;
+import org.apache.geode.cache.FixedPartitionResolver;
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.lucene.LuceneIndex;
@@ -34,10 +43,14 @@ import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.cache.lucene.internal.LuceneIndexForPartitionedRegion;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
+import org.apache.geode.cache.persistence.PartitionOfflineException;
+import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.VM;
 
 public class LuceneTestUtilities {
   public static final String INDEX_NAME = "index";
@@ -64,6 +77,94 @@ public class LuceneTestUtilities {
       "Cannot create Region /region with [index#_region, index2#_region] async event ids because another cache has the same region defined with [index#_region] async event ids";
   public static final String CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_INDEXES_3 =
       "Cannot create Region /region with [index#_region] async event ids because another cache has the same region defined with [] async event ids";
+
+  public static String Quarter1 = "Q1";
+  public static String Quarter2 = "Q2";
+  public static String Quarter3 = "Q3";
+  public static String Quarter4 = "Q4";
+
+  public static void initDataStoreForFixedPR(final Cache cache) throws Exception {
+    List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
+    int vmNum = VM.getCurrentVMNum();
+    if (vmNum % 2 == 0) {
+      FixedPartitionAttributes fpa1 = FixedPartitionAttributes.createFixedPartition(Quarter1, true);
+      FixedPartitionAttributes fpa2 =
+          FixedPartitionAttributes.createFixedPartition(Quarter2, false);
+      fpaList.clear();
+      fpaList.add(fpa1);
+      fpaList.add(fpa2);
+    } else {
+      FixedPartitionAttributes fpa1 =
+          FixedPartitionAttributes.createFixedPartition(Quarter1, false);
+      FixedPartitionAttributes fpa2 = FixedPartitionAttributes.createFixedPartition(Quarter2, true);
+      fpaList.clear();
+      fpaList.add(fpa1);
+      fpaList.add(fpa2);
+    }
+
+    createFixedPartitionedRegion(cache, REGION_NAME, fpaList, 40);
+  }
+
+  public static void createFixedPartitionedRegion(final Cache cache, String regionName,
+      List<FixedPartitionAttributes> fpaList, int localMaxMemory) {
+    List<String> allPartitions = new ArrayList();
+    if (fpaList != null) {
+      for (FixedPartitionAttributes fpa : fpaList) {
+        allPartitions.add(fpa.getPartitionName());
+      }
+    } else {
+      allPartitions.add("Q1");
+      allPartitions.add("Q2");
+    }
+
+    AttributesFactory fact = new AttributesFactory();
+
+    PartitionAttributesFactory pfact = new PartitionAttributesFactory();
+    pfact.setTotalNumBuckets(16);
+    pfact.setRedundantCopies(1);
+    pfact.setLocalMaxMemory(localMaxMemory);
+    if (fpaList != null) {
+      for (FixedPartitionAttributes fpa : fpaList) {
+        pfact.addFixedPartitionAttributes(fpa);
+      }
+    }
+    pfact.setPartitionResolver(new MyFixedPartitionResolver(allPartitions));
+    fact.setPartitionAttributes(pfact.create());
+    Region r = cache.createRegionFactory(fact.create()).create(regionName);
+    assertNotNull(r);
+  }
+
+  static class MyFixedPartitionResolver implements FixedPartitionResolver {
+
+    private final List<String> allPartitions;
+
+    public MyFixedPartitionResolver(final List<String> allPartitions) {
+      this.allPartitions = allPartitions;
+    }
+
+    @Override
+    public String getPartitionName(final EntryOperation opDetails,
+        @Deprecated final Set targetPartitions) {
+      int hash = Math.abs(opDetails.getKey().hashCode() % allPartitions.size());
+      return allPartitions.get(hash);
+    }
+
+    @Override
+    public Object getRoutingObject(final EntryOperation opDetails) {
+      return opDetails.getKey();
+    }
+
+    @Override
+    public String getName() {
+      return getClass().getName();
+    }
+
+    @Override
+    public void close() {
+
+    }
+
+  }
 
   public static void verifyInternalRegions(LuceneService luceneService, Cache cache,
       Consumer<LocalRegion> verify) {
