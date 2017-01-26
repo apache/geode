@@ -20,7 +20,7 @@
  * This examples creates pool using locator.
  * This example takes the following steps:
  *
- * 1. Create a GemFire Cache.
+ * 1. Create a Geode Cache.
  * 2. Get the example Region from the Pool.
  * 3. Populate some Pdx Type query objects on the Region.
  * 4. Get the pool, get the Query Service from Cache. Pool is define in
@@ -33,14 +33,13 @@
  *
  */
 
-// Include the GemFire library.
+// Include the Geode library.
 #include <gfcpp/GeodeCppCache.hpp>
 
 // Include our Query objects, viz. PortfolioPdx and PositionPdx.
 #include "queryobjects/PortfolioPdxAuto.hpp"
 #include "queryobjects/PositionPdxAuto.hpp"
 
-// Use the "gemfire" namespace.
 using namespace apache::geode::client;
 
 // Use the "testobject" namespace for the query objects.
@@ -51,7 +50,7 @@ int main(int argc, char** argv) {
   try {
     CacheFactoryPtr cacheFactory = CacheFactory::createCacheFactory();
 
-    // Create a GemFire Cache with the "clientPdxRemoteQuery.xml" Cache XML
+    // Create a Geode Cache with the "clientPdxRemoteQuery.xml" Cache XML
     // file.
     // CachePtr cachePtr = cacheFactory->set("cache-xml-file",
     // "XMLs/clientPdxAutoSerializer.xml")->create();
@@ -59,7 +58,7 @@ int main(int argc, char** argv) {
         cacheFactory->set("cache-xml-file", "XMLs/clientPdxAutoSerializer.xml")
             ->create();
 
-    LOGINFO("Created the GemFire Cache");
+    LOGINFO("Created the Geode Cache");
 
     // Get the example Region from the Cache which is declared in the Cache XML
     // file.
@@ -133,17 +132,17 @@ int main(int argc, char** argv) {
 
     LOGINFO("Region existsValue() returned %s", existsValue ? "true" : "false");
 
-    // Close the GemFire Cache.
+    // Close the Geode Cache.
     cachePtr->close();
 
-    LOGINFO("Closed the GemFire Cache");
+    LOGINFO("Closed the Geode Cache");
 
     return 0;
   }
   // An exception should not occur
-  catch (const Exception& gemfireExcp) {
-    LOGERROR("PdxAutoSerializer GemFire Exception: %s",
-             gemfireExcp.getMessage());
+  catch (const Exception& geodeExcp) {
+    LOGERROR("PdxAutoSerializer Geode Exception: %s",
+             geodeExcp.getMessage());
 
     return 1;
   }

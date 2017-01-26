@@ -20,7 +20,7 @@
  *
  * This example takes the following steps:
  *
- * 1. Create a GemFire Cache with durable client properties Programmatically.
+ * 1. Create a Geode Cache with durable client properties Programmatically.
  * 2. Create the example Region Programmatically.
  * 3. Set Cacelistener with "afterRegionLive implementation to region.
  * 4. Register Interest to region with durable option
@@ -29,13 +29,12 @@
  *
  */
 
-// Include the GemFire library.
+// Include the Geode library.
 #include <gfcpp/GeodeCppCache.hpp>
 
 // Include cachelistener
 #include "plugins/DurableCacheListener.hpp"
 
-// Use the "gemfire" namespace.
 using namespace apache::geode::client;
 
 void RunDurableClient() {
@@ -44,11 +43,11 @@ void RunDurableClient() {
   pp->insert("durable-client-id", "DurableClientId");
   pp->insert("durable-timeout", 300);
 
-  // Create a GemFire Cache Programmatically.
+  // Create a Geode Cache Programmatically.
   CacheFactoryPtr cacheFactory = CacheFactory::createCacheFactory(pp);
   CachePtr cachePtr = cacheFactory->setSubscriptionEnabled(true)->create();
 
-  LOGINFO("Created the GemFire Cache Programmatically");
+  LOGINFO("Created the Geode Cache Programmatically");
 
   RegionFactoryPtr regionFactory = cachePtr->createRegionFactory(CACHING_PROXY);
 
@@ -85,22 +84,22 @@ void RunDurableClient() {
   // wait for some time to recieve events
   apache::geode::client::millisleep(1000);
 
-  // Close the GemFire Cache with keepalive = true.  Server will queue events
+  // Close the Geode Cache with keepalive = true.  Server will queue events
   // for
   // durable registered keys and will deliver all events when client will
   // reconnect
   // within timeout period and send "readyForEvents()"
   cachePtr->close(true);
 
-  LOGINFO("Closed the GemFire Cache with keepalive as true");
+  LOGINFO("Closed the Geode Cache with keepalive as true");
 }
 void RunFeeder() {
   CacheFactoryPtr cacheFactory = CacheFactory::createCacheFactory();
-  LOGINFO("Feeder connected to the GemFire Distributed System");
+  LOGINFO("Feeder connected to the Geode Distributed System");
 
   CachePtr cachePtr = cacheFactory->create();
 
-  LOGINFO("Created the GemFire Cache");
+  LOGINFO("Created the Geode Cache");
 
   RegionFactoryPtr regionFactory = cachePtr->createRegionFactory(PROXY);
 
@@ -125,10 +124,10 @@ void RunFeeder() {
       "Created Key-1 and Key-2 in region. Durable interest was registered only "
       "for Key-1.");
 
-  // Close the GemFire Cache
+  // Close the Geode Cache
   cachePtr->close();
 
-  LOGINFO("Closed the GemFire Cache");
+  LOGINFO("Closed the Geode Cache");
 }
 
 // The DurableClient QuickStart example.
@@ -146,8 +145,8 @@ int main(int argc, char** argv) {
     return 0;
   }
   // An exception should not occur
-  catch (const Exception& gemfireExcp) {
-    LOGERROR("DurableClient GemFire Exception: %s", gemfireExcp.getMessage());
+  catch (const Exception& geodeExcp) {
+    LOGERROR("DurableClient Geode Exception: %s", geodeExcp.getMessage());
 
     return 1;
   }

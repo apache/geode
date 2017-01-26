@@ -20,7 +20,7 @@
  *
  * This example takes the following steps:
  *
- * 1. Create a GemFire Cache with multiuser enabled.
+ * 1. Create a Geode Cache with multiuser enabled.
  * 2. Creates userCache using user "root". Who is authorized to do get and put
  * operations.
  * 3. Creates userCache using user "writer2". Who is authorized to do only put
@@ -29,10 +29,9 @@
  *
  */
 
-// Include the GemFire library.
+// Include the Geode library.
 #include <gfcpp/GeodeCppCache.hpp>
 
-// Use the "gemfire" namespace.
 using namespace apache::geode::client;
 
 char* getFuncIName = (char*)"MultiGetFunctionI";
@@ -146,17 +145,17 @@ int main(int argc, char** argv) {
     // to do this one need to setup OpenSSL.
     // secProp->insert("security-client-dhalgo", "Blowfish:128");
 
-    // Connect to the GemFire Distributed System using the settings from the
+    // Connect to the Geode Distributed System using the settings from the
     // gfcpp.properties file by default, programatically
     // overriding secProp properties.
 
-    // Create a GemFire Cache.
+    // Create a Geode Cache.
     CacheFactoryPtr cacheFactory = CacheFactory::createCacheFactory(secProp);
 
     CachePtr cachePtr =
         cacheFactory->setMultiuserAuthentication(true)->create();
 
-    LOGINFO("Created the Gemfire Cache with multiuser enable.");
+    LOGINFO("Created the Geode Cache with multiuser enable.");
 
     RegionFactoryPtr regionFactory = cachePtr->createRegionFactory(PROXY);
 
@@ -183,17 +182,17 @@ int main(int argc, char** argv) {
           "get operation.");
     }
 
-    // Close the GemFire Cache.
+    // Close the Geode Cache.
     cachePtr->close();
 
-    LOGINFO("Closed the GemFire Cache");
+    LOGINFO("Closed the Geode Cache");
 
     return 0;
   }
   // An exception should not occur
-  catch (const Exception& gemfireExcp) {
-    LOGERROR("FAILED:MultiuserSecurityExample GemFire Exception: %s",
-             gemfireExcp.getMessage());
+  catch (const Exception& geodeExcp) {
+    LOGERROR("FAILED:MultiuserSecurityExample Geode Exception: %s",
+             geodeExcp.getMessage());
 
     return 1;
   }

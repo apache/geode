@@ -22,7 +22,7 @@
  *
  * 1. Create CacheFactory using the user specified settings or from the
  * gfcpp.properties file by default.
- * 2. Create a GemFire Cache.
+ * 2. Create a Geode Cache.
  * 3. Get the example Regions from the Cache.
  * 4. Perform some operations which should cause exceptions.
  * 5. Close the Cache.
@@ -30,10 +30,9 @@
  *
  */
 
-// Include the GemFire library.
+// Include the Geode library.
 #include <gfcpp/GeodeCppCache.hpp>
 
-// Use the "gemfire" namespace.
 using namespace apache::geode::client;
 
 // The Exceptions QuickStart example.
@@ -48,10 +47,10 @@ int main(int argc, char** argv) {
 
     LOGINFO("Created CacheFactory");
 
-    // Create a GemFire Cache with the "clientExceptions.xml" Cache XML file.
+    // Create a Geode Cache with the "clientExceptions.xml" Cache XML file.
     CachePtr cachePtr = cacheFactory->setSubscriptionEnabled(true)->create();
 
-    LOGINFO("Created the GemFire Cache");
+    LOGINFO("Created the Geode Cache");
 
     // Get the example Regions from the Cache which are declared in the Cache
     // XML file.
@@ -93,9 +92,9 @@ int main(int argc, char** argv) {
       LOGINFO("UNEXPECTED: Put should not have succeeded");
 
       return 1;
-    } catch (const RegionDestroyedException& gemfireExcp) {
+    } catch (const RegionDestroyedException& geodeExcp) {
       LOGINFO("Expected RegionDestroyedException: %s",
-              gemfireExcp.getMessage());
+              geodeExcp.getMessage());
     }
 
     try {
@@ -108,14 +107,14 @@ int main(int argc, char** argv) {
       LOGINFO("UNEXPECTED: Cache create should not have succeeded");
 
       return 1;
-    } catch (const IllegalStateException& gemfireExcp) {
-      LOGINFO("Expected IllegalStateException: %s", gemfireExcp.getMessage());
+    } catch (const IllegalStateException& geodeExcp) {
+      LOGINFO("Expected IllegalStateException: %s", geodeExcp.getMessage());
     }
 
-    // Close the GemFire Cache.
+    // Close the Geode Cache.
     cachePtr->close();
 
-    LOGINFO("Closed the GemFire Cache");
+    LOGINFO("Closed the Geode Cache");
 
     try {
       // Put an Entry into the Region when Cache is already closed.
@@ -124,15 +123,15 @@ int main(int argc, char** argv) {
       LOGINFO("UNEXPECTED: Put should not have succeeded");
 
       return 1;
-    } catch (const RegionDestroyedException& gemfireExcp) {
+    } catch (const RegionDestroyedException& geodeExcp) {
       LOGINFO("Expected RegionDestroyedException: %s",
-              gemfireExcp.getMessage());
+              geodeExcp.getMessage());
     }
 
   }
   // An exception should not occur
-  catch (const Exception& gemfireExcp) {
-    LOGERROR("Exceptions GemFire Exception: %s", gemfireExcp.getMessage());
+  catch (const Exception& geodeExcp) {
+    LOGERROR("Exceptions Geode Exception: %s", geodeExcp.getMessage());
 
     return 1;
   }

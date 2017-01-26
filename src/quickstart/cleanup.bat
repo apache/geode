@@ -1,6 +1,6 @@
 @echo off
 
-echo Deleting GemFire Statistics and Log files...
+echo Deleting Geode Statistics and Log files...
 
 del /q *.gfs
 del /q gfecs\*.*

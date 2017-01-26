@@ -21,7 +21,7 @@
 *
 * This example shows PdxInstanceFactory and PdxInstance usage.
 *
-* 1. Create a GemFire Cache.
+* 1. Create a Geode Cache.
 * 2. Creates the PdxInstanceFactory for Person class.
 * 3. Then creates instance of PdxInstance
 * 4. It does put.
@@ -30,10 +30,9 @@
 *
 */
 
-// Include the GemFire library.
+// Include the Geode library.
 #include <gfcpp/GeodeCppCache.hpp>
 
-// Use the "gemfire" namespace.
 using namespace apache::geode::client;
 
 class Person {
@@ -59,14 +58,14 @@ class Person {
 // The PdxInstance QuickStart example.
 int main(int argc, char** argv) {
   try {
-    // Create a GemFire Cache.
+    // Create a Geode Cache.
     CacheFactoryPtr cacheFactory = CacheFactory::createCacheFactory();
 
     CachePtr cachePtr =
         cacheFactory->set("cache-xml-file", "XMLs/clientPdxInstance.xml")
             ->create();
 
-    LOGINFO("Created the GemFire Cache");
+    LOGINFO("Created the Geode Cache");
 
     // Get the example Region from the Cache which is declared in the Cache XML
     // file.
@@ -116,16 +115,16 @@ int main(int argc, char** argv) {
 
     delete p;
 
-    // Close the GemFire Cache.
+    // Close the Geode Cache.
     cachePtr->close();
 
-    LOGINFO("Closed the GemFire Cache");
+    LOGINFO("Closed the Geode Cache");
 
     return 0;
   }
   // An exception should not occur
-  catch (const Exception& gemfireExcp) {
-    LOGERROR("PdxInstance GemFire Exception: %s", gemfireExcp.getMessage());
+  catch (const Exception& geodeExcp) {
+    LOGERROR("PdxInstance Geode Exception: %s", geodeExcp.getMessage());
 
     return 1;
   }

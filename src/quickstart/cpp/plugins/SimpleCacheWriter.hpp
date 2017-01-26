@@ -19,15 +19,14 @@
  * SimpleCacheWriter QuickStart Example.
  *
  * This is a simple implementation of a Cache Writer
- * It merely prints the events captured from the GemFire Native Client.
+ * It merely prints the events captured from the Geode Native Client.
  *
  */
 
-// Include the GemFire library.
+// Include the Geode library.
 #include <gfcpp/GeodeCppCache.hpp>
 #include <gfcpp/CacheWriter.hpp>
 
-// Use the "gemfire" namespace.
 using namespace apache::geode::client;
 
 // The SimpleCacheWriter class.
