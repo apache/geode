@@ -6,9 +6,9 @@ file(GLOB_RECURSE SOURCES "*.cpp")
 add_definitions(-DBUILD_TESTOBJECT)
 
 if (APPLE)
-    set(DYNAMIC_LIBRARY_PATH DYLD_LIBRARY_PATH=$<TARGET_LINKER_FILE_DIR:gfcppcache>)
+    set(DYNAMIC_LIBRARY_PATH DYLD_LIBRARY_PATH=$<TARGET_LINKER_FILE_DIR:apache-geode>)
 elseif(UNIX)
-    set(DYNAMIC_LIBRARY_PATH LD_LIBRARY_PATH=$<TARGET_LINKER_FILE_DIR:gfcppcache>)
+    set(DYNAMIC_LIBRARY_PATH LD_LIBRARY_PATH=$<TARGET_LINKER_FILE_DIR:apache-geode>)
 endif()
 
 macro(add_pdxautoserializer SOURCES_VAR NAMESPACE CLASS HEADER SUFFIX CLASSNAMESTR)
@@ -63,7 +63,7 @@ set_target_properties(testobject PROPERTIES FOLDER test)
 
 target_link_libraries(testobject
   PUBLIC 
-    gfcppcache
+    apache-geode
     fwk
     pdxobject
     c++11

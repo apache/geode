@@ -10,7 +10,7 @@ target_link_libraries(framework
   PRIVATE
     ACE
   PUBLIC 
-    gfcppcache
+    apache-geode
     xerces-c
 )
 

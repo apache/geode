@@ -7,6 +7,6 @@ add_library(securityImpl SHARED ${SOURCES} CMakeLists.txt.forInstall)
 
 target_link_libraries(securityImpl
   PUBLIC
-    gfcppcache
+    apache-geode
     crypto
 )

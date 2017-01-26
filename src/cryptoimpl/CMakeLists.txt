@@ -9,7 +9,7 @@ target_link_libraries(cryptoImpl
   PRIVATE
     ACE_SSL
   PUBLIC
-   gfcppcache
+   apache-geode
    crypto
    ssl
    c++11

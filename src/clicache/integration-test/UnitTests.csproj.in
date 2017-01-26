@@ -564,7 +564,7 @@
       <Project>{FF9597E3-A4DD-4FDE-871D-B0C66088762F}</Project>
       <Name>SQLiteCLI</Name>
     </ProjectReference>
-    <ProjectReference Include="$(CMAKE_BINARY_DIR)\clicache\src\gfclicache.vcxproj">
+    <ProjectReference Include="$(CMAKE_BINARY_DIR)\clicache\src\Apache.Geode.vcxproj">
       <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
       <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
     </ProjectReference>       

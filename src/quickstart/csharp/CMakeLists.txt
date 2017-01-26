@@ -6,7 +6,7 @@ find_package(NativeClient REQUIRED PATHS ..)
 # Cache the path to the NativeClient product
 set (GFCPP CACHE ${NATIVECLIENT_DIR} PATH REQUIRED)
 
-# Set the .NET Target Framework (Note: This should match the build for gfclicache.)
+# Set the .NET Target Framework (Note: This should match the build for Apache.Geode.)
 set (DOTNET_TARGET_FRAMEWORK_VERSION "v4.5.2")
 
 file(GLOB_RECURSE CSPROJECTS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.csproj.in")

@@ -6,7 +6,7 @@ file(GLOB_RECURSE SOURCES "*.cpp")
 file(GLOB_RECURSE PRIVATE_HEADERS "*.hpp")
 set_source_files_properties(${PRIVATE_HEADERS} PROPERTIES HEADER_FILE_ONLY TRUE)
 
-set(RESOURCES gfclicache.rc)
+set(RESOURCES Apache.Geode.rc)
 
 if(NOT "${STRONG_NAME_PUBLIC_KEY}" STREQUAL "")
   set(STRONG_NAME_PUBLIC_KEY_ATTRIBUTE ", PublicKey=${STRONG_NAME_PUBLIC_KEY}")
@@ -18,15 +18,15 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/impl/AssemblyInfo.cpp.in ${CMAKE_CURR
 #set_source_files_properties(${CONFIGURE_IN_FILES} PROPERTIES LANGUAGE NONE)
 set_source_files_properties(${CONFIGURE_OUT_FILES} PROPERTIES GENERATED TRUE)
 
-add_library(gfclicache SHARED
+add_library(Apache.Geode SHARED
   ${SOURCES}
   ${PRIVATE_HEADERS} ${CONFIGURE_IN_FILES} ${CONFIGURE_OUT_FILES} ${RESOURCES})
-add_dependencies(client-libraries gfclicache)
+add_dependencies(client-libraries Apache.Geode)
 
 #TODO get external project library names
-target_link_libraries(gfclicache
+target_link_libraries(Apache.Geode
   PRIVATE
-    gfcppcache-static
+    apache-geode-static
     psapi
   PUBLIC
     c++11
@@ -41,14 +41,14 @@ include_directories(${CMAKE_SOURCE_DIR}/clicache/include)
 include_directories(${CMAKE_SOURCE_DIR}/clicache/src)
 include_directories(${CMAKE_SOURCE_DIR}/cppcache/src)
 
-set_target_properties(gfclicache PROPERTIES
-  OUTPUT_NAME Apache.Geode.Client
+set_target_properties(Apache.Geode PROPERTIES
+  OUTPUT_NAME Apache.Geode
   VS_DOTNET_TARGET_FRAMEWORK_VERSION "v4.5.2"
   VS_DOTNET_REFERENCES "System;System.Xml")
 
 add_subdirectory(templates)
 
-install(TARGETS gfclicache
+install(TARGETS Apache.Geode
   RUNTIME DESTINATION bin
   ARCHIVE DESTINATION lib
 )

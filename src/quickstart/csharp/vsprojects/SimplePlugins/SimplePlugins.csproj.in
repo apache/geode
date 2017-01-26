@@ -86,7 +86,7 @@
   <ItemGroup>
     <Reference Include="Apache.Geode.Client, Version=9.0.0.0, Culture=neutral&#xD;&#xA; PublicKeyToken=126e6338d9f55e0c, processorArchitecture=x64">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>${NATIVECLIENT_BINARIES_DIR}/Apache.Geode.Client.dll</HintPath>
+      <HintPath>${NATIVECLIENT_BINARIES_DIR}/Apache.Geode.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

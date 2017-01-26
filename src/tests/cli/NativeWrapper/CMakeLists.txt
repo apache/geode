@@ -7,11 +7,11 @@ add_library(NativeWrapper SHARED ${SOURCES})
 
 target_link_libraries(NativeWrapper
   PUBLIC 
-    gfclicache
+    Apache.Geode
     c++11
 )
 
-add_dependencies(NativeWrapper gfclicache)
+add_dependencies(NativeWrapper Apache.Geode)
 
 include_directories(${CMAKE_SOURCE_DIR}/clicache/src)
 set_target_properties(NativeWrapper PROPERTIES FOLDER test/cliTests)

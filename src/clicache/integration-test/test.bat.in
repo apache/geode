@@ -1,6 +1,6 @@
 @echo off
 setlocal
-rem set PATH=%PATH%;$<TARGET_LINKER_FILE_DIR:gfcppcache>
+rem set PATH=%PATH%;$<TARGET_LINKER_FILE_DIR:apache-geode>
 rem set PATH=%PATH%;$<TARGET_LINKER_FILE_DIR:framework>
 rem set PATH=%PATH%;$<TARGET_LINKER_FILE_DIR:testobject>
 rem set PATH=%PATH%;$<TARGET_LINKER_FILE_DIR:SqLiteImpl>

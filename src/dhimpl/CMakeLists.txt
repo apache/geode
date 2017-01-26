@@ -6,7 +6,7 @@ file(GLOB_RECURSE SOURCES "*.cpp")
 add_library(DHImpl SHARED ${SOURCES})
 target_link_libraries(DHImpl
   PUBLIC 
-    gfcppcache
+    apache-geode
     crypto
     c++11
 )

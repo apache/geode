@@ -8,7 +8,7 @@ target_link_libraries(pdxautoserializer
   PRIVATE
     antlr
   PUBLIC
-    gfcppcache
+    apache-geode
     c++11
 )
 

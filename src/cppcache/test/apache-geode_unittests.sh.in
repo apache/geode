@@ -2,7 +2,7 @@
 set -e
 set -o pipefail
 
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$<TARGET_LINKER_FILE_DIR:gfcppcache>
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$<TARGET_LINKER_FILE_DIR:apache-geode>
 export LOG=${UNITTEST}.log
 
 if [ `uname` = "Darwin" ]
