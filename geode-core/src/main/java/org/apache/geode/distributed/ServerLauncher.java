@@ -2484,9 +2484,11 @@ public class ServerLauncher extends AbstractLauncher<String> {
    */
   public static enum Command {
     START("start", "assign-buckets", "disable-default-server", "rebalance", SERVER_BIND_ADDRESS,
-        "server-port", "force", "debug",
-        "help"), STATUS("status", "member", "pid", "dir", "debug", "help"), STOP("stop", "member",
-            "pid", "dir", "debug", "help"), UNSPECIFIED("unspecified"), VERSION("version");
+        "server-port", "force", "debug", "help"),
+    STATUS("status", "member", "pid", "dir", "debug", "help"),
+    STOP("stop", "member", "pid", "dir", "debug", "help"),
+    UNSPECIFIED("unspecified"),
+    VERSION("version");
 
     private final List<String> options;
 

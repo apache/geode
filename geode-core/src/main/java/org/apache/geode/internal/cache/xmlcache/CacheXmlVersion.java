@@ -25,33 +25,22 @@ import java.util.HashMap;
  */
 // TODO future - replace constants in CacheXml with this Enum completely
 public enum CacheXmlVersion {
-  GEMFIRE_3_0(CacheXml.VERSION_3_0, CacheXml.PUBLIC_ID_3_0, CacheXml.SYSTEM_ID_3_0, null,
-      null), GEMFIRE_4_0(CacheXml.VERSION_4_0, CacheXml.PUBLIC_ID_4_0, CacheXml.SYSTEM_ID_4_0, null,
-          null), GEMFIRE_4_1(CacheXml.VERSION_4_1, CacheXml.PUBLIC_ID_4_1, CacheXml.SYSTEM_ID_4_1,
-              null, null), GEMFIRE_5_0(CacheXml.VERSION_5_0, CacheXml.PUBLIC_ID_5_0,
-                  CacheXml.SYSTEM_ID_5_0, null, null), GEMFIRE_5_1(CacheXml.VERSION_5_1,
-                      CacheXml.PUBLIC_ID_5_1, CacheXml.SYSTEM_ID_5_1, null, null), GEMFIRE_5_5(
-                          CacheXml.VERSION_5_5, CacheXml.PUBLIC_ID_5_5, CacheXml.SYSTEM_ID_5_5,
-                          null, null), GEMFIRE_5_7(CacheXml.VERSION_5_7, CacheXml.PUBLIC_ID_5_7,
-                              CacheXml.SYSTEM_ID_5_7, null, null), GEMFIRE_5_8(CacheXml.VERSION_5_8,
-                                  CacheXml.PUBLIC_ID_5_8, CacheXml.SYSTEM_ID_5_8, null,
-                                  null), GEMFIRE_6_0(CacheXml.VERSION_6_0, CacheXml.PUBLIC_ID_6_0,
-                                      CacheXml.SYSTEM_ID_6_0, null, null), GEMFIRE_6_1(
-                                          CacheXml.VERSION_6_1, CacheXml.PUBLIC_ID_6_1,
-                                          CacheXml.SYSTEM_ID_6_1, null, null), GEMFIRE_6_5(
-                                              CacheXml.VERSION_6_5, CacheXml.PUBLIC_ID_6_5,
-                                              CacheXml.SYSTEM_ID_6_5, null, null), GEMFIRE_6_6(
-                                                  CacheXml.VERSION_6_6, CacheXml.PUBLIC_ID_6_6,
-                                                  CacheXml.SYSTEM_ID_6_6, null, null), GEMFIRE_7_0(
-                                                      CacheXml.VERSION_7_0, CacheXml.PUBLIC_ID_7_0,
-                                                      CacheXml.SYSTEM_ID_7_0, null,
-                                                      null), GEMFIRE_8_0(CacheXml.VERSION_8_0,
-                                                          CacheXml.PUBLIC_ID_8_0,
-                                                          CacheXml.SYSTEM_ID_8_0, null,
-                                                          null), GEMFIRE_8_1(CacheXml.VERSION_8_1,
-                                                              null, null,
-                                                              CacheXml.SCHEMA_8_1_LOCATION,
-                                                              CacheXml.GEMFIRE_NAMESPACE),
+  GEMFIRE_3_0(CacheXml.VERSION_3_0, CacheXml.PUBLIC_ID_3_0, CacheXml.SYSTEM_ID_3_0, null, null),
+  GEMFIRE_4_0(CacheXml.VERSION_4_0, CacheXml.PUBLIC_ID_4_0, CacheXml.SYSTEM_ID_4_0, null, null),
+  GEMFIRE_4_1(CacheXml.VERSION_4_1, CacheXml.PUBLIC_ID_4_1, CacheXml.SYSTEM_ID_4_1, null, null),
+  GEMFIRE_5_0(CacheXml.VERSION_5_0, CacheXml.PUBLIC_ID_5_0, CacheXml.SYSTEM_ID_5_0, null, null),
+  GEMFIRE_5_1(CacheXml.VERSION_5_1, CacheXml.PUBLIC_ID_5_1, CacheXml.SYSTEM_ID_5_1, null, null),
+  GEMFIRE_5_5(CacheXml.VERSION_5_5, CacheXml.PUBLIC_ID_5_5, CacheXml.SYSTEM_ID_5_5, null, null),
+  GEMFIRE_5_7(CacheXml.VERSION_5_7, CacheXml.PUBLIC_ID_5_7, CacheXml.SYSTEM_ID_5_7, null, null),
+  GEMFIRE_5_8(CacheXml.VERSION_5_8, CacheXml.PUBLIC_ID_5_8, CacheXml.SYSTEM_ID_5_8, null, null),
+  GEMFIRE_6_0(CacheXml.VERSION_6_0, CacheXml.PUBLIC_ID_6_0, CacheXml.SYSTEM_ID_6_0, null, null),
+  GEMFIRE_6_1(CacheXml.VERSION_6_1, CacheXml.PUBLIC_ID_6_1, CacheXml.SYSTEM_ID_6_1, null, null),
+  GEMFIRE_6_5(CacheXml.VERSION_6_5, CacheXml.PUBLIC_ID_6_5, CacheXml.SYSTEM_ID_6_5, null, null),
+  GEMFIRE_6_6(CacheXml.VERSION_6_6, CacheXml.PUBLIC_ID_6_6, CacheXml.SYSTEM_ID_6_6, null, null),
+  GEMFIRE_7_0(CacheXml.VERSION_7_0, CacheXml.PUBLIC_ID_7_0, CacheXml.SYSTEM_ID_7_0, null, null),
+  GEMFIRE_8_0(CacheXml.VERSION_8_0, CacheXml.PUBLIC_ID_8_0, CacheXml.SYSTEM_ID_8_0, null, null),
+  GEMFIRE_8_1(CacheXml.VERSION_8_1, null, null, CacheXml.SCHEMA_8_1_LOCATION,
+      CacheXml.GEMFIRE_NAMESPACE),
 
   // Ordinality matters here, so keep the 1.0 version after the 8.x versions
   // Version 1.0 is the start of Geode versions. In terms of releases, Geode 1.0 > GemFire 8.x.

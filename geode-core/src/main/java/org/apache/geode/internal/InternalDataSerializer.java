@@ -195,8 +195,9 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    * @since GemFire 6.6.2
    */
   private static enum SERIALIZATION_VERSION {
-    vINVALID, v660, // includes 6.6.0.x and 6.6.1.x. Note that no serialization changes were made in
-                    // 6.6 until 6.6.2
+    vINVALID,
+    v660, // includes 6.6.0.x and 6.6.1.x. Note that no serialization changes were made in
+          // 6.6 until 6.6.2
     v662 // 6.6.2.x or later
     // NOTE if you add a new constant make sure and update "latestVersion".
   }

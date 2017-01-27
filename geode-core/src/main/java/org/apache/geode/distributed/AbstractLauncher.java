@@ -853,10 +853,10 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
    * as a Cache Server, a Locator or a Manager).
    */
   public static enum Status {
-    NOT_RESPONDING(LocalizedStrings.Launcher_Status_NOT_RESPONDING.toLocalizedString()), ONLINE(
-        LocalizedStrings.Launcher_Status_ONLINE.toLocalizedString()), STARTING(
-            LocalizedStrings.Launcher_Status_STARTING.toLocalizedString()), STOPPED(
-                LocalizedStrings.Launcher_Status_STOPPED.toLocalizedString());
+    NOT_RESPONDING(LocalizedStrings.Launcher_Status_NOT_RESPONDING.toLocalizedString()),
+    ONLINE(LocalizedStrings.Launcher_Status_ONLINE.toLocalizedString()),
+    STARTING(LocalizedStrings.Launcher_Status_STARTING.toLocalizedString()),
+    STOPPED(LocalizedStrings.Launcher_Status_STOPPED.toLocalizedString());
 
     private final String description;
 
