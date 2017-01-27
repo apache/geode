@@ -96,8 +96,8 @@ public class GemFireDeadlockDetector {
     }
 
     ((AbstractExecution) execution).setIgnoreDepartedMembers(true);
-    collector = (ResultCollector<HashSet<Dependency>, Serializable>) execution
-        .execute(new CollectDependencyFunction());
+    collector =
+        execution.<HashSet<Dependency>, Serializable>execute(new CollectDependencyFunction());
 
     // Wait for results
     collector.getResult();

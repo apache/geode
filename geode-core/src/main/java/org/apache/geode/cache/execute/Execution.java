@@ -81,6 +81,8 @@ public interface Execution {
    * {@link FunctionService#getFunction(String)} on the executing member.
    * 
    * @param functionId the {@link Function#getId()} of the function
+   * @param <T> single execution result type
+   * @param <S> result type
    * @throws LowMemoryException if the {@link Function#optimizeForWrite()} returns true and there is
    *         a low memory condition
    * @return ResultCollector to retrieve the results received. This is different object than the
@@ -89,7 +91,7 @@ public interface Execution {
    * 
    * @since GemFire 6.0
    */
-  public ResultCollector<?, ?> execute(String functionId) throws FunctionException;
+  public <T, S> ResultCollector<T, S> execute(String functionId) throws FunctionException;
 
   /**
    * Executes the function instance provided.
@@ -98,6 +100,8 @@ public interface Execution {
    * executing member.
    * 
    * @param function instance to execute
+   * @param <T> single execution result type
+   * @param <S> result type
    * @throws LowMemoryException if the {@link Function#optimizeForWrite()} returns true and there is
    *         a low memory condition
    * @return ResultCollector to retrieve the results received. This is different object than the
@@ -106,7 +110,7 @@ public interface Execution {
    * 
    * @since GemFire 6.0
    */
-  public ResultCollector<?, ?> execute(Function function) throws FunctionException;
+  public <T, S> ResultCollector<T, S> execute(Function function) throws FunctionException;
 
   /**
    * Executes the function using its {@linkplain Function#getId() id}
