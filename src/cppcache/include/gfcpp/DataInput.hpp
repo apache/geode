@@ -635,13 +635,12 @@ class CPPCACHE_EXPORT DataInput {
       csPtr = CacheableStringPtr(dynamic_cast<CacheableString*>(
           CacheableString::createDeserializable()));
       csPtr.ptr()->fromData(*this);
-    } else if (compId == apache::geode::client::GeodeTypeIds::
-                             CacheableASCIIStringHuge) {
+    } else if (compId ==
+               apache::geode::client::GeodeTypeIds::CacheableASCIIStringHuge) {
       csPtr = CacheableStringPtr(dynamic_cast<CacheableString*>(
           CacheableString::createDeserializableHuge()));
       csPtr.ptr()->fromData(*this);
-    } else if (compId ==
-               apache::geode::client::GeodeTypeIds::CacheableString) {
+    } else if (compId == apache::geode::client::GeodeTypeIds::CacheableString) {
       csPtr = CacheableStringPtr(dynamic_cast<CacheableString*>(
           CacheableString::createUTFDeserializable()));
       csPtr.ptr()->fromData(*this);

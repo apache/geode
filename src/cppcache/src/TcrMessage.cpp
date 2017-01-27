@@ -94,8 +94,7 @@ void TcrMessage::writeInterestResultPolicyPart(InterestResultPolicy policy) {
   m_request->writeInt((int32_t)3);           // size
   m_request->write(static_cast<int8_t>(1));  // isObject
   m_request->write(static_cast<int8_t>(GeodeTypeIdsImpl::FixedIDByte));
-  m_request->write(
-      static_cast<int8_t>(GeodeTypeIdsImpl::InterestResultPolicy));
+  m_request->write(static_cast<int8_t>(GeodeTypeIdsImpl::InterestResultPolicy));
   m_request->write(static_cast<int8_t>(policy.getOrdinal()));
 }
 
@@ -482,9 +481,8 @@ SerializablePtr TcrMessage::readCacheableString(DataInput& input, int lenObj) {
       writeInt(const_cast<uint8_t*>(input.currentBufferPosition()),
                static_cast<uint16_t>(lenObj));
       input.readDirectObject(
-          sPtr,
-          static_cast<int8_t>(
-              apache::geode::client::GeodeTypeIds::CacheableASCIIString));
+          sPtr, static_cast<int8_t>(
+                    apache::geode::client::GeodeTypeIds::CacheableASCIIString));
     } else {
       input.rewindCursor(4);
       writeInt(const_cast<uint8_t*>(input.currentBufferPosition()),
@@ -507,9 +505,8 @@ SerializablePtr TcrMessage::readCacheableString(DataInput& input, int lenObj) {
       writeInt(const_cast<uint8_t*>(input.currentBufferPosition()),
                static_cast<uint32_t>(lenObj));
       input.readDirectObject(
-          sPtr,
-          static_cast<int8_t>(
-              apache::geode::client::GeodeTypeIds::CacheableStringHuge));
+          sPtr, static_cast<int8_t>(
+                    apache::geode::client::GeodeTypeIds::CacheableStringHuge));
     }
   }
 
@@ -536,8 +533,8 @@ SerializablePtr TcrMessage::readCacheableBytes(DataInput& input, int lenObj) {
   }
 
   input.readDirectObject(
-      sPtr, static_cast<int8_t>(
-                apache::geode::client::GeodeTypeIds::CacheableBytes));
+      sPtr,
+      static_cast<int8_t>(apache::geode::client::GeodeTypeIds::CacheableBytes));
 
   return sPtr;
 }
@@ -1359,8 +1356,8 @@ void TcrMessage::handleByteArrayResponse(const char* bytearray, int32_t len,
         int8_t bits8;
         input.read(&bits8);  // isObj;
         input.read(&bits8);  // cacheable vector typeid
-        LOGDEBUG("Expected typeID %d, got %d",
-                 GeodeTypeIds::CacheableArrayList, bits8);
+        LOGDEBUG("Expected typeID %d, got %d", GeodeTypeIds::CacheableArrayList,
+                 bits8);
 
         input.readArrayLen(&bits32);  // array length
         LOGDEBUG("Array length = %d ", bits32);

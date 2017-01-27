@@ -29,8 +29,7 @@ class GatewayEventCallbackArgument : public Serializable {
   virtual int32_t classId() const { return 0; }
 
   virtual int8_t typeId() const {
-    return static_cast<int8_t>(
-        GeodeTypeIdsImpl::GatewayEventCallbackArgument);
+    return static_cast<int8_t>(GeodeTypeIdsImpl::GatewayEventCallbackArgument);
   }
 
   virtual int8_t DSFID() const {

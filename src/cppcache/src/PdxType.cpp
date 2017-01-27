@@ -92,9 +92,8 @@ PdxType::PdxType(const char* pdxDomainClassName, bool isLocal)
 }
 
 void PdxType::toData(DataOutput& output) const {
-  output.write(
-      static_cast<int8_t>(GeodeTypeIdsImpl::DataSerializable));  // 45
-  output.write(static_cast<int8_t>(GeodeTypeIdsImpl::Class));    // 43
+  output.write(static_cast<int8_t>(GeodeTypeIdsImpl::DataSerializable));  // 45
+  output.write(static_cast<int8_t>(GeodeTypeIdsImpl::Class));             // 43
   output.write(static_cast<int8_t>(GeodeTypeIds::CacheableASCIIString));
   output.writeUTF(m_javaPdxClass);
 
