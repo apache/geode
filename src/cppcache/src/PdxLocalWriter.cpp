@@ -266,8 +266,7 @@ PdxWriterPtr PdxLocalWriter::writeString(const char* fieldName,
                                          const char* value) {
   addOffset();
   if (value == NULL) {
-    m_dataOutput->write(
-        static_cast<int8_t>(GeodeTypeIds::CacheableNullString));
+    m_dataOutput->write(static_cast<int8_t>(GeodeTypeIds::CacheableNullString));
   } else {
     int32_t len = DataOutput::getEncodedLength(value);
     if (len > 0xffff) {
@@ -288,8 +287,7 @@ PdxWriterPtr PdxLocalWriter::writeWideString(const char* fieldName,
                                              const wchar_t* value) {
   addOffset();
   if (value == NULL) {
-    m_dataOutput->write(
-        static_cast<int8_t>(GeodeTypeIds::CacheableNullString));
+    m_dataOutput->write(static_cast<int8_t>(GeodeTypeIds::CacheableNullString));
   } else {
     int32_t len = DataOutput::getEncodedLength(value);
     if (len > 0xffff) {
@@ -308,8 +306,7 @@ PdxWriterPtr PdxLocalWriter::writeWideString(const char* fieldName,
 
 PdxWriterPtr PdxLocalWriter::writeStringwithoutOffset(const char* value) {
   if (value == NULL) {
-    m_dataOutput->write(
-        static_cast<int8_t>(GeodeTypeIds::CacheableNullString));
+    m_dataOutput->write(static_cast<int8_t>(GeodeTypeIds::CacheableNullString));
   } else {
     int32_t len = DataOutput::getEncodedLength(value);
     if (len > 0xffff) {
@@ -329,8 +326,7 @@ PdxWriterPtr PdxLocalWriter::writeStringwithoutOffset(const char* value) {
 PdxWriterPtr PdxLocalWriter::writeWideStringwithoutOffset(
     const wchar_t* value) {
   if (value == NULL) {
-    m_dataOutput->write(
-        static_cast<int8_t>(GeodeTypeIds::CacheableNullString));
+    m_dataOutput->write(static_cast<int8_t>(GeodeTypeIds::CacheableNullString));
   } else {
     int32_t len = DataOutput::getEncodedLength(value);
     if (len > 0xffff) {

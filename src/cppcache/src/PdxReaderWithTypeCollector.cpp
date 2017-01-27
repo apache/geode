@@ -621,8 +621,7 @@ CacheableDatePtr PdxReaderWithTypeCollector::readDate(const char* fieldName) {
 
 void PdxReaderWithTypeCollector::readCollection(
     const char* fieldName, CacheableArrayListPtr& collection) {
-  checkType(fieldName,
-            apache::geode::client::GeodeTypeIds::CacheableArrayList,
+  checkType(fieldName, apache::geode::client::GeodeTypeIds::CacheableArrayList,
             "Collection");
   m_newPdxType->addVariableLengthTypeField(
       fieldName, "Collection",

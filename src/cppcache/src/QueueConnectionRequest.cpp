@@ -25,8 +25,7 @@ void QueueConnectionRequest::toData(DataOutput& output) const {
   // output.writeObject(abe);// changed
   output.writeNativeString(m_serverGp.c_str());
   output.write(static_cast<int8_t>(GeodeTypeIdsImpl::FixedIDByte));
-  output.write(
-      static_cast<int8_t>(GeodeTypeIdsImpl::ClientProxyMembershipId));
+  output.write(static_cast<int8_t>(GeodeTypeIdsImpl::ClientProxyMembershipId));
   uint32_t buffLen;
   const char* buff = m_membershipID.getDSMemberId(buffLen);
   output.writeBytes((uint8_t*)buff, buffLen);

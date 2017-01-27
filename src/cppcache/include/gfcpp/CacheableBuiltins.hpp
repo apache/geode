@@ -381,14 +381,13 @@ class CacheableContainerType : public Cacheable, public TBase {
 #pragma warning(disable : 4231)
 #endif
 
-#define _GF_CACHEABLE_KEY_TYPE_DEF_(p, k, sz)                             \
-  extern const char tName_##k[];                                          \
-  extern const char tStr_##k[];                                           \
-  TEMPLATE_EXPORT                                                         \
-  CacheableKeyType<p, GeodeTypeIds::k, tName_##k, tStr_##k, sz>;        \
-  typedef CacheableKeyType<p, GeodeTypeIds::k, tName_##k, tStr_##k, sz> \
-      _##k;                                                               \
-  class CPPCACHE_EXPORT k;                                                \
+#define _GF_CACHEABLE_KEY_TYPE_DEF_(p, k, sz)                                 \
+  extern const char tName_##k[];                                              \
+  extern const char tStr_##k[];                                               \
+  TEMPLATE_EXPORT                                                             \
+  CacheableKeyType<p, GeodeTypeIds::k, tName_##k, tStr_##k, sz>;              \
+  typedef CacheableKeyType<p, GeodeTypeIds::k, tName_##k, tStr_##k, sz> _##k; \
+  class CPPCACHE_EXPORT k;                                                    \
   typedef SharedPtr<k> k##Ptr;
 
 // use a class instead of typedef for bug #283
@@ -411,10 +410,10 @@ class CacheableContainerType : public Cacheable, public TBase {
   inline CacheableKeyPtr createKey(const p value) { return k::create(value); } \
   inline CacheablePtr createValue(const p value) { return k::create(value); }
 
-#define _GF_CACHEABLE_ARRAY_TYPE_DEF_(p, c)                 \
+#define _GF_CACHEABLE_ARRAY_TYPE_DEF_(p, c)               \
   TEMPLATE_EXPORT CacheableArrayType<p, GeodeTypeIds::c>; \
   typedef CacheableArrayType<p, GeodeTypeIds::c> _##c;    \
-  class CPPCACHE_EXPORT c;                                  \
+  class CPPCACHE_EXPORT c;                                \
   typedef SharedArrayPtr<p, GeodeTypeIds::c> c##Ptr;
 
 // use a class instead of typedef for bug #283
@@ -458,10 +457,10 @@ class CacheableContainerType : public Cacheable, public TBase {
     }                                                                        \
   };
 
-#define _GF_CACHEABLE_CONTAINER_TYPE_DEF_(p, c)                 \
+#define _GF_CACHEABLE_CONTAINER_TYPE_DEF_(p, c)               \
   TEMPLATE_EXPORT CacheableContainerType<p, GeodeTypeIds::c>; \
   typedef CacheableContainerType<p, GeodeTypeIds::c> _##c;    \
-  class CPPCACHE_EXPORT c;                                      \
+  class CPPCACHE_EXPORT c;                                    \
   typedef SharedPtr<c> c##Ptr;
 
 // use a class instead of typedef for bug #283

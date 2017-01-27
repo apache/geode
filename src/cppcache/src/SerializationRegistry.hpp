@@ -86,8 +86,7 @@ class CPPCACHE_EXPORT SerializationRegistry {
           break;
       }
 
-      if (static_cast<int32_t>(typeId) ==
-          GeodeTypeIdsImpl::CacheableUserData) {
+      if (static_cast<int32_t>(typeId) == GeodeTypeIdsImpl::CacheableUserData) {
         output.write(static_cast<int8_t>(obj->classId()));
       } else if (static_cast<int32_t>(typeId) ==
                  GeodeTypeIdsImpl::CacheableUserData2) {

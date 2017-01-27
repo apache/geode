@@ -64,9 +64,7 @@ class ClientProxyMembershipID : public DSMemberForVersionStamp {
   void toData(DataOutput& output) const;
   Serializable* fromData(DataInput& input);
   int32_t classId() const { return 0; }
-  int8_t typeId() const {
-    return GeodeTypeIdsImpl::InternalDistributedMember;
-  }
+  int8_t typeId() const { return GeodeTypeIdsImpl::InternalDistributedMember; }
   uint32_t objectSize() const { return 0; }
   int8_t DSFID() const {
     return static_cast<int8_t>(GeodeTypeIdsImpl::FixedIDByte);

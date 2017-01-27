@@ -273,8 +273,7 @@ bool TcrConnection::InitTcrConnection(
             requireServerAuth ? "is" : "not");
 
         // Send the symmetric key algorithm name string
-        handShakeMsg.write(
-            static_cast<int8_t>(GeodeTypeIds::CacheableString));
+        handShakeMsg.write(static_cast<int8_t>(GeodeTypeIds::CacheableString));
         handShakeMsg.writeASCII(tmpSystemProperties->securityClientDhAlgo());
 
         // Send the client's DH public key to the server
