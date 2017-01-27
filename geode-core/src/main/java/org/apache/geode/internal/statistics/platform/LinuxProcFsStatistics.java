@@ -26,7 +26,13 @@ import java.util.regex.Pattern;
 
 public class LinuxProcFsStatistics {
   private enum CPU {
-    USER, NICE, SYSTEM, IDLE, IOWAIT, IRQ, SOFTIRQ,
+    USER,
+    NICE,
+    SYSTEM,
+    IDLE,
+    IOWAIT,
+    IRQ,
+    SOFTIRQ,
     /** stands for aggregation of all columns not present in the enum list */
     OTHER
   }

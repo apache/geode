@@ -22,11 +22,13 @@ package org.apache.geode.internal.process.signal;
  * @since GemFire 7.0
  */
 public enum SignalType {
-  CONTROL("Other signals that are used by the JVM for control purposes."), ERROR(
-      "The JVM raises a SIGABRT if it detects a condition from which it cannot recover."), EXCEPTION(
-          "The operating system synchronously raises an appropriate exception signal whenever an unrecoverable condition occurs."), INTERRUPT(
-              "Interrupt signals are raised asynchronously, from outside a JVM process, to request shut down."), UNKNOWN(
-                  "Unknown");
+  CONTROL("Other signals that are used by the JVM for control purposes."),
+  ERROR("The JVM raises a SIGABRT if it detects a condition from which it cannot recover."),
+  EXCEPTION(
+      "The operating system synchronously raises an appropriate exception signal whenever an unrecoverable condition occurs."),
+  INTERRUPT(
+      "Interrupt signals are raised asynchronously, from outside a JVM process, to request shut down."),
+  UNKNOWN("Unknown");
 
   private final String description;
 

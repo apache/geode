@@ -24,9 +24,19 @@ import java.util.Set;
  */
 public class TransactionalOperation {
   static public enum ServerRegionOperation {
-    CONTAINS_KEY, CONTAINS_VALUE, CONTAINS_VALUE_FOR_KEY, DESTROY, // includes REMOVE(k,v)
-    EXECUTE_FUNCTION, GET, GET_ENTRY, GET_ALL, INVALIDATE, KEY_SET, PUT, // includes PUT_IF_ABSENT
-    PUT_ALL, REMOVE_ALL;
+    CONTAINS_KEY,
+    CONTAINS_VALUE,
+    CONTAINS_VALUE_FOR_KEY,
+    DESTROY, // includes REMOVE(k,v)
+    EXECUTE_FUNCTION,
+    GET,
+    GET_ENTRY,
+    GET_ALL,
+    INVALIDATE,
+    KEY_SET,
+    PUT, // includes PUT_IF_ABSENT
+    PUT_ALL,
+    REMOVE_ALL;
 
     /**
      * @param op

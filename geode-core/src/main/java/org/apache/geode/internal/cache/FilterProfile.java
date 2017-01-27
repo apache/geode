@@ -89,7 +89,20 @@ public class FilterProfile implements DataSerializableFixedID {
 
   /** enumeration of distributed profile operations */
   static enum operationType {
-    REGISTER_KEY, REGISTER_KEYS, REGISTER_PATTERN, REGISTER_FILTER, UNREGISTER_KEY, UNREGISTER_KEYS, UNREGISTER_PATTERN, UNREGISTER_FILTER, CLEAR, HAS_CQ, REGISTER_CQ, CLOSE_CQ, STOP_CQ, SET_CQ_STATE
+    REGISTER_KEY,
+    REGISTER_KEYS,
+    REGISTER_PATTERN,
+    REGISTER_FILTER,
+    UNREGISTER_KEY,
+    UNREGISTER_KEYS,
+    UNREGISTER_PATTERN,
+    UNREGISTER_FILTER,
+    CLEAR,
+    HAS_CQ,
+    REGISTER_CQ,
+    CLOSE_CQ,
+    STOP_CQ,
+    SET_CQ_STATE
   }
 
   /**

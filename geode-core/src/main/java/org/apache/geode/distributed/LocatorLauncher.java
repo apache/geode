@@ -1843,10 +1843,11 @@ public final class LocatorLauncher extends AbstractLauncher<String> {
    * An enumerated type representing valid commands to the Locator launcher.
    */
   public static enum Command {
-    START("start", "bind-address", "hostname-for-clients", "port", "force", "debug",
-        "help"), STATUS("status", "bind-address", "port", "member", "pid", "dir", "debug",
-            "help"), STOP("stop", "member", "pid", "dir", "debug",
-                "help"), VERSION("version"), UNSPECIFIED("unspecified");
+    START("start", "bind-address", "hostname-for-clients", "port", "force", "debug", "help"),
+    STATUS("status", "bind-address", "port", "member", "pid", "dir", "debug", "help"),
+    STOP("stop", "member", "pid", "dir", "debug", "help"),
+    VERSION("version"),
+    UNSPECIFIED("unspecified");
 
     private final List<String> options;
 
