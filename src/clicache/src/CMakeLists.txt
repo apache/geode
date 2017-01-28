@@ -26,7 +26,7 @@ add_dependencies(client-libraries gfclicache)
 #TODO get external project library names
 target_link_libraries(gfclicache
   PRIVATE
-    gfcppcache-static
+    apache-geode-static
     psapi
   PUBLIC
     c++11

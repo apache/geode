@@ -127,15 +127,15 @@ std::string CppCacheLibrary::getProductLibDir() {
   for (int i = 0; i < PATH_MAX && path[i] != 0; i++) {
     path[i] = ::tolower(path[i]);
   }
-  dllNamePtr = strstr(path, "gfcppcache.dll");
+  dllNamePtr = strstr(path, "apache-geode.dll");
   if (dllNamePtr == NULL) {
-    dllNamePtr = strstr(path, "gfcppcache_g.dll");
+    dllNamePtr = strstr(path, "apache-geode_g.dll");
     if (dllNamePtr == NULL) {
       dllNamePtr = strstr(path, "Apache.Geode.dll");
     }
   }
 #else
-  dllNamePtr = strstr(path, "libgfcppcache");
+  dllNamePtr = strstr(path, "libapache-geode");
 #endif
   std::string libDir;
   if (dllNamePtr != NULL) {

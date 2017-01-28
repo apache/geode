@@ -22,7 +22,7 @@ if [ "$platform" == "SunOS" ]; then
       -I$GFCPP/include \
       -L$GFCPP/$LIBDIR \
       -R$GFCPP/$LIBDIR \
-      *.cpp -o userobjects -lgfcppcache -lrt -lcollector -lkstat
+      *.cpp -o userobjects -lapache-geode -lrt -lcollector -lkstat
 elif [ "$platform" == "Linux" ]; then
   if [ $is64bit -eq 1 ]; then
     ARCH="-m64"
@@ -33,7 +33,7 @@ elif [ "$platform" == "Linux" ]; then
       -D_REENTRANT $OPT -Wall -Werror $ARCH \
       -I$GFCPP/include \
       -Xlinker -rpath -Xlinker $GFCPP/$LIBDIR -L$GFCPP/$LIBDIR \
-      *.cpp -o userobjects -lgfcppcache
+      *.cpp -o userobjects -lapache-geode
 else
   echo "This script is not supported on this platform."
   exit 1

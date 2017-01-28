@@ -1,6 +1,6 @@
 @echo off
 setlocal
-set PATH=%PATH%;$<TARGET_LINKER_FILE_DIR:gfcppcache>
+set PATH=%PATH%;$<TARGET_LINKER_FILE_DIR:apache-geode>
 set LOG=${UNITTEST}.log
 
 rem In Windows, pipes to tee return tee's exit code instead of executable's

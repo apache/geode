@@ -22,7 +22,7 @@ if [ "$platform" == "SunOS" ]; then
       -I$GFCPP/include \
       -L$GFCPP/$LIBDIR \
       -R$GFCPP/$LIBDIR \
-      -lgfcppcache -lrt -lpthread -lkstat \
+      -lapache-geode -lrt -lpthread -lkstat \
       CacheRunner.cpp CommandReader.cpp Test*.cpp Po*.cpp -o cacheRunner 
 elif [ "$platform" == "Linux" ]; then
   if [ $is64bit -eq 1 ]; then
@@ -33,7 +33,7 @@ elif [ "$platform" == "Linux" ]; then
   g++ \
       -D_REENTRANT -D_EXAMPLE $OPT -Wall $ARCH \
       -I$GFCPP/include \
-      -Wl,-rpath,$GFCPP/$LIBDIR -L$GFCPP/$LIBDIR -lgfcppcache \
+      -Wl,-rpath,$GFCPP/$LIBDIR -L$GFCPP/$LIBDIR -lapache-geode \
       CacheRunner.cpp CommandReader.cpp Test*.cpp Po*.cpp -o cacheRunner 
 else
   echo "This script is not supported on this platform."

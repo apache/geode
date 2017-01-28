@@ -25,7 +25,7 @@ if [ "$platform" == "SunOS" ]; then
       -I$GFCPP/include \
       -L$GFCPP/$LIBDIR \
       -R$GFCPP/$LIBDIR \
-      -lgfcppcache -lrt -lpthread -lkstat"
+      -lapache-geode -lrt -lpthread -lkstat"
 elif [ "$platform" == "Linux" ]; then
   if [ $is64bit -eq 1 ]; then
     ARCH="-m64"
@@ -36,7 +36,7 @@ elif [ "$platform" == "Linux" ]; then
   CXX_FLAGS="-D_REENTRANT $OPT -Wall $ARCH \
       -I$GFCPP/include \
       -Xlinker -rpath -Xlinker $GFCPP/$LIBDIR -L$GFCPP/$LIBDIR \
-      -lgfcppcache"
+      -lapache-geode"
 else
   echo "This script is not supported on this platform."
   exit 1

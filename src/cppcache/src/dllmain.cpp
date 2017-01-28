@@ -64,15 +64,15 @@ LIBEXP void DllMainGetPath(char *result, int maxLen) {
     result[0] = '\0';
     return;
   }
-  HMODULE libgfcppcache_module = GetModuleHandle("gfcppcache.dll");
-  if (libgfcppcache_module == 0) {
-    libgfcppcache_module = GetModuleHandle("gfcppcache_g.dll");
-    if (libgfcppcache_module == 0) {
-      libgfcppcache_module = GetModuleHandle("Apache.Geode.dll");
+  HMODULE module = GetModuleHandle("apache-geode.dll");
+  if (module == 0) {
+    module = GetModuleHandle("apache-geode_g.dll");
+    if (module == 0) {
+      module = GetModuleHandle("Apache.Geode.dll");
     }
   }
-  if (libgfcppcache_module != 0) {
-    GetModuleFileName(libgfcppcache_module, result, maxLen);
+  if (module != 0) {
+    GetModuleFileName(module, result, maxLen);
   } else {
     result[0] = '\0';
   }

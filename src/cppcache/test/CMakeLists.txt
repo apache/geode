@@ -1,14 +1,14 @@
 cmake_minimum_required( VERSION 3.3 )
-project(gfcppcache_unittests)
+project(apache-geode_unittests)
 
 file(GLOB_RECURSE SOURCES "*.cpp")
 
-set(UNITTEST gfcppcache_unittests)
+set(UNITTEST apache-geode_unittests)
 add_executable(${UNITTEST} ${SOURCES})
 add_dependencies(unit-tests ${UNITTEST})
 
 target_link_libraries(${UNITTEST}
-  gfcppcache-static
+  apache-geode-static
   gtest
   gtest_main
   c++11
