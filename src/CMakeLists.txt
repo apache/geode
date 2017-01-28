@@ -92,8 +92,15 @@ endif()
 file(GLOB_RECURSE ALL_CXX_SOURCE_FILES *.[chi]pp *.[chi]xx *.cc *.hh *.ii *.[CHI])
 find_program(CLANG_FORMAT "clang-format")
 if(CLANG_FORMAT)
-  add_custom_target(format COMMAND ${CLANG_FORMAT} -i -style=file -fallback-style=Google ${ALL_CXX_SOURCE_FILES})
+  add_custom_target(format)
   set_target_properties(format PROPERTIES EXCLUDE_FROM_ALL TRUE EXCLUDE_FROM_DEFAULT_BUILD TRUE)
+  
+  foreach(_file ${ALL_CXX_SOURCE_FILES})
+    add_custom_command(TARGET format PRE_BUILD COMMAND ${CLANG_FORMAT} -i -style=file -fallback-style=Google ${_file})
+  endforeach()
+  
+  #add_custom_target(format COMMAND ${CLANG_FORMAT} -i -style=file -fallback-style=Google ${ALL_CXX_SOURCE_FILES})
+  #set_target_properties(format PROPERTIES EXCLUDE_FROM_ALL TRUE EXCLUDE_FROM_DEFAULT_BUILD TRUE)
 endif()
 
 include(CPack)
