@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo Deleting GemFire Statistics and Log files...
+echo Deleting Geode Statistics and Log files...
 
 rm -f *.gfs
 rm -f gfecs/*

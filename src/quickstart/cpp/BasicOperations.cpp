@@ -20,7 +20,7 @@
  *
  * This example takes the following steps:
  *
- * 1. Create a GemFire Cache.
+ * 1. Create a Geode Cache.
  * 2. Create the example Region Programmatically.
  * 3.a. Put Entries (Key and Value pairs) into the Region.
  * 3.b. If in 64 bit mode put over 4 GB data to demonstrate capacity.
@@ -31,21 +31,21 @@
  *
  */
 
-// Include the GemFire library.
+// Include the Geode library.
 #include <gfcpp/GeodeCppCache.hpp>
 
-// Use the "gemfire" namespace.
+// Use the "geode" namespace.
 using namespace apache::geode::client;
 
 // The BasicOperations QuickStart example.
 int main(int argc, char** argv) {
   try {
-    // Create a GemFire Cache.
+    // Create a Geode Cache.
     CacheFactoryPtr cacheFactory = CacheFactory::createCacheFactory();
 
     CachePtr cachePtr = cacheFactory->create();
 
-    LOGINFO("Created the GemFire Cache");
+    LOGINFO("Created the Geode Cache");
 
     RegionFactoryPtr regionFactory =
         cachePtr->createRegionFactory(CACHING_PROXY);
@@ -101,16 +101,16 @@ int main(int argc, char** argv) {
 
     LOGINFO("Destroyed the second Entry in the Region");
 
-    // Close the GemFire Cache.
+    // Close the Geode Cache.
     cachePtr->close();
 
-    LOGINFO("Closed the GemFire Cache");
+    LOGINFO("Closed the Geode Cache");
 
     return 0;
   }
   // An exception should not occur
-  catch (const Exception& gemfireExcp) {
-    LOGERROR("BasicOperations GemFire Exception: %s", gemfireExcp.getMessage());
+  catch (const Exception& geodeExcp) {
+    LOGERROR("BasicOperations Geode Exception: %s", geodeExcp.getMessage());
 
     return 1;
   }

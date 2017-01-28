@@ -20,7 +20,7 @@
  * This example creates two pools programatically.
  * This example takes the following steps:
  *
- * 1. Create a GemFire Cache.
+ * 1. Create a Geode Cache.
  * 2. Now it creates Pool with poolName1.
  * 3. Adds server(localhost:40404) to pool factory.
  * 4. Creates region "root1" with pool.
@@ -35,10 +35,10 @@
  *
  */
 
-// Include the GemFire library.
+// Include the Geode library.
 #include <gfcpp/GeodeCppCache.hpp>
 
-// Use the "gemfire" namespace.
+// Use the "geode" namespace.
 using namespace apache::geode::client;
 
 void distributedsystem(CachePtr cachePtr, char *hostname, int port,
@@ -105,29 +105,28 @@ int main(int argc, char **argv) {
   try {
     CacheFactoryPtr cacheFactory = CacheFactory::createCacheFactory();
 
-    LOGINFO("Connected to the GemFire Distributed System");
+    LOGINFO("Connected to the Geode Distributed System");
 
-    // Create a GemFire Cache.
+    // Create a Geode Cache.
     CachePtr cachePtr = cacheFactory->create();
 
-    LOGINFO("Created the GemFire Cache");
+    LOGINFO("Created the Geode Cache");
 
     distributedsystem(cachePtr, (char *)"localhost", 40404, (char *)"poolName1",
                       (char *)"exampleRegion1");
     distributedsystem(cachePtr, (char *)"localhost", 40405, (char *)"poolName2",
                       (char *)"exampleRegion2");
 
-    // Close the GemFire Cache.
+    // Close the Geode Cache.
     cachePtr->close();
 
-    LOGINFO("Closed the GemFire Cache");
+    LOGINFO("Closed the Geode Cache");
 
     return 0;
   }
   // An exception should not occur
-  catch (const Exception &gemfireExcp) {
-    LOGERROR("DistributedSystem GemFire Exception: %s",
-             gemfireExcp.getMessage());
+  catch (const Exception &geodeExcp) {
+    LOGERROR("DistributedSystem Geode Exception: %s", geodeExcp.getMessage());
 
     return 1;
   }

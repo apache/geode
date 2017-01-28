@@ -22,7 +22,7 @@
  *
  * 1. Create CacheFactory using the settings from the gfcpp.properties file by
  * default.
- * 2. Create a GemFire Cache.
+ * 2. Create a Geode Cache.
  * 3. Create Poolfactory with endpoint and then create pool using poolfactory.
  * 4. Create a Example Region programmatically.
  * 5. Put Entries (Key and Value pairs) into the Region.
@@ -33,10 +33,10 @@
  *
  */
 
-// Include the GemFire library.
+// Include the Geode library.
 #include <gfcpp/GeodeCppCache.hpp>
 
-// Use the "gemfire" namespace.
+// Use the "geode" namespace.
 using namespace apache::geode::client;
 
 // The PoolWithEndpoints QuickStart example.
@@ -48,10 +48,10 @@ int main(int argc, char** argv) {
 
     LOGINFO("Created CacheFactory");
 
-    // Create a GemFire Cache.
+    // Create a Geode Cache.
     CachePtr cachePtr = cacheFactory->setSubscriptionEnabled(true)->create();
 
-    LOGINFO("Created the GemFire Cache");
+    LOGINFO("Created the Geode Cache");
 
     // Create Poolfactory with endpoint and then create pool using poolfactory.
     PoolFactoryPtr pfact = PoolManager::createFactory();
@@ -101,18 +101,17 @@ int main(int argc, char** argv) {
 
     LOGINFO("Destroyed the second Entry in the Region");
 
-    // Close the GemFire Cache.
+    // Close the Geode Cache.
     cachePtr->close();
 
-    LOGINFO("Closed the GemFire Cache");
+    LOGINFO("Closed the Geode Cache");
 
     return 0;
 
   }
   // An exception should not occur
-  catch (const Exception& gemfireExcp) {
-    LOGERROR("PoolWithEndpoints GemFire Exception: %s",
-             gemfireExcp.getMessage());
+  catch (const Exception& geodeExcp) {
+    LOGERROR("PoolWithEndpoints Geode Exception: %s", geodeExcp.getMessage());
 
     return 1;
   }

@@ -20,7 +20,7 @@
  *
  * This example takes the following steps:
  *
- * 1. Create a GemFire Cache with redundancy level = 1.
+ * 1. Create a Geode Cache with redundancy level = 1.
  * 2. Get the example Region from the Cache.
  * 3. Call registerKeys() on the Region.
  * 4. Call registerRegex() on the Region.
@@ -30,10 +30,10 @@
  *
  */
 
-// Include the GemFire library.
+// Include the Geode library.
 #include <gfcpp/GeodeCppCache.hpp>
 
-// Use the "gemfire" namespace.
+// Use the "geode" namespace.
 using namespace apache::geode::client;
 
 // The HA QuickStart example.
@@ -41,9 +41,9 @@ int main(int argc, char** argv) {
   try {
     CacheFactoryPtr cacheFactory = CacheFactory::createCacheFactory();
 
-    LOGINFO("Connected to the GemFire Distributed System");
+    LOGINFO("Connected to the Geode Distributed System");
 
-    // Create a GemFire Cache with the "clientHACache.xml" Cache XML file.
+    // Create a Geode Cache with the "clientHACache.xml" Cache XML file.
     CachePtr cachePtr =
         cacheFactory->set("cache-xml-file", "XMLs/clientHACache.xml")
             ->addServer("localhost", 40404)
@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
             ->setSubscriptionEnabled(true)
             ->create();
 
-    LOGINFO("Created the GemFire Cache");
+    LOGINFO("Created the Geode Cache");
 
     // Get the example Region from the Cache which is declared in the Cache XML
     // file.
@@ -102,16 +102,16 @@ int main(int argc, char** argv) {
 
     LOGINFO("Unregistered keys");
 
-    // Close the GemFire Cache.
+    // Close the Geode Cache.
     cachePtr->close();
 
-    LOGINFO("Closed the GemFire Cache");
+    LOGINFO("Closed the Geode Cache");
 
     return 0;
   }
   // An exception should not occur
-  catch (const Exception& gemfireExcp) {
-    LOGERROR("HACache GemFire Exception: %s", gemfireExcp.getMessage());
+  catch (const Exception& geodeExcp) {
+    LOGERROR("HACache Geode Exception: %s", geodeExcp.getMessage());
 
     return 1;
   }

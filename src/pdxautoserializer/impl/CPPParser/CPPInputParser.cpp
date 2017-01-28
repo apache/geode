@@ -145,9 +145,9 @@ void CPPHeaderParser::endClassDefinition() {
       if (findMember != m_arraySizeRefMap.end()) {
         memberIterator->m_type.m_kind |= TypeKind::ARRAY;
         memberIterator->m_type.m_nameOrSize = findMember->second;
-        Log::info(ModuleName, "Using \"" + findMember->second +
-                                  "\" as size of array \"" +
-                                  memberIterator->m_name + '"');
+        Log::info(ModuleName,
+                  "Using \"" + findMember->second + "\" as size of array \"" +
+                      memberIterator->m_name + '"');
       }
 
       StringMap::const_iterator findMemberElem =
@@ -155,9 +155,9 @@ void CPPHeaderParser::endClassDefinition() {
       if (findMemberElem != m_arrayElemSizeRefMap.end()) {
         memberIterator->m_type.m_kind |= TypeKind::ARRAY;
         memberIterator->m_type.m_nameOfArrayElemSize = findMemberElem->second;
-        Log::info(ModuleName, "Using \"" + findMemberElem->second +
-                                  "\" as size of array \"" +
-                                  memberIterator->m_name + '"');
+        Log::info(ModuleName,
+                  "Using \"" + findMemberElem->second +
+                      "\" as size of array \"" + memberIterator->m_name + '"');
       }
     }
   }

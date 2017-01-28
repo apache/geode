@@ -95,7 +95,7 @@ AtomicStatisticsImpl::AtomicStatisticsImpl(StatisticsType* typeArg,
 
     if (intCount > 0) {
       intStorage =
-          new ACE_Atomic_Op<ACE_Recursive_Thread_Mutex, int32>[ intCount ];
+          new ACE_Atomic_Op<ACE_Recursive_Thread_Mutex, int32>[intCount];
       for (int32 i = 0; i < intCount; i++) {
         intStorage[i] = 0;  // Un-initialized state
       }
@@ -105,7 +105,7 @@ AtomicStatisticsImpl::AtomicStatisticsImpl(StatisticsType* typeArg,
     }
     if (longCount > 0) {
       longStorage =
-          new ACE_Atomic_Op<ACE_Recursive_Thread_Mutex, int64>[ longCount ];
+          new ACE_Atomic_Op<ACE_Recursive_Thread_Mutex, int64>[longCount];
       for (int32 i = 0; i < longCount; i++) {
         longStorage[i] = 0;  // Un-initialized state
       }
@@ -115,7 +115,7 @@ AtomicStatisticsImpl::AtomicStatisticsImpl(StatisticsType* typeArg,
     }
     if (doubleCount > 0) {
       doubleStorage =
-          new ACE_Atomic_Op<ACE_Recursive_Thread_Mutex, double>[ doubleCount ];
+          new ACE_Atomic_Op<ACE_Recursive_Thread_Mutex, double>[doubleCount];
       for (int32 i = 0; i < doubleCount; i++) {
         doubleStorage[i] = 0;  // Un-initialized state
       }
