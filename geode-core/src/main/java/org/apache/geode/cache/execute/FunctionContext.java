@@ -54,6 +54,9 @@ public interface FunctionContext {
    * Returns the ResultSender which is used to add the ability for an execute method to send a
    * single result back, or break its result into multiple pieces and send each piece back to the
    * calling thread's ResultCollector.
+   *
+   * The returned ResultSender is only valid for the duration of the function call. If the Function
+   * needs to return a result, the result should be sent before the function exits.
    * 
    * @return ResultSender
    * @since GemFire 6.0
