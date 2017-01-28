@@ -3,7 +3,7 @@
  *
  * This example takes the following steps:
  *
- * 1. Create a GemFire Cache.
+ * 1. Create a Geode Cache.
  * 2. Create the example Region Programmatically.
  * 3. Populate some objects on the Region.
  * 4. Create Execute Objects
@@ -12,10 +12,10 @@
  *
  */
 
-// Include the GemFire library.
+// Include the Geode library.
 #include <gfcpp/GeodeCppCache.hpp>
 
-// Use the "gemfire" namespace.
+// Use the "geode" namespace.
 using namespace apache::geode::client;
 
 char* getFuncIName = (char*)"MultiGetFunctionI";
@@ -31,12 +31,12 @@ int main(int argc, char** argv) {
     CacheFactoryPtr cacheFactory = CacheFactory::createCacheFactory();
     LOGINFO("Created CacheFactory");
 
-    // Create a GemFire Cache.
+    // Create a Geode Cache.
     CachePtr cachePtr = cacheFactory->setSubscriptionEnabled(true)
                             ->addServer("localhost", 50505)
                             ->addServer("localhost", 40404)
                             ->create();
-    LOGINFO("Created the GemFire Cache");
+    LOGINFO("Created the Geode Cache");
 
     // Create the example Region Programmatically
     RegionPtr regPtr0 = cachePtr->createRegionFactory(CACHING_PROXY)
@@ -159,16 +159,15 @@ int main(int argc, char** argv) {
     getResult = false;
     exc->withFilter(routingObj)->withArgs(args)->execute(putFuncName, 15);
 
-    // Close the GemFire Cache.
+    // Close the Geode Cache.
     cachePtr->close();
-    LOGINFO("Closed the GemFire Cache");
+    LOGINFO("Closed the Geode Cache");
 
     return 0;
   }
   // An exception should not occur
-  catch (const Exception& gemfireExcp) {
-    LOGERROR("Function Execution GemFire Exception: %s",
-             gemfireExcp.getMessage());
+  catch (const Exception& geodeExcp) {
+    LOGERROR("Function Execution Geode Exception: %s", geodeExcp.getMessage());
 
     return 1;
   }

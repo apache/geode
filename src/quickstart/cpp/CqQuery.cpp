@@ -20,7 +20,7 @@
  *
  * This example takes the following steps:
  *
- * 1. Create a GemFire Cache Programmatically.
+ * 1. Create a Geode Cache Programmatically.
  * 2. Create the example Region Programmatically.
  * 3. Populate some query objects on the Region.
  * 4. Register a cqQuery listener
@@ -29,14 +29,14 @@
  *
  */
 
-// Include the GemFire library.
+// Include the Geode library.
 #include <gfcpp/GeodeCppCache.hpp>
 
 // Include our Query objects, viz. Portfolio and Position.
 #include "queryobjects/Portfolio.hpp"
 #include "queryobjects/Position.hpp"
 
-// Use the "gemfire" namespace.
+// Use the "geode" namespace.
 using namespace apache::geode::client;
 
 // Use the "testobject" namespace for the query objects.
@@ -77,14 +77,14 @@ class MyCqListener : public CqListener {
 // The CqQuery QuickStart example.
 int main(int argc, char** argv) {
   try {
-    // Create a GemFire Cache Programmatically.
+    // Create a Geode Cache Programmatically.
     CacheFactoryPtr cacheFactory = CacheFactory::createCacheFactory();
 
     CachePtr cachePtr = cacheFactory->addServer("localhost", 50505)
                             ->setSubscriptionEnabled(true)
                             ->create();
 
-    LOGINFO("Created the GemFire Cache");
+    LOGINFO("Created the Geode Cache");
 
     RegionFactoryPtr regionFactory = cachePtr->createRegionFactory(PROXY);
 
@@ -158,21 +158,21 @@ int main(int argc, char** argv) {
         printf("query pulled bad object\n");
       }
     }
-    // Stop the GemFire Continuous query.
+    // Stop the Geode Continuous query.
     qry->stop();
-    // Close the GemFire Continuous query.
+    // Close the Geode Continuous query.
     qry->close();
 
-    // Close the GemFire Cache.
+    // Close the Geode Cache.
     cachePtr->close();
 
-    LOGINFO("Closed the GemFire Cache");
+    LOGINFO("Closed the Geode Cache");
 
     return 0;
   }
   // An exception should not occur
-  catch (const Exception& gemfireExcp) {
-    LOGERROR("CqQuery GemFire Exception: %s", gemfireExcp.getMessage());
+  catch (const Exception& geodeExcp) {
+    LOGERROR("CqQuery Geode Exception: %s", geodeExcp.getMessage());
 
     return 1;
   }

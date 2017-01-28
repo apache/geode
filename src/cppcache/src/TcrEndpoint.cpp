@@ -916,8 +916,9 @@ GfErrType TcrEndpoint::sendRequestWithRetry(
           LOGFINE(
               "Creating a new connection when connection-pool-size system "
               "property set to 0");
-          if ((error = createNewConnection(
-                   conn, false, false, DistributedSystem::getSystemProperties()
+          if ((error =
+                   createNewConnection(conn, false, false,
+                                       DistributedSystem::getSystemProperties()
                                            ->connectTimeout())) != GF_NOERR) {
             epFailure = true;
             continue;

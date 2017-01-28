@@ -191,10 +191,11 @@ class CPPCACHE_EXPORT TcrConnection {
             uint32_t sendTimeoutSec = DEFAULT_WRITE_TIMEOUT,
             bool checkConnected = true);
 
-  void send(uint32_t& timeSpent, const char* buffer, int len,
-            uint32_t sendTimeoutSec = DEFAULT_WRITE_TIMEOUT,
-            bool checkConnected = true, int32_t notPublicApiWithTimeout =
-                                            -2 /*NOT_PUBLIC_API_WITH_TIMEOUT*/);
+  void send(
+      uint32_t& timeSpent, const char* buffer, int len,
+      uint32_t sendTimeoutSec = DEFAULT_WRITE_TIMEOUT,
+      bool checkConnected = true,
+      int32_t notPublicApiWithTimeout = -2 /*NOT_PUBLIC_API_WITH_TIMEOUT*/);
 
   /**
   * This method is for receiving client notification. It will read 2 times as

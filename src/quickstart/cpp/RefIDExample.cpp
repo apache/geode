@@ -21,7 +21,7 @@
  * refid.
  * This example takes the following steps:
  *
- * 1. Create a GemFire Cache.
+ * 1. Create a Geode Cache.
  * 2. Now it creates 2 Pools with the names poolName1, poolName2 respectively.
  * 3. Sets the region attribute using refid.
  * 4. Gets the region "root1" with poolName1, and region "root2" with poolName2.
@@ -34,16 +34,16 @@
  *
  */
 
-// Include the GemFire library.
+// Include the Geode library.
 #include <gfcpp/GeodeCppCache.hpp>
 
-// Use the "gemfire" namespace.
+// Use the "geode" namespace.
 using namespace apache::geode::client;
 
 // The RefIDExample QuickStart example.
 int main(int argc, char** argv) {
   try {
-    // Create a GemFire Cache using XMLs/clientRefIDExample.xml.
+    // Create a Geode Cache using XMLs/clientRefIDExample.xml.
     PropertiesPtr prptr = Properties::create();
     prptr->insert("cache-xml-file", "XMLs/clientRefIDExample.xml");
 
@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
 
     CachePtr cachePtr = cacheFactory->create();
 
-    LOGINFO("Created the GemFire Cache");
+    LOGINFO("Created the Geode Cache");
 
     // get the root1 Region.
     RegionPtr regionPtr1 = cachePtr->getRegion("root1");
@@ -110,16 +110,16 @@ int main(int argc, char** argv) {
 
     LOGINFO("Destroyed the second Entry in both the Regions");
 
-    // Close the GemFire Cache.
+    // Close the Geode Cache.
     cachePtr->close();
 
-    LOGINFO("Closed the GemFire Cache");
+    LOGINFO("Closed the Geode Cache");
 
     return 0;
   }
   // An exception should not occur
-  catch (const Exception& gemfireExcp) {
-    LOGERROR("RefIDExample GemFire Exception: %s", gemfireExcp.getMessage());
+  catch (const Exception& geodeExcp) {
+    LOGERROR("RefIDExample Geode Exception: %s", geodeExcp.getMessage());
 
     return 1;
   }

@@ -40,17 +40,18 @@ char* OnServerHAExceptionFunction = (char*)"OnServerHAExceptionFunction";
 char* OnServerHAShutdownFunction = (char*)"OnServerHAShutdownFunction";
 
 char* RegionOperationsHAFunction = (char*)"RegionOperationsHAFunction";
-#define verifyGetResults()                                                 \
-  bool found = false;                                                      \
-  for (int j = 0; j < 34; j++) {                                           \
-    if (j % 2 == 0) continue;                                              \
-    sprintf(buf, "VALUE--%d", j);                                          \
-    if (strcmp(buf, dynCast<CacheableStringPtr>(resultList->operator[](i)) \
-                        ->asChar()) == 0) {                                \
-      found = true;                                                        \
-      break;                                                               \
-    }                                                                      \
-  }                                                                        \
+#define verifyGetResults()                                            \
+  bool found = false;                                                 \
+  for (int j = 0; j < 34; j++) {                                      \
+    if (j % 2 == 0) continue;                                         \
+    sprintf(buf, "VALUE--%d", j);                                     \
+    if (strcmp(buf,                                                   \
+               dynCast<CacheableStringPtr>(resultList->operator[](i)) \
+                   ->asChar()) == 0) {                                \
+      found = true;                                                   \
+      break;                                                          \
+    }                                                                 \
+  }                                                                   \
   ASSERT(found, "this returned value is invalid");
 
 #define verifyPutResults()                   \

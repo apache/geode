@@ -418,44 +418,44 @@ class CacheableContainerType : public Cacheable, public TBase {
   typedef SharedArrayPtr<p, GemfireTypeIds::c> c##Ptr;
 
 // use a class instead of typedef for bug #283
-#define _GF_CACHEABLE_ARRAY_TYPE_(p, c)                                      \
-  class CPPCACHE_EXPORT c : public _##c {                                    \
-   protected:                                                                \
-    inline c() : _##c() {}                                                   \
-    inline c(int32_t length) : _##c(length) {}                               \
-    inline c(p* value, int32_t length) : _##c(value, length) {}              \
-    inline c(const p* value, int32_t length, bool copy)                      \
-        : _##c(value, length, true) {}                                       \
-                                                                             \
-   private:                                                                  \
-    /* Private to disable copy constructor and assignment operator. */       \
-    c(const c& other);                                                       \
-    c& operator=(const c& other);                                            \
-                                                                             \
-   public:                                                                   \
-    /** Factory function registered with serialization registry. */          \
-    static Serializable* createDeserializable() { return new c(); }          \
-    /** Factory function to create a new default instance. */                \
-    inline static c##Ptr create() { return c##Ptr(new c()); }                \
-    /** Factory function to create a cacheable array of given size. */       \
-    inline static c##Ptr create(int32_t length) {                            \
-      return c##Ptr(new c(length));                                          \
-    }                                                                        \
-    /** Create a cacheable array copying from the given array. */            \
-    inline static c##Ptr create(const p* value, int32_t length) {            \
-      return (value != NULL ? c##Ptr(new c(value, length, true)) : NULLPTR); \
-    }                                                                        \
-    /**                                                                      \
-     * Create a cacheable array taking ownership of the given array          \
-     * without creating a copy.                                              \
-     *                                                                       \
-     * Note that the application has to ensure that the given array is       \
-     * not deleted (apart from this class) and is allocated on the heap      \
-     * using the "new" operator.                                             \
-     */                                                                      \
-    inline static c##Ptr createNoCopy(p* value, int32_t length) {            \
-      return (value != NULL ? c##Ptr(new c(value, length)) : NULLPTR);       \
-    }                                                                        \
+#define _GF_CACHEABLE_ARRAY_TYPE_(p, c)                                        \
+  class CPPCACHE_EXPORT c : public _##c {                                      \
+   protected:                                                                  \
+    inline c() : _##c() {}                                                     \
+    inline c(int32_t length) : _##c(length) {}                                 \
+    inline c(p* value, int32_t length) : _##c(value, length) {}                \
+    inline c(const p* value, int32_t length, bool copy)                        \
+        : _##c(value, length, true) {}                                         \
+                                                                               \
+   private:                                                                    \
+    /* Private to disable copy constructor and assignment operator. */         \
+    c(const c& other);                                                         \
+    c& operator=(const c& other);                                              \
+                                                                               \
+   public:                                                                     \
+    /** Factory function registered with serialization registry. */            \
+    static Serializable* createDeserializable() { return new c(); }            \
+    /** Factory function to create a new default instance. */                  \
+    inline static c##Ptr create() { return c##Ptr(new c()); }                  \
+    /** Factory function to create a cacheable array of given size. */         \
+    inline static c##Ptr create(int32_t length) {                              \
+      return c##Ptr(new c(length));                                            \
+    }                                                                          \
+    /** Create a cacheable array copying from the given array. */              \
+    inline static c##Ptr create(const p* value, int32_t length) {              \
+      return (value != NULL ? c##Ptr(new c(value, length, true)) : NULLPTR);   \
+    }                                                                          \
+    /**                                                                      \ \
+     * Create a cacheable array taking ownership of the given array          \ \
+     * without creating a copy.                                              \ \
+     *                                                                       \ \
+     * Note that the application has to ensure that the given array is       \ \
+     * not deleted (apart from this class) and is allocated on the heap      \ \
+     * using the "new" operator.                                             \ \
+     */                                                                        \
+    inline static c##Ptr createNoCopy(p* value, int32_t length) {              \
+      return (value != NULL ? c##Ptr(new c(value, length)) : NULLPTR);         \
+    }                                                                          \
   };
 
 #define _GF_CACHEABLE_CONTAINER_TYPE_DEF_(p, c)                 \

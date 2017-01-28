@@ -58,8 +58,9 @@ char* FETimeOut = (char*)"FunctionExecutionTimeOut";
   for (int j = 0; j < 34; j++) {                                              \
     if (j % 2 == 0) continue;                                                 \
     sprintf(buf, "VALUE--%d", j);                                             \
-    if (strcmp(buf, dynCast<CacheableStringPtr>(resultList->operator[](i))    \
-                        ->asChar()) == 0) {                                   \
+    if (strcmp(buf,                                                           \
+               dynCast<CacheableStringPtr>(resultList->operator[](i))         \
+                   ->asChar()) == 0) {                                        \
       LOGINFO(                                                                \
           "buf = %s "                                                         \
           "dynCast<CacheableStringPtr>(resultList->operator[](i))->asChar() " \
@@ -77,8 +78,9 @@ char* FETimeOut = (char*)"FunctionExecutionTimeOut";
   for (int j = 0; j < 34; j++) {                                              \
     if (j % 2 == 0) continue;                                                 \
     sprintf(buf, "KEY--%d", j);                                               \
-    if (strcmp(buf, dynCast<CacheableStringPtr>(resultList->operator[](i))    \
-                        ->asChar()) == 0) {                                   \
+    if (strcmp(buf,                                                           \
+               dynCast<CacheableStringPtr>(resultList->operator[](i))         \
+                   ->asChar()) == 0) {                                        \
       LOGINFO(                                                                \
           "buf = %s "                                                         \
           "dynCast<CacheableStringPtr>(resultList->operator[](i))->asChar() " \

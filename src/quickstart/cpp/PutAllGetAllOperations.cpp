@@ -20,7 +20,7 @@
  *
  * This example takes the following steps:
  *
- * 1. Create a GemFire Cache using CacheFactory. By default it will connect to
+ * 1. Create a Geode Cache using CacheFactory. By default it will connect to
  * "localhost" at port 40404".
  * 2. Create a Example Region.
  * 3. PutAll Entries (Key and Value pairs) into the Region.
@@ -29,20 +29,20 @@
  *
  */
 
-// Include the GemFire library.
+// Include the Geode library.
 #include <gfcpp/GeodeCppCache.hpp>
 
-// Use the "gemfire" namespace.
+// Use the "geode" namespace.
 using namespace apache::geode::client;
 
 // The PutAllGetAllOperations QuickStart example.
 int main(int argc, char** argv) {
   try {
-    // Create a GemFire Cache using CacheFactory. By default it will connect to
+    // Create a Geode Cache using CacheFactory. By default it will connect to
     // "localhost" at port 40404".
     CachePtr cachePtr = CacheFactory::createCacheFactory()->create();
 
-    LOGINFO("Created the GemFire Cache");
+    LOGINFO("Created the Geode Cache");
 
     // Set Attributes for the region.
     RegionFactoryPtr regionFactory =
@@ -79,18 +79,18 @@ int main(int argc, char** argv) {
 
     LOGINFO("Obtained 100 entries from the Region");
 
-    // Close the GemFire Cache.
+    // Close the Geode Cache.
     cachePtr->close();
 
-    LOGINFO("Closed the GemFire Cache");
+    LOGINFO("Closed the Geode Cache");
 
     return 0;
 
   }
   // An exception should not occur
-  catch (const Exception& gemfireExcp) {
-    LOGERROR("PutAllGetAllOperations GemFire Exception: %s",
-             gemfireExcp.getMessage());
+  catch (const Exception& geodeExcp) {
+    LOGERROR("PutAllGetAllOperations Geode Exception: %s",
+             geodeExcp.getMessage());
 
     return 1;
   }

@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-// Include the GemFire library.
+// Include the Geode library.
 
 /*
  * The Delta QuickStart Example.
  *
  * This example takes the following steps:
  *
- * 1. Create a GemFire Cache.
+ * 1. Create a Geode Cache.
  * 2. Get the example Region from the Cache.
  * 3. Put an Entry into the Region.
  * 4. Set delta for a value.
@@ -38,14 +38,14 @@
 
 #include "deltaobjects/DeltaExample.hpp"
 
-// Use the "gemfire" namespace.
+// Use the "geode" namespace.
 using namespace apache::geode::client;
 
 // The Delta QuickStart example.
 typedef SharedPtr<DeltaExample> DeltaExamplePtr;
 int main(int argc, char** argv) {
   try {
-    // Create a GemFire Cache.
+    // Create a Geode Cache.
     PropertiesPtr prptr = Properties::create();
     prptr->insert("cache-xml-file", "XMLs/clientDelta.xml");
 
@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
 
     CachePtr cachePtr = cacheFactory->create();
 
-    LOGINFO("Created the GemFire Cache");
+    LOGINFO("Created the Geode Cache");
 
     // get the example Region.
     RegionPtr regPtr = cachePtr->getRegion("exampleRegion");
@@ -95,14 +95,14 @@ int main(int argc, char** argv) {
 
     cachePtr->close();
 
-    LOGINFO("Closed the GemFire Cache");
+    LOGINFO("Closed the Geode Cache");
 
     return 0;
   }
   // An exception should not occur
 
-  catch (const Exception& gemfireExcp) {
-    LOGERROR("Delta GemFire Exception: %s", gemfireExcp.getMessage());
+  catch (const Exception& geodeExcp) {
+    LOGERROR("Delta Geode Exception: %s", geodeExcp.getMessage());
 
     return 1;
   }

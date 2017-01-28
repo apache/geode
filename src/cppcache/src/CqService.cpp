@@ -263,9 +263,10 @@ void CqService::executeCqs(VectorOfCqQuery& cqs, bool afterFailover) {
           cq->execute();
         }
       } catch (QueryException& qe) {
-        LOGFINE("%s", ("Failed to execute the CQ, CqName : " + cqName +
-                       " Error : " + qe.getMessage())
-                          .c_str());
+        LOGFINE("%s",
+                ("Failed to execute the CQ, CqName : " + cqName + " Error : " +
+                 qe.getMessage())
+                    .c_str());
       } catch (CqClosedException& cce) {
         LOGFINE(("Failed to execute the CQ, CqName : " + cqName + " Error : " +
                  cce.getMessage())

@@ -21,7 +21,7 @@
 *
 * This example shows PdxSerializer usage.
 *
-* 1. Create a GemFire Cache.
+* 1. Create a Geode Cache.
 * 2. Get the Person from the Cache.
 * 3. Populate some query Person objects on the Region.
 * 4. Get the pool, get the Query Service from Pool. Pool is define in
@@ -33,10 +33,10 @@
 *
 */
 
-// Include the GemFire library.
+// Include the Geode library.
 #include <gfcpp/GeodeCppCache.hpp>
 
-// Use the "gemfire" namespace.
+// Use the "geode" namespace.
 using namespace apache::geode::client;
 
 static const char* CLASSNAME = "com.example.Person";
@@ -142,15 +142,15 @@ class PersonPdxSerializer : public PdxSerializer {
 // without having corresponding java classes at server.
 int main(int argc, char** argv) {
   try {
-    // Create a GemFire Cache.
+    // Create a Geode Cache.
     CacheFactoryPtr cacheFactory = CacheFactory::createCacheFactory();
 
-    // Create a GemFire Cache with the "clientPdxSerializer.xml" Cache XML file.
+    // Create a Geode Cache with the "clientPdxSerializer.xml" Cache XML file.
     CachePtr cachePtr =
         cacheFactory->set("cache-xml-file", "XMLs/clientPdxSerializer.xml")
             ->create();
 
-    LOGINFO("Created the GemFire Cache");
+    LOGINFO("Created the Geode Cache");
 
     // Get the example Region from the Cache which is declared in the Cache XML
     // file.
@@ -231,16 +231,16 @@ int main(int argc, char** argv) {
 
     LOGINFO("Region existsValue() returned %s", existsValue ? "true" : "false");
 
-    // Close the GemFire Cache.
+    // Close the Geode Cache.
     cachePtr->close();
 
-    LOGINFO("Closed the GemFire Cache");
+    LOGINFO("Closed the Geode Cache");
 
     return 0;
   }
   // An exception should not occur
-  catch (const Exception& gemfireExcp) {
-    LOGERROR("PdxSerializer GemFire Exception: %s", gemfireExcp.getMessage());
+  catch (const Exception& geodeExcp) {
+    LOGERROR("PdxSerializer Geode Exception: %s", geodeExcp.getMessage());
 
     return 1;
   }

@@ -22,7 +22,7 @@
  *
  * 1. Create CacheFactory using the user specified properties or from the
  * gfcpp.properties file by default.
- * 2. Create a GemFire Cache.
+ * 2. Create a Geode Cache.
  * 3. Get the Portfolios Region from the Pool.
  * 4. Populate some query objects on the Region.
  * 5. Get the Query Service from cache.
@@ -32,14 +32,14 @@
  *
  */
 
-// Include the GemFire library.
+// Include the Geode library.
 #include <gfcpp/GeodeCppCache.hpp>
 
 // Include our Query objects, viz. Portfolio and Position.
 #include "queryobjects/Portfolio.hpp"
 #include "queryobjects/Position.hpp"
 
-// Use the "gemfire" namespace.
+// Use the "geode" namespace.
 using namespace apache::geode::client;
 
 // Use the "testobject" namespace for the query objects.
@@ -89,10 +89,10 @@ int main(int argc, char** argv) {
 
     LOGINFO("Created CacheFactory");
 
-    // Create a GemFire Cache with the "clientPoolCqQuery.xml" Cache XML file.
+    // Create a Geode Cache with the "clientPoolCqQuery.xml" Cache XML file.
     CachePtr cachePtr = cacheFactory->create();
 
-    LOGINFO("Created the GemFire Cache");
+    LOGINFO("Created the Geode Cache");
 
     // Get the Portfolios Region from the Cache which is declared in the Cache
     // XML file.
@@ -168,23 +168,23 @@ int main(int argc, char** argv) {
       }
     }
 
-    // Stop the GemFire Continuous query.
+    // Stop the Geode Continuous query.
     qry->stop();
 
-    // Close the GemFire Continuous query.
+    // Close the Geode Continuous query.
     qry->close();
 
-    // Close the GemFire Cache.
+    // Close the Geode Cache.
     cachePtr->close();
 
-    LOGINFO("Closed the GemFire Cache");
+    LOGINFO("Closed the Geode Cache");
 
     return 0;
 
   }
   // An exception should not occur
-  catch (const Exception& gemfireExcp) {
-    LOGERROR("PoolCqQuery GemFire Exception: %s", gemfireExcp.getMessage());
+  catch (const Exception& geodeExcp) {
+    LOGERROR("PoolCqQuery Geode Exception: %s", geodeExcp.getMessage());
 
     return 1;
   }
