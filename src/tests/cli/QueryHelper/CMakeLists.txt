@@ -8,7 +8,7 @@ add_library(QueryWrapper SHARED ${SOURCES})
 #TODO get external project library names
 target_link_libraries(QueryWrapper
   PUBLIC 
-    gfclicache
+    Apache.Geode
     c++11
 )
 

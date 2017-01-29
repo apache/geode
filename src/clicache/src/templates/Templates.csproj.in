@@ -83,7 +83,7 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="$(CMAKE_BINARY_DIR)\clicache\src\gfclicache.vcxproj">
+    <ProjectReference Include="$(CMAKE_BINARY_DIR)\clicache\src\Apache.Geode.vcxproj">
       <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
       <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
     </ProjectReference>

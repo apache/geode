@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.4)
 project(nativeclient.clicache.templates)
 
-# Set the .NET Target Framework (Note: This should match the build for gfclicache.)
+# Set the .NET Target Framework (Note: This should match the build for Apache.Geode.)
 set (DOTNET_TARGET_FRAMEWORK_VERSION "v4.5.2")
 
 

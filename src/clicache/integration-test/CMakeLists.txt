@@ -9,7 +9,7 @@ else()
   set (NUNIT_CONSOLE "nunit-console-x86")
 endif()
 
-# Set the .NET Target Framework (Note: This should match the build for gfclicache.)
+# Set the .NET Target Framework (Note: This should match the build for Apache.Geode.)
 set (DOTNET_TARGET_FRAMEWORK_VERSION "v4.5.2")
 
 foreach(var CMAKE_CURRENT_SOURCE_DIR CMAKE_SOURCE_DIR CMAKE_BINARY_DIR CMAKE_CURRENT_BINARY_DIR)

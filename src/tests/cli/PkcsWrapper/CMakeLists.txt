@@ -7,7 +7,7 @@ add_library(PkcsWrapper SHARED ${SOURCES})
 
 target_link_libraries(PkcsWrapper
   PUBLIC 
-    gfclicache
+    Apache.Geode
     c++11
   PRIVATE
     security
