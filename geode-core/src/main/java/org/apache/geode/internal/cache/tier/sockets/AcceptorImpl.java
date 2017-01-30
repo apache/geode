@@ -1634,9 +1634,10 @@ public class AcceptorImpl extends Acceptor implements Runnable {
   }
 
   public boolean isShutdownProperly() {
-    return !isRunning() && (selectorThread == null || !selectorThread.isAlive())
+    return !isRunning() && !thread.isAlive()
+        && (selectorThread == null || !selectorThread.isAlive())
         && (pool == null || pool.isShutdown()) && (hsPool == null || hsPool.isShutdown())
-        && (selector == null || !selector.isOpen());
+        && (selector == null || !selector.isOpen()) && (tmpSel == null || !tmpSel.isOpen());
   }
 
   /**
