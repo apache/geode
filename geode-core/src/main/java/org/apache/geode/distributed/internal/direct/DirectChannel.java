@@ -134,9 +134,8 @@ public class DirectChannel {
       disconnectCompleted = false;
       this.groupOrderedSenderSem = new ReentrantSemaphore(MAX_GROUP_SENDERS);
       this.groupUnorderedSenderSem = new ReentrantSemaphore(MAX_GROUP_SENDERS);
-      logger.info(
-          LocalizedMessage.create(LocalizedStrings.DirectChannel_GEMFIRE_P2P_LISTENER_STARTED_ON__0,
-              conduit.getLocalAddr()));
+      logger.info(LocalizedMessage.create(
+          LocalizedStrings.DirectChannel_GEMFIRE_P2P_LISTENER_STARTED_ON__0, conduit.getAddress()));
 
     } catch (ConnectionException ce) {
       logger.fatal(LocalizedMessage.create(

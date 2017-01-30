@@ -764,7 +764,7 @@ public class LocalizedStrings {
           "{0} seconds have elapsed while waiting for reply from {1} on {2} whose current membership list is: [{3}]");
 
   public static final StringId DirectChannel_GEMFIRE_P2P_LISTENER_STARTED_ON__0 =
-      new StringId(1432, "GemFire P2P Listener started on  {0}");
+      new StringId(1432, "GemFire P2P Listener started on {0}");
 
   public static final StringId DirectChannel_UNABLE_TO_INITIALIZE_DIRECT_CHANNEL_BECAUSE__0 =
       new StringId(1434, "Unable to initialize direct channel because:  {0}");
