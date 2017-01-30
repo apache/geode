@@ -11,17 +11,14 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-
 package org.apache.geode.internal;
-
 
 import static org.apache.geode.internal.Assert.fail;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,15 +27,12 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
-import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
-@Category(UnitTest.class)
-public class JarDeployerTest {
+@Category(IntegrationTest.class)
+public class JarDeployerIntegrationTest {
 
   private ClassBuilder classBuilder;
 
@@ -56,7 +50,7 @@ public class JarDeployerTest {
   }
 
   @Test
-  public void testDeployFileAndChange() throws IOException, ClassNotFoundException {
+  public void testDeployFileAndChange() throws Exception {
     final JarDeployer jarDeployer = new JarDeployer();
 
     // First deploy of the JAR file
@@ -89,13 +83,12 @@ public class JarDeployerTest {
     assertThatThrownBy(() -> ClassPathLoader.getLatest().forName("ClassA"))
         .isExactlyInstanceOf(ClassNotFoundException.class);
 
-
     assertThat(jarDeployer.findSortedOldVersionsOfJar("JarDeployerDUnit.jar")).hasSize(1);
     assertThat(jarDeployer.findDistinctDeployedJars()).hasSize(1);
   }
 
   @Test
-  public void testDeployNoUpdateWhenNoChange() throws IOException, ClassNotFoundException {
+  public void testDeployNoUpdateWhenNoChange() throws Exception {
     final JarDeployer jarDeployer = new JarDeployer();
 
     // First deploy of the JAR file
@@ -133,18 +126,14 @@ public class JarDeployerTest {
       public void run() {
         try {
           barrier.await();
-        } catch (InterruptedException iex) {
-          fail("Interrupted while waiting.");
-        } catch (BrokenBarrierException bbex) {
-          fail("Broken barrier.");
+        } catch (Exception e) {
+          fail(e);
         }
 
         try {
           jarDeployer.deploy(new String[] {"JarDeployerDUnit.jar"}, new byte[][] {jarBytes});
-        } catch (IOException ioex) {
-          fail("IOException received unexpectedly.");
-        } catch (ClassNotFoundException cnfex) {
-          fail("ClassNotFoundException received unexpectedly.");
+        } catch (Exception e) {
+          fail(e);
         }
       }
     };
@@ -155,15 +144,13 @@ public class JarDeployerTest {
       Thread.sleep(500);
       alternateDir.mkdir();
       thread.join();
-    } catch (InterruptedException iex) {
-      fail("Interrupted while waiting.");
-    } catch (BrokenBarrierException bbex) {
-      fail("Broken barrier.");
+    } catch (Exception e) {
+      fail(e);
     }
   }
 
   @Test
-  public void testVersionNumberCreation() throws IOException, ClassNotFoundException {
+  public void testVersionNumberCreation() throws Exception {
     JarDeployer jarDeployer = new JarDeployer();
 
     File versionedName = jarDeployer.getNextVersionJarFile("myJar.jar");
@@ -181,8 +168,7 @@ public class JarDeployerTest {
   }
 
   @Test
-  public void testVersionNumberMatcher() throws IOException {
-
+  public void testVersionNumberMatcher() throws Exception {
     JarDeployer jarDeployer = new JarDeployer();
     int version = jarDeployer.extractVersionFromFilename(
         temporaryFolder.newFile(JarDeployer.JAR_PREFIX + "MyJar.jar" + "#1"));
@@ -190,7 +176,7 @@ public class JarDeployerTest {
     assertThat(version).isEqualTo(1);
   }
 
-  protected boolean doesFileMatchBytes(final File file, final byte[] bytes) throws IOException {
+  private boolean doesFileMatchBytes(final File file, final byte[] bytes) throws IOException {
     return bytes == Files.readAllBytes(file.toPath());
   }
 
