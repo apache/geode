@@ -111,6 +111,55 @@ public class PartitionListenerDUnitTest extends JUnit4CacheTestCase {
     assertThat(vm3ActualPrimaries).isEmpty();
   }
 
+  @Test
+  public void testAfterSecondaryIsCalledAfterLosingPrimary() throws Throwable {
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+    VM vm2 = host.getVM(2);
+    VM vm3 = host.getVM(3);
+
+    // Create the PR in 2 JVMs
+    String regionName = getName() + "_region";
+    createPR(vm1, regionName, false);
+    createPR(vm2, regionName, false);
+
+    // Create the data using an accessor
+    createPR(vm0, regionName, true);
+    createData(vm0, 0, 1000, "A", regionName);
+
+    // record the bucket ids for each vm
+    List<Integer> vm1ActualPrimaries = getPrimariesOn(vm1, regionName);
+    List<Integer> vm2ActualPrimaries = getPrimariesOn(vm2, regionName);
+
+    // Create the PR in a third JVM and rebalance
+    createPR(vm3, regionName, false);
+    rebalance(vm3);
+
+    // Verify listener invocations
+    List<Integer> afterSecondaryCalledForVM1 = getAfterSecondaryCallbackBucketIds(vm1, regionName);
+    List<Integer> afterSecondaryCalledForVM2 = getAfterSecondaryCallbackBucketIds(vm2, regionName);
+
+    List<Integer> newVm1ActualPrimaries = getPrimariesOn(vm1, regionName);
+    List<Integer> newVM2ActualPrimaries = getPrimariesOn(vm2, regionName);
+
+    // calculate and verify expected afterSecondary calls
+    List<Integer> bucketsThatRemainInVM1 = new ArrayList(vm1ActualPrimaries);
+    bucketsThatRemainInVM1.retainAll(newVm1ActualPrimaries);
+    // All previous primary bucket ids - all overlapping/retained current bucket ids = all the
+    // secondary buckets
+    int expectedAfterSecondaryCalls = vm1ActualPrimaries.size() - bucketsThatRemainInVM1.size();
+    assertEquals(expectedAfterSecondaryCalls, afterSecondaryCalledForVM1.size());
+
+    List<Integer> bucketsThatRemainInVM2 = new ArrayList(vm2ActualPrimaries);
+    bucketsThatRemainInVM2.retainAll(newVM2ActualPrimaries);
+    // All previous primary bucket ids - all overlapping/retained current bucket ids = all the
+    // secondary buckets
+    expectedAfterSecondaryCalls = vm2ActualPrimaries.size() - bucketsThatRemainInVM2.size();
+    assertEquals(expectedAfterSecondaryCalls, afterSecondaryCalledForVM2.size());
+
+  }
+
   protected DistributedMember createPR(VM vm, final String regionName, final boolean isAccessor)
       throws Throwable {
     SerializableCallable createPrRegion = new SerializableCallable("createRegion") {
@@ -220,6 +269,21 @@ public class PartitionListenerDUnitTest extends JUnit4CacheTestCase {
     return (Map<Integer, List<Integer>>) vm.invoke(getBucketsAndKeysAdded);
   }
 
+  protected List<Integer> getAfterSecondaryCallbackBucketIds(VM vm, final String regionName) {
+    SerializableCallable getAfterSecondaryCallbackBucketIds =
+        new SerializableCallable("getAfterSecondaryCallbackBucketIds") {
+
+          public Object call() {
+            Cache cache = getCache();
+            Region region = cache.getRegion(regionName);
+            TestPartitionListener listener = (TestPartitionListener) region.getAttributes()
+                .getPartitionAttributes().getPartitionListeners()[0];
+            return listener.getAfterSecondaryCallbackBucketIds();
+          }
+        };
+    return (List<Integer>) vm.invoke(getAfterSecondaryCallbackBucketIds);
+  }
+
   protected void rebalance(VM vm) {
     vm.invoke(new SerializableCallable() {
 
@@ -238,12 +302,15 @@ public class PartitionListenerDUnitTest extends JUnit4CacheTestCase {
 
     private final List<Integer> primariesCreated;
 
+    private final List<Integer> afterSecondaryCalled;
+
     private final Map<Integer, List<Integer>> bucketsAndKeysRemoved;
 
     private final Map<Integer, List<Integer>> bucketsAndKeysAdded;
 
     public TestPartitionListener() {
       this.primariesCreated = new ArrayList<>();
+      afterSecondaryCalled = new ArrayList<>();
       this.bucketsAndKeysRemoved = new HashMap<Integer, List<Integer>>();
       this.bucketsAndKeysAdded = new HashMap<Integer, List<Integer>>();
     }
@@ -270,6 +337,14 @@ public class PartitionListenerDUnitTest extends JUnit4CacheTestCase {
 
     public void afterPrimary(int bucketId) {
       this.primariesCreated.add(bucketId);
+    }
+
+    public void afterSecondary(int bucketId) {
+      this.afterSecondaryCalled.add(bucketId);
+    }
+
+    public List<Integer> getAfterSecondaryCallbackBucketIds() {
+      return afterSecondaryCalled;
     }
 
     public void afterBucketRemoved(int bucketId, Iterable<?> keys) {
