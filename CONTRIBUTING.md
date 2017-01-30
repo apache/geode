@@ -35,6 +35,8 @@ This document assumes you have followed the [Apache Geode Code contribution inst
     $ ctest -R <test_name> -C <Debug|Release>
 
 ## Formatting C++
+For C++ it is required to follow the [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html) and have a build target that uses [clang-format](https://clang.llvm.org/docs/ClangFormat.html) to achieve compliance.
+
     $ cd <clone>
     $ mkdir build
     $ cd build
