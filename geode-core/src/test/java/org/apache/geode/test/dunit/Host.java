@@ -106,7 +106,11 @@ public abstract class Host implements Serializable {
       Host host = Host.getHost(hostIndex);
       int numVMs = host.getVMCount();
       for (int i = 0; i < numVMs; i++) {
-        host.getVM(VersionManager.CURRENT_VERSION, i);
+        try {
+          host.getVM(VersionManager.CURRENT_VERSION, i);
+        } catch (UnsupportedOperationException e) {
+          // not all implementations support versioning
+        }
       }
     }
 
