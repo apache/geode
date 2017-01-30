@@ -20,6 +20,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.net.SocketException;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.ClosedChannelException;
@@ -920,6 +921,19 @@ public class TCPConduit implements Runnable {
 
   public InternalDistributedMember getLocalAddr() {
     return localAddr;
+  }
+
+  /**
+   * returns the socket address used for accepting connections
+   */
+  public SocketAddress getAddress() {
+    if (socket == null) {
+      return null;
+    }
+    if (address != null) {
+      return new InetSocketAddress(address, socket.getLocalPort());
+    }
+    return socket.getLocalSocketAddress();
   }
 
   /**
