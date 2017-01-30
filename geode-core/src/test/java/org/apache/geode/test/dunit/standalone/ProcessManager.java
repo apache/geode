@@ -66,8 +66,7 @@ public class ProcessManager {
   public synchronized void launchVM(String version, int vmNum, boolean bouncedVM)
       throws IOException {
     if (processes.containsKey(vmNum)) {
-      throw new IllegalStateException(
-          "VM " + vmNum + " is already running.");
+      throw new IllegalStateException("VM " + vmNum + " is already running.");
     }
 
     String[] cmd = buildJavaCommand(vmNum, namingPort, version);
