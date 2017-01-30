@@ -11,7 +11,7 @@ This document assumes you have followed the [Apache Geode Code contribution inst
 * Submit a pull request
 
 ## Testing
-   Before submitting a pull request the unit and integration tests must all pass.
+   Before submitting a pull request the unit and integration tests must all pass. We are using CTest, (Please see [the CTest documentation](https://cmake.org/Wiki/CMake/Testing_With_CTest) for further information.)
 ### Running unit tests
     $ cd <clone>
     $ cd build
