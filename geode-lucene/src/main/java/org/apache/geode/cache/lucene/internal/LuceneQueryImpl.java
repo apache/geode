@@ -105,15 +105,13 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
     TopEntriesCollectorManager manager = new TopEntriesCollectorManager(null, limit);
     LuceneFunctionContext<TopEntriesCollector> context =
         new LuceneFunctionContext<>(query, indexName, manager, limit);
-    TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(context);
-
-
 
     // TODO provide a timeout to the user?
     TopEntries<K> entries = null;
     int numTries = 0;
     while (entries == null && numTries++ < MAX_TRIES) {
       try {
+        TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(context);
         ResultCollector<TopEntriesCollector, TopEntries<K>> rc =
             (ResultCollector<TopEntriesCollector, TopEntries<K>>) onRegion().withArgs(context)
                 .withCollector(collector).execute(LuceneFunction.ID);
