@@ -82,7 +82,7 @@ void CacheTransactionManagerImpl::commit() {
   if (err != GF_NOERR) {
     // err = rollback(txState, false);
     //		noteCommitFailure(txState, NULLPTR);
-    GfErrTypeThrowException("Error while commiting", err);
+    GfErrTypeThrowException("Error while committing", err);
   } else {
     switch (reply.getMessageType()) {
       case TcrMessage::RESPONSE: {
@@ -262,7 +262,7 @@ void CacheTransactionManagerImpl::rollback() {
   try {
     GfErrType err = rollback(txState, true);
     if (err != GF_NOERR) {
-      GfErrTypeToException("Error while commiting", err);
+      GfErrTypeToException("Error while committing", err);
     }
   } catch (const Exception& ex) {
     // TODO: put a log message

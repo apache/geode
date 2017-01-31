@@ -27,10 +27,6 @@ class Version {
   // getter for ordinal
   static int8_t getOrdinal() { return Version::m_ordinal; }
 
-  friend void apache::geode::client::CacheImpl::setVersionOrdinalForTest(
-      int8_t newOrdinal);
-  friend int8_t apache::geode::client::CacheImpl::getVersionOrdinalForTest();
-
  private:
   static int8_t m_ordinal;
 

@@ -138,6 +138,8 @@ class ClientProxyMembershipID : public DSMemberForVersionStamp {
 
   void readVersion(int flags, DataInput& input);
   void writeVersion(int16_t ordinal, DataOutput& output);
+
+  void readAdditionalData(DataInput& input);
 };
 }  // namespace client
 }  // namespace geode

@@ -175,7 +175,7 @@ ThinClientPoolDM::ThinClientPoolDM(const char* name,
 
   ACE_TCHAR hostName[256];
   ACE_OS::hostname(hostName, sizeof(hostName) - 1);
-  ACE_INET_Addr driver("", hostName, "tcp");
+  ACE_INET_Addr driver(hostName);
   uint32_t hostAddr = driver.get_ip_address();
   uint16_t hostPort = 0;
   const char* durableId = (sysProp != NULL) ? sysProp->durableClientId() : NULL;
