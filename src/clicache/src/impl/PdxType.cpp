@@ -34,19 +34,19 @@ namespace Apache
       namespace Internal
       {
         void PdxType::AddFixedLengthTypeField(String^ fieldName, String^ className,
-          Byte typeId, Int32 size)
+                                              Byte typeId, Int32 size)
         {
           int current = m_pdxFieldTypes->Count;
           PdxFieldType^ pfType = gcnew PdxFieldType(fieldName, className, (Byte)typeId,
-            current/*field index*/,
-            false, size, 0/*var len field idx*/);
+                                                    current/*field index*/,
+                                                    false, size, 0/*var len field idx*/);
           m_pdxFieldTypes->Add(pfType);
           //this will make sure one can't add same field name
           m_fieldNameVsPdxType->Add(fieldName, pfType);
         }
 
         void PdxType::AddVariableLengthTypeField(String^ fieldName, String^ className,
-          Byte typeId)
+                                                 Byte typeId)
         {
           //we don't store offset of first var len field, this is the purpose of following check
           if (m_isVarLenFieldAdded)
@@ -58,7 +58,7 @@ namespace Apache
 
           int current = m_pdxFieldTypes->Count;
           PdxFieldType^ pfType = gcnew PdxFieldType(fieldName, className, (Byte)typeId,
-            current, true, -1, m_varLenFieldIdx);
+                                                    current, true, -1, m_varLenFieldIdx);
           m_pdxFieldTypes->Add(pfType);
           //this will make sure one can't add same field name
           m_fieldNameVsPdxType->Add(fieldName, pfType);
@@ -67,14 +67,14 @@ namespace Apache
         void PdxType::ToData(DataOutput^ output)
         {
           //defaulf java Dataserializable require this
-          output->WriteByte(GemFireClassIds::DATA_SERIALIZABLE);
-          output->WriteByte(GemFireClassIds::JAVA_CLASS);
+          output->WriteByte(GeodeClassIds::DATA_SERIALIZABLE);
+          output->WriteByte(GeodeClassIds::JAVA_CLASS);
           output->WriteObject((Object^)m_javaPdxClass);
 
           //pdx type
           output->WriteString(m_className);
           output->WriteBoolean(m_noJavaClass);
-          output->WriteInt32(m_gemfireTypeId);
+          output->WriteInt32(m_geodeTypeId);
           output->WriteInt32(m_varLenFieldIdx);
 
           output->WriteArrayLen(m_pdxFieldTypes->Count);
@@ -103,7 +103,7 @@ namespace Apache
           m_pdxDomainType = pdxWrapper->GetObject()->GetType();*/
           //Log::Debug("PdxType::FromData " + m_className);
           m_noJavaClass = input->ReadBoolean();
-          m_gemfireTypeId = input->ReadInt32();
+          m_geodeTypeId = input->ReadInt32();
           m_varLenFieldIdx = input->ReadInt32();
 
           int len = input->ReadArrayLen();
@@ -207,9 +207,9 @@ namespace Apache
           {
             //need to read offset and then subtract relative offset
             return PdxHelper::ReadInt(offsetPosition +
-              (m_numberOfVarLenFields - offset - 1)*offsetSize,
-              offsetSize)
-              + fixLenField->RelativeOffset;
+                                      (m_numberOfVarLenFields - offset - 1)*offsetSize,
+                                      offsetSize)
+                                      + fixLenField->RelativeOffset;
           }
         }
 
@@ -261,12 +261,12 @@ namespace Apache
             if (!found)
             {
               PdxFieldType^ newFt = gcnew PdxFieldType(tmp->FieldName,
-                tmp->ClassName,
-                tmp->TypeId,
-                newone->m_pdxFieldTypes->Count,//sequence id
-                tmp->IsVariableLengthType,
-                tmp->Size,
-                (tmp->IsVariableLengthType ? varLenFields++/*it increase after that*/ : 0));
+                                                       tmp->ClassName,
+                                                       tmp->TypeId,
+                                                       newone->m_pdxFieldTypes->Count,//sequence id
+                                                       tmp->IsVariableLengthType,
+                                                       tmp->Size,
+                                                       (tmp->IsVariableLengthType ? varLenFields++/*it increase after that*/ : 0));
               newone->m_pdxFieldTypes->Add(newFt);//fieldnameVsPFT will happen after that							
             }
           }
@@ -306,7 +306,7 @@ namespace Apache
         PdxType^ PdxType::clone()
         {
           PdxType^ newone = gcnew PdxType(m_className, false);
-          newone->m_gemfireTypeId = 0;
+          newone->m_geodeTypeId = 0;
           newone->m_numberOfVarLenFields = m_numberOfVarLenFields;
 
           for each(PdxFieldType^ tmp in m_pdxFieldTypes)
@@ -394,7 +394,7 @@ namespace Apache
 
           if (localPdxType != nullptr)
           {
-            //Log::Debug("In initLocalToRemote: " + m_gemfireTypeId);
+            //Log::Debug("In initLocalToRemote: " + m_geodeTypeId);
             IList<PdxFieldType^>^ localPdxFields = localPdxType->m_pdxFieldTypes;
 
             Int32 fieldIdx = 0;

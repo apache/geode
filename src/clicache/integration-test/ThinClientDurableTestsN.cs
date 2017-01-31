@@ -192,7 +192,7 @@ namespace Apache.Geode.Client.UnitTests
       lkeys.Add((object)m_mixKeys[3]);
       region1.GetSubscriptionService().RegisterKeys(lkeys, true, false);
 
-      ICollection<object> ldkeys = new List<object>();;
+      ICollection<object> ldkeys = new List<object>(); ;
       ldkeys.Add((object)m_mixKeys[2]);
       region1.GetSubscriptionService().RegisterKeys(ldkeys, false, false);
     }
@@ -347,7 +347,7 @@ namespace Apache.Geode.Client.UnitTests
         }
         catch (AssertionException e)
         {
-          Util.Log("VERIFICATION FAILED for client {0}: {1} ",client,e);
+          Util.Log("VERIFICATION FAILED for client {0}: {1} ", client, e);
           throw e;
         }
       }
@@ -364,15 +364,15 @@ namespace Apache.Geode.Client.UnitTests
     {
       CacheHelper.SetupJavaServers(true,
         "cacheserver_notify_subscription.xml", "cacheserver_notify_subscription2.xml");
-       CacheHelper.StartJavaLocator(1, "GFELOC");
+      CacheHelper.StartJavaLocator(1, "GFELOC");
 
       for (int redundancy = 0; redundancy <= 1; redundancy++)
       {
-        for (int closeType = 1; closeType <= 2; closeType++)  
+        for (int closeType = 1; closeType <= 2; closeType++)
         {
           for (int downtime = 0; downtime <= 1; downtime++) // downtime updates
           {
-            Util.Log("Starting loop with closeType = {0}, redundancy = {1}, downtime = {2} ",closeType,redundancy, downtime );
+            Util.Log("Starting loop with closeType = {0}, redundancy = {1}, downtime = {2} ", closeType, redundancy, downtime);
 
             CacheHelper.StartJavaServerWithLocators(1, "GFECS1", 1);
             Util.Log("Cacheserver 1 started.");
@@ -387,40 +387,40 @@ namespace Apache.Geode.Client.UnitTests
             Util.Log("Feeder initialized.");
 
             m_client1.Call(ClearChecker, 1);
-            m_client2.Call(ClearChecker, 2);   
+            m_client2.Call(ClearChecker, 2);
 
             m_client1.Call(InitDurableClient, 1, CacheHelper.Locators, redundancy, DurableClientId1, 300);
             m_client2.Call(InitDurableClient, 2, CacheHelper.Locators, redundancy, DurableClientId2, 3);
-            
+
             Util.Log("Clients initialized.");
 
             m_feeder.Call(FeederUpdate, 1, 10);
-            
+
             Util.Log("Feeder performed first update.");
             Thread.Sleep(45000); // wait for HA Q to drain and notify ack to go out.
 
             switch (closeType)
             {
               case 1:
-                
+
                 m_client1.Call(ClientDown, true);
                 m_client2.Call(ClientDown, true);
-                
+
                 Util.Log("Clients downed with keepalive true.");
                 break;
               case 2:
-                
-                m_client1.Call(ClientDown, false); 
+
+                m_client1.Call(ClientDown, false);
                 m_client2.Call(ClientDown, false);
-                
+
                 Util.Log("Clients downed with keepalive false.");
                 break;
               case 3:
-                
+
                 m_client1.Call(CrashClient);
-                
+
                 m_client2.Call(CrashClient);
-                
+
                 Util.Log("Clients downed as crash.");
                 break;
               default:
@@ -430,44 +430,44 @@ namespace Apache.Geode.Client.UnitTests
             if (downtime == 1)
             {
               m_feeder.Call(FeederUpdate, 2, 10);
-              
+
               Util.Log("Feeder performed update during downtime.");
               Thread.Sleep(20000); // wait for HA Q to drain and notify ack to go out.
             }
 
             m_client1.Call(InitDurableClient, 1, CacheHelper.Locators, redundancy, DurableClientId1, 300);
-            
+
             // Sleep for 45 seconds since durable timeout is 30 seconds so that client2 times out
             Thread.Sleep(45000);
 
             m_client2.Call(InitDurableClient, 2, CacheHelper.Locators, redundancy, DurableClientId2, 30);
-            
+
             Util.Log("Clients brought back up.");
 
             if (closeType != 2 && downtime == 1)
             {
               m_client1.Call(VerifyBasic, 1, 4, 12, 2, 1);
-              
+
               m_client2.Call(VerifyBasic, 2, 4, 8, 1, 1);
-              
+
             }
             else
             {
-              
+
               m_client1.Call(VerifyBasic, 1, 4, 8, 1, 1);
-              
+
               m_client2.Call(VerifyBasic, 2, 4, 8, 1, 1);
-              
+
             }
 
             Util.Log("Verification completed.");
 
             m_feeder.Call(ClientDown, false);
-            
+
             m_client1.Call(ClientDown, false);
-            
+
             m_client2.Call(ClientDown, false);
-            
+
             Util.Log("Feeder and Clients closed.");
 
             CacheHelper.StopJavaServer(1);
@@ -489,7 +489,7 @@ namespace Apache.Geode.Client.UnitTests
 
     // Basic Durable Test to check durable event recieving for different combination
     // of Close type ( Keep Alive = true / false ) , Intermediate update and rudundancy
-    
+
     [Test]
     public void DurableAndNonDurableBasic()
     {
@@ -535,7 +535,7 @@ namespace Apache.Geode.Client.UnitTests
       region1.GetSubscriptionService().UnregisterRegex(m_regexes[0]);
 
       // Unregister list only durable
-      string[] ldkeys =  new string[]{m_mixKeys[3] };
+      string[] ldkeys = new string[] { m_mixKeys[3] };
       region1.GetSubscriptionService().RegisterKeys(ldkeys, true, false);
       region1.GetSubscriptionService().UnregisterKeys(ldkeys);
     }
@@ -684,7 +684,7 @@ namespace Apache.Geode.Client.UnitTests
         Assert.Fail("RegisterKeys threw unexpected exception: {0}", other.Message);
       }
     }
-    
+
     public void FeederUpdateForFailover(string region, int value, int sleep)
     {
       //update only 2 keys.
@@ -709,7 +709,7 @@ namespace Apache.Geode.Client.UnitTests
       {
         for (int redundancy = 0; redundancy <= 1; redundancy++)
         {
-          Util.Log("Starting loop with clientDown = {0}, redundancy = {1}", clientDown, redundancy );
+          Util.Log("Starting loop with clientDown = {0}, redundancy = {1}", clientDown, redundancy);
 
           CacheHelper.StartJavaServerWithLocators(1, "GFECS1", 1);
           Util.Log("Cacheserver 1 started.");
@@ -727,7 +727,7 @@ namespace Apache.Geode.Client.UnitTests
 
           CacheHelper.StartJavaServerWithLocators(2, "GFECS2", 1);
           Util.Log("Cacheserver 2 started.");
-          
+
           //Time for redundancy thread to detect.
           Thread.Sleep(35000);
 
@@ -748,13 +748,13 @@ namespace Apache.Geode.Client.UnitTests
           //Restart Client
           if (clientDown == 1)
           {
-            m_client1.Call(InitDurableClientForFailover, 1,CacheHelper.Locators,
+            m_client1.Call(InitDurableClientForFailover, 1, CacheHelper.Locators,
               redundancy, DurableClientId1, 300);
             Util.Log("Client Restarted with redundancy level as {0}.", redundancy);
           }
 
           //Verify
-          if (clientDown == 1 )
+          if (clientDown == 1)
           {
             if (redundancy == 0) // Events missed
             {
@@ -800,7 +800,7 @@ namespace Apache.Geode.Client.UnitTests
                                 .SetSubscriptionAckInterval(5000)
                                 .SetSubscriptionMessageTrackingTimeout(5000)
                                 .Create();
-      Util.Log("Created the GemFire Cache Programmatically");
+      Util.Log("Created the Geode Cache Programmatically");
 
       RegionFactory regionFactory = cache.CreateRegionFactory(RegionShortcut.CACHING_PROXY);
       IRegion<object, object> region = regionFactory.Create<object, object>("DistRegionAck");
@@ -829,7 +829,7 @@ namespace Apache.Geode.Client.UnitTests
 
       Util.Log("Sent ReadyForEvents message to server");
       Thread.Sleep(10000);
-      // Close the GemFire Cache with keepalive = true.  Server will queue events for
+      // Close the Geode Cache with keepalive = true.  Server will queue events for
       // durable registered keys and will deliver all events when client will reconnect
       // within timeout period and send "readyForEvents()"
 
@@ -837,7 +837,7 @@ namespace Apache.Geode.Client.UnitTests
 
       cache.Close(true);
 
-      Util.Log("Closed the GemFire Cache with keepalive as true");
+      Util.Log("Closed the Geode Cache with keepalive as true");
     }
 
     void runDurableClientWithTwoPools()
@@ -850,7 +850,7 @@ namespace Apache.Geode.Client.UnitTests
 
       m_feeder.Call(InitFeeder2, CacheHelper.Locators, 0);
       Util.Log("Feeder started.");
-        
+
       m_client1.Call(InitDurableClientWithTwoPools, CacheHelper.Locators, 0, DurableClientId1, 30, -2, -2);
       Util.Log("DurableClient with Two Pools Initialized");
 
@@ -888,10 +888,10 @@ namespace Apache.Geode.Client.UnitTests
     void RunFeeder()
     {
       CacheFactory cacheFactory = CacheFactory.CreateCacheFactory();
-      Util.Log("Feeder connected to the GemFire Distributed System");
+      Util.Log("Feeder connected to the Geode Distributed System");
 
       Cache cache = cacheFactory.Create();
-      Util.Log("Created the GemFire Cache");
+      Util.Log("Created the Geode Cache");
 
       RegionFactory regionFactory = cache.CreateRegionFactory(RegionShortcut.PROXY);
       Util.Log("Created the RegionFactory");
@@ -902,25 +902,25 @@ namespace Apache.Geode.Client.UnitTests
 
       PendingEventCount(region, 0, true);
 
-      for ( int i =0; i < 10; i++) 
-      {        
-        region[ i ] = i;
+      for (int i = 0; i < 10; i++)
+      {
+        region[i] = i;
       }
       Thread.Sleep(10000);
       Util.Log("put on 0-10 keys done.");
 
-      // Close the GemFire Cache
+      // Close the Geode Cache
       cache.Close();
-      Util.Log("Closed the GemFire Cache");
+      Util.Log("Closed the Geode Cache");
     }
 
     void RunFeeder1()
     {
       CacheFactory cacheFactory = CacheFactory.CreateCacheFactory();
-      Util.Log("Feeder connected to the GemFire Distributed System");
+      Util.Log("Feeder connected to the Geode Distributed System");
 
       Cache cache = cacheFactory.Create();
-      Util.Log("Created the GemFire Cache");
+      Util.Log("Created the Geode Cache");
 
       RegionFactory regionFactory = cache.CreateRegionFactory(RegionShortcut.PROXY);
       Util.Log("Created the RegionFactory");
@@ -931,15 +931,16 @@ namespace Apache.Geode.Client.UnitTests
 
       PendingEventCount(region, 0, true);
 
-      for (int i = 10; i < 20; i++) {
+      for (int i = 10; i < 20; i++)
+      {
         region[i] = i;
       }
       Thread.Sleep(10000);
       Util.Log("put on 10-20 keys done.");
 
-      // Close the GemFire Cache
+      // Close the Geode Cache
       cache.Close();
-      Util.Log("Closed the GemFire Cache");
+      Util.Log("Closed the Geode Cache");
     }
 
     void VerifyEvents()

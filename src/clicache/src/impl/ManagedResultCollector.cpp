@@ -40,7 +40,7 @@ namespace apache
     {
 
       apache::geode::client::ResultCollector* ManagedResultCollectorGeneric::create(const char* assemblyPath,
-        const char* factoryFunctionName)
+                                                                                    const char* factoryFunctionName)
       {
         try
         {
@@ -52,7 +52,7 @@ namespace apache
           Int32 dotIndx = -1;
 
           if (mg_factoryFunctionName == nullptr ||
-            (dotIndx = mg_factoryFunctionName->LastIndexOf('.')) < 0)
+              (dotIndx = mg_factoryFunctionName->LastIndexOf('.')) < 0)
           {
             std::string ex_str = "ManagedResultCollector: Factory function name '";
             ex_str += factoryFunctionName;
@@ -82,7 +82,7 @@ namespace apache
           if (typeInst != nullptr)
           {
             MethodInfo^ mInfo = typeInst->GetType()->GetMethod(mg_factoryFunctionName,
-              BindingFlags::Public | BindingFlags::Static | BindingFlags::IgnoreCase);
+                                                               BindingFlags::Public | BindingFlags::Static | BindingFlags::IgnoreCase);
             if (mInfo != nullptr)
             {
               //Apache::Geode::Client::ResultCollector<Object^>^ managedptr = nullptr;

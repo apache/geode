@@ -41,7 +41,7 @@ namespace Apache
     namespace Client
     {
 
-delegate void PropertyVisitor(Apache::Geode::Client::ICacheableKey^ key, Apache::Geode::Client::IGFSerializable^ value);
+      delegate void PropertyVisitor(Apache::Geode::Client::ICacheableKey^ key, Apache::Geode::Client::IGFSerializable^ value);
 
       generic <class TPropKey, class TPropValue>
       ref class PropertyVisitorProxy;
@@ -191,7 +191,7 @@ delegate void PropertyVisitor(Apache::Geode::Client::ICacheableKey^ key, Apache:
         {
           inline virtual uint32_t get( )
           {
-            return GemFireClassIds::Properties;
+            return GeodeClassIds::Properties;
           }
         }
 

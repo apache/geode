@@ -37,48 +37,48 @@ namespace Apache
 
       generic<class TKey, class TResult>
       //generic<class TResult>
-      Query<TResult>^ QueryService<TKey, TResult>::NewQuery( String^ query )
+      Query<TResult>^ QueryService<TKey, TResult>::NewQuery(String^ query)
       {
-        ManagedString mg_queryStr( query );
+        ManagedString mg_queryStr(query);
 
         _GF_MG_EXCEPTION_TRY2/* due to auto replace */
 
-          return Query<TResult>::Create( NativePtr->newQuery(
-            mg_queryStr.CharPtr ).ptr( ) );
+          return Query<TResult>::Create(NativePtr->newQuery(
+          mg_queryStr.CharPtr).ptr());
 
         _GF_MG_EXCEPTION_CATCH_ALL2/* due to auto replace */
       }
 
       generic<class TKey, class TResult>
-      CqQuery<TKey, TResult>^ QueryService<TKey, TResult>::NewCq( String^ query, CqAttributes<TKey, TResult>^ cqAttr, bool isDurable )
+      CqQuery<TKey, TResult>^ QueryService<TKey, TResult>::NewCq(String^ query, CqAttributes<TKey, TResult>^ cqAttr, bool isDurable)
       {
-        ManagedString mg_queryStr( query );
-	apache::geode::client::CqAttributesPtr attr(GetNativePtrFromSBWrapGeneric<apache::geode::client::CqAttributes>(cqAttr));
+        ManagedString mg_queryStr(query);
+        apache::geode::client::CqAttributesPtr attr(GetNativePtrFromSBWrapGeneric<apache::geode::client::CqAttributes>(cqAttr));
         try
         {
-          return CqQuery<TKey, TResult>::Create( NativePtr->newCq(
-            mg_queryStr.CharPtr, attr, isDurable ).ptr( ));
+          return CqQuery<TKey, TResult>::Create(NativePtr->newCq(
+            mg_queryStr.CharPtr, attr, isDurable).ptr());
         }
-        catch ( const apache::geode::client::Exception& ex )
+        catch (const apache::geode::client::Exception& ex)
         {
-          throw GemFireException::Get( ex );
+          throw GemFireException::Get(ex);
         }
       }
 
       generic<class TKey, class TResult>
-      CqQuery<TKey, TResult>^ QueryService<TKey, TResult>::NewCq( String^ name, String^ query, CqAttributes<TKey, TResult>^ cqAttr, bool isDurable )
+      CqQuery<TKey, TResult>^ QueryService<TKey, TResult>::NewCq(String^ name, String^ query, CqAttributes<TKey, TResult>^ cqAttr, bool isDurable)
       {
-        ManagedString mg_queryStr( query );
-        ManagedString mg_nameStr( name );
-	apache::geode::client::CqAttributesPtr attr(GetNativePtrFromSBWrapGeneric<apache::geode::client::CqAttributes>(cqAttr));
+        ManagedString mg_queryStr(query);
+        ManagedString mg_nameStr(name);
+        apache::geode::client::CqAttributesPtr attr(GetNativePtrFromSBWrapGeneric<apache::geode::client::CqAttributes>(cqAttr));
         try
         {
-          return CqQuery<TKey, TResult>::Create( NativePtr->newCq(
-            mg_nameStr.CharPtr, mg_queryStr.CharPtr, attr, isDurable ).ptr( ) );
+          return CqQuery<TKey, TResult>::Create(NativePtr->newCq(
+            mg_nameStr.CharPtr, mg_queryStr.CharPtr, attr, isDurable).ptr());
         }
-        catch ( const apache::geode::client::Exception& ex )
+        catch (const apache::geode::client::Exception& ex)
         {
-          throw GemFireException::Get( ex );
+          throw GemFireException::Get(ex);
         }
       }
 
@@ -87,11 +87,11 @@ namespace Apache
       {
         try
         {
-           NativePtr->closeCqs();
+          NativePtr->closeCqs();
         }
-        catch ( const apache::geode::client::Exception& ex )
+        catch (const apache::geode::client::Exception& ex)
         {
-          throw GemFireException::Get( ex );
+          throw GemFireException::Get(ex);
         }
       }
 
@@ -100,34 +100,34 @@ namespace Apache
       {
         try
         {
-	   apache::geode::client::VectorOfCqQuery vrr;
-	   NativePtr->getCqs( vrr );
-	   array<CqQuery<TKey, TResult>^>^ cqs = gcnew array<CqQuery<TKey, TResult>^>( vrr.size( ) );
+          apache::geode::client::VectorOfCqQuery vrr;
+          NativePtr->getCqs(vrr);
+          array<CqQuery<TKey, TResult>^>^ cqs = gcnew array<CqQuery<TKey, TResult>^>(vrr.size());
 
-           for( int32_t index = 0; index < vrr.size( ); index++ )
-           {
-                cqs[ index ] =  CqQuery<TKey, TResult>::Create(vrr[index].ptr( ));
-           }
-           return cqs;
+          for (int32_t index = 0; index < vrr.size(); index++)
+          {
+            cqs[index] = CqQuery<TKey, TResult>::Create(vrr[index].ptr());
+          }
+          return cqs;
         }
-        catch ( const apache::geode::client::Exception& ex )
+        catch (const apache::geode::client::Exception& ex)
         {
-          throw GemFireException::Get( ex );
+          throw GemFireException::Get(ex);
         }
       }
 
       generic<class TKey, class TResult>
       CqQuery<TKey, TResult>^ QueryService<TKey, TResult>::GetCq(String^ name)
       {
-        ManagedString mg_queryStr( name );
+        ManagedString mg_queryStr(name);
         try
         {
-          return CqQuery<TKey, TResult>::Create( NativePtr->getCq(
-            mg_queryStr.CharPtr ).ptr( ) );
+          return CqQuery<TKey, TResult>::Create(NativePtr->getCq(
+            mg_queryStr.CharPtr).ptr());
         }
-        catch ( const apache::geode::client::Exception& ex )
+        catch (const apache::geode::client::Exception& ex)
         {
-          throw GemFireException::Get( ex );
+          throw GemFireException::Get(ex);
         }
       }
 
@@ -138,9 +138,9 @@ namespace Apache
         {
           NativePtr->executeCqs();
         }
-        catch ( const apache::geode::client::Exception& ex )
+        catch (const apache::geode::client::Exception& ex)
         {
-          throw GemFireException::Get( ex );
+          throw GemFireException::Get(ex);
         }
       }
 
@@ -151,9 +151,9 @@ namespace Apache
         {
           NativePtr->stopCqs();
         }
-        catch ( const apache::geode::client::Exception& ex )
+        catch (const apache::geode::client::Exception& ex)
         {
-          throw GemFireException::Get( ex );
+          throw GemFireException::Get(ex);
         }
       }
 
@@ -162,11 +162,11 @@ namespace Apache
       {
         try
         {
-          return CqServiceStatistics::Create( NativePtr->getCqServiceStatistics().ptr( ) );
+          return CqServiceStatistics::Create(NativePtr->getCqServiceStatistics().ptr());
         }
-        catch ( const apache::geode::client::Exception& ex )
+        catch (const apache::geode::client::Exception& ex)
         {
-          throw GemFireException::Get( ex );
+          throw GemFireException::Get(ex);
         }
       }
 
@@ -180,19 +180,18 @@ namespace Apache
           System::Collections::Generic::List<String^>^ durableCqsList = gcnew System::Collections::Generic::List<String^>();
           if (length > 0)
           {
-            for(int i =0; i < length; i++)
+            for (int i = 0; i < length; i++)
             {
               durableCqsList->Add(CacheableString::GetString(durableCqsArrayListPtr->at(i)));
             }
           }
           return durableCqsList;
         }
-        catch ( const apache::geode::client::Exception& ex )
+        catch (const apache::geode::client::Exception& ex)
         {
-          throw GemFireException::Get( ex );
+          throw GemFireException::Get(ex);
+        }
+      }
     }  // namespace Client
   }  // namespace Geode
 }  // namespace Apache
-
-}
- } //namespace 

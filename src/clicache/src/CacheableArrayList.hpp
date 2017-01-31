@@ -47,7 +47,7 @@ namespace Apache
           : CacheableVector(list)
         { }
 
-        
+
         /// <summary>
         /// Static function to create a new empty instance.
         /// </summary>
@@ -64,7 +64,7 @@ namespace Apache
           return gcnew CacheableArrayList(list);
         }
 
-        
+
         // Region: IGFSerializable Members
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace Apache
         {
           virtual uint32_t get() override
           {
-            return GemFireClassIds::CacheableArrayList;
+            return GeodeClassIds::CacheableArrayList;
           }
         }
 

@@ -68,8 +68,7 @@ namespace Apache
         apache::geode::client::CacheableBytesPtr deltaBytes = NativePtr->getDeltaValue( );
         CacheableBytes^ managedDeltaBytes = ( CacheableBytes^ ) CacheableBytes::Create( deltaBytes.ptr( ) );
         return ( array< Byte >^ ) managedDeltaBytes;
+      }
     }  // namespace Client
   }  // namespace Geode
-}  // namespace Apache
-
- } //namespace 
+}  //namespace Apache

@@ -37,7 +37,7 @@ namespace apache
     {
 
       CacheLoader* ManagedCacheLoaderGeneric::create(const char* assemblyPath,
-        const char* factoryFunctionName)
+                                                     const char* factoryFunctionName)
       {
         try
         {
@@ -56,7 +56,7 @@ namespace apache
           int32_t commaIndx = -1;
 
           if (mg_factoryFunctionName == nullptr ||
-            (dotIndx = mg_factoryFunctionName->LastIndexOf('.')) < 0)
+              (dotIndx = mg_factoryFunctionName->LastIndexOf('.')) < 0)
           {
             std::string ex_str = "ManagedCacheLoaderGeneric: Factory function name '";
             ex_str += factoryFunctionName;
@@ -73,7 +73,7 @@ namespace apache
           }
 
           if ((genericsOpenIndx = mg_factoryFunctionName->LastIndexOf('<')) < 0 ||
-            genericsOpenIndx > genericsCloseIndx)
+              genericsOpenIndx > genericsCloseIndx)
           {
             std::string ex_str = "ManagedCacheLoaderGeneric: Factory function name '";
             ex_str += factoryFunctionName;
@@ -82,7 +82,7 @@ namespace apache
           }
 
           if ((commaIndx = mg_factoryFunctionName->LastIndexOf(',')) < 0 ||
-            (commaIndx < genericsOpenIndx || commaIndx > genericsCloseIndx))
+              (commaIndx < genericsOpenIndx || commaIndx > genericsCloseIndx))
           {
             std::string ex_str = "ManagedCacheLoaderGeneric: Factory function name '";
             ex_str += factoryFunctionName;
@@ -99,7 +99,7 @@ namespace apache
           mg_factoryFunctionName = mg_factoryFunctionName->Substring(dotIndx + 1);
 
           Apache::Geode::Client::Log::Fine("Attempting to instantiate a [{0}<{1}, {2}>] via the [{3}] factory method.",
-            mg_typeName, mg_genericKey, mg_genericVal, mg_factoryFunctionName);
+                                           mg_typeName, mg_genericKey, mg_genericVal, mg_factoryFunctionName);
 
           typeBuilder->Append("`2");
           mg_typeName = typeBuilder->ToString();
@@ -140,7 +140,7 @@ namespace apache
             Apache::Geode::Client::Log::Info("Loading function: [{0}]", mg_factoryFunctionName);
 
             MethodInfo^ mInfo = typeInst->GetMethod(mg_factoryFunctionName,
-              BindingFlags::Public | BindingFlags::Static | BindingFlags::IgnoreCase);
+                                                    BindingFlags::Public | BindingFlags::Static | BindingFlags::IgnoreCase);
 
             if (mInfo != nullptr)
             {
@@ -215,7 +215,7 @@ namespace apache
       }
 
       CacheablePtr ManagedCacheLoaderGeneric::load(const RegionPtr& region,
-        const CacheableKeyPtr& key, const UserDataPtr& aCallbackArgument)
+                                                   const CacheableKeyPtr& key, const UserDataPtr& aCallbackArgument)
       {
         try {
           /*

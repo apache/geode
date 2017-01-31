@@ -106,7 +106,7 @@ namespace Apache
           /// This property is applicable to local as well as distributed region.
           /// For local region instance - Puts/Gets a new value into an entry in this region in the local cache only.
           /// For distributed region instance - Puts/Gets a new value into an entry in this region
-          /// and this operation is propogated to the Gemfire cache server to which it is connected with.
+          /// and this operation is propogated to the Geode cache server to which it is connected with.
           /// </remarks>
           /// <param name="key">
           /// The key of the element to get or set.
@@ -138,7 +138,7 @@ namespace Apache
           /// Only for Native Client regions.
           /// </exception>
           /// <exception cref="NotConnectedException">
-          /// if not connected to the GemFire system because the client cannot
+          /// if not connected to the Geode system because the client cannot
           /// establish usable connections to any of the servers given to it.
           /// For pools configured with locators, if no locators are available, innerException
           /// of NotConnectedException is set to NoAvailableLocatorsException.
@@ -301,7 +301,7 @@ namespace Apache
           /// Only for Native Client regions.
           /// </exception>
           /// <exception cref="NotConnectedException">
-          /// if not connected to a GemFire system because the client cannot
+          /// if not connected to a Geode system because the client cannot
           /// establish usable connections to any of the servers given to it.
           /// For pools configured with locators, if no locators are available, innerException
           /// of NotConnectedException is set to NoAvailableLocatorsException.
@@ -355,7 +355,7 @@ namespace Apache
           /// Only for Native Client regions.
           /// </exception>
           /// <exception cref="NotConnectedException">
-          /// if not connected to a GemFire system because the client cannot
+          /// if not connected to a Geode system because the client cannot
           /// establish usable connections to any of the servers given to it.
           /// For pools configured with locators, if no locators are available, innerException
           /// of NotConnectedException is set to NoAvailableLocatorsException.
@@ -423,7 +423,7 @@ namespace Apache
           /// Only for Native Client regions.
           /// </exception>
           /// <exception cref="NotConnectedException">
-          /// if not connected to a GemFire system because the client cannot
+          /// if not connected to a Geode system because the client cannot
           /// establish usable connections to any of the servers given to it.
           /// For pools configured with locators, if no locators are available, innerException
           /// of NotConnectedException is set to NoAvailableLocatorsException.
@@ -446,7 +446,7 @@ namespace Apache
           /// </summary>
           /// <remarks>
           /// For local region instance - removes the entry with the specified key from the local cache only.
-          /// For distributed region instance - remove is propogated to the Gemfire cache server.
+          /// For distributed region instance - remove is propogated to the Geode cache server.
           /// </remarks>
           /// <param name="key">
           /// The key of the element to remove.
@@ -460,7 +460,7 @@ namespace Apache
           /// Only for Native Client regions.
           /// </exception>
           /// <exception cref="NotConnectedException">
-          /// if not connected to the GemFire system because the client cannot
+          /// if not connected to the Geode system because the client cannot
           /// establish usable connections to any of the servers given to it.
           /// For pools configured with locators, if no locators are available, innerException
           /// of NotConnectedException is set to NoAvailableLocatorsException.
@@ -488,7 +488,7 @@ namespace Apache
           /// </para>
           /// <para>
           /// For local region instance - removes the value with the specified key in the local cache only.
-          /// For distributed region instance - destroy is propogated to the Gemfire cache server
+          /// For distributed region instance - destroy is propogated to the Geode cache server
           /// to which it is connected with.          
           /// </para>
           /// <para>
@@ -505,7 +505,7 @@ namespace Apache
           /// Only for Native Client regions.
           /// </exception>
           /// <exception cref="NotConnectedException">
-          /// if not connected to the GemFire system because the client cannot
+          /// if not connected to the Geode system because the client cannot
           /// establish usable connections to any of the servers given to it.
           /// For pools configured with locators, if no locators are available, innerException
           /// of NotConnectedException is set to NoAvailableLocatorsException.
@@ -555,7 +555,7 @@ namespace Apache
           /// Only for Native Client regions.
           /// </exception>
           /// <exception cref="NotConnectedException">
-          /// if not connected to the GemFire system because the client cannot
+          /// if not connected to the Geode system because the client cannot
           /// establish usable connections to any of the servers given to it.
           /// For pools configured with locators, if no locators are available, innerException
           /// of NotConnectedException is set to NoAvailableLocatorsException.
@@ -607,7 +607,7 @@ namespace Apache
           /// Only for Native Client regions.
           /// </exception>
           /// <exception cref="NotConnectedException">
-          /// if not connected to the GemFire system because the client cannot
+          /// if not connected to the Geode system because the client cannot
           /// establish usable connections to any of the servers given to it.
           /// For pools configured with locators, if no locators are available, innerException
           /// of NotConnectedException is set to NoAvailableLocatorsException.
@@ -670,7 +670,7 @@ namespace Apache
           /// from this region.
           /// </para>
           /// <para>
-          /// The Remove is propogated to the Gemfire cache server to which it is connected with.
+          /// The Remove is propogated to the Geode cache server to which it is connected with.
           /// </para>
           /// <para>
           /// Does not update any <c>CacheStatistics</c>.
@@ -689,7 +689,7 @@ namespace Apache
           /// Only for Native Client regions.
           /// </exception>
           /// <exception cref="NotConnectedException">
-          /// if not connected to the GemFire system because the client cannot
+          /// if not connected to the Geode system because the client cannot
           /// establish usable connections to any of the servers given to it.
           /// For pools configured with locators, if no locators are available, innerException
           /// of NotConnectedException is set to NoAvailableLocatorsException.
@@ -718,7 +718,7 @@ namespace Apache
           /// from this region.
           /// </para>
           /// <para>
-          /// The Remove is propogated to the Gemfire cache server to which it is connected with.
+          /// The Remove is propogated to the Geode cache server to which it is connected with.
           /// </para>
           /// <para>
           /// Does not update any <c>CacheStatistics</c>.
@@ -733,7 +733,7 @@ namespace Apache
           /// Only for Native Client regions.
           /// </exception>
           /// <exception cref="NotConnectedException">
-          /// if not connected to the GemFire system because the client cannot
+          /// if not connected to the Geode system because the client cannot
           /// establish usable connections to any of the servers given to it.
           /// For pools configured with locators, if no locators are available, innerException
           /// of NotConnectedException is set to NoAvailableLocatorsException.
@@ -775,7 +775,7 @@ namespace Apache
           /// Returns all the keys for this region. This includes
           /// keys for which the entry is invalid.
           /// For local region instance - gets collection of keys from local cache only.
-          /// For distributed region instance - gets collection of keys from the Gemfire cache server.
+          /// For distributed region instance - gets collection of keys from the Geode cache server.
           /// </summary>
           /// <returns>collection of keys</returns>
           /// <remark>
@@ -792,7 +792,7 @@ namespace Apache
           /// Only for Native Client regions.
           /// </exception>
           /// <exception cref="NotConnectedException">
-          /// if not connected to the GemFire system because the client cannot
+          /// if not connected to the Geode system because the client cannot
           /// establish usable connections to any of the servers given to it.
           /// For pools configured with locators, if no locators are available, innerException
           /// of NotConnectedException is set to NoAvailableLocatorsException.
@@ -842,7 +842,7 @@ namespace Apache
           /// cache to manage the creation and loading of objects.
           /// For local region instance - Puts a new value into an entry in this region in the local cache only.
           /// For distributed region instance - Puts a new value into an entry in this region
-          /// and this operation is propogated to the Gemfire cache server to which it is connected with.
+          /// and this operation is propogated to the Geode cache server to which it is connected with.
           /// </para><para>
           /// Updates the <see cref="CacheStatistics.LastAccessedTime" /> and
           /// <see cref="CacheStatistics.LastModifiedTime" /> for this region and the entry.
@@ -878,7 +878,7 @@ namespace Apache
           /// Only for Native Client regions.
           /// </exception>
           /// <exception cref="NotConnectedException">
-          /// if not connected to the GemFire system because the client cannot
+          /// if not connected to the Geode system because the client cannot
           /// establish usable connections to any of the servers given to it.
           /// For pools configured with locators, if no locators are available, innerException
           /// of NotConnectedException is set to NoAvailableLocatorsException.
@@ -937,7 +937,7 @@ namespace Apache
           /// Only for Native Client regions.
           /// </exception>
           /// <exception cref="NotConnectedException">
-          /// if not connected to the GemFire system because the client cannot
+          /// if not connected to the Geode system because the client cannot
           /// establish usable connections to any of the servers given to it.
           /// For pools configured with locators, if no locators are available, innerException
           /// of NotConnectedException is set to NoAvailableLocatorsException.
@@ -966,7 +966,7 @@ namespace Apache
           /// and the entries in it will still exist.
           /// For local region instance - invalidates this region without distributing to other caches.
           /// For distributed region instance - Invalidates this region and this 
-          /// operation is propogated to the Gemfire cache server to which it is connected with.
+          /// operation is propogated to the Geode cache server to which it is connected with.
           /// </para>          
           /// <para>
           /// To remove all the
@@ -980,7 +980,7 @@ namespace Apache
           /// subregions may have already been successfully invalidated
           /// </exception>
           /// <exception cref="NotConnectedException">
-          /// if not connected to the GemFire system because the client cannot
+          /// if not connected to the Geode system because the client cannot
           /// establish usable connections to any of the servers given to it.
           /// For pools configured with locators, if no locators are available, innerException
           /// of NotConnectedException is set to NoAvailableLocatorsException.
@@ -1002,7 +1002,7 @@ namespace Apache
           /// and the entries in it will still exist.
           /// For local region instance - invalidates this region without distributing to other caches.
           /// For distributed region instance - Invalidates this region and this 
-          /// operation is propogated to the Gemfire cache server to which it is connected with.
+          /// operation is propogated to the Geode cache server to which it is connected with.
           /// </para>
           /// <para>
           /// To remove all the
@@ -1015,7 +1015,7 @@ namespace Apache
           /// user-defined parameter to pass to callback events triggered by this method
           /// </param>
           /// <exception cref="NotConnectedException">
-          /// if not connected to the GemFire system because the client cannot
+          /// if not connected to the Geode system because the client cannot
           /// establish usable connections to any of the servers given to it.
           /// For pools configured with locators, if no locators are available, innerException
           /// of NotConnectedException is set to NoAvailableLocatorsException.
@@ -1044,7 +1044,7 @@ namespace Apache
           /// server region.
           /// For local region instance - destroys the whole local region only
           /// For distributed region instance - destroys the whole local region and this
-          /// operation is also propogated to the Gemfire cache server to which it is connected with.
+          /// operation is also propogated to the Geode cache server to which it is connected with.
           /// </para><para>
           /// Does not update any <c>CacheStatistics</c>.
           /// </para>
@@ -1062,7 +1062,7 @@ namespace Apache
           /// Only for Native Client regions.
           /// </exception>
           /// <exception cref="NotConnectedException">
-          /// if not connected to the GemFire system because the client cannot
+          /// if not connected to the Geode system because the client cannot
           /// establish usable connections to any of the servers given to it.
           /// For pools configured with locators, if no locators are available, innerException
           /// of NotConnectedException is set to NoAvailableLocatorsException.
@@ -1086,7 +1086,7 @@ namespace Apache
           /// server region.
           /// For local region instance - destroys the whole local region only
           /// For distributed region instance - destroys the whole local region and this
-          /// operation is also propogated to the Gemfire cache server to which it is connected with.
+          /// operation is also propogated to the Geode cache server to which it is connected with.
           /// </para><para>
           /// Does not update any <c>CacheStatistics</c>.
           /// </para>
@@ -1107,7 +1107,7 @@ namespace Apache
           /// Only for Native Client regions.
           /// </exception>
           /// <exception cref="NotConnectedException">
-          /// if not connected to the GemFire system because the client cannot
+          /// if not connected to the Geode system because the client cannot
           /// establish usable connections to any of the servers given to it.
           /// For pools configured with locators, if no locators are available, innerException
           /// of NotConnectedException is set to NoAvailableLocatorsException.
@@ -1131,7 +1131,7 @@ namespace Apache
           /// </para>
           /// <para>
           /// For both local & distributed region instaces, invalidate is not propogated to the 
-          /// Gemfire cache server to which it is connected with.
+          /// Geode cache server to which it is connected with.
           /// </para>
           /// <para>
           /// Does not update any <c>CacheStatistics</c>.
@@ -1162,7 +1162,7 @@ namespace Apache
           /// </para>
           /// <para>
           /// For both local & distributed region instaces, invalidate is not propogated to the 
-          /// Gemfire cache server to which it is connected with.
+          /// Geode cache server to which it is connected with.
           /// </para>
           /// <para>
           /// Does not update any <c>CacheStatistics</c>.
@@ -1211,7 +1211,7 @@ namespace Apache
           /// Only for Native Client regions.
           /// </exception>
           /// <exception cref="NotConnectedException">
-          /// if not connected to the GemFire system because the client cannot
+          /// if not connected to the Geode system because the client cannot
           /// establish usable connections to any of the servers given to it.
           /// For pools configured with locators, if no locators are available, innerException
           /// of NotConnectedException is set to NoAvailableLocatorsException.
@@ -1263,7 +1263,7 @@ namespace Apache
           /// Only for Native Client regions.
           /// </exception>
           /// <exception cref="NotConnectedException">
-          /// if not connected to the GemFire system because the client cannot
+          /// if not connected to the Geode system because the client cannot
           /// establish usable connections to any of the servers given to it.
           /// For pools configured with locators, if no locators are available, innerException
           /// of NotConnectedException is set to NoAvailableLocatorsException.
@@ -1318,7 +1318,7 @@ namespace Apache
           /// Only for Native Client regions.
           /// </exception>
           /// <exception cref="NotConnectedException">
-          /// if not connected to the GemFire system because the client cannot
+          /// if not connected to the Geode system because the client cannot
           /// establish usable connections to any of the servers given to it.
           /// For pools configured with locators, if no locators are available, innerException
           /// of NotConnectedException is set to NoAvailableLocatorsException.
@@ -1796,7 +1796,7 @@ namespace Apache
           /// If an exception is received from the Java cache server.
           /// </exception>
           /// <exception cref="NotConnectedException">
-          /// if not connected to the GemFire system because the client cannot
+          /// if not connected to the Geode system because the client cannot
           /// establish usable connections to any of the servers given to it.
           /// For pools configured with locators, if no locators are available, innerException
           /// of NotConnectedException is set to NoAvailableLocatorsException.
@@ -1841,7 +1841,7 @@ namespace Apache
           /// If an exception is received from the Java cache server.
           /// </exception>
           /// <exception cref="NotConnectedException">
-          /// if not connected to the GemFire system because the client cannot
+          /// if not connected to the Geode system because the client cannot
           /// establish usable connections to any of the servers given to it.
           /// For pools configured with locators, if no locators are available, innerException
           /// of NotConnectedException is set to NoAvailableLocatorsException.
@@ -1889,7 +1889,7 @@ namespace Apache
           /// If an exception is received from the Java cache server.
           /// </exception>
           /// <exception cref="NotConnectedException">
-          /// if not connected to the GemFire system because the client cannot
+          /// if not connected to the Geode system because the client cannot
           /// establish usable connections to any of the servers given to it.
           /// For pools configured with locators, if no locators are available, innerException
           /// of NotConnectedException is set to NoAvailableLocatorsException.
@@ -1939,7 +1939,7 @@ namespace Apache
           /// If an exception is received from the Java cache server.
           /// </exception>
           /// <exception cref="NotConnectedException">
-          /// if not connected to the GemFire system because the client cannot
+          /// if not connected to the Geode system because the client cannot
           /// establish usable connections to any of the servers given to it.
           /// For pools configured with locators, if no locators are available, innerException
           /// of NotConnectedException is set to NoAvailableLocatorsException.
@@ -1986,7 +1986,7 @@ namespace Apache
           /// If an exception is received from the Java cache server.
           /// </exception>
           /// <exception cref="NotConnectedException">
-          /// if not connected to the GemFire system because the client cannot
+          /// if not connected to the Geode system because the client cannot
           /// establish usable connections to any of the servers given to it.
           /// For pools configured with locators, if no locators are available, innerException
           /// of NotConnectedException is set to NoAvailableLocatorsException.
@@ -2038,7 +2038,7 @@ namespace Apache
           /// If an exception is received from the Java cache server.
           /// </exception>
           /// <exception cref="NotConnectedException">
-          /// if not connected to the GemFire system because the client cannot
+          /// if not connected to the Geode system because the client cannot
           /// establish usable connections to any of the servers given to it.
           /// For pools configured with locators, if no locators are available, innerException
           /// of NotConnectedException is set to NoAvailableLocatorsException.

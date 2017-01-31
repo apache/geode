@@ -32,14 +32,14 @@ namespace Apache
     namespace Client
     {
 
-			interface class IGFSerializable;
+      interface class IGFSerializable;
 
       generic<class TResult>
       ref class SelectResultsIterator;
       /// <summary>
       /// Encapsulates a query result set.
       /// It specifies the interface for the resultset obtained from the
-      /// Gemfire cache server
+      /// Geode cache server
       /// </summary>
       generic<class TResult>
       public ref class ResultSet sealed
@@ -52,7 +52,7 @@ namespace Apache
         /// </summary>
         virtual property bool IsModifiable
         {
-          virtual bool get( );
+          virtual bool get();
         }
 
         /// <summary>
@@ -60,21 +60,21 @@ namespace Apache
         /// </summary>
         virtual property int32_t Size
         {
-          virtual int32_t get( );
+          virtual int32_t get();
         }
 
         /// <summary>
         /// Get an object at the given index.
         /// </summary>
-        virtual property /*IGFSerializable^*/TResult GFINDEXER( size_t )
+        virtual property /*IGFSerializable^*/TResult GFINDEXER(size_t)
         {
-          virtual /*IGFSerializable^*/TResult get( size_t index );
+          virtual /*IGFSerializable^*/TResult get(size_t index);
         }
 
         /// <summary>
         /// Get an iterator for the result set.
         /// </summary>
-        virtual SelectResultsIterator<TResult>^ GetIterator( );
+        virtual SelectResultsIterator<TResult>^ GetIterator();
 
         /// <summary>
         /// Returns an enumerator that iterates through the collection.
@@ -84,7 +84,7 @@ namespace Apache
         /// can be used to iterate through the <c>ResultSet</c>.
         /// </returns>
         virtual System::Collections::Generic::IEnumerator</*IGFSerializable^*/TResult>^
-          GetEnumerator( );
+          GetEnumerator();
 
 
       internal:
@@ -105,7 +105,7 @@ namespace Apache
 
       private:
 
-        virtual System::Collections::IEnumerator^ GetIEnumerator( ) sealed
+        virtual System::Collections::IEnumerator^ GetIEnumerator() sealed
           = System::Collections::IEnumerable::GetEnumerator;
 
         /// <summary>

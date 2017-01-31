@@ -29,7 +29,7 @@ namespace Apache.Geode.Client.UnitTests
   using Apache.Geode.Client.Examples;
   using Apache.Geode.Client;
 
-  namespace gemfire.cliwrap.Examples
+  namespace geode.cliwrap.Examples
   {
     public class ExampleCacheListenerCallback<TKey, TValue> : ICacheListener<TKey, TValue>
     {
@@ -55,7 +55,7 @@ namespace Apache.Geode.Client.UnitTests
 
       public static void Main()
       {
-        // Create a GemFire cache
+        // Create a Geode cache
         DSInit();
         // Enter puts and gets manually
         DoCommand();
@@ -851,8 +851,8 @@ namespace Apache.Geode.Client.UnitTests
       secProp.Insert("security-client-auth-factory",
       "Apache.Geode.Templates.Cache.Security.UserPasswordAuthInit.Create");
       secProp.Insert("security-client-auth-library", "Apache.Geode.Templates.Cache.Security");
-      secProp.Insert("security-username", " gemfire6");
-      secProp.Insert("security-password", " gemfire6Pass");
+      secProp.Insert("security-username", " geode6");
+      secProp.Insert("security-password", " geode6Pass");
       CacheFactory cacheFactory = CacheFactory.CreateCacheFactory(secProp);
       Cache cache = cacheFactory.Create();
     }
@@ -1498,7 +1498,7 @@ namespace Apache.Geode.Client.UnitTests
     {
       CacheHelper.SetupJavaServers(false, "cacheserver_notify_subscription_forDoc.xml");
       CacheHelper.StartJavaServer(1, "GFECS1");
-      m_client1.Call(gemfire.cliwrap.Examples.ExamplePutGet.Main);
+      m_client1.Call(geode.cliwrap.Examples.ExamplePutGet.Main);
       CacheHelper.StopJavaServers();
     }
 

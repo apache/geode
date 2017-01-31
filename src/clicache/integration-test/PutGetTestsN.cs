@@ -478,11 +478,11 @@ namespace Apache.Geode.Client.UnitTests
       IRegion<TradeKey, Object> region = CacheHelper.GetRegion<TradeKey, Object>(rname);
       int nonSingleHopCount = 0, metadatarefreshCount = 0;
       int nonSingleHopCount1 = 0, metadatarefreshCount1 = 0;
-      Assert.IsNotNull(region, "DoPRSHTradeResolverTasks: null region.");        
+      Assert.IsNotNull(region, "DoPRSHTradeResolverTasks: null region.");
       for (int i = 0; i < 1000; i++)
       {
         try
-        {          
+        {
           region[new TradeKey(i)] = "Value" + i;
           Util.Log("Put inside DoPRSHTradeResolverTasks successfull ");
         }
@@ -515,14 +515,14 @@ namespace Apache.Geode.Client.UnitTests
       }
       Util.Log("nonSingleHopCount = {0} & metadatarefreshCount = {1} ", nonSingleHopCount, metadatarefreshCount);
       Assert.GreaterOrEqual(nonSingleHopCount, 1, "nonSingleHopCount should be GreaterOrEqual to 1");
-      Assert.GreaterOrEqual(metadatarefreshCount, 1 , "metadatarefreshCount should be equal to 1");
+      Assert.GreaterOrEqual(metadatarefreshCount, 1, "metadatarefreshCount should be equal to 1");
 
       Util.Log("DoPRSHTradeResolverTasks WarmUp Task completed.");
 
       for (int i = 1000; i < 2000; i++)
       {
         try
-        {          
+        {
           region[new TradeKey(i)] = "Value" + i;
           Util.Log("Put inside DoPRSHTradeResolverTasks successfull");
         }
@@ -604,7 +604,7 @@ namespace Apache.Geode.Client.UnitTests
       TradeKey[] filter = new TradeKey[901];
       int j = 0;
       for (int i = 100; i < 1001; i++)
-      {        
+      {
         filter[j] = new TradeKey(i);
         j++;
       }
@@ -705,7 +705,7 @@ namespace Apache.Geode.Client.UnitTests
 
       Util.Log("DoPRSHFixedPartitionResolverTests Put Task completed nonSingleHopCount = {0} metadatarefreshCount = {1}.", nonSingleHopCount, metadatarefreshCount);
       Assert.Greater(nonSingleHopCount, 1, "nonSingleHopCount should be Greater than 1");
-      Assert.Greater(metadatarefreshCount, 1, "metadatarefreshCount should be Greater than 1");      
+      Assert.Greater(metadatarefreshCount, 1, "metadatarefreshCount should be Greater than 1");
 
       for (int i = 0; i < 1000; i++)
       {
@@ -762,7 +762,7 @@ namespace Apache.Geode.Client.UnitTests
         }
       }
       Util.Log("DoPRSHFixedPartitionResolverTests All Task completed ");
-      Util.Log("nonSingleHopCount = {0} metadatarefreshCount = {1} .", nonSingleHopCount, metadatarefreshCount);      
+      Util.Log("nonSingleHopCount = {0} metadatarefreshCount = {1} .", nonSingleHopCount, metadatarefreshCount);
       Util.Log("nonSingleHopCount1 = {0} metadatarefreshCount1 = {1} .", nonSingleHopCount1, metadatarefreshCount1);
       Assert.AreEqual(nonSingleHopCount, nonSingleHopCount1, "nonSingleHopCount should be equal to {0}", nonSingleHopCount);
       Assert.AreEqual(metadatarefreshCount, metadatarefreshCount1, "metadatarefreshCount should be equal to {0}", metadatarefreshCount);
@@ -927,7 +927,7 @@ namespace Apache.Geode.Client.UnitTests
         Object actualValue = m_region[m_cKeys[keyIndex].CacheableKey];
         if (actualValue == null)
         {
-          Assert.AreEqual(GemFireClassIds.CacheableNullString,
+          Assert.AreEqual(GeodeClassIds.CacheableNullString,
             m_cValues[keyIndex].TypeId, "Only null string should return a " +
             "null object");
         }

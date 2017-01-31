@@ -46,11 +46,11 @@ namespace Apache
       /// of <c>ICacheListener</c> methods.  If event A occurs before event B,
       /// there is no guarantee that their corresponding <c>ICacheListener</c>
       /// method invocations will occur in the same order.  Any exceptions thrown by
-      /// the listener are caught by GemFire and logged. 
+      /// the listener are caught by Geode and logged. 
       ///
       /// Listeners are user callbacks that
-      /// are invoked by GemFire. It is important to ensure that minimal work is done in the
-      /// listener before returning control back to GemFire. For example, a listener
+      /// are invoked by Geode. It is important to ensure that minimal work is done in the
+      /// listener before returning control back to Geode. For example, a listener
       /// implementation may choose to hand off the event to a thread pool that then processes
       /// the event on its thread rather than the listener thread
       /// </remarks>
@@ -80,7 +80,7 @@ namespace Apache
         /// <seealso cref="Region.Create" />
         /// <seealso cref="Region.Put" />
         /// <seealso cref="Region.Get" />
-        void OnEvent( CqEvent<TKey, TResult>^ ev );
+        void OnEvent(CqEvent<TKey, TResult>^ ev);
 
         /// <summary>
         /// Handles the event of an entry's value being modified in a region.
@@ -94,7 +94,7 @@ namespace Apache
         /// </param>
         /// <seealso cref="Region.Put" />
         //generic<class TKey, class TValue>
-        void OnError( CqEvent<TKey, TResult>^ ev );
+        void OnError(CqEvent<TKey, TResult>^ ev);
 
 
         /// <summary>

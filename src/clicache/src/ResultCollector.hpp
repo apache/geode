@@ -41,10 +41,10 @@ namespace Apache
       /// collect function execution results, default collector
       /// </summary>
      generic<class TResult>
-      public ref class ResultCollector
-        : public Internal::SBWrap<apache::geode::client::ResultCollector>, public IResultCollector<TResult>
-      {
-      public:
+     public ref class ResultCollector
+       : public Internal::SBWrap<apache::geode::client::ResultCollector>, public IResultCollector<TResult>
+     {
+     public:
 
         /// <summary>
         /// add result from a single function execution

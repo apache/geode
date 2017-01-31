@@ -48,88 +48,88 @@ namespace Apache
         {
         public:
 
-        virtual void ToData(DataOutput^ output) override
-        {
-          output->WriteArrayLen(this->Count);
+          virtual void ToData(DataOutput^ output) override
+          {
+            output->WriteArrayLen(this->Count);
 
-          Internal::ManagedPtrWrap< apache::geode::client::Serializable,
+            Internal::ManagedPtrWrap< apache::geode::client::Serializable,
               Internal::SBWrap<apache::geode::client::Serializable> > nptr = NativePtr;
-          HSTYPE* set = static_cast<HSTYPE*>(nptr());
-          for (typename HSTYPE::Iterator iter = set->begin();
-              iter != set->end(); ++iter) {
-                //Generic::ICacheableKey^ key = SafeGenericUMKeyConvert<ICacheableKey^>((*iter).ptr());
-                Object^ key = Serializable::GetManagedValueGeneric<Object^>((*iter));
-            output->WriteObject(key);
+            HSTYPE* set = static_cast<HSTYPE*>(nptr());
+            for (typename HSTYPE::Iterator iter = set->begin();
+                 iter != set->end(); ++iter) {
+              //Generic::ICacheableKey^ key = SafeGenericUMKeyConvert<ICacheableKey^>((*iter).ptr());
+              Object^ key = Serializable::GetManagedValueGeneric<Object^>((*iter));
+              output->WriteObject(key);
+            }
           }
-        }
 
-        virtual IGFSerializable^ FromData(DataInput^ input) override
-        {
-          int len = input->ReadArrayLen();
-          if (len > 0)
+          virtual IGFSerializable^ FromData(DataInput^ input) override
           {
-            for ( int i = 0; i < len; i++)
+            int len = input->ReadArrayLen();
+            if (len > 0)
             {
-              //Generic::ICacheableKey^ key = dynamic_cast<Client::ICacheableKey^>(input->ReadObject());
-              Object^ key = (input->ReadObject());
-              this->Add(key);
+              for (int i = 0; i < len; i++)
+              {
+                //Generic::ICacheableKey^ key = dynamic_cast<Client::ICacheableKey^>(input->ReadObject());
+                Object^ key = (input->ReadObject());
+                this->Add(key);
+              }
+            }
+            return this;
+          }
+
+          virtual property uint32_t ObjectSize
+          {
+            virtual uint32_t get() override
+            {
+              uint32_t size = 0;
+              for each (Object^ key in this) {
+                if (key != nullptr)
+                  //size += key->ObjectSize; 
+                  //TODO:: how should we do this now
+                  size += 1;
+              }
+              return size;
             }
           }
-          return this;
-        }
 
-        virtual property uint32_t ObjectSize 
-        {
-          virtual uint32_t get() override
+          virtual int GetHashCode() override
           {
-            uint32_t size = 0;
-            for each (Object^ key in this) {
-              if ( key != nullptr)
-                //size += key->ObjectSize; 
-                //TODO:: how should we do this now
-                size += 1;
+            IEnumerator<Object^>^ ie = GetEnumerator();
+
+            int h = 0;
+            while (ie->MoveNext() == true)
+            {
+              h = h + PdxInstanceImpl::deepArrayHashCode(ie->Current);
             }
-            return size;
+            return h;
           }
-        }  
 
-        virtual int GetHashCode() override
-        {
-          IEnumerator<Object^>^ ie = GetEnumerator();
-
-          int h = 0;
-          while(ie->MoveNext() == true)
+          virtual bool Equals(Object^ other)override
           {
-            h = h + PdxInstanceImpl::deepArrayHashCode(ie->Current);
-          }
-          return h;
-        }
-
-        virtual bool Equals(Object^ other)override
-        {
-          if(other == nullptr)
-            return false;
-
-          CacheableHashSetType^ otherCHST = dynamic_cast<CacheableHashSetType^>(other);
-          
-          if(otherCHST == nullptr)
-            return false;
-
-          if(Count != otherCHST->Count)
-            return false;
-
-          IEnumerator<Object^>^ ie = GetEnumerator();
-
-          while(ie->MoveNext() == true)
-          {
-            if(otherCHST->Contains(ie->Current))
-              return true;
-            else
+            if (other == nullptr)
               return false;
-          }
 
-          return true;
-        }
+            CacheableHashSetType^ otherCHST = dynamic_cast<CacheableHashSetType^>(other);
+
+            if (otherCHST == nullptr)
+              return false;
+
+            if (Count != otherCHST->Count)
+              return false;
+
+            IEnumerator<Object^>^ ie = GetEnumerator();
+
+            while (ie->MoveNext() == true)
+            {
+              if (otherCHST->Contains(ie->Current))
+                return true;
+              else
+                return false;
+            }
+
+            return true;
+          }
 
           /// <summary>
           /// Enumerator for <c>CacheableHashSet</c> class.
@@ -211,8 +211,8 @@ namespace Apache
             /// </summary>
             /// <param name="nativeptr">The native object pointer</param>
             inline Enumerator(typename HSTYPE::Iterator* nativeptr,
-                CacheableHashSetType<TYPEID, HSTYPE>^ set)
-              : UMWrap(nativeptr, true), m_set(set) { }
+                              CacheableHashSetType<TYPEID, HSTYPE>^ set)
+                              : UMWrap(nativeptr, true), m_set(set) { }
 
           private:
             // Region: IEnumerator Members
@@ -384,7 +384,7 @@ namespace Apache
           {
             if (array == nullptr || arrayIndex < 0) {
               throw gcnew IllegalArgumentException("CacheableHashSet.CopyTo():"
-                " array is null or array index is less than zero");
+                                                   " array is null or array index is less than zero");
             }
             Internal::ManagedPtrWrap< apache::geode::client::Serializable,
               Internal::SBWrap<apache::geode::client::Serializable> > nptr = NativePtr;
@@ -392,15 +392,15 @@ namespace Apache
             int32_t index = arrayIndex;
 
             if (arrayIndex >= array->Length ||
-              array->Length < (arrayIndex + (int32_t)set->size())) {
-                throw gcnew OutOfRangeException("CacheableHashSet.CopyTo():"
-                  " array index is beyond the HashSet or length of given "
-                  "array is less than that required to copy all the "
-                  "elements from HashSet");
+                array->Length < (arrayIndex + (int32_t)set->size())) {
+              throw gcnew OutOfRangeException("CacheableHashSet.CopyTo():"
+                                              " array index is beyond the HashSet or length of given "
+                                              "array is less than that required to copy all the "
+                                              "elements from HashSet");
             }
             for (typename HSTYPE::Iterator iter = set->begin();
-              iter != set->end(); ++iter, ++index) {
-                array[index] = Serializable::GetManagedValueGeneric<Object^>((*iter));
+                 iter != set->end(); ++iter, ++index) {
+              array[index] = Serializable::GetManagedValueGeneric<Object^>((*iter));
             }
             GC::KeepAlive(this);
           }
@@ -479,7 +479,7 @@ namespace Apache
           static IGFSerializable^ Create(apache::geode::client::Serializable* obj)
           {
             return (obj != NULL ?
-              gcnew CacheableHashSetType<TYPEID,HSTYPE>(obj) : nullptr);
+                    gcnew CacheableHashSetType<TYPEID, HSTYPE>(obj) : nullptr);
           }
 
         private:
@@ -498,7 +498,7 @@ namespace Apache
             return GetEnumerator();
           }
 
-          // End Region: IEnumerable Members
+            // End Region: IEnumerable Members
 
         protected:
           /// <summary>
@@ -519,67 +519,67 @@ namespace Apache
           /// Allocates a new empty instance with given initial size.
           /// </summary>
           /// <param name="size">The initial size of the HashSet.</param>
-          inline CacheableHashSetType<TYPEID,HSTYPE>(int32_t size)
+          inline CacheableHashSetType<TYPEID, HSTYPE>(int32_t size)
             : Serializable(HSTYPE::create(size).ptr())
           { }
         };
       }
 
 #define _GFCLI_CACHEABLEHASHSET_DEF_GENERIC(m, HSTYPE)                               \
-	public ref class m : public Internal::CacheableHashSetType<Apache::Geode::Client::GemFireClassIds::m, HSTYPE>      \
-      {                                                                       \
+	public ref class m : public Internal::CacheableHashSetType<Apache::Geode::Client::GeodeClassIds::m, HSTYPE>      \
+            {                                                                       \
       public:                                                                 \
         /** <summary>
-         *  Allocates a new empty instance.
-         *  </summary>
-         */                                                                   \
-        inline m()                                                            \
-        : Internal::CacheableHashSetType<Apache::Geode::Client::GemFireClassIds::m, HSTYPE>() {}                      \
-                                                                              \
-        /** <summary>
-         *  Allocates a new instance with the given size.
-         *  </summary>
-         *  <param name="size">the intial size of the new instance</param>
-         */                                                                   \
-        inline m(int32_t size)                                                 \
-        : Internal::CacheableHashSetType<Apache::Geode::Client::GemFireClassIds::m, HSTYPE>(size) {}                  \
-                                                                              \
-        /** <summary>
-         *  Static function to create a new empty instance.
-         *  </summary>
-         */                                                                   \
+      *  Allocates a new empty instance.
+      *  </summary>
+      */                                                                   \
+      inline m()                                                            \
+      : Internal::CacheableHashSetType<Apache::Geode::Client::GeodeClassIds::m, HSTYPE>() {}                      \
+      \
+      /** <summary>
+       *  Allocates a new instance with the given size.
+       *  </summary>
+       *  <param name="size">the intial size of the new instance</param>
+       */                                                                   \
+       inline m(int32_t size)                                                 \
+       : Internal::CacheableHashSetType<Apache::Geode::Client::GeodeClassIds::m, HSTYPE>(size) {}                  \
+       \
+       /** <summary>
+        *  Static function to create a new empty instance.
+        *  </summary>
+        */                                                                   \
         inline static m^ Create()                                             \
-        {                                                                     \
-          return gcnew m();                                                   \
-        }                                                                     \
-                                                                              \
-        /** <summary>
-         *  Static function to create a new instance with the given size.
-         *  </summary>
-         */                                                                   \
-        inline static m^ Create(int32_t size)                                  \
-        {                                                                     \
-          return gcnew m(size);                                               \
-        }                                                                     \
-                                                                              \
-        /* <summary>
-         * Factory function to register this class.
-         * </summary>
-         */                                                                   \
-        static IGFSerializable^ CreateDeserializable()                        \
-        {                                                                     \
-          return gcnew m();                                                   \
-        }                                                                     \
-                                                                              \
-      internal:                                                               \
-        static IGFSerializable^ Create(apache::geode::client::Serializable* obj)            \
-        {                                                                     \
-          return gcnew m(obj);                                                \
-        }                                                                     \
-                                                                              \
-      private:                                                                \
-        inline m(apache::geode::client::Serializable* nativeptr)                            \
-        : Internal::CacheableHashSetType<Apache::Geode::Client::GemFireClassIds::m, HSTYPE>(nativeptr) { }             \
+      {                                                                     \
+      return gcnew m();                                                   \
+      }                                                                     \
+      \
+      /** <summary>
+       *  Static function to create a new instance with the given size.
+       *  </summary>
+       */                                                                   \
+       inline static m^ Create(int32_t size)                                  \
+      {                                                                     \
+      return gcnew m(size);                                               \
+      }                                                                     \
+      \
+      /* <summary>
+       * Factory function to register this class.
+       * </summary>
+       */                                                                   \
+       static IGFSerializable^ CreateDeserializable()                        \
+      {                                                                     \
+      return gcnew m();                                                   \
+      }                                                                     \
+      \
+            internal:                                                               \
+              static IGFSerializable^ Create(apache::geode::client::Serializable* obj)            \
+      {                                                                     \
+      return gcnew m(obj);                                                \
+      }                                                                     \
+      \
+            private:                                                                \
+              inline m(apache::geode::client::Serializable* nativeptr)                            \
+              : Internal::CacheableHashSetType<Apache::Geode::Client::GeodeClassIds::m, HSTYPE>(nativeptr) { }             \
       };
 
       /// <summary>
@@ -587,7 +587,7 @@ namespace Apache
       /// a distributable object for caching.
       /// </summary>
       _GFCLI_CACHEABLEHASHSET_DEF_GENERIC(CacheableHashSet,
-        apache::geode::client::CacheableHashSet);
+                                          apache::geode::client::CacheableHashSet);
 
       /// <summary>
       /// A mutable <c>ICacheableKey</c> hash set wrapper that can serve as
@@ -597,7 +597,7 @@ namespace Apache
       /// java <c>LinkedHashSet</c>.
       /// </summary>
       _GFCLI_CACHEABLEHASHSET_DEF_GENERIC(CacheableLinkedHashSet,
-        apache::geode::client::CacheableLinkedHashSet);
+                                          apache::geode::client::CacheableLinkedHashSet);
     }  // namespace Client
   }  // namespace Geode
 }  // namespace Apache

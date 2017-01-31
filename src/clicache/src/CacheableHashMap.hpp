@@ -20,7 +20,7 @@
 #include "gf_defs.hpp"
 #include "IGFSerializable.hpp"
 #include "ICacheableKey.hpp"
-#include "GemFireClassIds.hpp"
+#include "GeodeClassIds.hpp"
 
 using namespace System;
 using namespace System::Collections::Generic;
@@ -48,7 +48,7 @@ namespace Apache
         /// <summary>
         /// Allocates a new empty instance.
         /// </summary>
-        inline CacheableHashMap()          
+        inline CacheableHashMap()
         { }
 
         /// <summary>
@@ -58,11 +58,11 @@ namespace Apache
         /// The dictionary whose elements are copied to this HashMap.
         /// </param>
         inline CacheableHashMap(Object^ dictionary)
-        { 
+        {
           m_dictionary = dictionary;
         }
 
-        
+
         /// <summary>
         /// Static function to create a new empty instance.
         /// </summary>
@@ -80,7 +80,7 @@ namespace Apache
           return gcnew CacheableHashMap(dictionary);
         }
 
-        
+
         // Region: IGFSerializable Members
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace Apache
         {
           inline virtual uint32_t get()
           {
-            return GemFireClassIds::CacheableHashMap;
+            return GeodeClassIds::CacheableHashMap;
           }
         }
 
