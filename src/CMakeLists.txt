@@ -9,7 +9,7 @@ set(PRODUCT_VENDOR "Apache" CACHE STRING "Product vendor")
 set(PRODUCT_VENDOR_NAME "The Apache Software Foundation" CACHE STRING "Product vendor full legal name")
 set(PRODUCT_NAME "Geode Native" CACHE STRING "Product name")
 set(PRODUCT_VERSION "0.0.42-build.0" CACHE STRING "Product version")
-set(PRODUCT_PACKAGE_NAME "apache-geode-nativeclient" CACHE STRING "Product package name")
+set(PRODUCT_PACKAGE_NAME "apache-geode-native" CACHE STRING "Product package name")
 
 set(PRODUCT_BITS "${BUILD_BITS}bit")
 
