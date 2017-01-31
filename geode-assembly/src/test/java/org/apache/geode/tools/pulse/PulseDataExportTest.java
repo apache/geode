@@ -27,6 +27,7 @@ import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.Locator;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.http.Consts;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
@@ -71,9 +72,8 @@ public class PulseDataExportTest extends JUnit4DistributedTestCase {
   private HttpClient httpClient;
   private CookieStore cookieStore;
 
-
   @Before
-  public void before() throws Throwable {
+  public void before() throws Exception {
     IgnoredException
         .addIgnoredException("Failed to properly release resources held by the HTTP service:");
     IgnoredException.addIgnoredException("!STOPPED");
@@ -100,8 +100,9 @@ public class PulseDataExportTest extends JUnit4DistributedTestCase {
     await().atMost(2, TimeUnit.MINUTES).until(this::pulseServerHasStarted);
   }
 
+  @Category(FlakyTest.class) // GEODE-2395
   @Test
-  public void dataBrowserExportWorksAsExpected() throws Throwable {
+  public void dataBrowserExportWorksAsExpected() throws Exception {
     getAuthenticatedJSESSIONID();
     HttpContext authenticatedHttpContext = buildAuthenticatedHttpContext();
 
@@ -135,14 +136,14 @@ public class PulseDataExportTest extends JUnit4DistributedTestCase {
     return new HttpGet(builder.build());
   }
 
-  private HttpContext buildAuthenticatedHttpContext() throws Throwable {
+  private HttpContext buildAuthenticatedHttpContext() {
     HttpContext localContext = new BasicHttpContext();
     localContext.setAttribute(HttpClientContext.COOKIE_STORE, cookieStore);
 
     return localContext;
   }
 
-  public void getAuthenticatedJSESSIONID() throws Throwable {
+  private void getAuthenticatedJSESSIONID() throws IOException {
     HttpResponse loginResponse = httpClient.execute(buildLoginPOST());
     assertThat(loginResponse.getStatusLine().getStatusCode()).describedAs(loginResponse.toString())
         .isEqualTo(302);
