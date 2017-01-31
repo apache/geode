@@ -19,7 +19,7 @@
 
 #include "gf_defs.hpp"
 #include "IGFSerializable.hpp"
-#include "GemFireClassIds.hpp"
+#include "GeodeClassIds.hpp"
 #include "Log.hpp"
 
 using namespace System;
@@ -89,7 +89,7 @@ namespace Apache
         {
           inline virtual uint32_t get()
           {
-            return GemFireClassIds::CacheableUndefined;
+            return GeodeClassIds::CacheableUndefined;
           }
         }
 
@@ -100,7 +100,7 @@ namespace Apache
         /// </summary>
         static IGFSerializable^ CreateDeserializable()
         {
-					return gcnew CacheableUndefined();
+          return gcnew CacheableUndefined();
         }
       };
     }  // namespace Client

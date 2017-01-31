@@ -43,44 +43,44 @@ namespace Apache
         /// This class encapsulates events that occur for an transaction in a cache.
         /// </summary>
         generic<class TKey, class TValue>
-          public ref class TransactionEvent sealed
-            : public Internal::UMWrap<apache::geode::client::TransactionEvent>
+        public ref class TransactionEvent sealed
+          : public Internal::UMWrap<apache::geode::client::TransactionEvent>
+        {
+        public:
+          /// <summary>
+          /// Gets the transaction id for this transaction.
+          /// </summary>
+					property Apache::Geode::Client::TransactionId^ TransactionId
           {
-          public:
-            /// <summary>
-            /// Gets the transaction id for this transaction.
-            /// </summary>
-						property Apache::Geode::Client::TransactionId^ TransactionId
-            {
-							Apache::Geode::Client::TransactionId^ get( );
-            }
+						Apache::Geode::Client::TransactionId^ get( );
+          }
 
-         		/// <summary>
-            /// Returns an ordered list of every event for this transaction.
-	          /// The event order is consistent with the order in which the operations were
-	          /// performed during the transaction.
-            /// </summary>
-            property array<EntryEvent<TKey, TValue>^>^ Events
-            {
-              array<EntryEvent<TKey, TValue>^>^ get( );
-            }
-            
-            /// <summary>
-            /// Gets the Cache for this transaction event
-            /// </summary>
-						property Apache::Geode::Client::Cache^ Cache
-            {
-              Apache::Geode::Client::Cache^ get( );
-            }
+        	/// <summary>
+          /// Returns an ordered list of every event for this transaction.
+	        /// The event order is consistent with the order in which the operations were
+	        /// performed during the transaction.
+          /// </summary>
+          property array<EntryEvent<TKey, TValue>^>^ Events
+          {
+            array<EntryEvent<TKey, TValue>^>^ get( );
+          }
+          
+          /// <summary>
+          /// Gets the Cache for this transaction event
+          /// </summary>
+					property Apache::Geode::Client::Cache^ Cache
+          {
+            Apache::Geode::Client::Cache^ get( );
+          }
 
-          internal:
-            /// <summary>
-            /// Internal constructor to wrap a native object pointer
-            /// </summary>
-            /// <param name="nativeptr">The native object pointer</param>
-            inline TransactionEvent( apache::geode::client::TransactionEvent* nativeptr )
-              : UMWrap( nativeptr, false ) { }
-          };
+        internal:
+          /// <summary>
+          /// Internal constructor to wrap a native object pointer
+          /// </summary>
+          /// <param name="nativeptr">The native object pointer</param>
+          inline TransactionEvent( apache::geode::client::TransactionEvent* nativeptr )
+            : UMWrap( nativeptr, false ) { }
+        };
     }  // namespace Client
   }  // namespace Geode
 }  // namespace Apache

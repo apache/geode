@@ -35,12 +35,12 @@ namespace Apache
 
       void CacheableString::ToData(DataOutput^ output)
       {
-        if (m_type == GemFireClassIds::CacheableASCIIString ||
-            m_type == GemFireClassIds::CacheableString)
+        if (m_type == GeodeClassIds::CacheableASCIIString ||
+            m_type == GeodeClassIds::CacheableString)
         {
           output->WriteUTF(m_value);
         }
-        else if (m_type == GemFireClassIds::CacheableASCIIStringHuge)
+        else if (m_type == GeodeClassIds::CacheableASCIIStringHuge)
         {
           output->WriteASCIIHuge(m_value);
         }
@@ -50,18 +50,18 @@ namespace Apache
         }
       }
 
-      IGFSerializable^ CacheableString::FromData(DataInput^ input) 
+      IGFSerializable^ CacheableString::FromData(DataInput^ input)
       {
-        if (m_type == GemFireClassIds::CacheableASCIIString ||
-            m_type == GemFireClassIds::CacheableString)
+        if (m_type == GeodeClassIds::CacheableASCIIString ||
+            m_type == GeodeClassIds::CacheableString)
         {
           m_value = input->ReadUTF();
         }
-        else if (m_type == GemFireClassIds::CacheableASCIIStringHuge)
+        else if (m_type == GeodeClassIds::CacheableASCIIStringHuge)
         {
           m_value = input->ReadASCIIHuge();
         }
-        else 
+        else
         {
           m_value = input->ReadUTFHuge();
         }
@@ -71,7 +71,7 @@ namespace Apache
 
 
       inline void CacheableString::GetCacheableString(String^ value,
-        apache::geode::client::CacheableStringPtr& cStr)
+                                                      apache::geode::client::CacheableStringPtr& cStr)
       {
         size_t len;
         if (value != nullptr && (len = value->Length) > 0) {
@@ -85,7 +85,7 @@ namespace Apache
       }
 
       inline void CacheableString::GetCacheableString(array<Char>^ value,
-        apache::geode::client::CacheableStringPtr& cStr)
+                                                      apache::geode::client::CacheableStringPtr& cStr)
       {
         size_t len;
         if (value != nullptr && (len = value->Length) > 0) {
@@ -102,9 +102,9 @@ namespace Apache
       CacheableString::CacheableString(String^ value)
         : CacheableKey()
       {
-        if (value == nullptr ) {
+        if (value == nullptr) {
           throw gcnew IllegalArgumentException("CacheableString: null or " +
-            "zero-length string provided to the constructor.");
+                                               "zero-length string provided to the constructor.");
         }
         m_value = value;
 
@@ -114,12 +114,12 @@ namespace Apache
       CacheableString::CacheableString(array<Char>^ value)
         : CacheableKey()
       {
-        if (value == nullptr ) {
+        if (value == nullptr) {
           throw gcnew IllegalArgumentException("CacheableString: null or " +
-            "zero-length character array provided to the constructor.");
+                                               "zero-length character array provided to the constructor.");
         }
         m_value = gcnew String(value);
-       
+
         this->SetStringType();
       }
 
@@ -175,12 +175,12 @@ namespace Apache
         }
         //TODO: need to need java hashcode
         //return m_value->GetHashCode();
-        if(m_hashcode == 0) 
+        if (m_hashcode == 0)
         {
           int32_t prime = 31;
           int32_t localHash = 0;
-          for (int32_t i = 0; i < m_value->Length; i++) 
-            localHash = prime*localHash +  m_value[i];
+          for (int32_t i = 0; i < m_value->Length; i++)
+            localHash = prime*localHash + m_value[i];
           m_hashcode = localHash;
         }
         return m_hashcode;
@@ -189,24 +189,24 @@ namespace Apache
       void CacheableString::SetStringType()
       {
         int len = DataOutput::getEncodedLength(m_value);
-        
+
         if (len == m_value->Length)//ASCII string
         {
           if (len > 0xFFFF)
-            m_type = GemFireClassIds::CacheableASCIIStringHuge;
+            m_type = GeodeClassIds::CacheableASCIIStringHuge;
           else
-            m_type = GemFireClassIds::CacheableASCIIString;
+            m_type = GeodeClassIds::CacheableASCIIString;
         }
         else
         {
           if (len > 0xFFFF)
-            m_type = GemFireClassIds::CacheableStringHuge;
+            m_type = GeodeClassIds::CacheableStringHuge;
           else
-            m_type = GemFireClassIds::CacheableString;  
-    }  // namespace Client
-  }  // namespace Geode
-}  // namespace Apache
+            m_type = GeodeClassIds::CacheableString;
+        }  // namespace Client
+      }  // namespace Geode
+    }  // namespace Apache
 
-}
- } //namespace 
+  }
+} //namespace 
 

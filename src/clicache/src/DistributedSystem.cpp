@@ -78,7 +78,7 @@ namespace apache
       public:
 
         static CacheLoader* create(const char* assemblyPath,
-          const char* factoryFunctionName);
+                                   const char* factoryFunctionName);
       };
 
       class ManagedCacheListenerGeneric
@@ -87,7 +87,7 @@ namespace apache
       public:
 
         static CacheListener* create(const char* assemblyPath,
-          const char* factoryFunctionName);
+                                     const char* factoryFunctionName);
       };
 
       class ManagedFixedPartitionResolverGeneric
@@ -96,7 +96,7 @@ namespace apache
       public:
 
         static PartitionResolver* create(const char* assemblyPath,
-          const char* factoryFunctionName);
+                                         const char* factoryFunctionName);
       };
 
       class ManagedCacheWriterGeneric
@@ -105,7 +105,7 @@ namespace apache
       public:
 
         static CacheWriter* create(const char* assemblyPath,
-          const char* factoryFunctionName);
+                                   const char* factoryFunctionName);
       };
 
       class ManagedAuthInitializeGeneric
@@ -114,7 +114,7 @@ namespace apache
       public:
 
         static AuthInitialize* create(const char* assemblyPath,
-          const char* factoryFunctionName);
+                                      const char* factoryFunctionName);
       };
     }  // namespace client
   }  // namespace geode
@@ -141,27 +141,27 @@ namespace Apache
 
           ManagedString mg_name(name);
 
-          apache::geode::client::PropertiesPtr nativepropsptr(
-            GetNativePtr<apache::geode::client::Properties>(config));
-          
-         // apache::geode::client::PropertiesPtr nativepropsptr;
-          DistributedSystem::AppDomainInstanceInitialization(nativepropsptr);
+        apache::geode::client::PropertiesPtr nativepropsptr(
+          GetNativePtr<apache::geode::client::Properties>(config));
 
-          // this we are calling after all .NET initialization required in
-          // each AppDomain
-          apache::geode::client::DistributedSystemPtr& nativeptr(
-            apache::geode::client::DistributedSystem::connect(mg_name.CharPtr,
-            nativepropsptr));
+        // apache::geode::client::PropertiesPtr nativepropsptr;
+        DistributedSystem::AppDomainInstanceInitialization(nativepropsptr);
 
-          ManagedPostConnect();
+        // this we are calling after all .NET initialization required in
+        // each AppDomain
+        apache::geode::client::DistributedSystemPtr& nativeptr(
+          apache::geode::client::DistributedSystem::connect(mg_name.CharPtr,
+          nativepropsptr));
 
-//          DistributedSystem::AppDomainInstancePostInitialization();
+        ManagedPostConnect();
 
-          return Create(nativeptr.ptr());
+        //          DistributedSystem::AppDomainInstancePostInitialization();
+
+        return Create(nativeptr.ptr());
 
         _GF_MG_EXCEPTION_CATCH_ALL2
 
-        finally {
+          finally {
           apache::geode::client::DistributedSystemImpl::releaseDisconnectLock();
         }
       }
@@ -173,437 +173,437 @@ namespace Apache
         _GF_MG_EXCEPTION_TRY2
 
           if (apache::geode::client::DistributedSystem::isConnected()) {
-           // apache::geode::client::CacheImpl::expiryTaskManager->cancelTask(
-             // s_memoryPressureTaskID);
+            // apache::geode::client::CacheImpl::expiryTaskManager->cancelTask(
+            // s_memoryPressureTaskID);
             Serializable::UnregisterNativesGeneric();
             DistributedSystem::UnregisterBuiltinManagedTypes();
           }
-          apache::geode::client::DistributedSystem::disconnect();
-      
+        apache::geode::client::DistributedSystem::disconnect();
+
         _GF_MG_EXCEPTION_CATCH_ALL2
 
-        finally {
+          finally {
           apache::geode::client::DistributedSystemImpl::releaseDisconnectLock();
         }
       }
 
 
-    /*  DistributedSystem^ DistributedSystem::ConnectOrGetInstance(String^ name)
-      {
+      /*  DistributedSystem^ DistributedSystem::ConnectOrGetInstance(String^ name)
+        {
         return DistributedSystem::ConnectOrGetInstance(name, nullptr);
-      }
+        }
 
-      DistributedSystem^ DistributedSystem::ConnectOrGetInstance(String^ name,
-          Properties^ config)
-      {
+        DistributedSystem^ DistributedSystem::ConnectOrGetInstance(String^ name,
+        Properties^ config)
+        {
         apache::geode::client::DistributedSystemImpl::acquireDisconnectLock();
 
         _GF_MG_EXCEPTION_TRY
 
-          ManagedString mg_name(name);
-          apache::geode::client::PropertiesPtr nativepropsptr(
-            GetNativePtr<apache::geode::client::Properties>(config));
-          DistributedSystem::AppDomainInstanceInitialization(nativepropsptr);
+        ManagedString mg_name(name);
+        apache::geode::client::PropertiesPtr nativepropsptr(
+        GetNativePtr<apache::geode::client::Properties>(config));
+        DistributedSystem::AppDomainInstanceInitialization(nativepropsptr);
 
-          // this we are calling after all .NET initialization required in
-          // each AppDomain
-          apache::geode::client::DistributedSystemPtr& nativeptr(
-            apache::geode::client::DistributedSystem::connectOrGetInstance(mg_name.CharPtr,
-            nativepropsptr));
+        // this we are calling after all .NET initialization required in
+        // each AppDomain
+        apache::geode::client::DistributedSystemPtr& nativeptr(
+        apache::geode::client::DistributedSystem::connectOrGetInstance(mg_name.CharPtr,
+        nativepropsptr));
 
-          if (apache::geode::client::DistributedSystem::currentInstances() == 1) {
-            // stuff to be done only for the first connect
-            ManagedPostConnect();
-          }
-
-          DistributedSystem::AppDomainInstancePostInitialization();
-
-          return Create(nativeptr.ptr());
-          
-        _GF_MG_EXCEPTION_CATCH_ALL
-
-        finally {
-          apache::geode::client::DistributedSystemImpl::releaseDisconnectLock();
+        if (apache::geode::client::DistributedSystem::currentInstances() == 1) {
+        // stuff to be done only for the first connect
+        ManagedPostConnect();
         }
-      }
-*/
-   /*   int DistributedSystem::DisconnectInstance()
-      {
-        apache::geode::client::DistributedSystemImpl::acquireDisconnectLock();
 
-        _GF_MG_EXCEPTION_TRY
+        DistributedSystem::AppDomainInstancePostInitialization();
 
-          int remainingInstances =
-            apache::geode::client::DistributedSystem::currentInstances();
-          if (remainingInstances <= 0) {
-            throw gcnew NotConnectedException("DistributedSystem."
-              "DisconnectInstance: no remaining instance connections");
-          }
-
-          //apache::geode::client::CacheImpl::expiryTaskManager->cancelTask(
-            //s_memoryPressureTaskID);
-          Serializable::UnregisterNatives();
-
-          if (remainingInstances == 1) { // last instance
-            DistributedSystem::UnregisterBuiltinManagedTypes();
-          }
-          return apache::geode::client::DistributedSystem::disconnectInstance();
+        return Create(nativeptr.ptr());
 
         _GF_MG_EXCEPTION_CATCH_ALL
 
         finally {
-          apache::geode::client::DistributedSystemImpl::releaseDisconnectLock();
+        apache::geode::client::DistributedSystemImpl::releaseDisconnectLock();
         }
-      }
-*/
+        }
+        */
+      /*   int DistributedSystem::DisconnectInstance()
+         {
+         apache::geode::client::DistributedSystemImpl::acquireDisconnectLock();
+
+         _GF_MG_EXCEPTION_TRY
+
+         int remainingInstances =
+         apache::geode::client::DistributedSystem::currentInstances();
+         if (remainingInstances <= 0) {
+         throw gcnew NotConnectedException("DistributedSystem."
+         "DisconnectInstance: no remaining instance connections");
+         }
+
+         //apache::geode::client::CacheImpl::expiryTaskManager->cancelTask(
+         //s_memoryPressureTaskID);
+         Serializable::UnregisterNatives();
+
+         if (remainingInstances == 1) { // last instance
+         DistributedSystem::UnregisterBuiltinManagedTypes();
+         }
+         return apache::geode::client::DistributedSystem::disconnectInstance();
+
+         _GF_MG_EXCEPTION_CATCH_ALL
+
+         finally {
+         apache::geode::client::DistributedSystemImpl::releaseDisconnectLock();
+         }
+         }
+         */
 
       void DistributedSystem::AppDomainInstanceInitialization(
         const apache::geode::client::PropertiesPtr& nativepropsptr)
       {
         _GF_MG_EXCEPTION_TRY2
-          
+
           // Register wrapper types for built-in types, this are still cpp wrapper
-           
+
           /*
             Serializable::RegisterWrapperGeneric(
-              gcnew WrapperDelegateGeneric(Apache::Geode::Client::CacheableHashSet::Create),
-              apache::geode::client::GeodeTypeIds::CacheableHashSet);
-            
-             Serializable::RegisterWrapperGeneric(
-              gcnew WrapperDelegateGeneric(Apache::Geode::Client::CacheableLinkedHashSet::Create),
-              apache::geode::client::GeodeTypeIds::CacheableLinkedHashSet);
+            gcnew WrapperDelegateGeneric(Apache::Geode::Client::CacheableHashSet::Create),
+            apache::geode::client::GeodeTypeIds::CacheableHashSet);
 
-             Serializable::RegisterWrapperGeneric(
-              gcnew WrapperDelegateGeneric(Apache::Geode::Client::Struct::Create),
-              apache::geode::client::GeodeTypeIds::Struct);
-            
-             Serializable::RegisterWrapperGeneric(
-              gcnew WrapperDelegateGeneric(Apache::Geode::Client::Properties::CreateDeserializable),
-              apache::geode::client::GeodeTypeIds::Properties);
+            Serializable::RegisterWrapperGeneric(
+            gcnew WrapperDelegateGeneric(Apache::Geode::Client::CacheableLinkedHashSet::Create),
+            apache::geode::client::GeodeTypeIds::CacheableLinkedHashSet);
 
-          // End register wrapper types for built-in types
+            Serializable::RegisterWrapperGeneric(
+            gcnew WrapperDelegateGeneric(Apache::Geode::Client::Struct::Create),
+            apache::geode::client::GeodeTypeIds::Struct);
 
-  // Register with cpp using unmanaged Cacheablekey wrapper
+            Serializable::RegisterWrapperGeneric(
+            gcnew WrapperDelegateGeneric(Apache::Geode::Client::Properties::CreateDeserializable),
+            apache::geode::client::GeodeTypeIds::Properties);
+
+            // End register wrapper types for built-in types
+
+            // Register with cpp using unmanaged Cacheablekey wrapper
             Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableByte,
-              gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableByte::CreateDeserializable));
-
-            Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableBoolean,
-              gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableBoolean::CreateDeserializable));
+            apache::geode::client::GeodeTypeIds::CacheableByte,
+            gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableByte::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableBytes,
-              gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableBytes::CreateDeserializable));
+            apache::geode::client::GeodeTypeIds::CacheableBoolean,
+            gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableBoolean::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::BooleanArray, 
-              gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::BooleanArray::CreateDeserializable));
+            apache::geode::client::GeodeTypeIds::CacheableBytes,
+            gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableBytes::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableWideChar,
-              gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableCharacter::CreateDeserializable));
+            apache::geode::client::GeodeTypeIds::BooleanArray,
+            gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::BooleanArray::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CharArray,
-              gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CharArray::CreateDeserializable));
+            apache::geode::client::GeodeTypeIds::CacheableWideChar,
+            gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableCharacter::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableDouble,
-              gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableDouble::CreateDeserializable));
+            apache::geode::client::GeodeTypeIds::CharArray,
+            gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CharArray::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableDoubleArray,
-              gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableDoubleArray::CreateDeserializable));
+            apache::geode::client::GeodeTypeIds::CacheableDouble,
+            gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableDouble::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableFloat,
-              gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableFloat::CreateDeserializable));
+            apache::geode::client::GeodeTypeIds::CacheableDoubleArray,
+            gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableDoubleArray::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableFloatArray,
-              gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableFloatArray::CreateDeserializable));
-
-           
-            Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableHashSet,
-              gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableHashSet::CreateDeserializable));
-
-           Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableLinkedHashSet,
-              gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableLinkedHashSet::CreateDeserializable));
+            apache::geode::client::GeodeTypeIds::CacheableFloat,
+            gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableFloat::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableInt16,
-              gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableInt16::CreateDeserializable));
+            apache::geode::client::GeodeTypeIds::CacheableFloatArray,
+            gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableFloatArray::CreateDeserializable));
+
 
             Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableInt16Array,
-              gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableInt16Array::CreateDeserializable));
+            apache::geode::client::GeodeTypeIds::CacheableHashSet,
+            gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableHashSet::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableInt32,
-              gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableInt32::CreateDeserializable));
+            apache::geode::client::GeodeTypeIds::CacheableLinkedHashSet,
+            gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableLinkedHashSet::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableInt32Array,
-              gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableInt32Array::CreateDeserializable));
+            apache::geode::client::GeodeTypeIds::CacheableInt16,
+            gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableInt16::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableInt64,
-              gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableInt64::CreateDeserializable));
+            apache::geode::client::GeodeTypeIds::CacheableInt16Array,
+            gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableInt16Array::CreateDeserializable));
 
             Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableInt64Array,
-              gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableInt64Array::CreateDeserializable));
-              */
+            apache::geode::client::GeodeTypeIds::CacheableInt32,
+            gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableInt32::CreateDeserializable));
+
+            Serializable::RegisterTypeGeneric(
+            apache::geode::client::GeodeTypeIds::CacheableInt32Array,
+            gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableInt32Array::CreateDeserializable));
+
+            Serializable::RegisterTypeGeneric(
+            apache::geode::client::GeodeTypeIds::CacheableInt64,
+            gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableInt64::CreateDeserializable));
+
+            Serializable::RegisterTypeGeneric(
+            apache::geode::client::GeodeTypeIds::CacheableInt64Array,
+            gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableInt64Array::CreateDeserializable));
+            */
 
             /*Serializable::RegisterTypeGeneric(
               apache::geode::client::GeodeTypeIds::CacheableASCIIString,
               gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableString::CreateDeserializable));
 
-            Serializable::RegisterTypeGeneric(
+              Serializable::RegisterTypeGeneric(
               apache::geode::client::GeodeTypeIds::CacheableASCIIStringHuge,
               gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableString::createDeserializableHuge));
 
-            Serializable::RegisterTypeGeneric(
+              Serializable::RegisterTypeGeneric(
               apache::geode::client::GeodeTypeIds::CacheableString,
               gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableString::createUTFDeserializable));
 
-            Serializable::RegisterTypeGeneric(
+              Serializable::RegisterTypeGeneric(
               apache::geode::client::GeodeTypeIds::CacheableStringHuge,
               gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableString::createUTFDeserializableHuge));*/
 
-            /*
-            Serializable::RegisterTypeGeneric(
+              /*
+              Serializable::RegisterTypeGeneric(
               apache::geode::client::GeodeTypeIds::CacheableNullString,
               gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableString::CreateDeserializable));
 
-            Serializable::RegisterTypeGeneric(
+              Serializable::RegisterTypeGeneric(
               apache::geode::client::GeodeTypeIds::CacheableStringArray,
               gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableStringArray::CreateDeserializable));
 
-            Serializable::RegisterTypeGeneric(
+              Serializable::RegisterTypeGeneric(
               apache::geode::client::GeodeTypeIds::Struct,
               gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::Struct::CreateDeserializable));
 
-            Serializable::RegisterTypeGeneric(
+              Serializable::RegisterTypeGeneric(
               apache::geode::client::GeodeTypeIds::Properties,
               gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::Properties::CreateDeserializable));
-            */
-            
-            // End register other built-in types
+              */
 
-            //primitive types are still C++, as these are used as keys mostly
-          // Register generic wrapper types for built-in types
-          //byte
+              // End register other built-in types
 
-         /* Serializable::RegisterWrapperGeneric(
-            gcnew WrapperDelegateGeneric(CacheableByte::Create),
-            apache::geode::client::GeodeTypeIds::CacheableByte, Byte::typeid);*/
+              //primitive types are still C++, as these are used as keys mostly
+              // Register generic wrapper types for built-in types
+              //byte
 
-          Serializable::RegisterWrapperGeneric(
-            gcnew WrapperDelegateGeneric(CacheableByte::Create),
-            apache::geode::client::GeodeTypeIds::CacheableByte, SByte::typeid);
-          
-          //boolean
-          Serializable::RegisterWrapperGeneric(
-            gcnew WrapperDelegateGeneric(CacheableBoolean::Create),
-            apache::geode::client::GeodeTypeIds::CacheableBoolean, Boolean::typeid);
-          //wide char
-          Serializable::RegisterWrapperGeneric(
-            gcnew WrapperDelegateGeneric(CacheableCharacter::Create),
-            apache::geode::client::GeodeTypeIds::CacheableWideChar, Char::typeid);
-          //double
-          Serializable::RegisterWrapperGeneric(
-            gcnew WrapperDelegateGeneric(CacheableDouble::Create),
-            apache::geode::client::GeodeTypeIds::CacheableDouble, Double::typeid);
-          //ascii string
-          Serializable::RegisterWrapperGeneric(
-            gcnew WrapperDelegateGeneric(CacheableString::Create),
-            apache::geode::client::GeodeTypeIds::CacheableASCIIString, String::typeid);
-            
-          //TODO:
-          ////ascii string huge
-          //Serializable::RegisterWrapperGeneric(
-          //  gcnew WrapperDelegateGeneric(CacheableString::Create),
-          //  apache::geode::client::GeodeTypeIds::CacheableASCIIStringHuge, String::typeid);
-          ////string
-          //Serializable::RegisterWrapperGeneric(
-          //  gcnew WrapperDelegateGeneric(CacheableString::Create),
-          //  apache::geode::client::GeodeTypeIds::CacheableString, String::typeid);
-          ////string huge
-          //Serializable::RegisterWrapperGeneric(
-          //  gcnew WrapperDelegateGeneric(CacheableString::Create),
-          //  apache::geode::client::GeodeTypeIds::CacheableStringHuge, String::typeid);
-          //float
+              /* Serializable::RegisterWrapperGeneric(
+                 gcnew WrapperDelegateGeneric(CacheableByte::Create),
+                 apache::geode::client::GeodeTypeIds::CacheableByte, Byte::typeid);*/
 
-          Serializable::RegisterWrapperGeneric(
-            gcnew WrapperDelegateGeneric(CacheableFloat::Create),
-            apache::geode::client::GeodeTypeIds::CacheableFloat, float::typeid);
-          //int 16
-          Serializable::RegisterWrapperGeneric(
-            gcnew WrapperDelegateGeneric(CacheableInt16::Create),
-            apache::geode::client::GeodeTypeIds::CacheableInt16, Int16::typeid);
-          //int32
-          Serializable::RegisterWrapperGeneric(
-            gcnew WrapperDelegateGeneric(CacheableInt32::Create),
-            apache::geode::client::GeodeTypeIds::CacheableInt32, Int32::typeid);
-          //int64
-          Serializable::RegisterWrapperGeneric(
-            gcnew WrapperDelegateGeneric(CacheableInt64::Create),
-            apache::geode::client::GeodeTypeIds::CacheableInt64, Int64::typeid);
+                 Serializable::RegisterWrapperGeneric(
+                 gcnew WrapperDelegateGeneric(CacheableByte::Create),
+                 apache::geode::client::GeodeTypeIds::CacheableByte, SByte::typeid);
 
-          ////uint16
-          //Serializable::RegisterWrapperGeneric(
-          //  gcnew WrapperDelegateGeneric(CacheableInt16::Create),
-          //  apache::geode::client::GeodeTypeIds::CacheableInt16, UInt16::typeid);
-          ////uint32
-          //Serializable::RegisterWrapperGeneric(
-          //  gcnew WrapperDelegateGeneric(CacheableInt32::Create),
-          //  apache::geode::client::GeodeTypeIds::CacheableInt32, UInt32::typeid);
-          ////uint64
-          //Serializable::RegisterWrapperGeneric(
-          //  gcnew WrapperDelegateGeneric(CacheableInt64::Create),
-          //  apache::geode::client::GeodeTypeIds::CacheableInt64, UInt64::typeid);
-          //=======================================================================
+        //boolean
+        Serializable::RegisterWrapperGeneric(
+          gcnew WrapperDelegateGeneric(CacheableBoolean::Create),
+          apache::geode::client::GeodeTypeIds::CacheableBoolean, Boolean::typeid);
+        //wide char
+        Serializable::RegisterWrapperGeneric(
+          gcnew WrapperDelegateGeneric(CacheableCharacter::Create),
+          apache::geode::client::GeodeTypeIds::CacheableWideChar, Char::typeid);
+        //double
+        Serializable::RegisterWrapperGeneric(
+          gcnew WrapperDelegateGeneric(CacheableDouble::Create),
+          apache::geode::client::GeodeTypeIds::CacheableDouble, Double::typeid);
+        //ascii string
+        Serializable::RegisterWrapperGeneric(
+          gcnew WrapperDelegateGeneric(CacheableString::Create),
+          apache::geode::client::GeodeTypeIds::CacheableASCIIString, String::typeid);
 
-            //Now onwards all will be wrap in managed cacheable key..
+        //TODO:
+        ////ascii string huge
+        //Serializable::RegisterWrapperGeneric(
+        //  gcnew WrapperDelegateGeneric(CacheableString::Create),
+        //  apache::geode::client::GeodeTypeIds::CacheableASCIIStringHuge, String::typeid);
+        ////string
+        //Serializable::RegisterWrapperGeneric(
+        //  gcnew WrapperDelegateGeneric(CacheableString::Create),
+        //  apache::geode::client::GeodeTypeIds::CacheableString, String::typeid);
+        ////string huge
+        //Serializable::RegisterWrapperGeneric(
+        //  gcnew WrapperDelegateGeneric(CacheableString::Create),
+        //  apache::geode::client::GeodeTypeIds::CacheableStringHuge, String::typeid);
+        //float
 
-            Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableBytes,
-              gcnew TypeFactoryMethodGeneric(CacheableBytes::CreateDeserializable), 
-              Type::GetType("System.Byte[]"));
+        Serializable::RegisterWrapperGeneric(
+          gcnew WrapperDelegateGeneric(CacheableFloat::Create),
+          apache::geode::client::GeodeTypeIds::CacheableFloat, float::typeid);
+        //int 16
+        Serializable::RegisterWrapperGeneric(
+          gcnew WrapperDelegateGeneric(CacheableInt16::Create),
+          apache::geode::client::GeodeTypeIds::CacheableInt16, Int16::typeid);
+        //int32
+        Serializable::RegisterWrapperGeneric(
+          gcnew WrapperDelegateGeneric(CacheableInt32::Create),
+          apache::geode::client::GeodeTypeIds::CacheableInt32, Int32::typeid);
+        //int64
+        Serializable::RegisterWrapperGeneric(
+          gcnew WrapperDelegateGeneric(CacheableInt64::Create),
+          apache::geode::client::GeodeTypeIds::CacheableInt64, Int64::typeid);
 
-           /* Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableBytes,
-              gcnew TypeFactoryMethodGeneric(CacheableBytes::CreateDeserializable), 
-              Type::GetType("System.SByte[]"));*/
+        ////uint16
+        //Serializable::RegisterWrapperGeneric(
+        //  gcnew WrapperDelegateGeneric(CacheableInt16::Create),
+        //  apache::geode::client::GeodeTypeIds::CacheableInt16, UInt16::typeid);
+        ////uint32
+        //Serializable::RegisterWrapperGeneric(
+        //  gcnew WrapperDelegateGeneric(CacheableInt32::Create),
+        //  apache::geode::client::GeodeTypeIds::CacheableInt32, UInt32::typeid);
+        ////uint64
+        //Serializable::RegisterWrapperGeneric(
+        //  gcnew WrapperDelegateGeneric(CacheableInt64::Create),
+        //  apache::geode::client::GeodeTypeIds::CacheableInt64, UInt64::typeid);
+        //=======================================================================
 
-            Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableDoubleArray,
-              gcnew TypeFactoryMethodGeneric(CacheableDoubleArray::CreateDeserializable),
-              Type::GetType("System.Double[]"));
+        //Now onwards all will be wrap in managed cacheable key..
 
-            Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableFloatArray,
-              gcnew TypeFactoryMethodGeneric(CacheableFloatArray::CreateDeserializable),
-              Type::GetType("System.Single[]"));
+        Serializable::RegisterTypeGeneric(
+          apache::geode::client::GeodeTypeIds::CacheableBytes,
+          gcnew TypeFactoryMethodGeneric(CacheableBytes::CreateDeserializable),
+          Type::GetType("System.Byte[]"));
 
-           //TODO:
-            //as it is
-            Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableHashSet,
-              gcnew TypeFactoryMethodGeneric(CacheableHashSet::CreateDeserializable),
-              nullptr);
+        /* Serializable::RegisterTypeGeneric(
+           apache::geode::client::GeodeTypeIds::CacheableBytes,
+           gcnew TypeFactoryMethodGeneric(CacheableBytes::CreateDeserializable),
+           Type::GetType("System.SByte[]"));*/
 
-            //as it is
-           Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableLinkedHashSet,
-              gcnew TypeFactoryMethodGeneric(CacheableLinkedHashSet::CreateDeserializable),
-              nullptr);
+        Serializable::RegisterTypeGeneric(
+          apache::geode::client::GeodeTypeIds::CacheableDoubleArray,
+          gcnew TypeFactoryMethodGeneric(CacheableDoubleArray::CreateDeserializable),
+          Type::GetType("System.Double[]"));
 
+        Serializable::RegisterTypeGeneric(
+          apache::geode::client::GeodeTypeIds::CacheableFloatArray,
+          gcnew TypeFactoryMethodGeneric(CacheableFloatArray::CreateDeserializable),
+          Type::GetType("System.Single[]"));
 
-            Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableInt16Array,
-              gcnew TypeFactoryMethodGeneric(CacheableInt16Array::CreateDeserializable),
-              Type::GetType("System.Int16[]"));
+        //TODO:
+        //as it is
+        Serializable::RegisterTypeGeneric(
+          apache::geode::client::GeodeTypeIds::CacheableHashSet,
+          gcnew TypeFactoryMethodGeneric(CacheableHashSet::CreateDeserializable),
+          nullptr);
 
-          /*  Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableInt16Array,
-              gcnew TypeFactoryMethodGeneric(CacheableInt16Array::CreateDeserializable),
-              Type::GetType("System.UInt16[]"));*/
+        //as it is
+        Serializable::RegisterTypeGeneric(
+          apache::geode::client::GeodeTypeIds::CacheableLinkedHashSet,
+          gcnew TypeFactoryMethodGeneric(CacheableLinkedHashSet::CreateDeserializable),
+          nullptr);
 
 
-            Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableInt32Array,
-              gcnew TypeFactoryMethodGeneric(CacheableInt32Array::CreateDeserializable),
-              Type::GetType("System.Int32[]"));
+        Serializable::RegisterTypeGeneric(
+          apache::geode::client::GeodeTypeIds::CacheableInt16Array,
+          gcnew TypeFactoryMethodGeneric(CacheableInt16Array::CreateDeserializable),
+          Type::GetType("System.Int16[]"));
 
-           /* Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableInt32Array,
-              gcnew TypeFactoryMethodGeneric(CacheableInt32Array::CreateDeserializable),
-              Type::GetType("System.UInt32[]"));*/
+        /*  Serializable::RegisterTypeGeneric(
+            apache::geode::client::GeodeTypeIds::CacheableInt16Array,
+            gcnew TypeFactoryMethodGeneric(CacheableInt16Array::CreateDeserializable),
+            Type::GetType("System.UInt16[]"));*/
 
 
-            Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableInt64Array,
-              gcnew TypeFactoryMethodGeneric(CacheableInt64Array::CreateDeserializable),
-              Type::GetType("System.Int64[]"));
+        Serializable::RegisterTypeGeneric(
+          apache::geode::client::GeodeTypeIds::CacheableInt32Array,
+          gcnew TypeFactoryMethodGeneric(CacheableInt32Array::CreateDeserializable),
+          Type::GetType("System.Int32[]"));
 
-           /* Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableInt64Array,
-              gcnew TypeFactoryMethodGeneric(CacheableInt64Array::CreateDeserializable),
-              Type::GetType("System.UInt64[]"));*/
-						//TODO:;split
+        /* Serializable::RegisterTypeGeneric(
+           apache::geode::client::GeodeTypeIds::CacheableInt32Array,
+           gcnew TypeFactoryMethodGeneric(CacheableInt32Array::CreateDeserializable),
+           Type::GetType("System.UInt32[]"));*/
 
-            Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::BooleanArray,
-              gcnew TypeFactoryMethodGeneric(BooleanArray::CreateDeserializable),
-              Type::GetType("System.Boolean[]"));
 
-            Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CharArray,
-              gcnew TypeFactoryMethodGeneric(CharArray::CreateDeserializable),
-              Type::GetType("System.Char[]"));
+        Serializable::RegisterTypeGeneric(
+          apache::geode::client::GeodeTypeIds::CacheableInt64Array,
+          gcnew TypeFactoryMethodGeneric(CacheableInt64Array::CreateDeserializable),
+          Type::GetType("System.Int64[]"));
 
-            //TODO::
+        /* Serializable::RegisterTypeGeneric(
+           apache::geode::client::GeodeTypeIds::CacheableInt64Array,
+           gcnew TypeFactoryMethodGeneric(CacheableInt64Array::CreateDeserializable),
+           Type::GetType("System.UInt64[]"));*/
+        //TODO:;split
 
-            //Serializable::RegisterTypeGeneric(
-            //  apache::geode::client::GeodeTypeIds::CacheableNullString,
-            //  gcnew TypeFactoryMethodNew(Apache::Geode::Client::CacheableString::CreateDeserializable));
+        Serializable::RegisterTypeGeneric(
+          apache::geode::client::GeodeTypeIds::BooleanArray,
+          gcnew TypeFactoryMethodGeneric(BooleanArray::CreateDeserializable),
+          Type::GetType("System.Boolean[]"));
 
-            Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableStringArray,
-              gcnew TypeFactoryMethodGeneric(CacheableStringArray::CreateDeserializable),
-              Type::GetType("System.String[]"));
+        Serializable::RegisterTypeGeneric(
+          apache::geode::client::GeodeTypeIds::CharArray,
+          gcnew TypeFactoryMethodGeneric(CharArray::CreateDeserializable),
+          Type::GetType("System.Char[]"));
 
-            //as it is
-            Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::Struct,
-              gcnew TypeFactoryMethodGeneric(Struct::CreateDeserializable),
-              nullptr);
+        //TODO::
 
-            //as it is
-            Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::Properties,
-              gcnew TypeFactoryMethodGeneric(Properties<String^, String^>::CreateDeserializable),
-              nullptr);
-              
-          /*  Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::PdxType,
-              gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::Internal::PdxType::CreateDeserializable),
-              nullptr);*/
+        //Serializable::RegisterTypeGeneric(
+        //  apache::geode::client::GeodeTypeIds::CacheableNullString,
+        //  gcnew TypeFactoryMethodNew(Apache::Geode::Client::CacheableString::CreateDeserializable));
 
-            Serializable::RegisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::EnumInfo,
-              gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::Internal::EnumInfo::CreateDeserializable),
-              nullptr);
-          
-          // End register generic wrapper types for built-in types
+        Serializable::RegisterTypeGeneric(
+          apache::geode::client::GeodeTypeIds::CacheableStringArray,
+          gcnew TypeFactoryMethodGeneric(CacheableStringArray::CreateDeserializable),
+          Type::GetType("System.String[]"));
 
-          if (!apache::geode::client::DistributedSystem::isConnected()) 
-          {
-            // Set the Generic ManagedAuthInitialize factory function
-            apache::geode::client::SystemProperties::managedAuthInitializeFn =
-              apache::geode::client::ManagedAuthInitializeGeneric::create;
+        //as it is
+        Serializable::RegisterTypeGeneric(
+          apache::geode::client::GeodeTypeIds::Struct,
+          gcnew TypeFactoryMethodGeneric(Struct::CreateDeserializable),
+          nullptr);
 
-            // Set the Generic ManagedCacheLoader/Listener/Writer factory functions.
-            apache::geode::client::CacheXmlParser::managedCacheLoaderFn =
-              apache::geode::client::ManagedCacheLoaderGeneric::create;
-            apache::geode::client::CacheXmlParser::managedCacheListenerFn =
-              apache::geode::client::ManagedCacheListenerGeneric::create;
-            apache::geode::client::CacheXmlParser::managedCacheWriterFn =
-              apache::geode::client::ManagedCacheWriterGeneric::create;
+        //as it is
+        Serializable::RegisterTypeGeneric(
+          apache::geode::client::GeodeTypeIds::Properties,
+          gcnew TypeFactoryMethodGeneric(Properties<String^, String^>::CreateDeserializable),
+          nullptr);
 
-            // Set the Generic ManagedPartitionResolver factory function
-            apache::geode::client::CacheXmlParser::managedPartitionResolverFn =
-              apache::geode::client::ManagedFixedPartitionResolverGeneric::create;
+        /*  Serializable::RegisterTypeGeneric(
+            apache::geode::client::GeodeTypeIds::PdxType,
+            gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::Internal::PdxType::CreateDeserializable),
+            nullptr);*/
 
-            // Set the Generic ManagedPersistanceManager factory function
-            apache::geode::client::CacheXmlParser::managedPersistenceManagerFn =
-              apache::geode::client::ManagedPersistenceManagerGeneric::create;
-          }
+        Serializable::RegisterTypeGeneric(
+          apache::geode::client::GeodeTypeIds::EnumInfo,
+          gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::Internal::EnumInfo::CreateDeserializable),
+          nullptr);
+
+        // End register generic wrapper types for built-in types
+
+        if (!apache::geode::client::DistributedSystem::isConnected())
+        {
+          // Set the Generic ManagedAuthInitialize factory function
+          apache::geode::client::SystemProperties::managedAuthInitializeFn =
+            apache::geode::client::ManagedAuthInitializeGeneric::create;
+
+          // Set the Generic ManagedCacheLoader/Listener/Writer factory functions.
+          apache::geode::client::CacheXmlParser::managedCacheLoaderFn =
+            apache::geode::client::ManagedCacheLoaderGeneric::create;
+          apache::geode::client::CacheXmlParser::managedCacheListenerFn =
+            apache::geode::client::ManagedCacheListenerGeneric::create;
+          apache::geode::client::CacheXmlParser::managedCacheWriterFn =
+            apache::geode::client::ManagedCacheWriterGeneric::create;
+
+          // Set the Generic ManagedPartitionResolver factory function
+          apache::geode::client::CacheXmlParser::managedPartitionResolverFn =
+            apache::geode::client::ManagedFixedPartitionResolverGeneric::create;
+
+          // Set the Generic ManagedPersistanceManager factory function
+          apache::geode::client::CacheXmlParser::managedPersistenceManagerFn =
+            apache::geode::client::ManagedPersistenceManagerGeneric::create;
+        }
 
         _GF_MG_EXCEPTION_CATCH_ALL2
       }
@@ -616,60 +616,60 @@ namespace Apache
         // Register other built-in types
         /*
         Serializable::RegisterTypeGeneric(
-          apache::geode::client::GeodeTypeIds::CacheableDate,
-          gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableDate::CreateDeserializable));
+        apache::geode::client::GeodeTypeIds::CacheableDate,
+        gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableDate::CreateDeserializable));
         Serializable::RegisterTypeGeneric(
-          apache::geode::client::GeodeTypeIds::CacheableFileName,
-          gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableFileName::CreateDeserializable));
+        apache::geode::client::GeodeTypeIds::CacheableFileName,
+        gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableFileName::CreateDeserializable));
         Serializable::RegisterTypeGeneric(
-          apache::geode::client::GeodeTypeIds::CacheableHashMap,
-          gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableHashMap::CreateDeserializable));
+        apache::geode::client::GeodeTypeIds::CacheableHashMap,
+        gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableHashMap::CreateDeserializable));
         Serializable::RegisterTypeGeneric(
-          apache::geode::client::GeodeTypeIds::CacheableHashTable,
-          gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableHashTable::CreateDeserializable));
+        apache::geode::client::GeodeTypeIds::CacheableHashTable,
+        gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableHashTable::CreateDeserializable));
         Serializable::RegisterTypeGeneric(
-          apache::geode::client::GeodeTypeIds::CacheableIdentityHashMap,
-          gcnew TypeFactoryMethodGeneric(
-          Apache::Geode::Client::CacheableIdentityHashMap::CreateDeserializable));
+        apache::geode::client::GeodeTypeIds::CacheableIdentityHashMap,
+        gcnew TypeFactoryMethodGeneric(
+        Apache::Geode::Client::CacheableIdentityHashMap::CreateDeserializable));
         Serializable::RegisterTypeGeneric(
-          apache::geode::client::GeodeTypeIds::CacheableUndefined,
-          gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableUndefined::CreateDeserializable));
+        apache::geode::client::GeodeTypeIds::CacheableUndefined,
+        gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableUndefined::CreateDeserializable));
         Serializable::RegisterTypeGeneric(
-          apache::geode::client::GeodeTypeIds::CacheableVector,
-          gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableVector::CreateDeserializable));
+        apache::geode::client::GeodeTypeIds::CacheableVector,
+        gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableVector::CreateDeserializable));
         Serializable::RegisterTypeGeneric(
-          apache::geode::client::GeodeTypeIds::CacheableObjectArray,
-          gcnew TypeFactoryMethodGeneric(
-          Apache::Geode::Client::CacheableObjectArray::CreateDeserializable));
+        apache::geode::client::GeodeTypeIds::CacheableObjectArray,
+        gcnew TypeFactoryMethodGeneric(
+        Apache::Geode::Client::CacheableObjectArray::CreateDeserializable));
         Serializable::RegisterTypeGeneric(
-          apache::geode::client::GeodeTypeIds::CacheableArrayList,
-          gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableArrayList::CreateDeserializable));
+        apache::geode::client::GeodeTypeIds::CacheableArrayList,
+        gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableArrayList::CreateDeserializable));
         Serializable::RegisterTypeGeneric(
-          apache::geode::client::GeodeTypeIds::CacheableStack,
-          gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableStack::CreateDeserializable));
+        apache::geode::client::GeodeTypeIds::CacheableStack,
+        gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableStack::CreateDeserializable));
         Serializable::RegisterTypeGeneric(
-          GemFireClassIds::CacheableManagedObject - 0x80000000,
-          gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableObject::CreateDeserializable));
+        GeodeClassIds::CacheableManagedObject - 0x80000000,
+        gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableObject::CreateDeserializable));
         Serializable::RegisterTypeGeneric(
-          GemFireClassIds::CacheableManagedObjectXml - 0x80000000,
-          gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableObjectXml::CreateDeserializable));
-          */
+        GeodeClassIds::CacheableManagedObjectXml - 0x80000000,
+        gcnew TypeFactoryMethodGeneric(Apache::Geode::Client::CacheableObjectXml::CreateDeserializable));
+        */
         // End register other built-in types
 
         // Register other built-in types for generics
         //c# datatime
-        
+
         Serializable::RegisterTypeGeneric(
           apache::geode::client::GeodeTypeIds::CacheableDate,
           gcnew TypeFactoryMethodGeneric(CacheableDate::CreateDeserializable),
           Type::GetType("System.DateTime"));
-        
+
         //as it is
         Serializable::RegisterTypeGeneric(
           apache::geode::client::GeodeTypeIds::CacheableFileName,
           gcnew TypeFactoryMethodGeneric(CacheableFileName::CreateDeserializable),
           nullptr);
-        
+
         //for generic dictionary define its type in static constructor of Serializable.hpp
         Serializable::RegisterTypeGeneric(
           apache::geode::client::GeodeTypeIds::CacheableHashMap,
@@ -688,7 +688,7 @@ namespace Apache
           gcnew TypeFactoryMethodGeneric(
           CacheableIdentityHashMap::CreateDeserializable),
           nullptr);
-        
+
         //keep as it is
         Serializable::RegisterTypeGeneric(
           apache::geode::client::GeodeTypeIds::CacheableUndefined,
@@ -713,7 +713,7 @@ namespace Apache
           apache::geode::client::GeodeTypeIds::CacheableArrayList,
           gcnew TypeFactoryMethodGeneric(CacheableArrayList::CreateDeserializable),
           nullptr);
-        
+
         //c# generic stack 
         Serializable::RegisterTypeGeneric(
           apache::geode::client::GeodeTypeIds::CacheableStack,
@@ -722,16 +722,16 @@ namespace Apache
 
         //as it is
         Serializable::RegisterTypeGeneric(
-          GemFireClassIds::CacheableManagedObject - 0x80000000,
+          GeodeClassIds::CacheableManagedObject - 0x80000000,
           gcnew TypeFactoryMethodGeneric(CacheableObject::CreateDeserializable),
           nullptr);
 
         //as it is
         Serializable::RegisterTypeGeneric(
-          GemFireClassIds::CacheableManagedObjectXml - 0x80000000,
+          GeodeClassIds::CacheableManagedObjectXml - 0x80000000,
           gcnew TypeFactoryMethodGeneric(CacheableObjectXml::CreateDeserializable),
           nullptr);
-        
+
         // End register other built-in types
 
         // TODO: what will happen for following if first appDomain unload ??
@@ -739,13 +739,13 @@ namespace Apache
         // maintain per AppDomainID functions in C++ layer.
 
         // Log the version of the C# layer being used
-       Log::Config(".NET layer assembly version: {0}({1})", System::Reflection::
-          Assembly::GetExecutingAssembly()->GetName()->Version->ToString(), 
-          System::Reflection::Assembly::GetExecutingAssembly()->ImageRuntimeVersion);
-        
-        Log::Config(".NET runtime version: {0} ",System::Environment::Version);
+        Log::Config(".NET layer assembly version: {0}({1})", System::Reflection::
+                    Assembly::GetExecutingAssembly()->GetName()->Version->ToString(),
+                    System::Reflection::Assembly::GetExecutingAssembly()->ImageRuntimeVersion);
+
+        Log::Config(".NET runtime version: {0} ", System::Environment::Version);
         Log::Config(".NET layer source repository (revision): {0} ({1})",
-          PRODUCT_SOURCE_REPOSITORY, PRODUCT_SOURCE_REVISION);
+                    PRODUCT_SOURCE_REPOSITORY, PRODUCT_SOURCE_REVISION);
       }
 
       void DistributedSystem::AppDomainInstancePostInitialization()
@@ -759,46 +759,46 @@ namespace Apache
 
       void DistributedSystem::UnregisterBuiltinManagedTypes()
       {
-         _GF_MG_EXCEPTION_TRY2
+        _GF_MG_EXCEPTION_TRY2
 
-         apache::geode::client::DistributedSystemImpl::acquireDisconnectLock();
+          apache::geode::client::DistributedSystemImpl::acquireDisconnectLock();
 
-         Serializable::UnregisterNativesGeneric();
-         
-         int remainingInstances =
-           apache::geode::client::DistributedSystemImpl::currentInstances();
+        Serializable::UnregisterNativesGeneric();
 
-          if (remainingInstances == 0) { // last instance
-           
-            
-            Serializable::UnregisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableDate);
-            Serializable::UnregisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableFileName);
-            Serializable::UnregisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableHashMap);
-            Serializable::UnregisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableHashTable);
-            Serializable::UnregisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableIdentityHashMap);
-            Serializable::UnregisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableVector);
-            Serializable::UnregisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableObjectArray);
-            Serializable::UnregisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableArrayList);
-            Serializable::UnregisterTypeGeneric(
-              apache::geode::client::GeodeTypeIds::CacheableStack);
-            Serializable::UnregisterTypeGeneric(
-              GemFireClassIds::CacheableManagedObject - 0x80000000);
-            Serializable::UnregisterTypeGeneric(
-              GemFireClassIds::CacheableManagedObjectXml - 0x80000000);            
-              
-          }
+        int remainingInstances =
+          apache::geode::client::DistributedSystemImpl::currentInstances();
 
-           _GF_MG_EXCEPTION_CATCH_ALL2
+        if (remainingInstances == 0) { // last instance
 
-        finally {
+
+          Serializable::UnregisterTypeGeneric(
+            apache::geode::client::GeodeTypeIds::CacheableDate);
+          Serializable::UnregisterTypeGeneric(
+            apache::geode::client::GeodeTypeIds::CacheableFileName);
+          Serializable::UnregisterTypeGeneric(
+            apache::geode::client::GeodeTypeIds::CacheableHashMap);
+          Serializable::UnregisterTypeGeneric(
+            apache::geode::client::GeodeTypeIds::CacheableHashTable);
+          Serializable::UnregisterTypeGeneric(
+            apache::geode::client::GeodeTypeIds::CacheableIdentityHashMap);
+          Serializable::UnregisterTypeGeneric(
+            apache::geode::client::GeodeTypeIds::CacheableVector);
+          Serializable::UnregisterTypeGeneric(
+            apache::geode::client::GeodeTypeIds::CacheableObjectArray);
+          Serializable::UnregisterTypeGeneric(
+            apache::geode::client::GeodeTypeIds::CacheableArrayList);
+          Serializable::UnregisterTypeGeneric(
+            apache::geode::client::GeodeTypeIds::CacheableStack);
+          Serializable::UnregisterTypeGeneric(
+            GeodeClassIds::CacheableManagedObject - 0x80000000);
+          Serializable::UnregisterTypeGeneric(
+            GeodeClassIds::CacheableManagedObjectXml - 0x80000000);
+
+        }
+
+        _GF_MG_EXCEPTION_CATCH_ALL2
+
+          finally {
           apache::geode::client::DistributedSystemImpl::releaseDisconnectLock();
         }
       }
@@ -808,10 +808,10 @@ namespace Apache
         _GF_MG_EXCEPTION_TRY2
 
           //  TODO
-					return Apache::Geode::Client::SystemProperties::Create(
-            apache::geode::client::DistributedSystem::getSystemProperties());
-            
-         //return nullptr;
+          return Apache::Geode::Client::SystemProperties::Create(
+          apache::geode::client::DistributedSystem::getSystemProperties());
+
+        //return nullptr;
 
         _GF_MG_EXCEPTION_CATCH_ALL2
       }
@@ -847,7 +847,7 @@ namespace Apache
           msclr::lock lockInstance(m_singletonSync);
           if (m_instance == nullptr) {
             m_instance = (nativeptr != nullptr
-                ? gcnew DistributedSystem(nativeptr) : nullptr);
+                          ? gcnew DistributedSystem(nativeptr) : nullptr);
           }
         }
         DistributedSystem^ instance = (DistributedSystem^)m_instance;
@@ -855,12 +855,12 @@ namespace Apache
       }
 
       DistributedSystem::DistributedSystem(apache::geode::client::DistributedSystem* nativeptr)
-        : SBWrap(nativeptr) 
+        : SBWrap(nativeptr)
       {
         System::Threading::TimerCallback^ timerCallback = gcnew System::
           Threading::TimerCallback(&DistributedSystem::HandleMemoryPressure);
         m_memoryPressureHandler = gcnew System::Threading::Timer(
-          timerCallback, "MemoryPressureHandler", 3*60000, 3*60000);
+          timerCallback, "MemoryPressureHandler", 3 * 60000, 3 * 60000);
       }
 
       DistributedSystem::~DistributedSystem()
@@ -895,17 +895,17 @@ namespace Apache
           gcnew cliCallback(m_cliCallBackObj,
           &CliCallbackDelegate::Callback);
 
-        apache::geode::client::DistributedSystemImpl::registerCliCallback( System::Threading::Thread::GetDomainID(),
-              (apache::geode::client::CliCallbackMethod)System::Runtime::InteropServices::
-							Marshal::GetFunctionPointerForDelegate(
-							nativeCallback).ToPointer());
+        apache::geode::client::DistributedSystemImpl::registerCliCallback(System::Threading::Thread::GetDomainID(),
+                                                                          (apache::geode::client::CliCallbackMethod)System::Runtime::InteropServices::
+                                                                          Marshal::GetFunctionPointerForDelegate(
+                                                                          nativeCallback).ToPointer());
       }
 
       void DistributedSystem::unregisterCliCallback()
       {
-        apache::geode::client::DistributedSystemImpl::unregisterCliCallback( System::Threading::Thread::GetDomainID());
-    }  // namespace Client
-  }  // namespace Geode
-}  // namespace Apache
+        apache::geode::client::DistributedSystemImpl::unregisterCliCallback(System::Threading::Thread::GetDomainID());
+      }  // namespace Client
+    }  // namespace Geode
+  }  // namespace Apache
 
 }

@@ -19,7 +19,7 @@
 
 #include "gf_defs.hpp"
 #include "IGFSerializable.hpp"
-#include "GemFireClassIds.hpp"
+#include "GeodeClassIds.hpp"
 
 using namespace System;
 
@@ -66,7 +66,7 @@ namespace Apache
         inline static CacheableObjectXml^ Create(Object^ value)
         {
           return (value != nullptr ? gcnew CacheableObjectXml(value) :
-            nullptr);
+                  nullptr);
         }
 
         /// <summary>
@@ -106,7 +106,7 @@ namespace Apache
         {
           inline virtual uint32_t get()
           {
-            return GemFireClassIds::CacheableManagedObjectXml;
+            return GeodeClassIds::CacheableManagedObjectXml;
           }
         }
 

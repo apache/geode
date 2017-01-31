@@ -20,7 +20,7 @@
 #include "../gf_defs.hpp"
 #include "../IPdxWriter.hpp"
 #include "PdxType.hpp"
-#include "../GemFireClassIds.hpp"
+#include "../GeodeClassIds.hpp"
 #include "PdxRemotePreservedData.hpp"
 using namespace System;
 
@@ -36,17 +36,17 @@ namespace Apache
       {
         ref class PdxLocalWriter : public IPdxWriter
         {
-        protected:            
-            PdxType^      m_pdxType;
-            DataOutput^   m_dataOutput;
-            uint8_t*      m_startPosition;
-            Int32         m_startPositionOffset;
-            String^         m_domainClassName;
-            array<int>^   m_offsets;
-            Int32         m_currentOffsetIndex;            
-            PdxRemotePreservedData^ m_preserveData;
-            //Type^       m_pdxDomainType;
-            String^       m_pdxClassName;
+        protected:
+          PdxType^      m_pdxType;
+          DataOutput^   m_dataOutput;
+          uint8_t*      m_startPosition;
+          Int32         m_startPositionOffset;
+          String^         m_domainClassName;
+          array<int>^   m_offsets;
+          Int32         m_currentOffsetIndex;
+          PdxRemotePreservedData^ m_preserveData;
+          //Type^       m_pdxDomainType;
+          String^       m_pdxClassName;
 
         public:
 
@@ -56,7 +56,7 @@ namespace Apache
             m_pdxType = pdxType;
             m_currentOffsetIndex = 0;
             m_preserveData = nullptr;
-            if(pdxType != nullptr)
+            if (pdxType != nullptr)
               m_pdxClassName = pdxType->PdxClassName;
             //m_pdxDomainType = nullptr;
             initialize();
@@ -68,16 +68,16 @@ namespace Apache
             m_pdxType = pdxType;
             m_currentOffsetIndex = 0;
             m_preserveData = nullptr;
-           // m_pdxDomainType = pdxDomainType;
+            // m_pdxDomainType = pdxDomainType;
             m_pdxClassName = pdxClassName;
             initialize();
           }
 
-          void initialize();          
+          void initialize();
 
-          virtual void AddOffset();          
+          virtual void AddOffset();
 
-          virtual void EndObjectWriting(); 
+          virtual void EndObjectWriting();
 
           //this is used to get pdx stream when WriteablePdxStream udpadates the field
           //It should be called after pdx stream has been written to output
@@ -95,83 +95,83 @@ namespace Apache
           {
             return m_startPositionOffset;
           }
-          
+
           /// <summary>
           /// Write a byte to the <c>IPdxWriter</c>.
           /// </summary>
           /// <param name="fieldName">The name of the field associated with the value.</param>
           /// <param name="value">The byte to write.</param>
-          virtual IPdxWriter^ WriteByte( String^ fieldName, SByte value );
+          virtual IPdxWriter^ WriteByte(String^ fieldName, SByte value);
 
           /// <summary>
           /// Write a signed byte to the <c>IPdxWriter</c>.
           /// </summary>
           /// <param name="fieldName">The name of the field associated with the value.</param>
           /// <param name="value">The signed byte to write.</param>
-          virtual IPdxWriter^ WriteSByte( String^ fieldName, SByte value );
+          virtual IPdxWriter^ WriteSByte(String^ fieldName, SByte value);
 
           /// <summary>
           /// Write a boolean value to the <c>IPdxWriter</c>.
           /// </summary>
           /// <param name="fieldName">The name of the field associated with the value.</param>
           /// <param name="value">The boolean value to write.</param>
-					virtual IPdxWriter^ WriteBoolean( String^ fieldName, Boolean value );
+          virtual IPdxWriter^ WriteBoolean(String^ fieldName, Boolean value);
 
           /// <summary>
           /// Write a char value to the <c>IPdxWriter</c>.
           /// </summary>
           /// <param name="fieldName">The name of the field associated with the value.</param>
           /// <param name="value">The char value to write.</param>
-          virtual IPdxWriter^ WriteChar( String^ fieldName, Char value );
-                       
+          virtual IPdxWriter^ WriteChar(String^ fieldName, Char value);
+
           /// <summary>
           /// Write an unsigned short integer (int16_t) to the <c>IPdxWriter</c>.
           /// </summary>
           /// <param name="fieldName">The name of the field associated with the value.</param>
           /// <param name="value">The unsigned 16-bit integer to write.</param>
-          virtual IPdxWriter^ WriteUInt16( String^ fieldName, uint16_t value );
+          virtual IPdxWriter^ WriteUInt16(String^ fieldName, uint16_t value);
 
           /// <summary>
           /// Write an unsigned 32-bit integer to the <c>IPdxWriter</c>.
           /// </summary>
           /// <param name="fieldName">The name of the field associated with the value.</param>
           /// <param name="value">The unsigned 32-bit integer to write.</param>
-          virtual IPdxWriter^ WriteUInt32( String^ fieldName, uint32_t value );
+          virtual IPdxWriter^ WriteUInt32(String^ fieldName, uint32_t value);
 
           /// <summary>
           /// Write an unsigned 64-bit integer to the <c>IPdxWriter</c>.
           /// </summary>
           /// <param name="fieldName">The name of the field associated with the value.</param>
           /// <param name="value">The unsigned 64-bit integer to write.</param>
-          virtual IPdxWriter^ WriteUInt64( String^ fieldName, uint64_t value );
+          virtual IPdxWriter^ WriteUInt64(String^ fieldName, uint64_t value);
 
           /// <summary>
           /// Write a 16-bit integer to the <c>IPdxWriter</c>.
           /// </summary>
           /// <param name="fieldName">The name of the field associated with the value.</param>
           /// <param name="value">The 16-bit integer to write.</param>
-          virtual IPdxWriter^ WriteShort( String^ fieldName, short value );
+          virtual IPdxWriter^ WriteShort(String^ fieldName, short value);
 
           /// <summary>
           /// Write a 32-bit integer to the <c>IPdxWriter</c>.
           /// </summary>
           /// <param name="fieldName">The name of the field associated with the value.</param>
           /// <param name="value">The 32-bit integer to write.</param>
-					virtual IPdxWriter^ WriteInt( String^ fieldName, Int32 value );
+          virtual IPdxWriter^ WriteInt(String^ fieldName, Int32 value);
 
           /// <summary>
           /// Write a 64-bit integer to the <c>IPdxWriter</c>.
           /// </summary>
           /// <param name="fieldName">The name of the field associated with the value.</param>
           /// <param name="value">The 64-bit integer to write.</param>
-          virtual IPdxWriter^ WriteLong( String^ fieldName, Int64 value );
+          virtual IPdxWriter^ WriteLong(String^ fieldName, Int64 value);
 
           /// <summary>
           /// Write a float to the <c>IPdxWriter</c>.
           /// </summary>
           /// <param name="fieldName">The name of the field associated with the value.</param>
           /// <param name="value">The float value to write.</param>
-          virtual IPdxWriter^ WriteFloat( String^ fieldName, float value );
+          virtual IPdxWriter^ WriteFloat(String^ fieldName, float value);
 
           /// <summary>
           /// Write a double precision real number to the <c>IPdxWriter</c>.
@@ -180,7 +180,7 @@ namespace Apache
           /// <param name="value">
           /// The double precision real number to write.
           /// </param>
-          virtual IPdxWriter^ WriteDouble( String^ fieldName, double value );
+          virtual IPdxWriter^ WriteDouble(String^ fieldName, double value);
 
           /// <summary>
           /// Write a string using java-modified UTF-8 encoding to
@@ -190,7 +190,7 @@ namespace Apache
           /// </summary>
           /// <param name="fieldName">The name of the field associated with the value.</param>
           /// <param name="value">The UTF encoded string to write.</param>
-          virtual IPdxWriter^ WriteString( String^ fieldName, String^ value );
+          virtual IPdxWriter^ WriteString(String^ fieldName, String^ value);
 
           /// <summary>
           /// Write a string using java-modified UTF-8 encoding to
@@ -199,7 +199,7 @@ namespace Apache
           /// </summary>
           /// <param name="fieldName">The name of the field associated with the value.</param>
           /// <param name="value">The UTF encoded string to write.</param>
-          virtual IPdxWriter^ WriteUTFHuge( String^ fieldName, String^ value );
+          virtual IPdxWriter^ WriteUTFHuge(String^ fieldName, String^ value);
 
           /// <summary>
           /// Write a string(only ASCII char) to
@@ -208,14 +208,14 @@ namespace Apache
           /// </summary>
           /// <param name="fieldName">The name of the field associated with the value.</param>
           /// <param name="value">The UTF encoded string to write.</param>
-          virtual IPdxWriter^ WriteASCIIHuge( String^ fieldName, String^ value );
+          virtual IPdxWriter^ WriteASCIIHuge(String^ fieldName, String^ value);
 
           /// <summary>
           /// Write an <c>Object</c> object to the <c>IPdxWriter</c>.
           /// </summary>
           /// <param name="fieldName">The name of the field associated with the value.</param>
           /// <param name="obj">The object to write.</param>
-          virtual IPdxWriter^ WriteObject( String^ fieldName, Object^ obj );
+          virtual IPdxWriter^ WriteObject(String^ fieldName, Object^ obj);
 
           //TODO:
           //virtual IPdxWriter^ WriteMap( String^ fieldName, System::Collections::IDictionary^ map );
@@ -225,15 +225,15 @@ namespace Apache
           /// </summary>
           /// <param name="fieldName">The name of the field associated with the value.</param>
           /// <param name="collection">The collection to write.</param>
-          virtual IPdxWriter^ WriteCollection( String^ fieldName, System::Collections::IList^ collection);
+          virtual IPdxWriter^ WriteCollection(String^ fieldName, System::Collections::IList^ collection);
 
           /// <summary>
           /// Write an collection to the <c>IPdxWriter</c>.
           /// </summary>
           /// <param name="fieldName">The name of the field associated with the value.</param>
           /// <param name="date">The date to write.</param>
-          virtual IPdxWriter^ WriteDate( String^ fieldName, System::DateTime date);
-          
+          virtual IPdxWriter^ WriteDate(String^ fieldName, System::DateTime date);
+
           //TODO:
           //virtual IPdxWriter^ writeFile(String fieldName, File file) ;
 
@@ -242,21 +242,21 @@ namespace Apache
           /// </summary>
           /// <param name="fieldName">The name of the field associated with the value.</param>
           /// <param name="boolArray">The boolArray to write.</param>
-					virtual IPdxWriter^ WriteBooleanArray( String^ fieldName, array<Boolean>^ boolArray);
+          virtual IPdxWriter^ WriteBooleanArray(String^ fieldName, array<Boolean>^ boolArray);
 
           /// <summary>
           /// Write an collection to the <c>IPdxWriter</c>.
           /// </summary>
           /// <param name="fieldName">The name of the field associated with the value.</param>
           /// <param name="charArray">The charArray to write.</param>
-          virtual IPdxWriter^ WriteCharArray(String^ fieldName, array<Char>^ charArray) ;
+          virtual IPdxWriter^ WriteCharArray(String^ fieldName, array<Char>^ charArray);
 
           /// <summary>
           /// Write an collection to the <c>IPdxWriter</c>.
           /// </summary>
           /// <param name="fieldName">The name of the field associated with the value.</param>
           /// <param name="byteArray">The byteArray to write.</param>
-					virtual IPdxWriter^ WriteByteArray(String^ fieldName, array<Byte>^ byteArray) ;
+          virtual IPdxWriter^ WriteByteArray(String^ fieldName, array<Byte>^ byteArray);
 
           /// <summary>
           /// Write an collection to the <c>IPdxWriter</c>.
@@ -298,7 +298,7 @@ namespace Apache
           /// </summary>
           /// <param name="fieldName">The name of the field associated with the value.</param>
           /// <param name="longArray">The longArray to write.</param>
-					virtual IPdxWriter^ WriteLongArray(String^ fieldName, array<Int64>^ longArray);
+          virtual IPdxWriter^ WriteLongArray(String^ fieldName, array<Int64>^ longArray);
 
           /// <summary>
           /// Write an collection to the <c>IPdxWriter</c>.
@@ -341,29 +341,29 @@ namespace Apache
           /// <param name="fieldName">The name of the field associated with the value.</param>
           /// <param name="byteArrays">The byteArrays to write.</param>
           virtual IPdxWriter^ WriteArrayOfByteArrays(String^ fieldName, array<array<Byte>^>^ byteArrays);
-          
+
           //TODO:
           //virtual IPdxWriter^ WriteEnum(String^ fieldName, Enum e) ;
           //virtual IPdxWriter^ WriteInetAddress(String^ fieldName, InetAddress address);
 
-          
+
           virtual IPdxWriter^ MarkIdentityField(String^ fieldName);
 
           virtual IPdxWriter^ WriteUnreadFields(IPdxUnreadFields^ unread);
 
-           /// <summary>
-					/// Writes the named field with the given value and type to the serialized form.
+          /// <summary>
+          /// Writes the named field with the given value and type to the serialized form.
           /// This method uses the <code>fieldType</code> to determine which WriteXXX method it should call.
           /// If it can not find a specific match to a writeXXX method it will call <see cref="WriteObject(String^, Object^)">.
-					/// 
-					/// </summary>
-					/// <returns>this PdxWriter</returns>
+          /// 
+          /// </summary>
+          /// <returns>this PdxWriter</returns>
           virtual IPdxWriter^ WriteField(String^ fieldName, Object^ fieldValue, Type^ type);
 
           virtual void WriteByte(Byte byte);//for internal purpose
-        };      
-    }  // namespace Client
-  }  // namespace Geode
-}  // namespace Apache
+        };
+      }  // namespace Client
+    }  // namespace Geode
+  }  // namespace Apache
 
 }

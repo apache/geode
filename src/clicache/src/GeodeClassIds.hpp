@@ -30,39 +30,39 @@ namespace Apache
     namespace Client
     {
 
-			struct PdxTypes
+      struct PdxTypes
       {
-				enum PdxTypesInternal
-				{
-					BOOLEAN,
-					BYTE,
-					CHAR,
-					SHORT,
-					INT,
-					LONG,
-					FLOAT,
-					DOUBLE,
-					DATE,
-					STRING,
-					OBJECT,
-					BOOLEAN_ARRAY,
-					CHAR_ARRAY,
-					BYTE_ARRAY,
-					SHORT_ARRAY,
-					INT_ARRAY,
-					LONG_ARRAY,
-					FLOAT_ARRAY,
-					DOUBLE_ARRAY,
-					STRING_ARRAY,
-					OBJECT_ARRAY,
-					ARRAY_OF_BYTE_ARRAYS
-				};
+        enum PdxTypesInternal
+        {
+          BOOLEAN,
+          BYTE,
+          CHAR,
+          SHORT,
+          INT,
+          LONG,
+          FLOAT,
+          DOUBLE,
+          DATE,
+          STRING,
+          OBJECT,
+          BOOLEAN_ARRAY,
+          CHAR_ARRAY,
+          BYTE_ARRAY,
+          SHORT_ARRAY,
+          INT_ARRAY,
+          LONG_ARRAY,
+          FLOAT_ARRAY,
+          DOUBLE_ARRAY,
+          STRING_ARRAY,
+          OBJECT_ARRAY,
+          ARRAY_OF_BYTE_ARRAYS
+        };
       };
 
       /// <summary>
       /// Static class containing the classIds of the built-in cacheable types.
       /// </summary>
-      public ref class GemFireClassIds
+      public ref class GeodeClassIds
       {
       public:
 
@@ -317,49 +317,49 @@ namespace Apache
         /// ClassId of <c>CacheableObjectXml</c> class
         /// </summary>
         literal uint32_t CacheableManagedObjectXml = 8 + 0x80000000;
-				   internal:
+      internal:
 
         literal uint32_t PdxType = apache::geode::client::GeodeTypeIds::PdxType + 0x80000000;
 
         literal uint32_t DATA_SERIALIZABLE = 45;
         literal uint32_t JAVA_CLASS = 43;
 
-        //internal gemfire typeids..
-      /*  literal Byte USERCLASS = 40;
-        literal Byte USERMAP = 94;
-        literal Byte USERCOLLECTION = 95;
-        literal Byte ARRAYOFBYTEARRAYS = 91;
-        literal Byte GEMFIREREGION =  98;
+        //internal geode typeids..
+        /*  literal Byte USERCLASS = 40;
+          literal Byte USERMAP = 94;
+          literal Byte USERCOLLECTION = 95;
+          literal Byte ARRAYOFBYTEARRAYS = 91;
+          literal Byte GEMFIREREGION =  98;
 
-        literal Byte BOOLEAN_TYPE = 17;
-        literal Byte CHARACTER_TYPE = 18;
-        literal Byte BYTE_TYPE = 19;
-        literal Byte SHORT_TYPE = 20;
-        literal Byte INTEGER_TYPE = 21;
-        literal Byte LONG_TYPE = 22;
-        literal Byte FLOAT_TYPE = 23;
-        literal Byte DOUBLE_TYPE = 24;
-        literal Byte VOID_TYPE = 25;   */  
+          literal Byte BOOLEAN_TYPE = 17;
+          literal Byte CHARACTER_TYPE = 18;
+          literal Byte BYTE_TYPE = 19;
+          literal Byte SHORT_TYPE = 20;
+          literal Byte INTEGER_TYPE = 21;
+          literal Byte LONG_TYPE = 22;
+          literal Byte FLOAT_TYPE = 23;
+          literal Byte DOUBLE_TYPE = 24;
+          literal Byte VOID_TYPE = 25;   */
 
         literal Byte PDX = 93;
         literal Byte PDX_ENUM = 94;
 
         literal Byte BYTE_SIZE = 1;
-  
+
         literal Byte BOOLEAN_SIZE = 1;
-  
+
         literal Byte CHAR_SIZE = 2;
 
         literal Byte SHORT_SIZE = 2;
-  
+
         literal Byte INTEGER_SIZE = 4;
-  
+
         literal Byte FLOAT_SIZE = 4;
-  
+
         literal Byte LONG_SIZE = 8;
-  
+
         literal Byte DOUBLE_SIZE = 8;
-  
+
         literal Byte DATE_SIZE = 8;
       };
     }  // namespace Client

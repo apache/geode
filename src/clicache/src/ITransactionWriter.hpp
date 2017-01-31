@@ -28,30 +28,30 @@ namespace Apache
     namespace Client
     {
 
-				/// <summary>
-				/// A callback that is allowed to veto a transaction. Only one TransactionWriter can exist
-				/// per cache, and only one TransactionWriter will be fired in the
-				/// entire distributed system for each transaction.
-				/// This writer can be used to update a backend data source before the GemFire 
-				/// cache is updated during commit. If the backend update fails, the implementer 
-				/// can throw a {<c>TransactionWriterException</c>} to veto the transaction.
-				/// </summary>
-				/// <seealso cref="CacheTransactionManager.SetWriter" />
-				generic<class TKey, class TValue>
-				public interface class ITransactionWriter
-				{
-				public:
-					/// <summary>
-					/// Called before the transaction has finished committing, but after conflict checking.
-					/// Provides an opportunity for implementors to cause transaction abort by throwing a
-					/// TransactionWriterException
-					/// </summary>
-					/// <param name="te">the transaction event</param>
-					/// <exception cref="TransactionWriterException">
-					/// in the event that the transaction should be rolled back
-					/// </exception>
-					/// <seealso cref="CacheTransactionManager.Commit" />
-					void BeforeCommit(TransactionEvent<TKey, TValue>^ te);
+      /// <summary>
+      /// A callback that is allowed to veto a transaction. Only one TransactionWriter can exist
+      /// per cache, and only one TransactionWriter will be fired in the
+      /// entire distributed system for each transaction.
+      /// This writer can be used to update a backend data source before the Geode 
+      /// cache is updated during commit. If the backend update fails, the implementer 
+      /// can throw a {<c>TransactionWriterException</c>} to veto the transaction.
+      /// </summary>
+      /// <seealso cref="CacheTransactionManager.SetWriter" />
+      generic<class TKey, class TValue>
+      public interface class ITransactionWriter
+      {
+      public:
+        /// <summary>
+        /// Called before the transaction has finished committing, but after conflict checking.
+        /// Provides an opportunity for implementors to cause transaction abort by throwing a
+        /// TransactionWriterException
+        /// </summary>
+        /// <param name="te">the transaction event</param>
+        /// <exception cref="TransactionWriterException">
+        /// in the event that the transaction should be rolled back
+        /// </exception>
+        /// <seealso cref="CacheTransactionManager.Commit" />
+        void BeforeCommit(TransactionEvent<TKey, TValue>^ te);
 
       };
     }  // namespace Client

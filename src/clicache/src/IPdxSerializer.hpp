@@ -28,40 +28,40 @@ namespace Apache
     namespace Client
     {
 
-				/// <summary>
-				/// The IPdxSerializer interface allows domain classes to be 
-        /// serialized and deserialized as PDXs without modification 
-        /// of the domain class.
-				/// A domain class should register delgate <see cref="Serializable.RegisterPdxType" /> to create new 
-				/// instance of type for de-serilization.
-				/// </summary>
-				public interface class IPdxSerializer
-				{
-				public:
+      /// <summary>
+      /// The IPdxSerializer interface allows domain classes to be 
+      /// serialized and deserialized as PDXs without modification 
+      /// of the domain class.
+      /// A domain class should register delgate <see cref="Serializable.RegisterPdxType" /> to create new 
+      /// instance of type for de-serilization.
+      /// </summary>
+      public interface class IPdxSerializer
+      {
+      public:
 
-					/// <summary>
-					/// Serializes this object in gemfire PDX format.
-					/// </summary>
-          /// <param name="o">
-					/// the object which need to serialize
-					/// </param>
-					/// <param name="writer">
-					/// the IPdxWriter object to use for serializing the object
-					/// </param>
-					bool ToData( Object^ o,IPdxWriter^ writer );
+        /// <summary>
+        /// Serializes this object in geode PDX format.
+        /// </summary>
+        /// <param name="o">
+        /// the object which need to serialize
+        /// </param>
+        /// <param name="writer">
+        /// the IPdxWriter object to use for serializing the object
+        /// </param>
+        bool ToData(Object^ o, IPdxWriter^ writer);
 
-					/// <summary>
-					/// Deserialize this object.
-					/// </summary>
-          /// <param name="classname">
-					/// the classname whose object need to de-serialize
-					/// </param>
-					/// <param name="reader">
-					/// the IPdxReader stream to use for reading the object data
-					/// </param>
-					Object^ FromData(String^ classname, IPdxReader^ reader );
+        /// <summary>
+        /// Deserialize this object.
+        /// </summary>
+        /// <param name="classname">
+        /// the classname whose object need to de-serialize
+        /// </param>
+        /// <param name="reader">
+        /// the IPdxReader stream to use for reading the object data
+        /// </param>
+        Object^ FromData(String^ classname, IPdxReader^ reader);
 
-				};
+      };
     }  // namespace Client
   }  // namespace Geode
 }  // namespace Apache

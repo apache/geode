@@ -197,7 +197,7 @@ namespace Apache
       }
 
       // PERSISTENCE
-       generic<class TKey, class TValue>
+      generic<class TKey, class TValue>
       void AttributesFactory<TKey, TValue>::SetPersistenceManager(IPersistenceManager<TKey, TValue>^ persistenceManager, Properties<String^, String^>^ config )
       {
         apache::geode::client::PersistenceManagerPtr persistenceManagerptr;

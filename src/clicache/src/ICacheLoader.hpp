@@ -48,7 +48,7 @@ namespace Apache
       /// <remarks>
       /// Loaders facilitate loading of data into the cache from a third-party data source. 
       /// When an application does a
-      /// lookup for a key in a region and it does not exist, GemFire checks to
+      /// lookup for a key in a region and it does not exist, Geode checks to
       /// see if any loaders are available for the region in the system and
       /// invokes them to get the value for the key into the cache.
       /// <para>
@@ -91,7 +91,7 @@ namespace Apache
         /// </returns>
         /// <seealso cref="Region.Get" />
         TValue Load(IRegion<TKey, TValue>^ region, TKey key,
-          Object^ callbackArgument);
+                    Object^ callbackArgument);
 
         /// <summary>
         /// Called when the region containing this callback is destroyed, when
@@ -107,7 +107,7 @@ namespace Apache
         /// </remarks>
         /// <seealso cref="Cache.Close" />
         /// <seealso cref="Region.DestroyRegion" />
-        void Close( IRegion<TKey, TValue>^ region );
+        void Close(IRegion<TKey, TValue>^ region);
       };
     }  // namespace Client
   }  // namespace Geode
