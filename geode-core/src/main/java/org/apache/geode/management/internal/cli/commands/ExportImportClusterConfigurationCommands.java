@@ -52,6 +52,8 @@ import org.springframework.shell.core.annotation.CliOption;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +65,7 @@ import java.util.Set;
  */
 @SuppressWarnings("unused")
 public class ExportImportClusterConfigurationCommands extends AbstractCommandsSupport {
+
   @CliCommand(value = {CliStrings.EXPORT_SHARED_CONFIG},
       help = CliStrings.EXPORT_SHARED_CONFIG__HELP)
   @CliMetaData(
@@ -70,25 +73,32 @@ public class ExportImportClusterConfigurationCommands extends AbstractCommandsSu
       relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result exportSharedConfig(@CliOption(key = {CliStrings.EXPORT_SHARED_CONFIG__FILE},
-      mandatory = true, help = CliStrings.EXPORT_SHARED_CONFIG__FILE__HELP) String zipFileName,
-
-      @CliOption(key = {CliStrings.EXPORT_SHARED_CONFIG__DIR},
-          help = CliStrings.EXPORT_SHARED_CONFIG__DIR__HELP) String dir) {
+      mandatory = true, help = CliStrings.EXPORT_SHARED_CONFIG__FILE__HELP) String zipFileName) {
 
     InternalLocator locator = InternalLocator.getLocator();
     if (!locator.isSharedConfigurationRunning()) {
       return ResultBuilder.createGemFireErrorResult(CliStrings.SHARED_CONFIGURATION_NOT_STARTED);
     }
 
+    Path tempDir;
+    try {
+      tempDir = Files.createTempDirectory("clusterConfig");
+    } catch (IOException e) {
+      logSevere(e);
+      ErrorResultData errorData =
+          ResultBuilder.createErrorResultData().addLine("Unable to create temp directory");
+      return ResultBuilder.buildResult(errorData);
+    }
+
+    File zipFile = tempDir.resolve("exportedCC.zip").toFile();
     ClusterConfigurationService sc = locator.getSharedConfiguration();
-    File zipFile = new File(zipFileName);
-    zipFile.getParentFile().mkdirs();
 
     Result result;
     try {
       for (Configuration config : sc.getEntireConfiguration().values()) {
         sc.writeConfigToFile(config);
       }
+
       ZipUtils.zip(sc.getSharedConfigurationDirPath(), zipFile.getCanonicalPath());
 
       InfoResultData infoData = ResultBuilder.createInfoResultData();
@@ -240,31 +250,7 @@ public class ExportImportClusterConfigurationCommands extends AbstractCommandsSu
     public Result postExecution(GfshParseResult parseResult, Result commandResult) {
       if (commandResult.hasIncomingFiles()) {
         try {
-          Map<String, String> paramValueMap = parseResult.getParamValueStrings();
-          String dir = paramValueMap.get(CliStrings.EXPORT_SHARED_CONFIG__DIR);
-          dir = (dir == null) ? null : dir.trim();
-
-          File saveDirFile = new File(".");
-
-          if (dir != null && !dir.isEmpty()) {
-            saveDirFile = new File(dir);
-            if (saveDirFile.exists()) {
-              if (!saveDirFile.isDirectory()) {
-                return ResultBuilder.createGemFireErrorResult(
-                    CliStrings.format(CliStrings.EXPORT_SHARED_CONFIG__MSG__NOT_A_DIRECTORY, dir));
-              }
-            } else if (!saveDirFile.mkdirs()) {
-              return ResultBuilder.createGemFireErrorResult(
-                  CliStrings.format(CliStrings.EXPORT_SHARED_CONFIG__MSG__CANNOT_CREATE_DIR, dir));
-            }
-          }
-          if (!saveDirFile.canWrite()) {
-            return ResultBuilder.createGemFireErrorResult(
-                CliStrings.format(CliStrings.EXPORT_SHARED_CONFIG__MSG__NOT_WRITEABLE,
-                    saveDirFile.getCanonicalPath()));
-          }
-          saveDirString = saveDirFile.getAbsolutePath();
-          commandResult.saveIncomingFiles(saveDirString);
+          commandResult.saveIncomingFiles(System.getProperty("user.dir"));
           return commandResult;
         } catch (IOException ioex) {
           logger.error(ioex);

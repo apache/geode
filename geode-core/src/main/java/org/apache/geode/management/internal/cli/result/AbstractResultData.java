@@ -241,28 +241,25 @@ public abstract class AbstractResultData implements ResultData {
       }
       String fileMessage = new String(fileMessageBytes);
 
-      // System.out.println(object.names());
-      // System.out.println(fileName);
-
       GfJsonObject fileDataBytes = object.getJSONObject(FILE_DATA_FIELD);
       byte[] byteArray = GfJsonArray.toByteArray(fileDataBytes.getJSONArray(DATA_FIELD));
       int dataLength = fileDataBytes.getInt(DATA_LENGTH_FIELD);
       DeflaterInflaterData uncompressBytes = CliUtil.uncompressBytes(byteArray, dataLength);
       byte[] uncompressed = uncompressBytes.getData();
 
-      // String encodedString = object.getString(FILE_DATA_FIELD);
-      // byte[] uncompressed = Base64.decode(encodedString, Base64.GZIP);
-
-      if (directory == null || directory.isEmpty()) {
-        directory = System.getProperty("user.dir", ".");
-      }
-
       boolean isGfshVM = CliUtil.isGfshVM();
       File fileToDumpData = new File(fileName);
       if (!fileToDumpData.isAbsolute()) {
+        if (directory == null || directory.isEmpty()) {
+          directory = System.getProperty("user.dir", ".");
+        }
         fileToDumpData = new File(directory, fileName);
       }
+
       File parentDirectory = fileToDumpData.getParentFile();
+      if (parentDirectory != null) {
+        parentDirectory.mkdirs();
+      }
       if (fileToDumpData.exists()) {
         String fileExistsMessage =
             CliStrings.format(CliStrings.ABSTRACTRESULTDATA__MSG__FILE_WITH_NAME_0_EXISTS_IN_1,

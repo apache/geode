@@ -3049,16 +3049,13 @@ public class CliStrings {
   /***
    * Cluster Configuration commands
    */
-
+  // TODO: Jared - clean up messages
   public static final String EXPORT_SHARED_CONFIG = "export cluster-configuration";
   public static final String EXPORT_SHARED_CONFIG__HELP =
       "Exports the cluster configuration artifacts as a zip file.";
-  public static final String EXPORT_SHARED_CONFIG__DIR = "dir";
-  public static final String EXPORT_SHARED_CONFIG__DIR__HELP =
-      "The directory in which the exported cluster configuration artifacts will be saved";
   public static final String EXPORT_SHARED_CONFIG__FILE = "zip-file-name";
   public static final String EXPORT_SHARED_CONFIG__FILE__HELP =
-      "Name of the zip file containing the exported cluster configuration artifacts";
+      "Path to the zip file containing the exported cluster configuration artifacts";
   public static final String EXPORT_SHARED_CONFIG__MSG__NOT_A_DIRECTORY = "{0} is not a directory.";
   public static final String EXPORT_SHARED_CONFIG__MSG__CANNOT_CREATE_DIR =
       "Directory {0} could not be created.";
