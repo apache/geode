@@ -15,40 +15,10 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Writer;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.security.KeyStore;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
-
-import org.springframework.shell.core.CommandMarker;
-import org.springframework.shell.core.ExitShellRequest;
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_CIPHERS;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_PROTOCOLS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ClassPathLoader;
@@ -85,6 +55,37 @@ import org.apache.geode.management.internal.web.http.support.SimpleHttpRequester
 import org.apache.geode.management.internal.web.shell.HttpOperationInvoker;
 import org.apache.geode.management.internal.web.shell.RestHttpOperationInvoker;
 import org.apache.geode.security.AuthenticationFailedException;
+import org.springframework.shell.core.CommandMarker;
+import org.springframework.shell.core.ExitShellRequest;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Writer;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.KeyStore;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 
 /**
  *
@@ -359,7 +360,7 @@ public class ShellCommands implements CommandMarker {
         return handleExcpetion(e, hostPortToConnect);
       }
 
-      // if it's security exception, and we already sent in username and password, still retuns the
+      // if it's security exception, and we already sent in username and password, still returns the
       // connection error
       if (userName != null) {
         return handleExcpetion(e, hostPortToConnect);
@@ -369,6 +370,10 @@ public class ShellCommands implements CommandMarker {
       try {
         userName = gfsh.readText(CliStrings.CONNECT__USERNAME + ": ");
         passwordToUse = gfsh.readPassword(CliStrings.CONNECT__PASSWORD + ": ");
+        // GEODE-2250 If no value for both username and password, at this point we need to error to
+        // avoid a stack overflow.
+        if (userName == null && passwordToUse == null)
+          return handleExcpetion(e, hostPortToConnect);
         return jmxConnect(sslConfigProps, hostPortToConnect, null, useSsl, userName, passwordToUse,
             gfSecurityPropertiesPath, true);
       } catch (IOException ioe) {
