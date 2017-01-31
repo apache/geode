@@ -318,7 +318,7 @@ public class ConnectionTable {
         this.receivers.add(conn);
       }
       if (logger.isDebugEnabled()) {
-        logger.debug("Accepted {} myAddr={} theirAddr={}", conn, getConduit().getLocalAddress(),
+        logger.debug("Accepted {} myAddr={} theirAddr={}", conn, getConduit().getMemberId(),
             conn.remoteAddr);
       }
     }
@@ -425,7 +425,7 @@ public class ConnectionTable {
     pc.notifyWaiters(con);
     if (con != null && logger.isDebugEnabled()) {
       logger.debug("handleNewPendingConnection {} myAddr={} theirAddr={}", con,
-          getConduit().getLocalAddress(), con.remoteAddr);
+          getConduit().getMemberId(), con.remoteAddr);
     }
 
     return con;
@@ -488,7 +488,7 @@ public class ConnectionTable {
         if (logger.isDebugEnabled()) {
           if (result != null) {
             logger.debug("getUnorderedOrConserveSockets {} myAddr={} theirAddr={}", result,
-                getConduit().getLocalAddress(), result.remoteAddr);
+                getConduit().getMemberId(), result.remoteAddr);
           } else {
             logger.debug("getUnorderedOrConserveSockets: Connect failed");
           }

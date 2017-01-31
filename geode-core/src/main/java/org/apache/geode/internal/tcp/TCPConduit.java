@@ -881,7 +881,7 @@ public class TCPConduit implements Runnable {
   /**
    * gets the address of this conduit's ServerSocket endpoint
    */
-  public InetSocketAddress getId() {
+  public InetSocketAddress getSocketId() {
     return id;
   }
 
@@ -893,47 +893,14 @@ public class TCPConduit implements Runnable {
   }
 
   /**
-   * Gets the local java groups address that identifies this conduit
+   * Gets the local member ID that identifies this conduit
    */
-  public InternalDistributedMember getLocalAddress() {
+  public InternalDistributedMember getMemberId() {
     return this.localAddr;
   }
 
-  /**
-   * gets the requested port that this TCPConduit bound to. This could be zero if a wildcard bind
-   * was done
-   */
-  public int getBindPort() {
-    return port;
-  }
-
-
-  /**
-   * gets the channel that is used to process non-DistributedMember messages
-   */
-  public DirectChannel getDirectChannel() {
-    return directChannel;
-  }
-
-  public void setLocalAddr(InternalDistributedMember addr) {
+  public void setMemberId(InternalDistributedMember addr) {
     localAddr = addr;
-  }
-
-  public InternalDistributedMember getLocalAddr() {
-    return localAddr;
-  }
-
-  /**
-   * returns the socket address used for accepting connections
-   */
-  public SocketAddress getAddress() {
-    if (socket == null) {
-      return null;
-    }
-    if (address != null) {
-      return new InetSocketAddress(address, socket.getLocalPort());
-    }
-    return socket.getLocalSocketAddress();
   }
 
   /**

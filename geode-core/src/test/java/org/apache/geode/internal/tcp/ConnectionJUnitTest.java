@@ -58,7 +58,8 @@ public class ConnectionJUnitTest {
     when(stopper.cancelInProgress()).thenReturn(null);
     when(conduit.getCancelCriterion()).thenReturn(stopper);
 
-    when(conduit.getId()).thenReturn(new InetSocketAddress(SocketCreator.getLocalHost(), 10337));
+    when(conduit.getSocketId())
+        .thenReturn(new InetSocketAddress(SocketCreator.getLocalHost(), 10337));
 
     // NIO can't be mocked because SocketChannel has a final method that
     // is used by Connection - configureBlocking

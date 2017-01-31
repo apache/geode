@@ -544,7 +544,7 @@ public class Connection implements Runnable {
     this.isReceiver = true;
     this.owner = t;
     this.socket = socket;
-    this.conduitIdStr = owner.getConduit().getId().toString();
+    this.conduitIdStr = owner.getConduit().getSocketId().toString();
     this.handshakeRead = false;
     this.handshakeCancelled = false;
     this.connected = true;
@@ -870,7 +870,7 @@ public class Connection implements Runnable {
    * waits until we've joined the distributed system before returning
    */
   private void waitForAddressCompletion() {
-    InternalDistributedMember myAddr = this.owner.getConduit().getLocalAddress();
+    InternalDistributedMember myAddr = this.owner.getConduit().getMemberId();
     synchronized (myAddr) {
       while ((!owner.getConduit().getCancelCriterion().isCancelInProgress())
           && myAddr.getInetAddress() == null && myAddr.getVmViewId() < 0) {
@@ -888,7 +888,7 @@ public class Connection implements Runnable {
   private void handshakeNio() throws IOException {
     waitForAddressCompletion();
 
-    InternalDistributedMember myAddr = this.owner.getConduit().getLocalAddress();
+    InternalDistributedMember myAddr = this.owner.getConduit().getMemberId();
     final MsgOutputStream connectHandshake = new MsgOutputStream(CONNECT_HANDSHAKE_SIZE);
     // connectHandshake.reset();
     /**
@@ -930,7 +930,7 @@ public class Connection implements Runnable {
     this.output = getSocket().getOutputStream();
     ByteArrayOutputStream baos = new ByteArrayOutputStream(CONNECT_HANDSHAKE_SIZE);
     DataOutputStream os = new DataOutputStream(baos);
-    InternalDistributedMember myAddr = owner.getConduit().getLocalAddress();
+    InternalDistributedMember myAddr = owner.getConduit().getMemberId();
     os.writeByte(0);
     os.writeByte(HANDSHAKE_VERSION);
     // NOTE: if you add or remove code in this section bump HANDSHAKE_VERSION
@@ -1229,7 +1229,7 @@ public class Connection implements Runnable {
     this.sharedResource = sharedResource;
     this.preserveOrder = preserveOrder;
     setRemoteAddr(remoteAddr);
-    this.conduitIdStr = this.owner.getConduit().getId().toString();
+    this.conduitIdStr = this.owner.getConduit().getSocketId().toString();
     this.handshakeRead = false;
     this.handshakeCancelled = false;
     this.connected = true;
@@ -1620,8 +1620,8 @@ public class Connection implements Runnable {
       // we can't wait for the reader thread when running in an IBM JRE. See
       // bug 41889
       if (this.owner.owner.config.getEnableNetworkPartitionDetection()
-          || this.owner.owner.getLocalAddr().getVmKind() == DistributionManager.ADMIN_ONLY_DM_TYPE
-          || this.owner.owner.getLocalAddr().getVmKind() == DistributionManager.LOCATOR_DM_TYPE) {
+          || this.owner.owner.getMemberId().getVmKind() == DistributionManager.ADMIN_ONLY_DM_TYPE
+          || this.owner.owner.getMemberId().getVmKind() == DistributionManager.LOCATOR_DM_TYPE) {
         isIBM = "IBM Corporation".equals(System.getProperty("java.vm.vendor"));
       }
       {

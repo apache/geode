@@ -75,7 +75,7 @@ public class DirectChannel {
    */
   public void setLocalAddr(InternalDistributedMember localAddr) {
     this.localAddr = localAddr;
-    conduit.setLocalAddr(localAddr);
+    conduit.setMemberId(localAddr);
     if (disconnected) {
       disconnected = false;
       disconnectCompleted = false;
@@ -134,8 +134,9 @@ public class DirectChannel {
       disconnectCompleted = false;
       this.groupOrderedSenderSem = new ReentrantSemaphore(MAX_GROUP_SENDERS);
       this.groupUnorderedSenderSem = new ReentrantSemaphore(MAX_GROUP_SENDERS);
-      logger.info(LocalizedMessage.create(
-          LocalizedStrings.DirectChannel_GEMFIRE_P2P_LISTENER_STARTED_ON__0, conduit.getAddress()));
+      logger.info(
+          LocalizedMessage.create(LocalizedStrings.DirectChannel_GEMFIRE_P2P_LISTENER_STARTED_ON__0,
+              conduit.getSocketId()));
 
     } catch (ConnectionException ce) {
       logger.fatal(LocalizedMessage.create(
