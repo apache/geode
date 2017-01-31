@@ -224,6 +224,9 @@ public class LuceneTestUtilities {
 
   public static void pauseSender(final Cache cache) {
     final AsyncEventQueueImpl queue = (AsyncEventQueueImpl) getIndexQueue(cache);
+    if (queue == null) {
+      return;
+    }
     queue.getSender().pause();
 
     AbstractGatewaySender sender = (AbstractGatewaySender) queue.getSender();
@@ -232,6 +235,9 @@ public class LuceneTestUtilities {
 
   public static void resumeSender(final Cache cache) {
     final AsyncEventQueueImpl queue = (AsyncEventQueueImpl) getIndexQueue(cache);
+    if (queue == null) {
+      return;
+    }
     queue.getSender().resume();
   }
 }

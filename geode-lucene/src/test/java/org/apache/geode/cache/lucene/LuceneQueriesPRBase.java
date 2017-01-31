@@ -93,7 +93,8 @@ public abstract class LuceneQueriesPRBase extends LuceneQueriesBase {
     putEntryInEachBucket();
 
     dataStore2.invoke(() -> initDataStore(createIndex));
-    assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
+    assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore2, 60000)); // accessor?
+    assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 60000));
 
     rebalanceRegion(dataStore2);
 
@@ -117,7 +118,8 @@ public abstract class LuceneQueriesPRBase extends LuceneQueriesBase {
     rebalanceRegion(dataStore2);
     dataStore1.invoke(() -> LuceneTestUtilities.resumeSender(getCache()));
 
-    assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
+    assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore2, 60000)); // accessor?
+    assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 60000));
 
     executeTextSearch(accessor, "world", "text", NUM_BUCKETS);
   }

@@ -166,6 +166,11 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     AsyncEventQueueFactoryImpl factory =
         (AsyncEventQueueFactoryImpl) cache.createAsyncEventQueueFactory();
     if (dataRegion instanceof PartitionedRegion) {
+      PartitionedRegion pr = (PartitionedRegion) dataRegion;
+      if (pr.getPartitionAttributes().getLocalMaxMemory() == 0) {
+        // accessor will not create AEQ
+        return null;
+      }
       factory.setParallel(true); // parallel AEQ for PR
     } else {
       factory.setParallel(false); // TODO: not sure if serial AEQ working or not
@@ -183,6 +188,9 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   }
 
   private AsyncEventQueue createAEQ(AsyncEventQueueFactoryImpl factory) {
+    if (factory == null) {
+      return null;
+    }
     LuceneEventListener listener = new LuceneEventListener(repositoryManager);
     String aeqId = LuceneServiceImpl.getUniqueIndexName(getName(), regionPath);
     AsyncEventQueue indexQueue = factory.create(aeqId, listener);

@@ -14,10 +14,8 @@
  */
 package org.apache.geode.cache.lucene;
 
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
 
-import org.apache.geode.cache.EvictionAction;
-import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -25,16 +23,13 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.experimental.categories.Category;
 
 @Category(DistributedTest.class)
-public class LuceneQueriesPeerPROverflowDUnitTest extends LuceneQueriesPRBase {
+public class LuceneQueriesPeerPRPersistentDUnitTest extends LuceneQueriesPRBase {
 
   @Override
   protected void initDataStore(final SerializableRunnableIF createIndex) throws Exception {
     createIndex.run();
-    EvictionAttributes evicAttr =
-        EvictionAttributes.createLRUEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK);
-    getCache().createRegionFactory(RegionShortcut.PARTITION_OVERFLOW)
-        .setPartitionAttributes(getPartitionAttributes(false)).setEvictionAttributes(evicAttr)
-        .create(REGION_NAME);
+    getCache().createRegionFactory(RegionShortcut.PARTITION_PERSISTENT)
+        .setPartitionAttributes(getPartitionAttributes(false)).create(REGION_NAME);
   }
 
   @Override
