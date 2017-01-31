@@ -201,16 +201,10 @@ public class ConfigCommandsController extends AbstractMultiPartCommandsControlle
 
   @RequestMapping(method = RequestMethod.GET, value = "/config/cluster")
   public Callable<ResponseEntity<String>> exportClusterConfig(
-      @RequestParam(CliStrings.EXPORT_SHARED_CONFIG__FILE) final String zipFileName,
-      @RequestParam(value = CliStrings.EXPORT_SHARED_CONFIG__DIR,
-          required = false) final String directory) {
+      @RequestParam(CliStrings.EXPORT_SHARED_CONFIG__FILE) final String zipFile) {
     final CommandStringBuilder command = new CommandStringBuilder(CliStrings.EXPORT_SHARED_CONFIG);
 
-    command.addOption(CliStrings.EXPORT_SHARED_CONFIG__FILE, zipFileName);
-
-    if (hasValue(directory)) {
-      command.addOption(CliStrings.EXPORT_SHARED_CONFIG__DIR, directory);
-    }
+    command.addOption(CliStrings.EXPORT_SHARED_CONFIG__FILE, zipFile);
 
     return getProcessCommandCallable(command.toString());
   }

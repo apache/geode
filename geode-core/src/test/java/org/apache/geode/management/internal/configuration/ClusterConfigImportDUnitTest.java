@@ -173,7 +173,19 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
   }
 
   @Test
-  public void testExportClusterConfig() throws Exception {
+  public void testExportWithAbsolutePath() throws Exception {
+    Path exportedZipPath =
+        lsRule.getTempFolder().getRoot().toPath().resolve("exportedCC.zip").toAbsolutePath();
+
+    testExportClusterConfig(exportedZipPath.toString());
+  }
+
+  @Test
+  public void testExportWithRelativePath() throws Exception {
+    testExportClusterConfig("tmp/exportedCC.zip");
+  }
+
+  public void testExportClusterConfig(String zipFilePath) throws Exception {
     Server server1 = lsRule.startServerVM(1, serverProps, locator.getPort());
 
     CommandResult result =
@@ -185,19 +197,17 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
     expectedClusterConfig.verify(server1);
     expectedClusterConfig.verify(locator);
 
-    Path exportedZipPath = lsRule.getTempFolder().getRoot().toPath().resolve("exportedCC.zip");
-    result = gfshConnector
-        .executeCommand("export cluster-configuration --zip-file-name=" + exportedZipPath);
+    result =
+        gfshConnector.executeCommand("export cluster-configuration --zip-file-name=" + zipFilePath);
     System.out.println(result.getContent());
 
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    File exportedZip = exportedZipPath.toFile();
+    File exportedZip = new File(zipFilePath);
     assertThat(exportedZip).exists();
 
     Set<String> actualZipEnries =
         new ZipFile(exportedZip).stream().map(ZipEntry::getName).collect(Collectors.toSet());
-
 
     ConfigGroup exportedClusterGroup = cluster.configFiles("cluster.xml", "cluster.properties");
     ClusterConfig expectedExportedClusterConfig = new ClusterConfig(exportedClusterGroup);
