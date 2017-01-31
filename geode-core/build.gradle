@@ -131,6 +131,10 @@ dependencies {
   testCompile 'org.powermock:powermock-core:' + project.'powermock.version'
   testCompile 'org.powermock:powermock-module-junit4:' + project.'powermock.version'
   testCompile 'org.powermock:powermock-api-mockito:' + project.'powermock.version'
+
+  testCompile 'com.pholser:junit-quickcheck-core:0.7'
+  testCompile 'com.pholser:junit-quickcheck-generators:0.7'
+  testCompile 'com.pholser:junit-quickcheck-guava:0.7'
 }
 
 def generatedResources = "$buildDir/generated-resources/main"
