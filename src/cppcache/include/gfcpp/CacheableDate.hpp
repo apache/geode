@@ -26,12 +26,7 @@
 
 #include <string>
 #include <chrono>
-#include <time.h>
-#ifdef _WIN32
-#include <WinSock2.h> // timeval
-#else
-#include <sys/time.h> // timeval
-#endif
+#include <ctime>
 
 /** @file
 */
@@ -40,60 +35,57 @@ namespace geode {
 namespace client {
 
 /**
- * Implement a date object based on epoch of January 1, 1970 00:00:00 GMT that can serve as a
- * distributable key object for caching as well as being a date value.
+ * Implement a date object based on epoch of January 1, 1970 00:00:00 GMT that
+ * can serve as a distributable key object for caching as well as being a date
+ * value.
  */
-class CPPCACHE_EXPORT CacheableDate
-  : public CacheableKey
-{
-  private:
+class CPPCACHE_EXPORT CacheableDate : public CacheableKey {
+ private:
+  /**
+   * Milliseconds since January 1, 1970, 00:00:00 GMT to be consistent with Java
+   * Date.
+   */
+  int64_t m_timevalue;
 
-    /**
-     * Milliseconds since January 1, 1970, 00:00:00 GMT to be consistent with Java Date.
-     */
-    int64_t m_timevalue;
-
-  public:
-    typedef std::chrono::system_clock clock;
-    typedef std::chrono::time_point<clock> time_point;
-    typedef std::chrono::milliseconds duration;
+ public:
+  typedef std::chrono::system_clock clock;
+  typedef std::chrono::time_point<clock> time_point;
+  typedef std::chrono::milliseconds duration;
 
   /**
    * @brief serialize this object
    **/
-  virtual void toData( DataOutput& output ) const;
+  virtual void toData(DataOutput& output) const;
 
   /**
    * @brief deserialize this object
    **/
-  virtual Serializable* fromData( DataInput& input );
+  virtual Serializable* fromData(DataInput& input);
 
   /**
    * @brief creation function for dates.
    */
-  static Serializable* createDeserializable( );
+  static Serializable* createDeserializable();
 
   /**
    * @brief Return the classId of the instance being serialized.
    * This is used by deserialization to determine what instance
    * type to create and deserialize into.
    */
-  virtual int32_t classId( ) const;
+  virtual int32_t classId() const;
 
   /**
    *@brief return the typeId byte of the instance being serialized.
    * This is used by deserialization to determine what instance
    * type to create and deserialize into.
    */
-  virtual int8_t typeId( ) const;
+  virtual int8_t typeId() const;
 
   /** @return the size of the object in bytes */
-  virtual uint32_t objectSize() const {
-    return sizeof(CacheableDate);
-  }
+  virtual uint32_t objectSize() const { return sizeof(CacheableDate); }
 
   /** @return true if this key matches other. */
-  virtual bool operator==( const CacheableKey& other ) const;
+  virtual bool operator==(const CacheableKey& other) const;
 
   /**
    * @return day of the month.
@@ -121,122 +113,71 @@ class CPPCACHE_EXPORT CacheableDate
 
   /**
    * Returns a hash code value for this object. The result is the exclusive OR
-   * of the two halves of the primitive long value returned by the milliseconds()
-   * method.
+   * of the two halves of the primitive long value returned by the
+   * milliseconds() method.
    *
    * @return the hashcode for this object. */
   virtual uint32_t hashcode() const;
 
   operator time_t() const { return m_timevalue / 1000; }
-  operator time_point() const { return clock::from_time_t(0) + duration(m_timevalue); }
+  operator time_point() const {
+    return clock::from_time_t(0) + duration(m_timevalue);
+  }
   operator duration() const { return duration(m_timevalue); }
 
   /**
    * Factory method for creating an instance of CacheableDate
    */
-  static CacheableDatePtr create( )
-  {
+  static CacheableDatePtr create() {
     return CacheableDatePtr(new CacheableDate());
   }
 
-  static CacheableDatePtr create( const time_t& value )
-  {
+  static CacheableDatePtr create(const time_t& value) {
     return CacheableDatePtr(new CacheableDate(value));
   }
 
-  static CacheableDatePtr create( const time_point& value )
-  {
+  static CacheableDatePtr create(const time_point& value) {
     return CacheableDatePtr(new CacheableDate(value));
   }
 
-  static CacheableDatePtr create( const duration& value )
-  {
+  static CacheableDatePtr create(const duration& value) {
     return CacheableDatePtr(new CacheableDate(value));
   }
 
-  /**
-   * @deprecated Use other standard time types.
-   */
-  __DEPRECATED__("Use other standard time types.")
-  static CacheableDatePtr create( const timeval& value )
-  {
-    return CacheableDatePtr(new CacheableDate(toDuration(value)));
-  }
-
-  virtual CacheableStringPtr toString( ) const;
+  virtual CacheableStringPtr toString() const;
 
   /** Destructor */
-  virtual ~CacheableDate( );
+  virtual ~CacheableDate();
 
   /** used to render as a string for logging. */
-  virtual int32_t logString( char* buffer, int32_t maxLength ) const;
+  virtual int32_t logString(char* buffer, int32_t maxLength) const;
 
-  protected:
-
-  /** Constructor, given a timeval value.
-   *
-   * @deprecated Use other constructors.
-   */
-  __DEPRECATED__("Use other standard time types.")
-  CacheableDate( const timeval& value );
-
-
+ protected:
   /** Constructor, used for deserialization. */
-  CacheableDate( const time_t value = 0 );
+  CacheableDate(const time_t value = 0);
 
   /**
    * Construct from std::chrono::time_point<std::chrono::system_clock>.
    */
-  CacheableDate( const time_point& value );
+  CacheableDate(const time_point& value);
 
   /**
    * Construct from std::chrono::seconds since POSIX epoch.
    */
-  CacheableDate( const duration& value );
+  CacheableDate(const duration& value);
 
-  private:
-
+ private:
   // never implemented.
-  void operator=( const CacheableDate& other );
-  CacheableDate( const CacheableDate& other );
-
-  static duration toDuration(const timeval& value) {
-    return std::chrono::duration_cast<CacheableDate::duration>(
-        std::chrono::seconds(value.tv_sec) +
-        std::chrono::microseconds(value.tv_usec));
-  }
-
-  public:
-  friend CacheableKeyPtr createKey( const timeval& value );
-  friend CacheablePtr createValue( const timeval& value );
+  void operator=(const CacheableDate& other);
+  CacheableDate(const CacheableDate& other);
 };
 
-/**
- * @deprecated Use other standard time types.
- */
-__DEPRECATED__("Use other standard time types.")
-inline CacheableKeyPtr createKey( const timeval& value )
-{
-  return CacheableKeyPtr( CacheableDate::create( CacheableDate::toDuration(value) ) );
+inline CacheableKeyPtr createKey(const CacheableDate::time_point& value) {
+  return CacheableKeyPtr(CacheableDate::create(value));
 }
 
-/**
- * @deprecated Use other standard time types.
- */
-__DEPRECATED__("Use other standard time types.")
-inline CacheablePtr createValue( const timeval& value )
-{
-  return CacheablePtr( CacheableDate::create( CacheableDate::toDuration(value) ) );
-}
-
-inline CacheableKeyPtr createKey( const CacheableDate::time_point& value )
-{
-  return CacheableKeyPtr( CacheableDate::create( value ) );
-}
-
-inline CacheablePtr createValue( const CacheableDate::time_point& value )
-{
-  return CacheablePtr( CacheableDate::create( value ) );
+inline CacheablePtr createValue(const CacheableDate::time_point& value) {
+  return CacheablePtr(CacheableDate::create(value));
 }
 
 }  // namespace client

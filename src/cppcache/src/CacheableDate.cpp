@@ -27,12 +27,7 @@
 #include <ace/OS.h>
 
 #include <chrono>
-#include <time.h>
-#ifdef _WIN32
-#include <WinSock2.h>  // timeval
-#else
-#include <sys/time.h>  // timeval
-#endif
+#include <ctime>
 
 namespace apache {
 namespace geode {
@@ -89,23 +84,14 @@ int CacheableDate::year() const {
   return date.tm_year + 1900;
 }
 
-int64_t CacheableDate::milliseconds() const
-{
-  return m_timevalue;
+int64_t CacheableDate::milliseconds() const { return m_timevalue; }
+
+uint32_t CacheableDate::hashcode() const {
+  return static_cast<int>(m_timevalue) ^ static_cast<int>(m_timevalue >> 32);
 }
 
-uint32_t CacheableDate::hashcode( ) const
-{
-  return (int) m_timevalue ^ (int) (m_timevalue >> 32);
-}
-
-CacheableDate::CacheableDate(const timeval& value) {
-  m_timevalue = (((int64_t)value.tv_sec) * 1000) + (value.tv_usec / 1000);
-}
-
-CacheableDate::CacheableDate( const time_t value )
-{
-  m_timevalue = ((int64_t) value) * 1000;
+CacheableDate::CacheableDate(const time_t value) {
+  m_timevalue = (static_cast<int64_t>(value)) * 1000;
 }
 
 CacheableDate::CacheableDate(const CacheableDate::time_point& value) {
@@ -120,25 +106,26 @@ CacheableDate::CacheableDate(const CacheableDate::duration& value) {
   m_timevalue = value.count();
 }
 
-CacheableDate::~CacheableDate( )
-{
-}
+CacheableDate::~CacheableDate() {}
 
 CacheableStringPtr CacheableDate::toString() const {
   char buffer[25];
-  struct tm date = { 0 };
+  struct tm date = {0};
   time_t sec = m_timevalue / 1000;
   ACE_OS::localtime_r(&sec, &date);
-  ACE_OS::snprintf(buffer, 24, "%d/%d/%d %d:%d:%d", date.tm_mon+1, date.tm_mday, date.tm_year+1900, date.tm_hour, date.tm_min, date.tm_sec);
-  return CacheableString::create( buffer );
+  ACE_OS::snprintf(buffer, 24, "%d/%d/%d %d:%d:%d", date.tm_mon + 1,
+                   date.tm_mday, date.tm_year + 1900, date.tm_hour, date.tm_min,
+                   date.tm_sec);
+  return CacheableString::create(buffer);
 }
 
-int32_t CacheableDate::logString( char* buffer, int32_t maxLength ) const
-{
-  struct tm date = { 0 };
+int32_t CacheableDate::logString(char* buffer, int32_t maxLength) const {
+  struct tm date = {0};
   time_t sec = m_timevalue / 1000;
   ACE_OS::localtime_r(&sec, &date);
-  return ACE_OS::snprintf( buffer, maxLength, "CacheableDate (mm/dd/yyyy) ( %d/%d/%d )", date.tm_mon+1, date.tm_mday, date.tm_year+1900 );
+  return ACE_OS::snprintf(buffer, maxLength,
+                          "CacheableDate (mm/dd/yyyy) ( %d/%d/%d )",
+                          date.tm_mon + 1, date.tm_mday, date.tm_year + 1900);
 }
 
 }  // namespace client
