@@ -104,10 +104,8 @@ public class JSONFormatter {
       DistributionConfig.GEMFIRE_PREFIX + "pdx.mapper.sort-json-field-names";
 
   enum states {
-    NONE, ObJECT_START, FIELD_NAME, SCALER_FOUND, LIST_FOUND, LIST_ENDS, OBJECT_ENDS
+    NONE, OBJECT_START, FIELD_NAME, SCALAR_FOUND, LIST_FOUND, LIST_ENDS, OBJECT_ENDS
   }
-
-  ;
 
   private JSONFormatter() {}
 
@@ -201,7 +199,7 @@ public class JSONFormatter {
   private JSONToPdxMapper getPdxInstance(JsonParser jp, states currentState,
       JSONToPdxMapper currentPdxInstance) throws JsonParseException, IOException {
     String currentFieldName = null;
-    if (currentState == states.ObJECT_START && currentPdxInstance == null) {
+    if (currentState == states.OBJECT_START && currentPdxInstance == null) {
       currentPdxInstance = createJSONToPdxMapper(null, null);// from getlist
     }
     while (true) {
@@ -213,7 +211,7 @@ public class JSONFormatter {
       switch (nt) {
         case START_OBJECT: {
           objectStarts(currentState);
-          currentState = states.ObJECT_START;
+          currentState = states.OBJECT_START;
           // need to create new PdxInstance
           // root object will not name, so create classname lazily from all members.
           // child object will have name; but create this as well lazily from all members
@@ -237,7 +235,7 @@ public class JSONFormatter {
         case FIELD_NAME: {
           fieldFound(currentState);
           // field name(object name, value may be object, string, array number etc)
-          if (currentState == states.ObJECT_START) {
+          if (currentState == states.OBJECT_START) {
             currentPdxInstance.setPdxFieldName(currentFieldName);
           }
 
@@ -272,7 +270,7 @@ public class JSONFormatter {
         case VALUE_FALSE: {
           // write boolen
           boolFound(currentState);
-          currentState = states.SCALER_FOUND;
+          currentState = states.SCALAR_FOUND;
           currentPdxInstance.addBooleanField(currentFieldName, jp.getValueAsBoolean());
           currentFieldName = null;
           break;
@@ -280,7 +278,7 @@ public class JSONFormatter {
         case VALUE_NULL: {
           // write null
           nullFound(currentState);
-          currentState = states.SCALER_FOUND;
+          currentState = states.SCALAR_FOUND;
           currentPdxInstance.addNullField(currentFieldName);
           currentFieldName = null;
           break;
@@ -288,7 +286,7 @@ public class JSONFormatter {
         case VALUE_NUMBER_FLOAT: {
           // write double/float
           doubleFound(currentState);
-          currentState = states.SCALER_FOUND;
+          currentState = states.SCALAR_FOUND;
           // currentPdxInstance.addDoubleField(currentFieldName, jp.getDoubleValue());
           setNumberField(jp, currentPdxInstance, currentFieldName);
           currentFieldName = null;
@@ -297,7 +295,7 @@ public class JSONFormatter {
         case VALUE_NUMBER_INT: {
           // write int
           intFound(currentState);
-          currentState = states.SCALER_FOUND;
+          currentState = states.SCALAR_FOUND;
           // currentPdxInstance.addIntField(currentFieldName, jp.getIntValue());
           setNumberField(jp, currentPdxInstance, currentFieldName);
           currentFieldName = null;
@@ -306,7 +304,7 @@ public class JSONFormatter {
         case VALUE_STRING: {
           // write string
           stringFound(currentState);
-          currentState = states.SCALER_FOUND;
+          currentState = states.SCALAR_FOUND;
           currentPdxInstance.addObjectField(currentFieldName, new String(jp.getText()));
           currentFieldName = null;
           break;
@@ -314,7 +312,7 @@ public class JSONFormatter {
         case VALUE_TRUE: {
           // write bool
           boolFound(currentState);
-          currentState = states.SCALER_FOUND;
+          currentState = states.SCALAR_FOUND;
           currentPdxInstance.addBooleanField(currentFieldName, jp.getValueAsBoolean());
           currentFieldName = null;
           break;
@@ -426,7 +424,7 @@ public class JSONFormatter {
       switch (nt) {
         case START_OBJECT: {
           objectStarts(currentState);
-          currentState = states.ObJECT_START;
+          currentState = states.OBJECT_START;
           // need to create new PdxInstance
           // root object will not name, so create classname lazily from all members.
           // child object will have name; but create this as well lazily from all members
@@ -473,21 +471,21 @@ public class JSONFormatter {
         case VALUE_FALSE: {
           // write boolen
           boolFound(currentState);
-          currentState = states.SCALER_FOUND;
+          currentState = states.SCALAR_FOUND;
           currentPdxList.addBooleanField(jp.getBooleanValue());
           break;
         }
         case VALUE_NULL: {
           // write null
           nullFound(currentState);
-          currentState = states.SCALER_FOUND;
+          currentState = states.SCALAR_FOUND;
           currentPdxList.addNullField(null);
           break;
         }
         case VALUE_NUMBER_FLOAT: {
           // write double/float
           doubleFound(currentState);
-          currentState = states.SCALER_FOUND;
+          currentState = states.SCALAR_FOUND;
           // currentPdxList.addDoubleField(jp.getDoubleValue());
           setNumberField(jp, currentPdxList);
           break;
@@ -495,7 +493,7 @@ public class JSONFormatter {
         case VALUE_NUMBER_INT: {
           // write int
           intFound(currentState);
-          currentState = states.SCALER_FOUND;
+          currentState = states.SCALAR_FOUND;
           // currentPdxList.addIntField(jp.getIntValue());
           setNumberField(jp, currentPdxList);
           break;
@@ -503,7 +501,7 @@ public class JSONFormatter {
         case VALUE_STRING: {
           // write string
           stringFound(currentState);
-          currentState = states.SCALER_FOUND;
+          currentState = states.SCALAR_FOUND;
           currentPdxList.addStringField(jp.getText());
           currentFieldName = null;
           break;
@@ -511,7 +509,7 @@ public class JSONFormatter {
         case VALUE_TRUE: {
           // write bool
           boolFound(currentState);
-          currentState = states.SCALER_FOUND;
+          currentState = states.SCALAR_FOUND;
           currentPdxList.addBooleanField(jp.getBooleanValue());
           break;
         }
@@ -527,7 +525,7 @@ public class JSONFormatter {
       case NONE:
       case FIELD_NAME:
       case OBJECT_ENDS:// in list
-      case SCALER_FOUND:// inlist
+      case SCALAR_FOUND:// inlist
       case LIST_FOUND:
       case LIST_ENDS:
         return true;
@@ -539,8 +537,8 @@ public class JSONFormatter {
 
   private boolean objectEnds(states currentState) {
     switch (currentState) {
-      case ObJECT_START: // when empty object on field
-      case SCALER_FOUND:
+      case OBJECT_START: // when empty object on field
+      case SCALAR_FOUND:
       case LIST_ENDS:
       case OBJECT_ENDS:// inner object closes
         return true;
@@ -552,7 +550,7 @@ public class JSONFormatter {
 
   private boolean arrayStarts(states currentState) {
     switch (currentState) {
-      case SCALER_FOUND:
+      case SCALAR_FOUND:
       case FIELD_NAME:
       case LIST_FOUND:
       case LIST_ENDS:
@@ -563,12 +561,12 @@ public class JSONFormatter {
     }
   }
 
-  // enum states {NONE, ObJECT_START, FIELD_NAME, INNER_OBJECT_FOUND, SCALER_FOUND, LIST_FOUND,
+  // enum states {NONE, OBJECT_START, FIELD_NAME, INNER_OBJECT_FOUND, SCALAR_FOUND, LIST_FOUND,
   // OBJECT_ENDS};
   private boolean arrayEnds(states currentState) {
     switch (currentState) {
       case FIELD_NAME:// when empty array
-      case SCALER_FOUND:
+      case SCALAR_FOUND:
       case LIST_FOUND:
       case LIST_ENDS:
       case OBJECT_ENDS:
@@ -582,7 +580,7 @@ public class JSONFormatter {
   private boolean stringFound(states currentState) {
     switch (currentState) {
       case FIELD_NAME:
-      case SCALER_FOUND:
+      case SCALAR_FOUND:
       case LIST_FOUND:
       case LIST_ENDS:
       case OBJECT_ENDS:
@@ -596,7 +594,7 @@ public class JSONFormatter {
   private boolean intFound(states currentState) {
     switch (currentState) {
       case FIELD_NAME:
-      case SCALER_FOUND:
+      case SCALAR_FOUND:
       case LIST_FOUND:
       case LIST_ENDS:
       case OBJECT_ENDS:
@@ -610,7 +608,7 @@ public class JSONFormatter {
   private boolean boolFound(states currentState) {
     switch (currentState) {
       case FIELD_NAME:
-      case SCALER_FOUND:
+      case SCALAR_FOUND:
       case LIST_FOUND:
       case LIST_ENDS:
       case OBJECT_ENDS:
@@ -624,7 +622,7 @@ public class JSONFormatter {
   private boolean doubleFound(states currentState) {
     switch (currentState) {
       case FIELD_NAME:
-      case SCALER_FOUND:
+      case SCALAR_FOUND:
       case LIST_FOUND:
       case LIST_ENDS:
       case OBJECT_ENDS:
@@ -637,8 +635,8 @@ public class JSONFormatter {
 
   private boolean fieldFound(states currentState) {
     switch (currentState) {
-      case ObJECT_START:
-      case SCALER_FOUND:
+      case OBJECT_START:
+      case SCALAR_FOUND:
       case LIST_FOUND:
       case LIST_ENDS:
       case OBJECT_ENDS:
@@ -652,7 +650,7 @@ public class JSONFormatter {
   private boolean nullFound(states currentState) {
     switch (currentState) {
       case FIELD_NAME:
-      case SCALER_FOUND:
+      case SCALAR_FOUND:
       case LIST_FOUND:
       case LIST_ENDS:
       case OBJECT_ENDS:
