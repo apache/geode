@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_07889e0b6ef2b0613a9cd1037e4e3eb5
+#define APACHE_GEODE_GUARD_07889e0b6ef2b0613a9cd1037e4e3eb5
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
  *      Author: vrao
  */
 
-#ifndef __NONPDXTYPE_HPP__
-#define __NONPDXTYPE_HPP__
 
 #include <gfcpp/GeodeCppCache.hpp>
 
@@ -483,4 +486,5 @@ class TESTOBJECT_EXPORT NonPdxType {
                         int* arrLengths) const;
 };
 }  // namespace PdxTests
-#endif /* __NONPDXTYPE_HPP__ */
+
+#endif // APACHE_GEODE_GUARD_07889e0b6ef2b0613a9cd1037e4e3eb5

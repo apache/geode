@@ -1,5 +1,7 @@
-#ifndef __GEMFIRE_THINCLIENTREGION_H__
-#define __GEMFIRE_THINCLIENTREGION_H__
+#pragma once
+
+#ifndef GEODE_THINCLIENTREGION_H_
+#define GEODE_THINCLIENTREGION_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -620,4 +622,4 @@ typedef SharedPtr<ChunkedDurableCQListResponse> ChunkedDurableCQListResponsePtr;
 }  // namespace geode
 }  // namespace apache
 
-#endif  // ifndef __GEMFIRE_THINCLIENTREGION_H__
+#endif // GEODE_THINCLIENTREGION_H_

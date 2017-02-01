@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_THINCLIENTLOCALCACHELOADER_H_
+#define GEODE_INTEGRATION_TEST_THINCLIENTLOCALCACHELOADER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef THINCLIENTCACHELOADER_HPP_
-#define THINCLIENTCACHELOADER_HPP_
 
 #include "fw_dunit.hpp"
 #include "ThinClientHelper.hpp"
@@ -261,4 +264,5 @@ void runCacheLoaderTest() {
   CALL_TASK(CloseCache1);
   CALL_TASK(StopServer)
 }
-#endif /*THINCLIENTCACHELOADER_HPP_*/
+
+#endif // GEODE_INTEGRATION_TEST_THINCLIENTLOCALCACHELOADER_H_

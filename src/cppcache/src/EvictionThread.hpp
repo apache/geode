@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_EVICTIONTHREAD_H_
+#define GEODE_EVICTIONTHREAD_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef _EVICTIONTHREAD_H__
-#define _EVICTIONTHREAD_H__
 
 #include <ace/ACE.h>
 #include <ace/OS.h>
@@ -66,4 +69,5 @@ class CPPCACHE_EXPORT EvictionThread : public ACE_Task_Base {
 }  // namespace geode
 }  // namespace apache
 
-#endif  //_EVICTIONTHREAD_H__
+
+#endif // GEODE_EVICTIONTHREAD_H_

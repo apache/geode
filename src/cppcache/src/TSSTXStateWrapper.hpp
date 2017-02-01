@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_TSSTXSTATEWRAPPER_H_
+#define GEODE_TSSTXSTATEWRAPPER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
  *      Author: ankurs
  */
 
-#ifndef TSSTXSTATEWRAPPER_HPP_
-#define TSSTXSTATEWRAPPER_HPP_
 
 #include <ace/TSS_T.h>
 #include "TXId.hpp"
@@ -50,4 +53,5 @@ class TSSTXStateWrapper {
 }  // namespace geode
 }  // namespace apache
 
-#endif /* TSSTXSTATEWRAPPER_HPP_ */
+
+#endif // GEODE_TSSTXSTATEWRAPPER_H_

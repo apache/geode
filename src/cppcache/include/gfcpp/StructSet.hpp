@@ -1,5 +1,8 @@
-#ifndef __GEMFIRE_STRUCTSET_H__
-#define __GEMFIRE_STRUCTSET_H__
+#pragma once
+
+#ifndef GEODE_GFCPP_STRUCTSET_H_
+#define GEODE_GFCPP_STRUCTSET_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -99,4 +102,4 @@ class CPPCACHE_EXPORT StructSet : public CqResults {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // ifndef __GEMFIRE_STRUCTSET_H__
+#endif // GEODE_GFCPP_STRUCTSET_H_

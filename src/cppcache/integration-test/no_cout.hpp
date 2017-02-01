@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_NO_COUT_H_
+#define GEODE_INTEGRATION_TEST_NO_COUT_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -74,3 +79,5 @@ extern NOCout::FLAGS flush;
 extern NOCout::FLAGS hex;
 extern NOCout::FLAGS dec;
 }  // namespace test
+
+#endif // GEODE_INTEGRATION_TEST_NO_COUT_H_

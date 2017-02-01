@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_PDXREADERWITHTYPECOLLECTOR_H_
+#define GEODE_PDXREADERWITHTYPECOLLECTOR_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,15 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
-* PdxReaderWithTypeCollector.hpp
-*
-*  Created on: Nov 3, 2011
-*      Author: npatel
-*/
-
-#ifndef _GEMFIRE_IMPL_PDXREADERWITHTYPECOLLECTOR_HPP_
-#define _GEMFIRE_IMPL_PDXREADERWITHTYPECOLLECTOR_HPP_
 
 #include "PdxLocalReader.hpp"
 
@@ -183,4 +179,4 @@ typedef SharedPtr<PdxReaderWithTypeCollector> PdxReaderWithTypeCollectorPtr;
 }  // namespace geode
 }  // namespace apache
 
-#endif /* PDXREADERWITHTYPECOLLECTOR_HPP_ */
+#endif // GEODE_PDXREADERWITHTYPECOLLECTOR_H_

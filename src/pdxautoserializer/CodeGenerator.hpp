@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_fb876ec7655e479e35df4a1cc2653f47
+#define APACHE_GEODE_GUARD_fb876ec7655e479e35df4a1cc2653f47
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,8 +20,6 @@
  * limitations under the License.
  */
 
-#ifndef _GFAS_CODEGENERATOR_HPP_
-#define _GFAS_CODEGENERATOR_HPP_
 
 #include "base_types.hpp"
 
@@ -172,4 +175,5 @@ class CodeGenerator {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // _GFAS_CODEGENERATOR_HPP_
+
+#endif // APACHE_GEODE_GUARD_fb876ec7655e479e35df4a1cc2653f47

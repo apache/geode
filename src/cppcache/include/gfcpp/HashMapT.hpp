@@ -1,5 +1,7 @@
-#ifndef _GEMFIRE_HASHMAPT_HPP_
-#define _GEMFIRE_HASHMAPT_HPP_
+#pragma once
+
+#ifndef GEODE_GFCPP_HASHMAPT_H_
+#define GEODE_GFCPP_HASHMAPT_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -219,4 +221,4 @@ typedef SharedPtr<HashMapOfException> HashMapOfExceptionPtr;
 }  // namespace geode
 }  // namespace apache
 
-#endif
+#endif // GEODE_GFCPP_HASHMAPT_H_

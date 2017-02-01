@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_PDXINSTANTIATOR_H_
+#define GEODE_PDXINSTANTIATOR_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,15 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * PdxInstantiator.hpp
- *
- *  Created on: Dec 28, 2011
- *      Author: npatel
- */
-
-#ifndef _GEMFIRE_PDXINSTANTIATOR_HPP_
-#define _GEMFIRE_PDXINSTANTIATOR_HPP_
 
 #include <gfcpp/Serializable.hpp>
 
@@ -54,4 +50,5 @@ class PdxInstantiator : public Serializable {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif /* _GEMFIRE_PDXINSTANTIATOR_HPP_ */
+
+#endif // GEODE_PDXINSTANTIATOR_H_

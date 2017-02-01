@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_BBNAMINGCONTEXT_H_
+#define GEODE_INTEGRATION_TEST_BBNAMINGCONTEXT_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -19,8 +24,6 @@
 // move them there.
 // This will avoid pulling in a lot of framework headers to cause compilation
 // grieve, especially with the stl stuff.
-#ifndef __BB_NAMING_CONTEXT__
-#define __BB_NAMING_CONTEXT__
 #include <stdlib.h>
 #include <string>
 class BBNamingContextClientImpl;
@@ -43,4 +46,5 @@ class BBNamingContextServer {
   BBNamingContextServer();
   ~BBNamingContextServer();
 };
-#endif
+
+#endif // GEODE_INTEGRATION_TEST_BBNAMINGCONTEXT_H_

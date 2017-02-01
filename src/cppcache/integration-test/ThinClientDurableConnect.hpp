@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_THINCLIENTDURABLECONNECT_H_
+#define GEODE_INTEGRATION_TEST_THINCLIENTDURABLECONNECT_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
  *      Author: abhaware
  */
 
-#ifndef THINCLIENTDURABLECONNECT_HPP_
-#define THINCLIENTDURABLECONNECT_HPP_
 
 #include "fw_dunit.hpp"
 #include "ThinClientHelper.hpp"
@@ -349,4 +352,5 @@ void doThinClientDurableConnect(bool poolConfig = true,
   CALL_TASK(CloseLocator);
 }
 
-#endif /* THINCLIENTDURABLECONNECT_HPP_ */
+
+#endif // GEODE_INTEGRATION_TEST_THINCLIENTDURABLECONNECT_H_

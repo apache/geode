@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_PDXTYPE_H_
+#define GEODE_PDXTYPE_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,15 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
-* PdxType.hpp
-*
-*  Created on: Nov 3, 2011
-*      Author: npatel
-*/
-
-#ifndef _GEMFIRE_IMPL_PDXTYPE_HPP_
-#define _GEMFIRE_IMPL_PDXTYPE_HPP_
 
 #include <gfcpp/Serializable.hpp>
 #include "PdxFieldType.hpp"
@@ -224,4 +220,5 @@ class PdxType : public Serializable,
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif /* PDXTYPE_HPP_ */
+
+#endif // GEODE_PDXTYPE_H_

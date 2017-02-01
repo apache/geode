@@ -1,5 +1,7 @@
-#ifndef __GEMFIRE_USERATTRIBUTES_H__
-#define __GEMFIRE_USERATTRIBUTES_H__
+#pragma once
+
+#ifndef GEODE_USERATTRIBUTES_H_
+#define GEODE_USERATTRIBUTES_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -17,6 +19,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include <gfcpp/gfcpp_globals.hpp>
 #include <gfcpp/Properties.hpp>
 #include "TcrEndpoint.hpp"
@@ -152,4 +155,4 @@ class GuardUserAttribures {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // ifndef __GEMFIRE_USERATTRIBUTES_H__
+#endif // GEODE_USERATTRIBUTES_H_

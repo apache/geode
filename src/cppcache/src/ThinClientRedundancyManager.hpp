@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_THINCLIENTREDUNDANCYMANAGER_H_
+#define GEODE_THINCLIENTREDUNDANCYMANAGER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
  *      Author: abhaware
  */
 
-#ifndef THINCLIENTREDUNDANCYMANAGER_HPP_
-#define THINCLIENTREDUNDANCYMANAGER_HPP_
 
 #include "TcrMessage.hpp"
 #include "TcrEndpoint.hpp"
@@ -145,4 +148,5 @@ class ThinClientRedundancyManager {
 }  // namespace geode
 }  // namespace apache
 
-#endif /* THINCLIENTREDUNDANCYMANAGER_HPP_ */
+
+#endif // GEODE_THINCLIENTREDUNDANCYMANAGER_H_

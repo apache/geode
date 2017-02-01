@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_SET_H_
+#define GEODE_SET_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef _GEMFIRE_SET_HPP_
-#define _GEMFIRE_SET_HPP_
 
 #include <unordered_set>
 #include <ace/Guard_T.h>
@@ -125,4 +128,4 @@ class CPPCACHE_EXPORT Set : private NonAssignable {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // !defined _GEMFIRE_SET_HPP_
+#endif // GEODE_SET_H_

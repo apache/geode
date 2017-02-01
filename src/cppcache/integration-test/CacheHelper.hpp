@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_CACHEHELPER_H_
+#define GEODE_INTEGRATION_TEST_CACHEHELPER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_CACHEHELPER_HPP
-#define TEST_CACHEHELPER_HPP
 
 #include <gfcpp/GeodeCppCache.hpp>
 #include <stdlib.h>
@@ -327,4 +330,5 @@ int CacheHelper::staticLocatorHostPort1 = CacheHelper::getRandomAvailablePort();
 int CacheHelper::staticLocatorHostPort2 = CacheHelper::getRandomAvailablePort();
 int CacheHelper::staticLocatorHostPort3 = CacheHelper::getRandomAvailablePort();
 #endif
-#endif  // TEST_CACHEHELPER_HPP
+
+#endif // GEODE_INTEGRATION_TEST_CACHEHELPER_H_

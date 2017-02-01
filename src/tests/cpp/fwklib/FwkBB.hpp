@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_e4048febbad0240d5090fde0a083a7ac
+#define APACHE_GEODE_GUARD_e4048febbad0240d5090fde0a083a7ac
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -22,8 +27,6 @@
   * @see
   */
 
-#ifndef __FWK_BB_HPP__
-#define __FWK_BB_HPP__
 
 #include <gfcpp/gf_base.hpp>
 #include "fwklib/FwkLog.hpp"
@@ -230,4 +233,5 @@ class FwkBBMessage {
 
 // ----------------------------------------------------------------------------
 
-#endif  // __FWK_BB_HPP__
+
+#endif // APACHE_GEODE_GUARD_e4048febbad0240d5090fde0a083a7ac

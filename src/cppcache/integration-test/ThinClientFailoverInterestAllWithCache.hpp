@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_THINCLIENTFAILOVERINTERESTALLWITHCACHE_H_
+#define GEODE_INTEGRATION_TEST_THINCLIENTFAILOVERINTERESTALLWITHCACHE_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -514,3 +519,5 @@ DUNIT_TASK_DEFINITION(SERVER2, CloseServer2)
     }
   }
 END_TASK_DEFINITION
+
+#endif // GEODE_INTEGRATION_TEST_THINCLIENTFAILOVERINTERESTALLWITHCACHE_H_

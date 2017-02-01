@@ -1,5 +1,7 @@
-#ifndef __GEMFIRE_PDXREADER_H__
-#define __GEMFIRE_PDXREADER_H__
+#pragma once
+
+#ifndef GEODE_GFCPP_PDXREADER_H_
+#define GEODE_GFCPP_PDXREADER_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -414,4 +416,5 @@ class CPPCACHE_EXPORT PdxReader : public SharedBase {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif /* PDXREADER_HPP_ */
+
+#endif // GEODE_GFCPP_PDXREADER_H_

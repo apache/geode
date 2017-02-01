@@ -1,5 +1,8 @@
-#ifndef __GEMFIRE_CACHEIMPL_H__
-#define __GEMFIRE_CACHEIMPL_H__
+#pragma once
+
+#ifndef GEODE_CACHEIMPL_H_
+#define GEODE_CACHEIMPL_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -16,6 +19,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include <gfcpp/gfcpp_globals.hpp>
 #include <gfcpp/SharedPtr.hpp>
 
@@ -336,4 +340,5 @@ class CPPCACHE_EXPORT CacheImpl : private NonCopyable, private NonAssignable {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif  // ifndef __GEMFIRE_CACHEIMPL_H__
+
+#endif // GEODE_CACHEIMPL_H_

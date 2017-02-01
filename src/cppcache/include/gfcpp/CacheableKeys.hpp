@@ -1,5 +1,7 @@
-#ifndef _GEMFIRE_CACHEABLEKEYS_HPP_
-#define _GEMFIRE_CACHEABLEKEYS_HPP_
+#pragma once
+
+#ifndef GEODE_GFCPP_CACHEABLEKEYS_H_
+#define GEODE_GFCPP_CACHEABLEKEYS_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -94,4 +96,4 @@ inline uint32_t hashcode(const double value) {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // _GEMFIRE_CACHEABLEKEYS_HPP_
+#endif // GEODE_GFCPP_CACHEABLEKEYS_H_

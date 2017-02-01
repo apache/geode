@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTERNALCACHETRANSACTIONMANAGER2PCIMPL_H_
+#define GEODE_INTERNALCACHETRANSACTIONMANAGER2PCIMPL_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
  *      Author: sshcherbakov
  */
 
-#ifndef INTERNALCACHETRANSACTIONMANAGER2PCIMPL_H_
-#define INTERNALCACHETRANSACTIONMANAGER2PCIMPL_H_
 
 #include <gfcpp/InternalCacheTransactionManager2PC.hpp>
 #include "CacheTransactionManagerImpl.hpp"
@@ -54,4 +57,5 @@ class InternalCacheTransactionManager2PCImpl
 }  // namespace geode
 }  // namespace apache
 
-#endif /* INTERNALCACHETRANSACTIONMANAGER2PCIMPL_H_ */
+
+#endif // GEODE_INTERNALCACHETRANSACTIONMANAGER2PCIMPL_H_

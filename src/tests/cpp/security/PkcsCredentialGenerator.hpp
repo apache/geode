@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_7531b050ea22f83a394ce20e9ea4949d
+#define APACHE_GEODE_GUARD_7531b050ea22f83a394ce20e9ea4949d
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef _GEMFIRE_PKCSCREDENTIALGENERATOR_HPP_
-#define _GEMFIRE_PKCSCREDENTIALGENERATOR_HPP_
 
 #include "CredentialGenerator.hpp"
 #include "XmlAuthzCredentialGenerator.hpp"
@@ -142,4 +145,5 @@ class PKCSCredentialGenerator : public CredentialGenerator {
 }  // namespace geode
 }  // namespace apache
 
-#endif /*_GEMFIRE_PKCSCREDENTIALGENERATOR_HPP_*/
+
+#endif // APACHE_GEODE_GUARD_7531b050ea22f83a394ce20e9ea4949d

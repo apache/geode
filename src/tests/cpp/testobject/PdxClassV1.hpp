@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_77cdb69379ae1ddf0404bd7ed757eeb8
+#define APACHE_GEODE_GUARD_77cdb69379ae1ddf0404bd7ed757eeb8
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -20,8 +25,6 @@
  *  Created on: Feb 3, 2012
  *      Author: npatel
  */
-#ifndef __PDXCLASSV1_HPP__
-#define __PDXCLASSV1_HPP__
 
 #include <gfcpp/PdxSerializable.hpp>
 #include <gfcpp/GeodeCppCache.hpp>
@@ -529,4 +532,5 @@ class TESTOBJECT_EXPORT TestEqualsV1 : public PdxSerializable {
 };
 
 } /* namespace PdxTests */
-#endif /* PDXCLASSV1_HPP_ */
+
+#endif // APACHE_GEODE_GUARD_77cdb69379ae1ddf0404bd7ed757eeb8

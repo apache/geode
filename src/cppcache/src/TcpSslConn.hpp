@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_TCPSSLCONN_H_
+#define GEODE_TCPSSLCONN_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __TcpSslConn_hpp__
-#define __TcpSslConn_hpp__
 
 #include "TcpConn.hpp"
 #include <ace/DLL.h>
@@ -85,4 +88,5 @@ class TcpSslConn : public TcpConn {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __TcpSslConn_hpp__
+
+#endif // GEODE_TCPSSLCONN_H_

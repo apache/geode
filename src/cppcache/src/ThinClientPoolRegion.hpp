@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_THINCLIENTPOOLREGION_H_
+#define GEODE_THINCLIENTPOOLREGION_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
  *      Author: abhaware
  */
 
-#ifndef THINCLIENTPOOLREGION_HPP_
-#define THINCLIENTPOOLREGION_HPP_
 
 #include "ThinClientHARegion.hpp"
 
@@ -53,4 +56,5 @@ class ThinClientPoolRegion : public ThinClientRegion {
 }  // namespace geode
 }  // namespace apache
 
-#endif /* THINCLIENTPOOLREGION_HPP_ */
+
+#endif // GEODE_THINCLIENTPOOLREGION_H_

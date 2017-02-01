@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_QUEUE_H_
+#define GEODE_QUEUE_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __GEMFIRE_QUEUE_HPP_
-#define __GEMFIRE_QUEUE_HPP_
 
 #include <deque>
 #include <ace/Time_Value.h>
@@ -165,4 +168,4 @@ class CPPCACHE_EXPORT Queue {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __GEMFIRE_QUEUE_HPP_
+#endif // GEODE_QUEUE_H_

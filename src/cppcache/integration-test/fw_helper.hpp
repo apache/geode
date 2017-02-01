@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_FW_HELPER_H_
+#define GEODE_INTEGRATION_TEST_FW_HELPER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -67,8 +72,6 @@ fwtest_Name is defined for you, as a (const char *) with the value given to
 BEGIN_TEST.
 
 */
-#ifndef _FW_HELPER_HPP_
-#define _FW_HELPER_HPP_
 
 #ifdef WIN32
 // Must include WinSock2 so winsock.h doesn't get included.
@@ -228,4 +231,5 @@ int main(int argc, char* argv[])
   }                 \
   a_##x;
 
-#endif
+
+#endif // GEODE_INTEGRATION_TEST_FW_HELPER_H_

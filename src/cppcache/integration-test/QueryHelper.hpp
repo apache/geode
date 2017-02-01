@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_QUERYHELPER_H_
+#define GEODE_INTEGRATION_TEST_QUERYHELPER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_QUERYHELPER_HPP
-#define TEST_QUERYHELPER_HPP
 
 #include <gfcpp/GeodeCppCache.hpp>
 #include <stdlib.h>
@@ -373,4 +376,5 @@ bool QueryHelper::verifySS(SelectResultsPtr& structSet, int expectedRows,
   return false;
 }
 
-#endif  // TEST_QUERYHELPER_HPP
+
+#endif // GEODE_INTEGRATION_TEST_QUERYHELPER_H_

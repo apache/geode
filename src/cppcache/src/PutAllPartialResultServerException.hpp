@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_PUTALLPARTIALRESULTSERVEREXCEPTION_H_
+#define GEODE_PUTALLPARTIALRESULTSERVEREXCEPTION_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef PUTALL_PARTIALRESULT_SERVER_EXCEPTION
-#define PUTALL_PARTIALRESULT_SERVER_EXCEPTION
 
 #include <gfcpp/Serializable.hpp>
 #include <gfcpp/CacheableString.hpp>
@@ -141,4 +144,5 @@ class CPPCACHE_EXPORT PutAllPartialResultServerException : public Serializable {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif
+
+#endif // GEODE_PUTALLPARTIALRESULTSERVEREXCEPTION_H_

@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_602c04192305d5a8fa539c0c989ef65f
+#define APACHE_GEODE_GUARD_602c04192305d5a8fa539c0c989ef65f
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -25,8 +30,6 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef _GEMFIRE_CREDENTIALGENERATOR_HPP_
-#define _GEMFIRE_CREDENTIALGENERATOR_HPP_
 
 // ----------------------------------------------------------------------------
 
@@ -272,4 +275,5 @@ class CredentialGenerator : public SharedBase {
 }  // namespace geode
 }  // namespace apache
 
-#endif
+
+#endif // APACHE_GEODE_GUARD_602c04192305d5a8fa539c0c989ef65f

@@ -1,5 +1,7 @@
-#ifndef _GEMFIRE_CACHEABLEFILENAME_HPP_
-#define _GEMFIRE_CACHEABLEFILENAME_HPP_
+#pragma once
+
+#ifndef GEODE_GFCPP_CACHEABLEFILENAME_H_
+#define GEODE_GFCPP_CACHEABLEFILENAME_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -116,4 +118,4 @@ class CPPCACHE_EXPORT CacheableFileName : public CacheableString {
 }  // namespace geode
 }  // namespace apache
 
-#endif
+#endif // GEODE_GFCPP_CACHEABLEFILENAME_H_

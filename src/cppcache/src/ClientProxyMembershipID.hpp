@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_CLIENTPROXYMEMBERSHIPID_H_
+#define GEODE_CLIENTPROXYMEMBERSHIPID_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,8 +20,6 @@
  * limitations under the License.
  */
 
-#ifndef __CLIENTPROXYMEMBERSHIPID_HPP__
-#define __CLIENTPROXYMEMBERSHIPID_HPP__
 
 #include <gfcpp/gfcpp_globals.hpp>
 #include <gfcpp/DataOutput.hpp>
@@ -145,4 +148,5 @@ class ClientProxyMembershipID : public DSMemberForVersionStamp {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __CLIENTPROXYMEMBERSHIPID_HPP__
+
+#endif // GEODE_CLIENTPROXYMEMBERSHIPID_H_

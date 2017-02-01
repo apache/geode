@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_APPDOMAINCONTEXT_H_
+#define GEODE_APPDOMAINCONTEXT_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,9 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#ifndef __gemfire_AppDomainContext_h__
-#define __gemfire_AppDomainContext_h__
 
 #include <functional>
 
@@ -37,4 +39,4 @@ extern AppDomainContext::factory createAppDomainContext;
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __gemfire_AppDomainContext_h__
+#endif // GEODE_APPDOMAINCONTEXT_H_

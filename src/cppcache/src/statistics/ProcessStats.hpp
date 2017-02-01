@@ -1,5 +1,7 @@
-#ifndef _GEMFIRE_STATISTICS_PROCESSSTATS_HPP_
-#define _GEMFIRE_STATISTICS_PROCESSSTATS_HPP_
+#pragma once
+
+#ifndef GEODE_STATISTICS_PROCESSSTATS_H_
+#define GEODE_STATISTICS_PROCESSSTATS_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -77,4 +79,5 @@ class CPPCACHE_EXPORT ProcessStats {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif  // _GEMFIRE_STATISTICS_PROCESSSTATS_HPP_
+
+#endif // GEODE_STATISTICS_PROCESSSTATS_H_

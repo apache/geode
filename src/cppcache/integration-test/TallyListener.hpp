@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_TALLYLISTENER_H_
+#define GEODE_INTEGRATION_TEST_TALLYLISTENER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,8 +20,6 @@
  * limitations under the License.
  */
 
-#ifndef _TEST_TALLYLISTENER_HPP_
-#define _TEST_TALLYLISTENER_HPP_
 
 #include <gfcpp/GeodeCppCache.hpp>
 #include <string>
@@ -220,4 +223,5 @@ void TallyListener::afterRegionClear(const EntryEvent& event) {
   checkcallbackArg(event);
 }
 
-#endif
+
+#endif // GEODE_INTEGRATION_TEST_TALLYLISTENER_H_

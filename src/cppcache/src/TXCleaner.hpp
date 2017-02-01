@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_TXCLEANER_H_
+#define GEODE_TXCLEANER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
  *      Author: sshcherbakov
  */
 
-#ifndef TXCLEANER_HPP_
-#define TXCLEANER_HPP_
 
 #include "CacheTransactionManagerImpl.hpp"
 #include "TSSTXStateWrapper.hpp"
@@ -52,4 +55,5 @@ class TXCleaner {
 }  // namespace geode
 }  // namespace apache
 
-#endif /* TXCLEANER_HPP_ */
+
+#endif // GEODE_TXCLEANER_H_

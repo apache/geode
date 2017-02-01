@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_31f0c15c526e6fca1c0825a818e204d4
+#define APACHE_GEODE_GUARD_31f0c15c526e6fca1c0825a818e204d4
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,8 +20,6 @@
  * limitations under the License.
  */
 
-#ifndef __UDPIpc_hpp__
-#define __UDPIpc_hpp__
 
 #include "Service.hpp"
 #include "PerfFwk.hpp"
@@ -295,4 +298,5 @@ class Responder : public ServiceTask {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __UDPIpc_hpp__
+
+#endif // APACHE_GEODE_GUARD_31f0c15c526e6fca1c0825a818e204d4

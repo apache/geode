@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_eb7690d50321df9f22960c0ceecdeea5
+#define APACHE_GEODE_GUARD_eb7690d50321df9f22960c0ceecdeea5
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,8 +20,6 @@
  * limitations under the License.
  */
 
-#ifndef _GFAS_ASBUILTINS_HPP_
-#define _GFAS_ASBUILTINS_HPP_
 
 #include "DataOutput.hpp"
 #include "DataInput.hpp"
@@ -120,4 +123,5 @@ inline void readObject(apache::geode::client::DataInput& input,
 }
 }
 
-#endif  // _GFAS_ASBUILTINS_HPP_
+
+#endif // APACHE_GEODE_GUARD_eb7690d50321df9f22960c0ceecdeea5

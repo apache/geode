@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_THINCLIENTSECURITY_H_
+#define GEODE_INTEGRATION_TEST_THINCLIENTSECURITY_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
  *      Author: vrao
  */
 
-#ifndef THINCLIENTSECURITY_HPP_
-#define THINCLIENTSECURITY_HPP_
 
 #include "fw_dunit.hpp"
 #include "ThinClientHelper.hpp"
@@ -76,4 +79,5 @@ RegionServicePtr getVirtualCache(PropertiesPtr creds, PoolPtr pool) {
   return cachePtr->createAuthenticatedView(creds, pool->getName());
 }
 
-#endif /* THINCLIENTSECURITY_HPP_ */
+
+#endif // GEODE_INTEGRATION_TEST_THINCLIENTSECURITY_H_

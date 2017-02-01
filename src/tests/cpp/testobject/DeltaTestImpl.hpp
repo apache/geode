@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_f0dde88a60c43a402c317bb0bafa6c73
+#define APACHE_GEODE_GUARD_f0dde88a60c43a402c317bb0bafa6c73
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
  *      Author: abhaware
  */
 
-#ifndef DELTATESTIMPL_HPP_
-#define DELTATESTIMPL_HPP_
 
 #include <ace/ACE.h>
 #include <ace/OS.h>
@@ -120,4 +123,5 @@ class TESTOBJECT_EXPORT DeltaTestImpl : public Cacheable, public Delta {
   CacheableStringPtr toString() const;
 };
 }  // namespace testobject
-#endif /* DELTATESTIMPL_HPP_ */
+
+#endif // APACHE_GEODE_GUARD_f0dde88a60c43a402c317bb0bafa6c73

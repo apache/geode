@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_785ebc022f46abcb7ea497df264a48ae
+#define APACHE_GEODE_GUARD_785ebc022f46abcb7ea497df264a48ae
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,8 +20,6 @@
  * limitations under the License.
  */
 
-#ifndef __FrameworkTest_hpp__
-#define __FrameworkTest_hpp__
 
 #include "fwklib/TimeSync.hpp"
 #include "fwklib/ClientTask.hpp"
@@ -278,4 +281,5 @@ class FrameworkTest  // Base class all test classes written for xml testing
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif  // __FrameworkTest_hpp__
+
+#endif // APACHE_GEODE_GUARD_785ebc022f46abcb7ea497df264a48ae

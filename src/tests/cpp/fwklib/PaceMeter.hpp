@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_0b9b6fa2558c2b1a9cd9f073630e90aa
+#define APACHE_GEODE_GUARD_0b9b6fa2558c2b1a9cd9f073630e90aa
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,8 +20,6 @@
  * limitations under the License.
  */
 
-#ifndef __PaceMeter_hpp__
-#define __PaceMeter_hpp__
 
 #include "fwklib/FwkLog.hpp"
 #include <ace/Time_Value.h>
@@ -129,4 +132,5 @@ class PaceMeter {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __PaceMeter_hpp__
+
+#endif // APACHE_GEODE_GUARD_0b9b6fa2558c2b1a9cd9f073630e90aa

@@ -1,5 +1,7 @@
-#ifndef __GEMFIRE_PROXYREGION_H__
-#define __GEMFIRE_PROXYREGION_H__
+#pragma once
+
+#ifndef GEODE_PROXYREGION_H_
+#define GEODE_PROXYREGION_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -1519,4 +1521,4 @@ typedef SharedPtr<ProxyRegion> ProxyRegionPtr;
 }  // namespace geode
 }  // namespace apache
 
-#endif  // ifndef __GEMFIRE_PROXYREGION_H__
+#endif // GEODE_PROXYREGION_H_

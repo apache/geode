@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_QUEUECONNECTIONRESPONSE_H_
+#define GEODE_QUEUECONNECTIONRESPONSE_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __QUEUE_CONNECTION_RESPONSE__
-#define __QUEUE_CONNECTION_RESPONSE__
 #include <list>
 #include "ServerLocationResponse.hpp"
 #include <gfcpp/DataInput.hpp>
@@ -49,4 +52,5 @@ typedef SharedPtr<QueueConnectionResponse> QueueConnectionResponsePtr;
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif
+
+#endif // GEODE_QUEUECONNECTIONRESPONSE_H_

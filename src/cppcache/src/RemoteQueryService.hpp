@@ -1,5 +1,8 @@
-#ifndef __GEMFIRE_REMOTEQUERYSERVICE_H__
-#define __GEMFIRE_REMOTEQUERYSERVICE_H__
+#pragma once
+
+#ifndef GEODE_REMOTEQUERYSERVICE_H_
+#define GEODE_REMOTEQUERYSERVICE_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -86,4 +89,5 @@ typedef SharedPtr<RemoteQueryService> RemoteQueryServicePtr;
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif  // ifndef __GEMFIRE_REMOTEQUERYSERVICE_H__
+
+#endif // GEODE_REMOTEQUERYSERVICE_H_

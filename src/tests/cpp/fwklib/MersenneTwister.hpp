@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_2cbb06e4c156792558ba80dbf0fbc5e9
+#define APACHE_GEODE_GUARD_2cbb06e4c156792558ba80dbf0fbc5e9
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -71,8 +76,6 @@
 // It would be nice to CC: rjwagner@writeme.com and Cokus@math.washington.edu
 // when you write.
 
-#ifndef MERSENNETWISTER_H
-#define MERSENNETWISTER_H
 
 // Not thread safe (unless auto-initialization is avoided and each thread has
 // its own MTRand object)
@@ -158,8 +161,6 @@ class MTRand {
   static uint32_t hash(time_t t, clock_t c);
 };
 
-#endif  // MERSENNETWISTER_H
-
 // Change log:
 //
 // v0.1 - First release on 15 May 2000
@@ -199,3 +200,5 @@ class MTRand {
 //      - Fixed out-of-range number generation on 64-bit machines
 //      - Improved portability by substituting literal constants for long enum's
 //      - Changed license from GNU LGPL to BSD
+
+#endif // APACHE_GEODE_GUARD_2cbb06e4c156792558ba80dbf0fbc5e9

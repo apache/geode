@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_THINCLIENTSECURITYHELPER_H_
+#define GEODE_INTEGRATION_TEST_THINCLIENTSECURITYHELPER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -253,3 +258,5 @@ class putThread : public ACE_Task_Base {
   bool m_regInt;
   int m_waitTime;
 };
+
+#endif // GEODE_INTEGRATION_TEST_THINCLIENTSECURITYHELPER_H_

@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_PDXLOCALWRITER_H_
+#define GEODE_PDXLOCALWRITER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,15 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * PdxLocalWriter.hpp
- *
- *  Created on: Nov 3, 2011
- *      Author: npatel
- */
-
-#ifndef _GEMFIRE_IMPL_PDXLOCALWRITER_HPP_
-#define _GEMFIRE_IMPL_PDXLOCALWRITER_HPP_
 
 #include <gfcpp/PdxWriter.hpp>
 #include "PdxType.hpp"
@@ -342,4 +338,5 @@ typedef SharedPtr<PdxLocalWriter> PdxLocalWriterPtr;
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif /* PDXLOCALWRITER_HPP_ */
+
+#endif // GEODE_PDXLOCALWRITER_H_

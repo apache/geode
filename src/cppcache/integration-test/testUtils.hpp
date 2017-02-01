@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_TESTUTILS_H_
+#define GEODE_INTEGRATION_TEST_TESTUTILS_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __UNIT_TEST_TEST_UTILS__
-#define __UNIT_TEST_TEST_UTILS__
 #include <gfcpp/GeodeCppCache.hpp>
 
 /* use CacheHelper to gain the impl pointer from cache or region object
@@ -185,4 +188,5 @@ class TestUtils {
   }
 };
 }  // namespace unitTests
-#endif  // define __UNIT_TEST_TEST_UTILS__
+
+#endif // GEODE_INTEGRATION_TEST_TESTUTILS_H_

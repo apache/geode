@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_CACHEDDESERIALIZABLEHELPER_H_
+#define GEODE_CACHEDDESERIALIZABLEHELPER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef CACHEDDESERIALIZABLEHELPER_HPP_
-#define CACHEDDESERIALIZABLEHELPER_HPP_
 
 #include <gfcpp/Cacheable.hpp>
 #include <gfcpp/DataInput.hpp>
@@ -99,4 +102,5 @@ typedef SharedPtr<CachedDeserializableHelper> CachedDeserializableHelperPtr;
 }  // namespace geode
 }  // namespace apache
 
-#endif  // CACHEDDESERIALIZABLEHELPER_HPP_
+
+#endif // GEODE_CACHEDDESERIALIZABLEHELPER_H_

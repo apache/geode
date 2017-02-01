@@ -1,6 +1,7 @@
+#pragma once
 
-#ifndef _GEMFIRE_VECTOROFSHAREDBASE_HPP_
-#define _GEMFIRE_VECTOROFSHAREDBASE_HPP_
+#ifndef GEODE_GFCPP_VECTOROFSHAREDBASE_H_
+#define GEODE_GFCPP_VECTOROFSHAREDBASE_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -169,4 +170,4 @@ class CPPCACHE_EXPORT VectorOfSharedBase {
 }  // namespace geode
 }  // namespace apache
 
-#endif
+#endif // GEODE_GFCPP_VECTOROFSHAREDBASE_H_

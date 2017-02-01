@@ -1,5 +1,8 @@
-#ifndef __GEMFIRE_CQ_STATUS_LISTENER_HPP__
-#define __GEMFIRE_CQ_STATUS_LISTENER_HPP__
+#pragma once
+
+#ifndef GEODE_GFCPP_CQSTATUSLISTENER_H_
+#define GEODE_GFCPP_CQSTATUSLISTENER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -47,4 +50,4 @@ class CPPCACHE_EXPORT CqStatusListener : public CqListener {
 }  // namespace geode
 }  // namespace apache
 
-#endif  //#ifndef __GEMFIRE_CQ_STATUS_LISTENER_HPP__
+#endif // GEODE_GFCPP_CQSTATUSLISTENER_H_

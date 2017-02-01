@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_e9a3be6b0d737dd314e3ec4bc3a93eba
+#define APACHE_GEODE_GUARD_e9a3be6b0d737dd314e3ec4bc3a93eba
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -24,8 +29,6 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef __FWK_OBJECTS_HPP__
-#define __FWK_OBJECTS_HPP__
 
 #include <gfcpp/Properties.hpp>
 #include <gfcpp/ExpirationAction.hpp>
@@ -1617,4 +1620,5 @@ class TestDriver {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __FWK_OBJECTS_HPP__
+
+#endif // APACHE_GEODE_GUARD_e9a3be6b0d737dd314e3ec4bc3a93eba

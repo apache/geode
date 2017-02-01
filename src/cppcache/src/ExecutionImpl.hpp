@@ -1,5 +1,7 @@
-#ifndef __GEMFIRE_EXECUTION_IMPL_H__
-#define __GEMFIRE_EXECUTION_IMPL_H__
+#pragma once
+
+#ifndef GEODE_EXECUTIONIMPL_H_
+#define GEODE_EXECUTIONIMPL_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -110,4 +112,5 @@ class ExecutionImpl : public Execution {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif  //__GEMFIRE_EXECUTION_IMPL_H__
+
+#endif // GEODE_EXECUTIONIMPL_H_

@@ -1,5 +1,8 @@
-#ifndef _GEMFIRE_STATISTICS_HOSTSTATHELPERWIN_HPP_
-#define _GEMFIRE_STATISTICS_HOSTSTATHELPERWIN_HPP_
+#pragma once
+
+#ifndef GEODE_STATISTICS_HOSTSTATHELPERWIN_H_
+#define GEODE_STATISTICS_HOSTSTATHELPERWIN_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -300,4 +303,4 @@ class HostStatHelperWin {
 
 #endif  // (_WIN32)
 
-#endif  // _GEMFIRE_STATISTICS_HOSTSTATHELPERWIN_HPP_
+#endif // GEODE_STATISTICS_HOSTSTATHELPERWIN_H_

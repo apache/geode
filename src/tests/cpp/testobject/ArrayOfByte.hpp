@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_ec3211e9438cbef839aaab90eac09a4b
+#define APACHE_GEODE_GUARD_ec3211e9438cbef839aaab90eac09a4b
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __ArrayOfByte_HPP__
-#define __ArrayOfByte_HPP__
 
 #include <gfcpp/GeodeCppCache.hpp>
 #include <string.h>
@@ -122,4 +125,5 @@ class TESTOBJECT_EXPORT ArrayOfByte {
 };
 }  // namespace testobject
 
-#endif
+
+#endif // APACHE_GEODE_GUARD_ec3211e9438cbef839aaab90eac09a4b

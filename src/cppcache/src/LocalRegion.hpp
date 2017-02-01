@@ -1,5 +1,7 @@
-#ifndef __GEMFIRE_LOCALREGION_H__
-#define __GEMFIRE_LOCALREGION_H__
+#pragma once
+
+#ifndef GEODE_LOCALREGION_H_
+#define GEODE_LOCALREGION_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -495,4 +497,4 @@ class CPPCACHE_EXPORT LocalRegion : public RegionInternal {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // ifndef __GEMFIRE_LOCALREGION_H__
+#endif // GEODE_LOCALREGION_H_

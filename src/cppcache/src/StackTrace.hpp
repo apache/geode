@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_STACKTRACE_H_
+#define GEODE_STACKTRACE_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,9 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#ifndef _GEMFIRE_STACKTRACE_HPP_
-#define _GEMFIRE_STACKTRACE_HPP_
 
 #define GF_TRACE_LEN 25
 
@@ -64,4 +66,4 @@ class StackTrace : public SharedBase {
 }  // namespace geode
 }  // namespace apache
 
-#endif
+#endif // GEODE_STACKTRACE_H_

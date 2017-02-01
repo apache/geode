@@ -1,5 +1,8 @@
-#ifndef _GEMFIRE_STATISTICS_ATOMICSTATISTICSIMPL_HPP_
-#define _GEMFIRE_STATISTICS_ATOMICSTATISTICSIMPL_HPP_
+#pragma once
+
+#ifndef GEODE_STATISTICS_ATOMICSTATISTICSIMPL_H_
+#define GEODE_STATISTICS_ATOMICSTATISTICSIMPL_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -246,4 +249,4 @@ class AtomicStatisticsImpl : public Statistics, private NonCopyable {
 }  // namespace geode
 }  // namespace apache
 
-#endif  //  _GEMFIRE_STATISTICS_ATOMICSTATISTICSIMPL_HPP_
+#endif // GEODE_STATISTICS_ATOMICSTATISTICSIMPL_H_

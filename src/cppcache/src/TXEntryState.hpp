@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_TXENTRYSTATE_H_
+#define GEODE_TXENTRYSTATE_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
  *      Author: ankurs
  */
 
-#ifndef TXENTRYSTATE_HPP_
-#define TXENTRYSTATE_HPP_
 
 #include <gfcpp/gf_types.hpp>
 
@@ -85,4 +88,5 @@ _GF_PTR_DEF_(TXEntryState, TXEntryStatePtr);
 }  // namespace geode
 }  // namespace apache
 
-#endif /* TXENTRYSTATE_HPP_ */
+
+#endif // GEODE_TXENTRYSTATE_H_

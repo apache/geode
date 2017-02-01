@@ -1,5 +1,7 @@
-#ifndef __GEMFIRE_PDXTYPES_H__
-#define __GEMFIRE_PDXTYPES_H__
+#pragma once
+
+#ifndef GEODE_PDXTYPES_H_
+#define GEODE_PDXTYPES_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -41,4 +43,4 @@ class PdxTypes {
   static const int8_t DATE_SIZE = 8;
 };
 
-#endif  // __GEMFIRE_PDXTYPES_H__
+#endif // GEODE_PDXTYPES_H_

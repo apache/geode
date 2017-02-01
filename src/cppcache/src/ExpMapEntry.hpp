@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_EXPMAPENTRY_H_
+#define GEODE_EXPMAPENTRY_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __GEMFIRE_IMPL_EXPMAPENTRY_H__
-#define __GEMFIRE_IMPL_EXPMAPENTRY_H__
 
 #include <gfcpp/gfcpp_globals.hpp>
 #include "MapEntry.hpp"
@@ -92,4 +95,4 @@ class CPPCACHE_EXPORT ExpEntryFactory : public EntryFactory {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __GEMFIRE_IMPL_EXPMAPENTRY_H__
+#endif // GEODE_EXPMAPENTRY_H_

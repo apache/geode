@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_TALLYLOADER_H_
+#define GEODE_INTEGRATION_TEST_TALLYLOADER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef _TEST_TALLYLOADER_HPP_
-#define _TEST_TALLYLOADER_HPP_ 1
 
 #include <gfcpp/GeodeCppCache.hpp>
 
@@ -69,4 +72,5 @@ class TallyLoader : virtual public CacheLoader {
   }
 };
 
-#endif  //_TEST_TALLYLOADER_HPP_
+
+#endif // GEODE_INTEGRATION_TEST_TALLYLOADER_H_

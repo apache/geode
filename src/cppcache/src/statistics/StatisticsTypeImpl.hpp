@@ -1,5 +1,8 @@
-#ifndef _GEMFIRE_STATISTICS_STATISTICSTYPEIMPL_HPP_
-#define _GEMFIRE_STATISTICS_STATISTICSTYPEIMPL_HPP_
+#pragma once
+
+#ifndef GEODE_STATISTICS_STATISTICSTYPEIMPL_H_
+#define GEODE_STATISTICS_STATISTICSTYPEIMPL_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -99,4 +102,4 @@ class StatisticsTypeImpl : public StatisticsType {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // ifndef _GEMFIRE_STATISTICS_STATISTICSTYPEIMPL_HPP_
+#endif // GEODE_STATISTICS_STATISTICSTYPEIMPL_H_

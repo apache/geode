@@ -1,5 +1,7 @@
-#ifndef __GEMFIRE_DATAOUTPUT_H__
-#define __GEMFIRE_DATAOUTPUT_H__
+#pragma once
+
+#ifndef GEODE_GFCPP_DATAOUTPUT_H_
+#define GEODE_GFCPP_DATAOUTPUT_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -818,4 +820,4 @@ class CPPCACHE_EXPORT DataOutput {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __GEMFIRE_DATAOUTPUT_H__
+#endif // GEODE_GFCPP_DATAOUTPUT_H_

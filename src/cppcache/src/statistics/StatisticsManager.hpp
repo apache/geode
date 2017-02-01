@@ -1,7 +1,8 @@
+#pragma once
 
+#ifndef GEODE_STATISTICS_STATISTICSMANAGER_H_
+#define GEODE_STATISTICS_STATISTICSMANAGER_H_
 
-#ifndef _GEMFIRE_STATISTICS_STATISTICSAPPMANAGER_HPP_
-#define _GEMFIRE_STATISTICS_STATISTICSAPPMANAGER_HPP_
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -18,6 +19,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include <gfcpp/gfcpp_globals.hpp>
 
 #include <sys/types.h>
@@ -129,4 +131,4 @@ class StatisticsManager {
 }  // namespace geode
 }  // namespace apache
 
-#endif  //  _GEMFIRE_STATISTICS_STATISTICSAPPMANAGER_HPP_
+#endif // GEODE_STATISTICS_STATISTICSMANAGER_H_

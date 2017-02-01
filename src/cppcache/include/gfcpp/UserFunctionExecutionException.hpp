@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_GFCPP_USERFUNCTIONEXECUTIONEXCEPTION_H_
+#define GEODE_GFCPP_USERFUNCTIONEXECUTIONEXCEPTION_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef USER_FUNCTION_EXECUTION_EXCEPTION
-#define USER_FUNCTION_EXECUTION_EXCEPTION
 
 #include "Serializable.hpp"
 #include "CacheableString.hpp"
@@ -118,4 +121,5 @@ class UserFunctionExecutionException : public Serializable {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif
+
+#endif // GEODE_GFCPP_USERFUNCTIONEXECUTIONEXCEPTION_H_

@@ -1,5 +1,7 @@
-#ifndef _GEMFIRE_CACHEABLE_BUILTINS_HPP_
-#define _GEMFIRE_CACHEABLE_BUILTINS_HPP_
+#pragma once
+
+#ifndef GEODE_GFCPP_CACHEABLEBUILTINS_H_
+#define GEODE_GFCPP_CACHEABLEBUILTINS_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -681,4 +683,4 @@ _GF_CACHEABLE_CONTAINER_TYPE_(_HashSetOfCacheableKey, CacheableLinkedHashSet);
 }  // namespace geode
 }  // namespace apache
 
-#endif  // _GEMFIRE_CACHEABLE_BUILTINS_HPP_
+#endif // GEODE_GFCPP_CACHEABLEBUILTINS_H_

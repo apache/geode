@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_GFCPP_EXECUTION_H_
+#define GEODE_GFCPP_EXECUTION_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,9 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#ifndef __GEMFIRE_EXECUTION_H__
-#define __GEMFIRE_EXECUTION_H__
 
 /*
  * The specification of function behaviors is found in the corresponding .cpp
@@ -110,4 +112,5 @@ class CPPCACHE_EXPORT Execution : public SharedBase {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif  //__GEMFIRE_EXECUTION_H__
+
+#endif // GEODE_GFCPP_EXECUTION_H_

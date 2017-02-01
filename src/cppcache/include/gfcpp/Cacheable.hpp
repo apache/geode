@@ -1,5 +1,8 @@
-#ifndef __GEMFIRE_CACHEABLE_H__
-#define __GEMFIRE_CACHEABLE_H__
+#pragma once
+
+#ifndef GEODE_GFCPP_CACHEABLE_H_
+#define GEODE_GFCPP_CACHEABLE_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -40,4 +43,4 @@ inline CacheablePtr createValue(const TVALUE* value);
 }  // namespace geode
 }  // namespace apache
 
-#endif  // ifndef __GEMFIRE_CACHEABLE_H__
+#endif // GEODE_GFCPP_CACHEABLE_H_

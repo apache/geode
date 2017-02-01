@@ -1,5 +1,7 @@
-#ifndef __GEMFIRE_IMPL_MAP_WITHLOCK_H__
-#define __GEMFIRE_IMPL_MAP_WITHLOCK_H__
+#pragma once
+
+#ifndef GEODE_MAPWITHLOCK_H_
+#define GEODE_MAPWITHLOCK_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -79,4 +81,5 @@ typedef ACE_Guard<ACE_Recursive_Thread_Mutex> MapOfRegionGuard;
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif  // define __GEMFIRE_IMPL_MAP_WITHLOCK_H__
+
+#endif // GEODE_MAPWITHLOCK_H_

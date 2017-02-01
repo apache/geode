@@ -1,5 +1,8 @@
-#ifndef __GEMFIRE_CQ_QUERY_IMPL_H__
-#define __GEMFIRE_CQ_QUERY_IMPL_H__
+#pragma once
+
+#ifndef GEODE_CQQUERYIMPL_H_
+#define GEODE_CQQUERYIMPL_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -272,4 +275,4 @@ class CqQueryImpl : public CqQuery {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // ifndef __GEMFIRE_CQ_QUERY_IMPL_H__
+#endif // GEODE_CQQUERYIMPL_H_

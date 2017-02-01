@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_CLIENTMETADATA_H_
+#define GEODE_CLIENTMETADATA_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef CLIENT_METADATA
-#define CLIENT_METADATA
 
 #include <gfcpp/PartitionResolver.hpp>
 #include "ServerLocation.hpp"
@@ -105,4 +108,5 @@ class CPPCACHE_EXPORT ClientMetadata : public SharedBase, public NonAssignable {
 }  // namespace geode
 }  // namespace apache
 
-#endif
+
+#endif // GEODE_CLIENTMETADATA_H_

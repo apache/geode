@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_PDXREMOTEREADER_H_
+#define GEODE_PDXREMOTEREADER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,14 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
-* PdxRemoteReader.hpp
-*
-*  Created on: Nov 3, 2011
-*      Author: npatel
-*/
-#ifndef _GEMFIRE_IMPL_PDXREMOTEREADER_HPP_
-#define _GEMFIRE_IMPL_PDXREMOTEREADER_HPP_
 
 #include "PdxLocalReader.hpp"
 
@@ -216,4 +213,5 @@ typedef SharedPtr<PdxRemoteReader> PdxRemoteReaderPtr;
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif /* PDXREMOTEREADER_HPP_ */
+
+#endif // GEODE_PDXREMOTEREADER_H_

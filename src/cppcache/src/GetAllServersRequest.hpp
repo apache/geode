@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_GETALLSERVERSREQUEST_H_
+#define GEODE_GETALLSERVERSREQUEST_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __GET_All_SERVERS_REQUEST_HPP_INCLUDED__
-#define __GET_All_SERVERS_REQUEST_HPP_INCLUDED__
 
 #include <gfcpp/Serializable.hpp>
 #include <gfcpp/DataInput.hpp>
@@ -50,4 +53,5 @@ class GetAllServersRequest : public Serializable {
 }  // namespace geode
 }  // namespace apache
 
-#endif
+
+#endif // GEODE_GETALLSERVERSREQUEST_H_

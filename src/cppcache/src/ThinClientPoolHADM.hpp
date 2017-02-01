@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_THINCLIENTPOOLHADM_H_
+#define GEODE_THINCLIENTPOOLHADM_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __THIN_CLIENT_POOL_HADM__
-#define __THIN_CLIENT_POOL_HADM__
 #include "ThinClientPoolDM.hpp"
 #include "PoolAttributes.hpp"
 #include "TcrConnectionManager.hpp"
@@ -145,4 +148,5 @@ typedef SharedPtr<ThinClientPoolHADM> ThinClientPoolHADMPtr;
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif
+
+#endif // GEODE_THINCLIENTPOOLHADM_H_

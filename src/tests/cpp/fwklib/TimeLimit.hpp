@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_1628cb6366f926a3cac7309d67d1a4d7
+#define APACHE_GEODE_GUARD_1628cb6366f926a3cac7309d67d1a4d7
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,8 +20,6 @@
  * limitations under the License.
  */
 
-#ifndef __TimeLimit_hpp__
-#define __TimeLimit_hpp__
 
 #include "fwklib/FwkLog.hpp"
 #include <ace/Time_Value.h>
@@ -49,4 +52,5 @@ class TimeLimit {
 }
 }
 
-#endif  // __TimeLimit_hpp__
+
+#endif // APACHE_GEODE_GUARD_1628cb6366f926a3cac7309d67d1a4d7

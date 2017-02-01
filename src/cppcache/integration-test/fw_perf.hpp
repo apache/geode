@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_FW_PERF_H_
+#define GEODE_INTEGRATION_TEST_FW_PERF_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,8 +20,6 @@
  * limitations under the License.
  */
 
-#ifndef _FWPERF_H_
-#define _FWPERF_H_
 
 /**
 
@@ -243,4 +246,5 @@ class Thread : public ACE_Task_Base {
 //};
 }  // namespace perf
 
-#endif
+
+#endif // GEODE_INTEGRATION_TEST_FW_PERF_H_

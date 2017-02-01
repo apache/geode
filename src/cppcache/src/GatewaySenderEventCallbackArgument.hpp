@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_GATEWAYSENDEREVENTCALLBACKARGUMENT_H_
+#define GEODE_GATEWAYSENDEREVENTCALLBACKARGUMENT_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,8 +20,6 @@
  * limitations under the License.
  */
 
-#ifndef __GATEWAYSENDEREVENTCALLBACKARGUMENT_HPP__
-#define __GATEWAYSENDEREVENTCALLBACKARGUMENT_HPP__
 
 #include <gfcpp/Serializable.hpp>
 #include "GeodeTypeIdsImpl.hpp"
@@ -71,4 +74,5 @@ class GatewaySenderEventCallbackArgument : public Serializable {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __GATEWAYSENDEREVENTCALLBACKARGUMENT_HPP__
+
+#endif // GEODE_GATEWAYSENDEREVENTCALLBACKARGUMENT_H_

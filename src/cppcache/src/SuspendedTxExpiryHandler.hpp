@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_SUSPENDEDTXEXPIRYHANDLER_H_
+#define GEODE_SUSPENDEDTXEXPIRYHANDLER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef _GEMFIRE_SUSPENDEDTXEXPIRYTASK_H__
-#define _GEMFIRE_SUSPENDEDTXEXPIRYTASK_H__
 
 #include <gfcpp/gfcpp_globals.hpp>
 #include <gfcpp/Cache.hpp>
@@ -63,4 +66,5 @@ class CPPCACHE_EXPORT SuspendedTxExpiryHandler : public ACE_Event_Handler {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif  // ifndef _GEMFIRE_ENTRYEXPIRYTASK_H__
+
+#endif // GEODE_SUSPENDEDTXEXPIRYHANDLER_H_

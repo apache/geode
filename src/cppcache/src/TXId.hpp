@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_TXID_H_
+#define GEODE_TXID_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
  *      Author: ankurs
  */
 
-#ifndef TXID_H_
-#define TXID_H_
 
 #include <gfcpp/gf_types.hpp>
 #include <gfcpp/TransactionId.hpp>
@@ -52,4 +55,5 @@ class TXId : public apache::geode::client::TransactionId {
 }  // namespace geode
 }  // namespace apache
 
-#endif /* TXID_H_ */
+
+#endif // GEODE_TXID_H_

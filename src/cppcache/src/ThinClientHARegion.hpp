@@ -1,5 +1,7 @@
-#ifndef __GEMFIRE_THINCLIENTHAREGION_H__
-#define __GEMFIRE_THINCLIENTHAREGION_H__
+#pragma once
+
+#ifndef GEODE_THINCLIENTHAREGION_H_
+#define GEODE_THINCLIENTHAREGION_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -86,4 +88,4 @@ class CPPCACHE_EXPORT ThinClientHARegion : public ThinClientRegion {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // ifndef __GEMFIRE_THINCLIENTHAREGION_H__
+#endif // GEODE_THINCLIENTHAREGION_H_

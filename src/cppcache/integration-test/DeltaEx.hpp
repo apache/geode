@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_DELTAEX_H_
+#define GEODE_INTEGRATION_TEST_DELTAEX_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __DELTAEX_HPP
-#define __DELTAEX_HPP
 
 #include "fw_dunit.hpp"
 #include <gfcpp/GeodeCppCache.hpp>
@@ -147,4 +150,5 @@ class PdxDeltaEx : public PdxSerializable, public Delta {
   }
 };
 typedef SharedPtr<PdxDeltaEx> PdxDeltaExPtr;
-#endif
+
+#endif // GEODE_INTEGRATION_TEST_DELTAEX_H_

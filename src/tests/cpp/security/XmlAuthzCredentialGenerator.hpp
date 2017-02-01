@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_a14b9dccb3fd9b3b05214dc60326e629
+#define APACHE_GEODE_GUARD_a14b9dccb3fd9b3b05214dc60326e629
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef _GEMFIRE_XMLAUTHZCREDENTIALGENERATOR_HPP_
-#define _GEMFIRE_XMLAUTHZCREDENTIALGENERATOR_HPP_
 
 #include <gfcpp/SharedBase.hpp>
 #include <gfcpp/Properties.hpp>
@@ -311,4 +314,5 @@ class XmlAuthzCredentialGenerator : public SharedBase {
 }  // namespace geode
 }  // namespace apache
 
-#endif /*_GEMFIRE_AUTHZCREDENTIALGENERATOR_HPP_*/
+
+#endif // APACHE_GEODE_GUARD_a14b9dccb3fd9b3b05214dc60326e629

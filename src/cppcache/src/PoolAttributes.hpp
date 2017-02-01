@@ -1,5 +1,8 @@
-#ifndef __GEMFIRE_POOL_ATTRIBUTES_HPP__
-#define __GEMFIRE_POOL_ATTRIBUTES_HPP__
+#pragma once
+
+#ifndef GEODE_POOLATTRIBUTES_H_
+#define GEODE_POOLATTRIBUTES_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -160,4 +163,4 @@ class PoolAttributes : public SharedBase {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // ifndef __GEMFIRE_POOL_ATTRIBUTES_HPP__
+#endif // GEODE_POOLATTRIBUTES_H_

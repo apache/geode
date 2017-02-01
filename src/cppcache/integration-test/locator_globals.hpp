@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_LOCATOR_GLOBALS_H_
+#define GEODE_INTEGRATION_TEST_LOCATOR_GLOBALS_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,8 +20,6 @@
  * limitations under the License.
  */
 
-#ifndef CPPCACHE_INTEGRATION_TEST_LOCATOR_GLOBALS_HPP_
-#define CPPCACHE_INTEGRATION_TEST_LOCATOR_GLOBALS_HPP_
 
 static int numberOfLocators = 1;
 bool isLocalServer = false;
@@ -24,4 +27,5 @@ bool isLocator = false;
 const char* locatorsG =
     CacheHelper::getLocatorHostPort(isLocator, isLocalServer, numberOfLocators);
 
-#endif /* CPPCACHE_INTEGRATION_TEST_LOCATOR_GLOBALS_HPP_ */
+
+#endif // GEODE_INTEGRATION_TEST_LOCATOR_GLOBALS_H_

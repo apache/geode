@@ -1,5 +1,8 @@
-#ifndef _GEMFIRE_EVENTID_HPP_
-#define _GEMFIRE_EVENTID_HPP_
+#pragma once
+
+#ifndef GEODE_EVENTID_H_
+#define GEODE_EVENTID_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -151,4 +154,4 @@ class CPPCACHE_EXPORT EventId : public Cacheable {
 }  // namespace geode
 }  // namespace apache
 
-#endif  //_GEMFIRE_EVENTID_HPP_
+#endif // GEODE_EVENTID_H_

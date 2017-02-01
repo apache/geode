@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_435faaccc293c5822dd1ce9185411ec7
+#define APACHE_GEODE_GUARD_435faaccc293c5822dd1ce9185411ec7
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,8 +20,6 @@
  * limitations under the License.
  */
 
-#ifndef _GFAS_ASCLIBUILTINS_HPP_
-#define _GFAS_ASCLIBUILTINS_HPP_
 
 #ifdef GEMFIRE_CLR
 
@@ -457,4 +460,5 @@ inline void ReadObject(apache::geode::client::DataInput& input,
 
 #endif  // GEMFIRE_CLR
 
-#endif  // _GFAS_ASCLIBUILTINS_HPP_
+
+#endif // APACHE_GEODE_GUARD_435faaccc293c5822dd1ce9185411ec7

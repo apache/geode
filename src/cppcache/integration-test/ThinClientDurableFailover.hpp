@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_THINCLIENTDURABLEFAILOVER_H_
+#define GEODE_INTEGRATION_TEST_THINCLIENTDURABLEFAILOVER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
  *      Author: abhaware
  */
 
-#ifndef THINCLIENTDURABLEFAILOVER_HPP_
-#define THINCLIENTDURABLEFAILOVER_HPP_
 
 #include "fw_dunit.hpp"
 #include "ThinClientHelper.hpp"
@@ -410,4 +413,5 @@ void doThinClientDurableFailoverClientClosedRedundancy() {
   CALL_TASK(CloseLocator);
 }
 
-#endif /* THINCLIENTDURABLEFAILOVER_HPP_ */
+
+#endif // GEODE_INTEGRATION_TEST_THINCLIENTDURABLEFAILOVER_H_

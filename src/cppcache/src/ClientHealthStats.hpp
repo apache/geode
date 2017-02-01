@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_CLIENTHEALTHSTATS_H_
+#define GEODE_CLIENTHEALTHSTATS_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef _CLIENT_HEALTH_STATS_HPP_INCLUDED_
-#define _CLIENT_HEALTH_STATS_HPP_INCLUDED_
 
 #include <gfcpp/gf_types.hpp>
 #include <gfcpp/Serializable.hpp>
@@ -88,4 +91,5 @@ class ClientHealthStats : public Serializable {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif  // _CLIENT_HEALTH_STATS_HPP_INCLUDED_
+
+#endif // GEODE_CLIENTHEALTHSTATS_H_

@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_THINCLIENTDISTOPS_H_
+#define GEODE_INTEGRATION_TEST_THINCLIENTDISTOPS_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
  *      Author: abhaware
  */
 
-#ifndef THINCLIENTDISTOPS_HPP_
-#define THINCLIENTDISTOPS_HPP_
 
 #include "fw_dunit.hpp"
 #include <gfcpp/GeodeCppCache.hpp>
@@ -905,4 +908,5 @@ void runDistOpsDontUpdateLocatorList() {
   CALL_TASK(CloseLocator1);
 }
 
-#endif /* THINCLIENTDISTOPS_HPP_ */
+
+#endif // GEODE_INTEGRATION_TEST_THINCLIENTDISTOPS_H_

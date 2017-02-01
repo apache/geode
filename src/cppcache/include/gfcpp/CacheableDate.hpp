@@ -1,5 +1,8 @@
-#ifndef _GEMFIRE_CACHEABLEDATE_HPP_
-#define _GEMFIRE_CACHEABLEDATE_HPP_
+#pragma once
+
+#ifndef GEODE_GFCPP_CACHEABLEDATE_H_
+#define GEODE_GFCPP_CACHEABLEDATE_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -147,4 +150,4 @@ inline CacheablePtr createValue(const timeval& value) {
 }  // namespace geode
 }  // namespace apache
 
-#endif
+#endif // GEODE_GFCPP_CACHEABLEDATE_H_

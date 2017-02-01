@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_9b6d34ac32115700916ecb8e4bf0d825
+#define APACHE_GEODE_GUARD_9b6d34ac32115700916ecb8e4bf0d825
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,8 +20,6 @@
  * limitations under the License.
  */
 
-#ifndef __AUTOPDXVERSIONED1OBJECT_HPP__
-#define __AUTOPDXVERSIONED1OBJECT_HPP__
 
 #include <gfcpp/PdxSerializable.hpp>
 #include <gfcpp/GeodeCppCache.hpp>
@@ -371,4 +374,5 @@ class GFIGNORE(TESTOBJECT_EXPORT) NestedPdx : public PdxSerializable {
 };
 typedef SharedPtr<NestedPdx> NestedPdxPtr;
 }  // namespace AutoPdxTests
-#endif /* __AUTOPDXVERSIONED1OBJECT_HPP__ */
+
+#endif // APACHE_GEODE_GUARD_9b6d34ac32115700916ecb8e4bf0d825

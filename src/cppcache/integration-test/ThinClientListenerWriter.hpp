@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_THINCLIENTLISTENERWRITER_H_
+#define GEODE_INTEGRATION_TEST_THINCLIENTLISTENERWRITER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef THINCLIENTLISTENERWRITER_HPP_
-#define THINCLIENTLISTENERWRITER_HPP_
 
 #include "fw_dunit.hpp"
 #include "ThinClientHelper.hpp"
@@ -500,4 +503,5 @@ DUNIT_TASK_DEFINITION(SERVER1, CloseServer1)
   }
 END_TASK_DEFINITION
 
-#endif /*THINCLIENTLISTENERWRITER_HPP_*/
+
+#endif // GEODE_INTEGRATION_TEST_THINCLIENTLISTENERWRITER_H_

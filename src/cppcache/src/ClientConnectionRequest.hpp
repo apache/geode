@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_CLIENTCONNECTIONREQUEST_H_
+#define GEODE_CLIENTCONNECTIONREQUEST_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __CLIENT_CONNECTION_REQUEST__
-#define __CLIENT_CONNECTION_REQUEST__
 #include "ServerLocationRequest.hpp"
 #include "TcrEndpoint.hpp"
 #include <string>
@@ -65,4 +68,5 @@ class ClientConnectionRequest : public ServerLocationRequest {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif
+
+#endif // GEODE_CLIENTCONNECTIONREQUEST_H_

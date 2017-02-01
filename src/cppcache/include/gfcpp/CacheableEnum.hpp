@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_GFCPP_CACHEABLEENUM_H_
+#define GEODE_GFCPP_CACHEABLEENUM_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef CACHEABLE_ENUM_HPP
-#define CACHEABLE_ENUM_HPP
 
 #include "CacheableKey.hpp"
 #include "CacheableString.hpp"
@@ -140,4 +143,5 @@ class CPPCACHE_EXPORT CacheableEnum : public CacheableKey {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // CACHEABLE_ENUM_HPP
+
+#endif // GEODE_GFCPP_CACHEABLEENUM_H_

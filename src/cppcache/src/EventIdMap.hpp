@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_EVENTIDMAP_H_
+#define GEODE_EVENTIDMAP_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __EVENT_ID_MAP_HPP__
-#define __EVENT_ID_MAP_HPP__
 
 #include <ace/ACE.h>
 #include <ace/Time_Value.h>
@@ -200,4 +203,5 @@ class CPPCACHE_EXPORT EventSequence : public SharedBase {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __EVENT_ID_MAP_HPP__
+
+#endif // GEODE_EVENTIDMAP_H_

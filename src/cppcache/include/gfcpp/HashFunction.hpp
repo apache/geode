@@ -1,5 +1,7 @@
-#ifndef _GEMFIRE_HASHFUNCTION_HPP_
-#define _GEMFIRE_HASHFUNCTION_HPP_
+#pragma once
+
+#ifndef GEODE_GFCPP_HASHFUNCTION_H_
+#define GEODE_GFCPP_HASHFUNCTION_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -76,4 +78,4 @@ inline bool equalToFunction(const TKEY& x, const TKEY& y) {
 }  // namespace geode
 }  // namespace apache
 
-#endif
+#endif // GEODE_GFCPP_HASHFUNCTION_H_

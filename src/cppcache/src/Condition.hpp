@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_CONDITION_H_
+#define GEODE_CONDITION_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef _GEMFIRE_IMPL_CONDITION_HPP_
-#define _GEMFIRE_IMPL_CONDITION_HPP_ 1
 
 #include <gfcpp/gfcpp_globals.hpp>
 #include <ace/Condition_Recursive_Thread_Mutex.h>
@@ -74,4 +77,4 @@ class CPPCACHE_EXPORT Condition {
 }  // namespace geode
 }  // namespace apache
 
-#endif
+#endif // GEODE_CONDITION_H_

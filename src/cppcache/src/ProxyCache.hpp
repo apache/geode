@@ -1,5 +1,8 @@
-#ifndef __GEMFIRE_PROXYCACHE_H__
-#define __GEMFIRE_PROXYCACHE_H__
+#pragma once
+
+#ifndef GEODE_PROXYCACHE_H_
+#define GEODE_PROXYCACHE_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -133,4 +136,5 @@ class CPPCACHE_EXPORT ProxyCache : public RegionService {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif  // ifndef __GEMFIRE_PROXYCACHE_H__
+
+#endif // GEODE_PROXYCACHE_H_

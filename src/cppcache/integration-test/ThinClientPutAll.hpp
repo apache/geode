@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_THINCLIENTPUTALL_H_
+#define GEODE_INTEGRATION_TEST_THINCLIENTPUTALL_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,8 +20,6 @@
  * limitations under the License.
  */
 
-#ifndef THINCLIENTPUTALL_HPP_
-#define THINCLIENTPUTALL_HPP_
 
 #include "fw_dunit.hpp"
 #include <gfcpp/GeodeCppCache.hpp>
@@ -835,4 +838,5 @@ void runPutAll1(bool concurrencyCheckEnabled = true) {
   CALL_TASK(CloseServer2);
   CALL_TASK(CloseLocator1);
 }
-#endif /* THINCLIENTPUTALL_HPP_ */
+
+#endif // GEODE_INTEGRATION_TEST_THINCLIENTPUTALL_H_

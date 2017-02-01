@@ -286,7 +286,6 @@ const char* nvals[] = {"New Value-1", "New Value-2", "New Value-3",
 const char* regionNames[] = {"DistRegionAck", "DistRegionNoAck"};
 
 const bool USE_ACK = true;
-const bool NO_ACK = false;
 #include "ThinClientTasks_C2S2.hpp"
 void createCommRegions(int redundancy) {
   PropertiesPtr pp = Properties::create();

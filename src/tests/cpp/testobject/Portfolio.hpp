@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_5dd561945b3f1843d3e6d0d1e94a9a0d
+#define APACHE_GEODE_GUARD_5dd561945b3f1843d3e6d0d1e94a9a0d
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -19,8 +24,6 @@
  * @brief User class for testing the put functionality for object.
  */
 
-#ifndef __PORTFOLIO_HPP__
-#define __PORTFOLIO_HPP__
 
 #include <gfcpp/GeodeCppCache.hpp>
 #include "Position.hpp"
@@ -128,4 +131,5 @@ class TESTOBJECT_EXPORT Portfolio : public Serializable {
 
 typedef SharedPtr<Portfolio> PortfolioPtr;
 }  // namespace testobject
-#endif
+
+#endif // APACHE_GEODE_GUARD_5dd561945b3f1843d3e6d0d1e94a9a0d

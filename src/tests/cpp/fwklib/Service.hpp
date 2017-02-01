@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_6024bf86dd8d0d4aad8f988f5ba1655a
+#define APACHE_GEODE_GUARD_6024bf86dd8d0d4aad8f988f5ba1655a
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,8 +20,6 @@
  * limitations under the License.
  */
 
-#ifndef __Service_hpp__
-#define __Service_hpp__
 
 #include <gfcpp/gf_base.hpp>
 #include <AtomicInc.hpp>
@@ -163,4 +166,5 @@ class IPCMessage {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif  // __Service_hpp__
+
+#endif // APACHE_GEODE_GUARD_6024bf86dd8d0d4aad8f988f5ba1655a

@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_8443d3966c0b05a9e05eafa7ca28e4c7
+#define APACHE_GEODE_GUARD_8443d3966c0b05a9e05eafa7ca28e4c7
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -22,8 +27,6 @@
   * @see
   */
 
-#ifndef __FWK_BB_CLIENT_HPP__
-#define __FWK_BB_CLIENT_HPP__
 
 #include "FwkBB.hpp"
 #include "UDPIpc.hpp"
@@ -187,4 +190,5 @@ class FwkBBClient {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __FWK_BB_CLIENT_HPP__
+
+#endif // APACHE_GEODE_GUARD_8443d3966c0b05a9e05eafa7ca28e4c7

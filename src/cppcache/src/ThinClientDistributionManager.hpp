@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_THINCLIENTDISTRIBUTIONMANAGER_H_
+#define GEODE_THINCLIENTDISTRIBUTIONMANAGER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __THINCLIENT_DISTRIBUTION_MANAGER_HPP__
-#define __THINCLIENT_DISTRIBUTION_MANAGER_HPP__
 
 #include "ThinClientBaseDM.hpp"
 
@@ -76,4 +79,5 @@ class ThinClientDistributionManager : public ThinClientBaseDM {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __THINCLIENT_DISTRIBUTION_MANAGER_HPP__
+
+#endif // GEODE_THINCLIENTDISTRIBUTIONMANAGER_H_

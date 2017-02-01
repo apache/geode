@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_468cbc833956797cfd132b131985f50c
+#define APACHE_GEODE_GUARD_468cbc833956797cfd132b131985f50c
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -20,8 +25,6 @@
  *  Created on: Feb 3, 2012
  *      Author: npatel
  */
-#ifndef __PDXCLASSV2_HPP__
-#define __PDXCLASSV2_HPP__
 
 #include <gfcpp/PdxSerializable.hpp>
 #include <gfcpp/GeodeCppCache.hpp>
@@ -570,4 +573,5 @@ public:
 */
 
 } /* namespace PdxTests */
-#endif /* PDXCLASSV1_HPP_ */
+
+#endif // APACHE_GEODE_GUARD_468cbc833956797cfd132b131985f50c

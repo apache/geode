@@ -1,5 +1,7 @@
-#ifndef _GEMFIRE_HASHSETT_HPP_
-#define _GEMFIRE_HASHSETT_HPP_
+#pragma once
+
+#ifndef GEODE_GFCPP_HASHSETT_H_
+#define GEODE_GFCPP_HASHSETT_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -175,4 +177,4 @@ typedef SharedPtr<HashSetOfCacheableKey> HashSetOfCacheableKeyPtr;
 }  // namespace geode
 }  // namespace apache
 
-#endif
+#endif // GEODE_GFCPP_HASHSETT_H_

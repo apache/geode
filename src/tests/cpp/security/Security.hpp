@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_d8d76480867ce6629add87fe227d225f
+#define APACHE_GEODE_GUARD_d8d76480867ce6629add87fe227d225f
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -25,8 +30,6 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef __SECURITY_HPP__
-#define __SECURITY_HPP__
 
 // ----------------------------------------------------------------------------
 
@@ -119,4 +122,5 @@ class Security : public FrameworkTest {
 }  // namespace apache
 // ----------------------------------------------------------------------------
 
-#endif  // __SECURITY_HPP__
+
+#endif // APACHE_GEODE_GUARD_d8d76480867ce6629add87fe227d225f

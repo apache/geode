@@ -1,5 +1,8 @@
-#ifndef _PDXWRAPPER_HPP_
-#define _PDXWRAPPER_HPP_
+#pragma once
+
+#ifndef GEODE_GFCPP_PDXWRAPPER_H_
+#define GEODE_GFCPP_PDXWRAPPER_H_
+
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -133,4 +136,5 @@ class CPPCACHE_EXPORT PdxWrapper : public PdxSerializable {
 }  // namespace geode
 }  // namespace apache
 
-#endif /* _PDXWRAPPER_HPP_ */
+
+#endif // GEODE_GFCPP_PDXWRAPPER_H_

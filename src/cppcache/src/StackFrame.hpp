@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_STACKFRAME_H_
+#define GEODE_STACKFRAME_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,9 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#ifndef _GEMFIRE_STACKFRAME_HPP_
-#define _GEMFIRE_STACKFRAME_HPP_
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -142,4 +144,4 @@ class StackFrame {
 }  // namespace geode
 }  // namespace apache
 
-#endif /* _GEMFIRE_STACKFRAME_HPP_ */
+#endif // GEODE_STACKFRAME_H_

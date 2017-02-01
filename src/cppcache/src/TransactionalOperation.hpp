@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_TRANSACTIONALOPERATION_H_
+#define GEODE_TRANSACTIONALOPERATION_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
  *      Author: ankurs
  */
 
-#ifndef TRANSACTIONALOPERATION_HPP_
-#define TRANSACTIONALOPERATION_HPP_
 
 #include <gfcpp/gfcpp_globals.hpp>
 #include <gfcpp/gf_types.hpp>
@@ -70,4 +73,5 @@ class TransactionalOperation : public apache::geode::client::SharedBase {
 }  // namespace geode
 }  // namespace apache
 
-#endif /* TRANSACTIONALOPERATION_HPP_ */
+
+#endif // GEODE_TRANSACTIONALOPERATION_H_

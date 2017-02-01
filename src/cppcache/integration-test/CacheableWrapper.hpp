@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_CACHEABLEWRAPPER_H_
+#define GEODE_INTEGRATION_TEST_CACHEABLEWRAPPER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef _GF_TEST_CACHEABLEWRAPPER_HPP_
-#define _GF_TEST_CACHEABLEWRAPPER_HPP_
 
 #include <gfcpp/GeodeCppCache.hpp>
 #include <string>
@@ -129,4 +132,5 @@ std::string CacheableWrapperFactory::getTypeForId(int8_t typeId) {
   }
 }
 
-#endif  // _GF_TEST_CACHEABLEWRAPPER_HPP_
+
+#endif // GEODE_INTEGRATION_TEST_CACHEABLEWRAPPER_H_

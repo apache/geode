@@ -1,5 +1,5 @@
-#ifndef __APACHE_GEODECPPCACHE_I__
-#define __APACHE_GEODECPPCACHE_I__
+#ifndef __APACHE_GEODECPPCACHE_INL_
+#define __APACHE_GEODECPPCACHE_INL_
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -24,4 +24,4 @@
 #include "Cacheable.inl"
 #include "CacheableKey.inl"
 
-#endif // define __APACHE_GEODECPPCACHE_I__
+#endif // define __APACHE_GEODECPPCACHE_INL_

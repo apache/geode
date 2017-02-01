@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_ebe55397742f4c3cb6d6e6eaf7338769
+#define APACHE_GEODE_GUARD_ebe55397742f4c3cb6d6e6eaf7338769
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -25,8 +30,6 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef __UDPIPC_HPP__
-#define __UDPIPC_HPP__
 
 // ----------------------------------------------------------------------------
 #include <gfcpp/GeodeCppCache.hpp>
@@ -88,4 +91,5 @@ class TestProcessor : public ServiceTask {
 }  // namespace apache
 // ----------------------------------------------------------------------------
 
-#endif  // __UDPIPC_HPP__
+
+#endif // APACHE_GEODE_GUARD_ebe55397742f4c3cb6d6e6eaf7338769

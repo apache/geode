@@ -1,5 +1,7 @@
-#ifndef _GEMFIRE_CACHEABLEUNDEFINED_HPP_
-#define _GEMFIRE_CACHEABLEUNDEFINED_HPP_
+#pragma once
+
+#ifndef GEODE_GFCPP_CACHEABLEUNDEFINED_H_
+#define GEODE_GFCPP_CACHEABLEUNDEFINED_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -93,4 +95,4 @@ class CPPCACHE_EXPORT CacheableUndefined : public Cacheable {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // _GEMFIRE_CACHEABLEUNDEFINED_HPP_
+#endif // GEODE_GFCPP_CACHEABLEUNDEFINED_H_

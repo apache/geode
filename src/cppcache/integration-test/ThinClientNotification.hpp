@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_THINCLIENTNOTIFICATION_H_
+#define GEODE_INTEGRATION_TEST_THINCLIENTNOTIFICATION_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -488,3 +493,5 @@ void doThinClientNotification() {
   CALL_TASK(CloseServer1);
   CALL_TASK(CloseLocator1);
 }
+
+#endif // GEODE_INTEGRATION_TEST_THINCLIENTNOTIFICATION_H_

@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_SPINLOCK_H_
+#define GEODE_SPINLOCK_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __GEMFIRE_UTIL_IMPL_SPINLOCK_HPP__
-#define __GEMFIRE_UTIL_IMPL_SPINLOCK_HPP__
 
 #include "HostAsm.hpp"
 
@@ -116,4 +119,4 @@ CPPCACHE_EXPORT void testSpinLockRelease(void* lock);
 }  // namespace geode
 }  // namespace apache
 
-#endif
+#endif // GEODE_SPINLOCK_H_

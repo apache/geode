@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_LOCATORLISTRESPONSE_H_
+#define GEODE_LOCATORLISTRESPONSE_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef _LOCATOR_LIST_RESPONSE_
-#define _LOCATOR_LIST_RESPONSE_
 #include <vector>
 #include "GeodeTypeIdsImpl.hpp"
 #include "ServerLocationResponse.hpp"
@@ -48,4 +51,5 @@ typedef SharedPtr<LocatorListResponse> LocatorListResponsePtr;
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif
+
+#endif // GEODE_LOCATORLISTRESPONSE_H_

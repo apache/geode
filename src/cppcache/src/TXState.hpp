@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_TXSTATE_H_
+#define GEODE_TXSTATE_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
  *      Author: ankurs
  */
 
-#ifndef TXSTATE_HPP_
-#define TXSTATE_HPP_
 
 #include "TXId.hpp"
 #include "TXRegionState.hpp"
@@ -100,4 +103,5 @@ class TXState {
 }  // namespace geode
 }  // namespace apache
 
-#endif /* TXSTATE_HPP_ */
+
+#endif // GEODE_TXSTATE_H_

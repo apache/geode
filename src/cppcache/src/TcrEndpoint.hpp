@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_TCRENDPOINT_H_
+#define GEODE_TCRENDPOINT_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __TCR_ENDPOINT_HPP__
-#define __TCR_ENDPOINT_HPP__
 
 #include <gfcpp/gfcpp_globals.hpp>
 #include <string>
@@ -263,4 +266,5 @@ class CPPCACHE_EXPORT TcrEndpoint {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif  // __TCR_ENDPOINT_HPP__
+
+#endif // GEODE_TCRENDPOINT_H_

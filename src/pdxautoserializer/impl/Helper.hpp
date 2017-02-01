@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_debdc61f2b91c81fc06a894ab962375d
+#define APACHE_GEODE_GUARD_debdc61f2b91c81fc06a894ab962375d
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,8 +20,6 @@
  * limitations under the License.
  */
 
-#ifndef _GFAS_HELPER_HPP_
-#define _GFAS_HELPER_HPP_
 
 #include "../InputParser.hpp"
 #include <algorithm>
@@ -186,4 +189,5 @@ class Helper {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // _GFAS_HELPER_HPP_
+
+#endif // APACHE_GEODE_GUARD_debdc61f2b91c81fc06a894ab962375d

@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_ENUMINFO_H_
+#define GEODE_ENUMINFO_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef ENUM_INFO_HPP
-#define ENUM_INFO_HPP
 
 #include <gfcpp/GeodeTypeIds.hpp>
 #include <gfcpp/CacheableString.hpp>
@@ -63,4 +66,5 @@ typedef SharedPtr<EnumInfo> EnumInfoPtr;
 }  // namespace geode
 }  // namespace apache
 
-#endif  // ENUM_INFO_HPP
+
+#endif // GEODE_ENUMINFO_H_

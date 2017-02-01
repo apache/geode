@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_72e4dc209ca3876b269e52c8a14f412b
+#define APACHE_GEODE_GUARD_72e4dc209ca3876b269e52c8a14f412b
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,8 +20,6 @@
  * limitations under the License.
  */
 
-#ifndef __PerfFwk_hpp__
-#define __PerfFwk_hpp__
 
 #include <gfcpp/gf_base.hpp>
 
@@ -333,4 +336,5 @@ class Counter {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __PerfFwk_hpp__
+
+#endif // APACHE_GEODE_GUARD_72e4dc209ca3876b269e52c8a14f412b

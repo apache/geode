@@ -1,5 +1,7 @@
-#ifndef __GEMFIRE_FUNCTION_SERVICEIMPL_H__
-#define __GEMFIRE_FUNCTION_SERVICEIMPL_H__
+#pragma once
+
+#ifndef GEODE_FUNCTIONSERVICEIMPL_H_
+#define GEODE_FUNCTIONSERVICEIMPL_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -63,4 +65,5 @@ class CPPCACHE_EXPORT FunctionServiceImpl : public FunctionService {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif  //__GEMFIRE_FUNCTION_SERVICEIMPL_H__
+
+#endif // GEODE_FUNCTIONSERVICEIMPL_H_

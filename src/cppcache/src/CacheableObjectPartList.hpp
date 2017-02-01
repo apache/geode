@@ -1,5 +1,7 @@
-#ifndef _GEMFIRE_CACHEABLEOBJECTPARTLIST_HPP_
-#define _GEMFIRE_CACHEABLEOBJECTPARTLIST_HPP_
+#pragma once
+
+#ifndef GEODE_CACHEABLEOBJECTPARTLIST_H_
+#define GEODE_CACHEABLEOBJECTPARTLIST_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -144,4 +146,4 @@ typedef SharedPtr<CacheableObjectPartList> CacheableObjectPartListPtr;
 }  // namespace geode
 }  // namespace apache
 
-#endif  // _GEMFIRE_CACHEABLEOBJECTPARTLIST_HPP_
+#endif // GEODE_CACHEABLEOBJECTPARTLIST_H_

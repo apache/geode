@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_115ad9fa08f9b8368045cfda498ff99b
+#define APACHE_GEODE_GUARD_115ad9fa08f9b8368045cfda498ff99b
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -19,8 +24,6 @@
  * @brief User class for testing the put functionality for object.
  */
 
-#ifndef __AutoPORTFOLIOPDX_HPP__
-#define __AutoPORTFOLIOPDX_HPP__
 
 #include "PositionPdx.hpp"
 #define GFIGNORE(X) X
@@ -110,4 +113,5 @@ class GFIGNORE(TESTOBJECT_EXPORT) PortfolioPdx : public PdxSerializable {
 
 typedef SharedPtr<PortfolioPdx> PortfolioPdxPtr;
 }  // namespace AutoPdxTests
-#endif
+
+#endif // APACHE_GEODE_GUARD_115ad9fa08f9b8368045cfda498ff99b

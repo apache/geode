@@ -1,5 +1,8 @@
-#ifndef _GEMFIRE_STATISTICS_WINDOWSPROCESSSTATS_HPP_
-#define _GEMFIRE_STATISTICS_WINDOWSPROCESSSTATS_HPP_
+#pragma once
+
+#ifndef GEODE_STATISTICS_WINDOWSPROCESSSTATS_H_
+#define GEODE_STATISTICS_WINDOWSPROCESSSTATS_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -84,4 +87,4 @@ class CPPCACHE_EXPORT WindowsProcessStats : public ProcessStats {
 }  // namespace geode
 }  // namespace apache
 
-#endif  //_GEMFIRE_STATISTICS_WINDOWSPROCESSSTATS_HPP_
+#endif // GEODE_STATISTICS_WINDOWSPROCESSSTATS_H_

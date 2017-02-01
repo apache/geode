@@ -1,5 +1,8 @@
-#ifndef __GEMFIRE_POOL_FACTORY_HPP__
-#define __GEMFIRE_POOL_FACTORY_HPP__
+#pragma once
+
+#ifndef GEODE_GFCPP_POOLFACTORY_H_
+#define GEODE_GFCPP_POOLFACTORY_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -532,4 +535,5 @@ class CPPCACHE_EXPORT PoolFactory : public SharedBase {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif  // ifndef __GEMFIRE_POOL_FACTORY_HPP__
+
+#endif // GEODE_GFCPP_POOLFACTORY_H_

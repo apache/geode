@@ -1,5 +1,8 @@
-#ifndef _DHEIMPL_HPP_INCLUDED_
-#define _DHEIMPL_HPP_INCLUDED_
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_0b4f257a1a4de03f53b0299148e95656
+#define APACHE_GEODE_GUARD_0b4f257a1a4de03f53b0299148e95656
+
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -64,4 +67,5 @@ CPPCACHE_EXPORT bool gf_verifyDH(const char* subject,
                                  int* reason);
 }
 
-#endif  // _DHEIMPL_HPP_INCLUDED_
+
+#endif // APACHE_GEODE_GUARD_0b4f257a1a4de03f53b0299148e95656

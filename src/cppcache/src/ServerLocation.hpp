@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_SERVERLOCATION_H_
+#define GEODE_SERVERLOCATION_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __SERVER_LOCATION__
-#define __SERVER_LOCATION__
 #include <gfcpp/Serializable.hpp>
 #include <string>
 #include <gfcpp/DataInput.hpp>
@@ -175,4 +178,5 @@ class CPPCACHE_EXPORT ServerLocation : public Serializable {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif
+
+#endif // GEODE_SERVERLOCATION_H_

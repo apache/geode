@@ -1,5 +1,8 @@
-#ifndef PDXSERIALIZER_HPP_
-#define PDXSERIALIZER_HPP_
+#pragma once
+
+#ifndef GEODE_GFCPP_PDXSERIALIZER_H_
+#define GEODE_GFCPP_PDXSERIALIZER_H_
+
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -87,4 +90,5 @@ class CPPCACHE_EXPORT PdxSerializer : public SharedBase {
 }  // namespace geode
 }  // namespace apache
 
-#endif /* PDXSERIALIZER_HPP_ */
+
+#endif // GEODE_GFCPP_PDXSERIALIZER_H_

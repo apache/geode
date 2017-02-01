@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_08829dc10f69fd501e8ecbf245428569
+#define APACHE_GEODE_GUARD_08829dc10f69fd501e8ecbf245428569
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef PDX_AUTO_MEGA_TYPE_HPP_
-#define PDX_AUTO_MEGA_TYPE_HPP_
 
 #include <gfcpp/PdxSerializable.hpp>
 #include <gfcpp/GeodeCppCache.hpp>
@@ -123,4 +126,5 @@ class GFIGNORE(TESTOBJECT_EXPORT) PdxAutoMegaType : public PdxSerializable {
 typedef SharedPtr<PdxAutoMegaType> PdxAutoMegaTypePtr;
 }  // namespace PdxAutoTests
 
-#endif
+
+#endif // APACHE_GEODE_GUARD_08829dc10f69fd501e8ecbf245428569

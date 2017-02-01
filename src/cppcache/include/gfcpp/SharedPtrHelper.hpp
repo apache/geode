@@ -1,5 +1,7 @@
-#ifndef _GEMFIRE_SPEHELPER_HPP_
-#define _GEMFIRE_SPEHELPER_HPP_
+#pragma once
+
+#ifndef GEODE_GFCPP_SHAREDPTRHELPER_H_
+#define GEODE_GFCPP_SHAREDPTRHELPER_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -78,4 +80,4 @@ SharedBase* getSB(Src* ptr) {
 }  // namespace geode
 }  // namespace apache
 
-#endif
+#endif // GEODE_GFCPP_SHAREDPTRHELPER_H_

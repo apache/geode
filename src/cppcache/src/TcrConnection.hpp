@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_TCRCONNECTION_H_
+#define GEODE_TCRCONNECTION_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __TCR_CONNECTION_HPP__
-#define __TCR_CONNECTION_HPP__
 
 #include <ace/Semaphore.h>
 #include <gfcpp/gfcpp_globals.hpp>
@@ -404,4 +407,5 @@ class CPPCACHE_EXPORT TcrConnection {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __TCR_CONNECTION_HPP__
+
+#endif // GEODE_TCRCONNECTION_H_

@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_QUEUECONNECTIONREQUEST_H_
+#define GEODE_QUEUECONNECTIONREQUEST_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __QUEUE_CONNECTION_REQUEST__
-#define __QUEUE_CONNECTION_REQUEST__
 #include "ServerLocationRequest.hpp"
 #include "ServerLocation.hpp"
 #include "ClientProxyMembershipID.hpp"
@@ -60,4 +63,5 @@ class QueueConnectionRequest : public ServerLocationRequest {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif
+
+#endif // GEODE_QUEUECONNECTIONREQUEST_H_

@@ -1,5 +1,7 @@
-#ifndef _GEMFIRE_TYPEHELPER_HPP_
-#define _GEMFIRE_TYPEHELPER_HPP_
+#pragma once
+
+#ifndef GEODE_GFCPP_TYPEHELPER_H_
+#define GEODE_GFCPP_TYPEHELPER_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -149,4 +151,4 @@ struct UnwrapSharedPtr<SharedArrayPtr<T, ID> > {
       apache::geode::client::TypeHelper::SuperSubclass<TARGET, \
                                                        SRC>::result>::value
 
-#endif  // _GEMFIRE_TYPEHELPER_HPP_
+#endif // GEODE_GFCPP_TYPEHELPER_H_

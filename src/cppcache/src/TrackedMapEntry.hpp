@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_TRACKEDMAPENTRY_H_
+#define GEODE_TRACKEDMAPENTRY_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,9 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#ifndef __GEMFIRE_IMPL_TRACKEDMAPENTRY_HPP__
-#define __GEMFIRE_IMPL_TRACKEDMAPENTRY_HPP__
 
 #include "MapEntry.hpp"
 
@@ -79,4 +81,4 @@ class TrackedMapEntry : public MapEntry {
 }  // namespace geode
 }  // namespace apache
 
-#endif /* __GEMFIRE_IMPL_TRACKEDMAPENTRY_HPP__ */
+#endif // GEODE_TRACKEDMAPENTRY_H_

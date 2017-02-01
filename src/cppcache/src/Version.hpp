@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_VERSION_H_
+#define GEODE_VERSION_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __GEMFIRE_VERSION_HPP__
-#define __GEMFIRE_VERSION_HPP__
+
 #include "CacheImpl.hpp"
 
 namespace apache {
@@ -36,4 +40,4 @@ class Version {
 }  // namespace geode
 }  // namespace apache
 
-#endif  //__GEMFIRE_VERSION_HPP__s
+#endif // GEODE_VERSION_H_

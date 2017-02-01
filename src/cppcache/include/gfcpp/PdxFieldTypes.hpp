@@ -1,5 +1,7 @@
-#ifndef __GEMFIRE_PDXFIELDTYPES_HPP_
-#define __GEMFIRE_PDXFIELDTYPES_HPP_
+#pragma once
+
+#ifndef GEODE_GFCPP_PDXFIELDTYPES_H_
+#define GEODE_GFCPP_PDXFIELDTYPES_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -52,4 +54,5 @@ class CPPCACHE_EXPORT PdxFieldTypes {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif /* __GEMFIRE_PDXFIELDTYPES_HPP_ */
+
+#endif // GEODE_GFCPP_PDXFIELDTYPES_H_

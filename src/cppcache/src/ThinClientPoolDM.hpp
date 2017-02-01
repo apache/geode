@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_THINCLIENTPOOLDM_H_
+#define GEODE_THINCLIENTPOOLDM_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __THINCLIENT_POOL_DISTRIBUTION_MANAGER_HPP__
-#define __THINCLIENT_POOL_DISTRIBUTION_MANAGER_HPP__
 
 #include <string>
 #include "ThinClientBaseDM.hpp"
@@ -678,4 +681,5 @@ class OnRegionFunctionExecution : public PooledWork<GfErrType> {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __THINCLIENT_POOL_DISTRIBUTION_MANAGER_HPP__
+
+#endif // GEODE_THINCLIENTPOOLDM_H_

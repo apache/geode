@@ -1,5 +1,8 @@
-#ifndef __GEMFIRE_GF_TYPEDEF_H__
-#define __GEMFIRE_GF_TYPEDEF_H__
+#pragma once
+
+#ifndef GEODE_GFCPP_GF_TYPES_H_
+#define GEODE_GFCPP_GF_TYPES_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -104,4 +107,5 @@ _GF_PTR_DEF_(InternalCacheTransactionManager2PC,
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif  // ifndef __GEMFIRE_GF_TYPEDEF_H__
+
+#endif // GEODE_GFCPP_GF_TYPES_H_

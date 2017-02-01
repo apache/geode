@@ -1,5 +1,8 @@
-#ifndef _GEMFIRE_ENTRYEXPIRYTASK_H__
-#define _GEMFIRE_ENTRYEXPIRYTASK_H__
+#pragma once
+
+#ifndef GEODE_ENTRYEXPIRYHANDLER_H_
+#define GEODE_ENTRYEXPIRYHANDLER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -73,4 +76,5 @@ class CPPCACHE_EXPORT EntryExpiryHandler : public ACE_Event_Handler {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif  // ifndef _GEMFIRE_ENTRYEXPIRYTASK_H__
+
+#endif // GEODE_ENTRYEXPIRYHANDLER_H_

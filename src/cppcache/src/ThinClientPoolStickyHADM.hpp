@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_THINCLIENTPOOLSTICKYHADM_H_
+#define GEODE_THINCLIENTPOOLSTICKYHADM_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __THINCLIENT_POOL_STICKY_HA_DM__
-#define __THINCLIENT_POOL_STICKY_HA_DM__
 #include "ThinClientPoolHADM.hpp"
 
 namespace apache {
@@ -54,4 +57,5 @@ typedef SharedPtr<ThinClientPoolStickyHADM> ThinClientPoolStickyHADMPtr;
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif
+
+#endif // GEODE_THINCLIENTPOOLSTICKYHADM_H_

@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_CLIENTCONNECTIONRESPONSE_H_
+#define GEODE_CLIENTCONNECTIONRESPONSE_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __CLIENT_CONNECTION_RESPONSE__
-#define __CLIENT_CONNECTION_RESPONSE__
 #include "ServerLocationResponse.hpp"
 #include "ServerLocation.hpp"
 #include <gfcpp/SharedPtr.hpp>
@@ -48,4 +51,5 @@ typedef SharedPtr<ClientConnectionResponse> ClientConnectionResponsePtr;
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif
+
+#endif // GEODE_CLIENTCONNECTIONRESPONSE_H_

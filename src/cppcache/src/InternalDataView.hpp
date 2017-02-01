@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTERNALDATAVIEW_H_
+#define GEODE_INTERNALDATAVIEW_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
  *      Author: ankurs
  */
 
-#ifndef INTERNALDATAVIEW_HPP_
-#define INTERNALDATAVIEW_HPP_
 
 namespace apache {
 namespace geode {
@@ -37,4 +40,5 @@ class InternalDataView {
 }  // namespace geode
 }  // namespace apache
 
-#endif /* INTERNALDATAVIEW_HPP_ */
+
+#endif // GEODE_INTERNALDATAVIEW_H_

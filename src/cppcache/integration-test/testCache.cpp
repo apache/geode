@@ -26,14 +26,12 @@ using namespace apache::geode::client;
 using namespace test;
 BEGIN_TEST(CacheFunction)
   char* host_name = (char*)"TESTCACHE";
-  char* host = NULL;
   uint16_t port ATTR_UNUSED = 0;
   const uint32_t totalSubRegions = 3;
   char* regionName = (char*)"TESTCACHE_ROOT_REGION";
   char* subRegionName1 = (char*)"TESTCACHE_SUB_REGION1";
   char* subRegionName2 = (char*)"TESTCACHE_SUB_REGION2";
   char* subRegionName21 = (char*)"TESTCACHE_SUB_REGION21";
-  bool exception_occured = false;
   CachePtr cptr;
   if (cptr != NULLPTR) {
     cout << "cptr is not null" << endl;

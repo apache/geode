@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_THINCLIENTPUTALLTIMEOUT_H_
+#define GEODE_INTEGRATION_TEST_THINCLIENTPUTALLTIMEOUT_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -241,3 +246,5 @@ DUNIT_TASK_DEFINITION(SERVER1, StopServer)
     LOG("SERVER stopped");
   }
 END_TASK_DEFINITION
+
+#endif // GEODE_INTEGRATION_TEST_THINCLIENTPUTALLTIMEOUT_H_

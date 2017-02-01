@@ -1,5 +1,7 @@
-#ifndef _GEMFIRE_SERIALIZER_HPP_
-#define _GEMFIRE_SERIALIZER_HPP_
+#pragma once
+
+#ifndef GEODE_GFCPP_SERIALIZER_H_
+#define GEODE_GFCPP_SERIALIZER_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -452,4 +454,4 @@ inline float zeroObject<float>() {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // _GEMFIRE_SERIALIZER_HPP_
+#endif // GEODE_GFCPP_SERIALIZER_H_

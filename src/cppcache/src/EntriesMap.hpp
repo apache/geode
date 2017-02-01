@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_ENTRIESMAP_H_
+#define GEODE_ENTRIESMAP_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __GEMFIRE_IMPL_ENTRIESMAP_H__
-#define __GEMFIRE_IMPL_ENTRIESMAP_H__
 
 // This needs to be ace free so that the region can include it.
 
@@ -175,4 +178,4 @@ class CPPCACHE_EXPORT EntriesMap {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __GEMFIRE_IMPL_ENTRIESMAP_H__
+#endif // GEODE_ENTRIESMAP_H_

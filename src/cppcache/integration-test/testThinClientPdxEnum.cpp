@@ -14,13 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
-* testThinClientPdxEnum.cpp
-*
-*/
-
-#ifndef TEST_THIN_CLIENT_PDX_ENUM_HPP_
-#define TEST_THIN_CLIENT_PDX_ENUM_HPP_
 
 #include "fw_dunit.hpp"
 #include <gfcpp/GeodeCppCache.hpp>
@@ -181,5 +174,3 @@ DUNIT_MAIN
     CALL_TASK(CloseLocator1)
   }
 END_MAIN
-
-#endif /* TEST_THIN_CLIENT_PDX_ENUM_HPP_ */

@@ -1,5 +1,7 @@
-#ifndef _GEMFIRE_LOG_HPP_
-#define _GEMFIRE_LOG_HPP_
+#pragma once
+
+#ifndef GEODE_GFCPP_LOG_H_
+#define GEODE_GFCPP_LOG_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -669,6 +671,4 @@ class CPPCACHE_EXPORT LogVarargs {
 
 /******************************************************************************/
 
-#endif
-
-/******************************************************************************/
+#endif // GEODE_GFCPP_LOG_H_

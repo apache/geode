@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_THINCLIENTLOCATORHELPER_H_
+#define GEODE_THINCLIENTLOCATORHELPER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __LOCATOR_HELPER_HPP_INCLUDED__
-#define __LOCATOR_HELPER_HPP_INCLUDED__
 
 #include <string>
 #include <gfcpp/gfcpp_globals.hpp>
@@ -67,4 +70,5 @@ class ThinClientLocatorHelper {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif
+
+#endif // GEODE_THINCLIENTLOCATORHELPER_H_

@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_09e162ef70ce6628f1f097a2c0333b34
+#define APACHE_GEODE_GUARD_09e162ef70ce6628f1f097a2c0333b34
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -25,8 +30,6 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef __FWK_LOG_HPP__
-#define __FWK_LOG_HPP__
 
 #include <gfcpp/gf_base.hpp>
 
@@ -123,4 +126,5 @@ const char* getNodeName();
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __FWK_LOG_HPP__
+
+#endif // APACHE_GEODE_GUARD_09e162ef70ce6628f1f097a2c0333b34

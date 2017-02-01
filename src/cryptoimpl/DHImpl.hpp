@@ -1,5 +1,8 @@
-#ifndef _DHEIMPL_HPP_INCLUDED_
-#define _DHEIMPL_HPP_INCLUDED_
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_051947d883001c8686df187fe716cbd0
+#define APACHE_GEODE_GUARD_051947d883001c8686df187fe716cbd0
+
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -94,4 +97,5 @@ class DHImpl {
 
 bool DHImpl::m_init = false;
 
-#endif  // _DHEIMPL_HPP_INCLUDED_
+
+#endif // APACHE_GEODE_GUARD_051947d883001c8686df187fe716cbd0

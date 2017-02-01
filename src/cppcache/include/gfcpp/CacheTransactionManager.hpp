@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_GFCPP_CACHETRANSACTIONMANAGER_H_
+#define GEODE_GFCPP_CACHETRANSACTIONMANAGER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,8 +20,6 @@
  * limitations under the License.
  */
 
-#ifndef CACHETRANSACTIONMANAGER_H_
-#define CACHETRANSACTIONMANAGER_H_
 
 /* The specification of function behaviors is found in the corresponding .cpp
  * file.
@@ -200,4 +203,5 @@ class CPPCACHE_EXPORT CacheTransactionManager
 }  // namespace geode
 }  // namespace apache
 
-#endif /* CACHETRANSACTIONMANAGER_H_ */
+
+#endif // GEODE_GFCPP_CACHETRANSACTIONMANAGER_H_

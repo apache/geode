@@ -1,5 +1,8 @@
-#ifndef _GEMFIRE_POOLXMLCREATION_HPP_
-#define _GEMFIRE_POOLXMLCREATION_HPP_
+#pragma once
+
+#ifndef GEODE_POOLXMLCREATION_H_
+#define GEODE_POOLXMLCREATION_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -84,4 +87,5 @@ class CPPCACHE_EXPORT PoolXmlCreation {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif  // #ifndef  _GEMFIRE_POOLXMLCREATION_HPP_
+
+#endif // GEODE_POOLXMLCREATION_H_

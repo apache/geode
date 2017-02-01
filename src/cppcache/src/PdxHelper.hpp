@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_PDXHELPER_H_
+#define GEODE_PDXHELPER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
  *      Author: npatel
  */
 
-#ifndef PDXHELPER_HPP_
-#define PDXHELPER_HPP_
 
 #include <gfcpp/DataOutput.hpp>
 #include "EnumInfo.hpp"
@@ -81,4 +84,5 @@ class PdxHelper {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif /* PDXHELPER_HPP_ */
+
+#endif // GEODE_PDXHELPER_H_
