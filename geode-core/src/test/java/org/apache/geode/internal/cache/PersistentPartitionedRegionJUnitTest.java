@@ -235,7 +235,7 @@ public class PersistentPartitionedRegionJUnitTest {
       } else {
         System.clearProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME);
       }
-      
+
       if (lruOldValue != null) {
         System.setProperty(DiskStoreImpl.RECOVER_LRU_VALUES_PROPERTY_NAME, lruOldValue);
       } else {
@@ -254,7 +254,8 @@ public class PersistentPartitionedRegionJUnitTest {
     createLRURegionAndValidateRecovery(true, false, 10, 0);
   }
 
-  private void createLRURegionAndValidateRecovery(boolean isRegionClose, boolean heapLru, int size, int expectedInMemory) {
+  private void createLRURegionAndValidateRecovery(boolean isRegionClose, boolean heapLru, int size,
+      int expectedInMemory) {
     PartitionedRegion region;
     boolean entryLru = !heapLru;
     region = (PartitionedRegion) createRegion(-1, heapLru, entryLru);
@@ -286,10 +287,12 @@ public class PersistentPartitionedRegionJUnitTest {
     }
 
     int valuesInVm = getValuesInVM(region, size);
-    assertEquals("Values for lru regions should not be recovered from Disk.", expectedInMemory, valuesInVm);
+    assertEquals("Values for lru regions should not be recovered from Disk.", expectedInMemory,
+        valuesInVm);
 
     BucketRegion bucket = region.getBucketRegion("A");
-    assertEquals((size - expectedInMemory), bucket.getDiskRegion().getStats().getNumOverflowOnDisk());
+    assertEquals((size - expectedInMemory),
+        bucket.getDiskRegion().getStats().getNumOverflowOnDisk());
     assertEquals(expectedInMemory, bucket.getDiskRegion().getStats().getNumEntriesInVM());
 
     // Load values into memory using get.

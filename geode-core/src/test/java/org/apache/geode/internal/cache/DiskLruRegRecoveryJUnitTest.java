@@ -124,7 +124,8 @@ public class DiskLruRegRecoveryJUnitTest extends DiskRegionTestingBase {
     }
 
     int valuesInVm = getValuesInVM(region, load);
-    assertEquals("Values for lru regions should not be recovered from Disk.", expectedValues, valuesInVm);
+    assertEquals("Values for lru regions should not be recovered from Disk.", expectedValues,
+        valuesInVm);
 
     if (nonLruRegion != null) {
       valuesInVm = getValuesInVM(nonLruRegion, load);
@@ -211,7 +212,7 @@ public class DiskLruRegRecoveryJUnitTest extends DiskRegionTestingBase {
       } else {
         System.clearProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME);
       }
-      
+
       if (lruOldValue != null) {
         System.setProperty(DiskStoreImpl.RECOVER_LRU_VALUES_PROPERTY_NAME, lruOldValue);
       } else {
@@ -221,7 +222,7 @@ public class DiskLruRegRecoveryJUnitTest extends DiskRegionTestingBase {
   }
 
   @Test
-  public void testValuesAreRecoveredForLruRegionWithReocoverValueAndRecoverLruPropertySetWithRegionClose() {    
+  public void testValuesAreRecoveredForLruRegionWithReocoverValueAndRecoverLruPropertySetWithRegionClose() {
     String oldValue = System.getProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME);
     System.setProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, "true");
 
@@ -236,7 +237,7 @@ public class DiskLruRegRecoveryJUnitTest extends DiskRegionTestingBase {
       } else {
         System.clearProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME);
       }
-      
+
       if (lruOldValue != null) {
         System.setProperty(DiskStoreImpl.RECOVER_LRU_VALUES_PROPERTY_NAME, lruOldValue);
       } else {
