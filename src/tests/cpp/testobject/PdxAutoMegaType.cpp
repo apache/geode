@@ -36,10 +36,8 @@ void PdxAutoMegaType::populatePrimitives() {
   pdxType_Float = 23324.324f;
   pdxType_Double = 3243298498.00;
 
-  struct timeval now;
-  now.tv_sec = 1310447869;
-  now.tv_usec = 154000;
-  pdxType_Date = CacheableDate::create(now);
+  int64_t d = 1310447869154L;
+  pdxType_Date = CacheableDate::create(CacheableDate::duration(d));
 
   pdxType_String = (char*)"gfestring";
   pdxType_WideString = (wchar_t*)L"gfestring";

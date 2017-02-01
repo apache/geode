@@ -56,10 +56,10 @@ Serializable* CacheableDate::createDeserializable() {
 
 int32_t CacheableDate::classId() const { return 0; }
 
-int8_t CacheableDate::typeId() const { return GemfireTypeIds::CacheableDate; }
+int8_t CacheableDate::typeId() const { return GeodeTypeIds::CacheableDate; }
 
 bool CacheableDate::operator==(const CacheableKey& other) const {
-  if (other.typeId() != GemfireTypeIds::CacheableDate) {
+  if (other.typeId() != GeodeTypeIds::CacheableDate) {
     return false;
   }
 
@@ -68,28 +68,25 @@ bool CacheableDate::operator==(const CacheableKey& other) const {
   return m_timevalue == otherDt.m_timevalue;
 }
 
-int CacheableDate::day() const 
-{ 
-  struct tm date = { 0 };
+int CacheableDate::day() const {
+  struct tm date = {0};
   time_t sec = m_timevalue / 1000;
-  ACE_OS::localtime_r( &sec, &date );
+  ACE_OS::localtime_r(&sec, &date);
   return date.tm_mday;
 }
 
-int CacheableDate::month() const 
-{ 
-  struct tm date = { 0 };
+int CacheableDate::month() const {
+  struct tm date = {0};
   time_t sec = m_timevalue / 1000;
-  ACE_OS::localtime_r( &sec, &date );
-  return date.tm_mon + 1; 
+  ACE_OS::localtime_r(&sec, &date);
+  return date.tm_mon + 1;
 }
 
-int CacheableDate::year() const 
-{ 
-  struct tm date = { 0 };
+int CacheableDate::year() const {
+  struct tm date = {0};
   time_t sec = m_timevalue / 1000;
-  ACE_OS::localtime_r( &sec, &date );
-  return date.tm_year + 1900; 
+  ACE_OS::localtime_r(&sec, &date);
+  return date.tm_year + 1900;
 }
 
 int64_t CacheableDate::milliseconds() const
@@ -102,9 +99,8 @@ uint32_t CacheableDate::hashcode( ) const
   return (int) m_timevalue ^ (int) (m_timevalue >> 32);
 }
 
-CacheableDate::CacheableDate( const timeval& value )
-{ 
-  m_timevalue = (((int64_t) value.tv_sec) * 1000) + (value.tv_usec / 1000);
+CacheableDate::CacheableDate(const timeval& value) {
+  m_timevalue = (((int64_t)value.tv_sec) * 1000) + (value.tv_usec / 1000);
 }
 
 CacheableDate::CacheableDate( const time_t value )
