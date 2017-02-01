@@ -51,8 +51,11 @@ public class InstallerJUnitTest {
       new Installer(args).processWebXml(input, output);
     }
 
-    String expected = IOUtils.toString(getClass().getResource(name + ".expected"));
-    assertEquals(expected, output.toString());
+    String expected = IOUtils.toString(getClass().getResource(name + ".expected"))
+        .replaceAll(IOUtils.LINE_SEPARATOR_WINDOWS, "").replaceAll(IOUtils.LINE_SEPARATOR_UNIX, "");
+    String actual = output.toString().replaceAll(IOUtils.LINE_SEPARATOR_WINDOWS, "")
+        .replaceAll(IOUtils.LINE_SEPARATOR_UNIX, "");
+    assertEquals(expected, actual);
   }
 
 }
