@@ -1,15 +1,19 @@
-**[Overview](#overview)**  
-**[Main Concepts and Components](#concepts)**  
-**[Location of Directions for Building from Source](#building)**  
-**[Geode in 5 minutes](#started)**  
-**[Application Development](#development)**  
-**[Documentation](http://geode.apache.org/docs/)**
-**[wiki](https://cwiki.apache.org/confluence/display/GEODE/Index)**  
-**Continuous Integration** [![Build Status](https://travis-ci.org/apache/geode.svg?branch=develop)](https://travis-ci.org/apache/geode)  
+[<img src="https://geode.apache.org/img/apache_geode_logo.png" align="center"/>](http://geode.apache.org)
+
+[![Build Status](https://travis-ci.org/apache/geode.svg?branch=develop)](https://travis-ci.org/apache/geode) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.apache.geode/geode-core/badge.svg)](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22org.apache.geode%22)
+
+## Contents
+1. [Overview](#overview)  
+2. [Main Concepts and Components](#concepts)
+3. [Location of Directions for Building from Source](#building)
+4. [Geode in 5 minutes](#started)
+5. [Application Development](#development)
+6. [Documentation](http://geode.apache.org/docs/)
+7. [Wiki](https://cwiki.apache.org/confluence/display/GEODE/Index)
+                                                                                                                       
 
 ## <a name="overview"></a>Overview
-
-[Apache Geode] (http://geode.apache.org/) is a data management platform that provides real-time, consistent access to data-intensive applications throughout widely distributed cloud architectures.
+[Apache Geode](http://geode.apache.org/) is a data management platform that provides real-time, consistent access to data-intensive applications throughout widely distributed cloud architectures.
 
 Apache Geode pools memory, CPU, network resources, and optionally local disk across multiple processes to manage application objects and behavior. It uses dynamic replication and data partitioning techniques to implement high availability, improved performance, scalability, and fault tolerance. In addition to being a distributed data container, Apache Geode is an in-memory data management system that provides reliable asynchronous event notifications and guaranteed message delivery.
 
