@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_TCPCONN_H_
+#define GEODE_TCPCONN_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,8 +20,6 @@
  * limitations under the License.
  */
 
-#ifndef __TcpConn_hpp__
-#define __TcpConn_hpp__
 
 #include <gfcpp/gfcpp_globals.hpp>
 #include <gfcpp/Log.hpp>
@@ -139,4 +142,5 @@ class CPPCACHE_EXPORT TcpConn : public Connector {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __TcpConn_hpp__
+
+#endif // GEODE_TCPCONN_H_

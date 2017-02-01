@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_THREADPOOL_H_
+#define GEODE_THREADPOOL_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
  *      Author: ankurs
  */
 
-#ifndef THREADPOOL_HPP_
-#define THREADPOOL_HPP_
 
 #include <ace/Task.h>
 #include <ace/Method_Request.h>
@@ -158,4 +161,5 @@ typedef ACE_Singleton<ThreadPool, ACE_Recursive_Thread_Mutex> TPSingleton;
 }  // namespace geode
 }  // namespace apache
 
-#endif /* THREADPOOL_HPP_ */
+
+#endif // GEODE_THREADPOOL_H_

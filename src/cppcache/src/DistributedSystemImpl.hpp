@@ -1,5 +1,8 @@
-#ifndef __IMPL_DISTRIBUTEDSYSTEM_H__
-#define __IMPL_DISTRIBUTEDSYSTEM_H__
+#pragma once
+
+#ifndef GEODE_DISTRIBUTEDSYSTEMIMPL_H_
+#define GEODE_DISTRIBUTEDSYSTEMIMPL_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -138,4 +141,5 @@ class CPPCACHE_EXPORT DistributedSystemImpl : public SharedBase {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // ifndef __IMPL_DISTRIBUTEDSYSTEM_H__
+
+#endif // GEODE_DISTRIBUTEDSYSTEMIMPL_H_

@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_13e33c8479a332a850fc4a6ded808476
+#define APACHE_GEODE_GUARD_13e33c8479a332a850fc4a6ded808476
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef _GEMFIRE_LDAPUSERCREDENTIALGENERATOR_HPP_
-#define _GEMFIRE_LDAPUSERCREDENTIALGENERATOR_HPP_
 
 #include "CredentialGenerator.hpp"
 #include "XmlAuthzCredentialGenerator.hpp"
@@ -114,4 +117,5 @@ class LdapUserCredentialGenerator : public CredentialGenerator {
 }  // namespace geode
 }  // namespace apache
 
-#endif /*_GEMFIRE_LDAPUSERCREDENTIALGENERATOR_HPP_*/
+
+#endif // APACHE_GEODE_GUARD_13e33c8479a332a850fc4a6ded808476

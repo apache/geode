@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_NORESULT_H_
+#define GEODE_NORESULT_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __GEMFIRE_NO_RESULT_HPP__
-#define __GEMFIRE_NO_RESULT_HPP__
 
 #include <gfcpp/gfcpp_globals.hpp>
 #include <gfcpp/gf_types.hpp>
@@ -63,4 +66,4 @@ class CPPCACHE_EXPORT NoResult : public ResultCollector {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // ifndef __GEMFIRE_NO_RESULT_HPP__
+#endif // GEODE_NORESULT_H_

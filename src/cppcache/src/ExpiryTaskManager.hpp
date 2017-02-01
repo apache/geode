@@ -1,5 +1,8 @@
-#ifndef _GEMFIRE_EXPIRYTASKMANAGER_H__
-#define _GEMFIRE_EXPIRYTASKMANAGER_H__
+#pragma once
+
+#ifndef GEODE_EXPIRYTASKMANAGER_H_
+#define GEODE_EXPIRYTASKMANAGER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -271,4 +274,4 @@ class CPPCACHE_EXPORT ExpiryTaskManager : public ACE_Task_Base {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // ifndef _GEMFIRE_EXPIRYTASKMANAGER_H__
+#endif // GEODE_EXPIRYTASKMANAGER_H_

@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_DISKVERSIONTAG_H_
+#define GEODE_DISKVERSIONTAG_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __DISKVERSIONTAG_HPP__
-#define __DISKVERSIONTAG_HPP__
 
 #include "VersionTag.hpp"
 #include "GeodeTypeIdsImpl.hpp"
@@ -78,4 +81,5 @@ class DiskVersionTag : public VersionTag {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __DISKVERSIONTAG_HPP__
+
+#endif // GEODE_DISKVERSIONTAG_H_

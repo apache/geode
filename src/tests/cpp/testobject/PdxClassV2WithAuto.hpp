@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_e5b77d2dd656c240f07a78ec6f670100
+#define APACHE_GEODE_GUARD_e5b77d2dd656c240f07a78ec6f670100
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __PDX_CLASSV2_WITH_AUTO_HPP__
-#define __PDX_CLASSV2_WITH_AUTO_HPP__
 
 #include <gfcpp/PdxSerializable.hpp>
 #include <gfcpp/GeodeCppCache.hpp>
@@ -602,4 +605,5 @@ public:
 */
 
 } /* namespace PdxTestsAuto */
-#endif /* PDXCLASSV1_HPP_ */
+
+#endif // APACHE_GEODE_GUARD_e5b77d2dd656c240f07a78ec6f670100

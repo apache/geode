@@ -1,5 +1,8 @@
-#ifndef __GEMFIRE_EXCEPTIONTYPES_H__
-#define __GEMFIRE_EXCEPTIONTYPES_H__
+#pragma once
+
+#ifndef GEODE_GFCPP_EXCEPTIONTYPES_H_
+#define GEODE_GFCPP_EXCEPTIONTYPES_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -407,4 +410,4 @@ extern void CPPCACHE_EXPORT GfErrTypeThrowException(const char* str,
 }  // namespace geode
 }  // namespace apache
 
-#endif  // ifndef __GEMFIRE_EXCEPTIONTYPES_H__
+#endif // GEODE_GFCPP_EXCEPTIONTYPES_H_

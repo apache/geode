@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_GFCPP_ASSERT_H_
+#define GEODE_GFCPP_ASSERT_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,9 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#ifndef _GEMFIRE_ASSERT_HPP_
-#define _GEMFIRE_ASSERT_HPP_
 
 #include "gfcpp_globals.hpp"
 
@@ -95,4 +97,4 @@ class CPPCACHE_EXPORT Assert {
 #define GF_DEV_ASSERT(x)
 #endif
 
-#endif
+#endif // GEODE_GFCPP_ASSERT_H_

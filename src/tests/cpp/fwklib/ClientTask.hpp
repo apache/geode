@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_27b17454dd8037d9589090f2615d5988
+#define APACHE_GEODE_GUARD_27b17454dd8037d9589090f2615d5988
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,8 +20,6 @@
  * limitations under the License.
  */
 
-#ifndef __ClientTask_hpp__
-#define __ClientTask_hpp__
 
 #include <gfcpp/GeodeCppCache.hpp>
 #include <AtomicInc.hpp>
@@ -158,4 +161,5 @@ class ThreadedTask : public ClientTask {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __ClientTask_hpp__
+
+#endif // APACHE_GEODE_GUARD_27b17454dd8037d9589090f2615d5988

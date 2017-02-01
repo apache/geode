@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_TCRCHUNKEDCONTEXT_H_
+#define GEODE_TCRCHUNKEDCONTEXT_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -20,8 +25,6 @@
  *
  */
 
-#ifndef __TCR_CHUNKED_CONTEXT_HPP__
-#define __TCR_CHUNKED_CONTEXT_HPP__
 
 #include <memory>
 
@@ -184,4 +187,5 @@ class TcrChunkedContext {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __TCR_CHUNKED_CONTEXT_HPP__
+
+#endif // GEODE_TCRCHUNKEDCONTEXT_H_

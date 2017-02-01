@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_018c280d1ad9e881b092dcb9f3304d88
+#define APACHE_GEODE_GUARD_018c280d1ad9e881b092dcb9f3304d88
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -19,8 +24,6 @@
  * @brief User class for testing the cq functionality.
  */
 
-#ifndef __BATCHOBJECT_HPP__
-#define __BATCHOBJECT_HPP__
 
 #include <gfcpp/GeodeCppCache.hpp>
 #include <string.h>
@@ -88,4 +91,5 @@ class TESTOBJECT_EXPORT BatchObject : public TimestampedObject {
 
 typedef apache::geode::client::SharedPtr<BatchObject> BatchObjectPtr;
 }  // namespace testobject
-#endif
+
+#endif // APACHE_GEODE_GUARD_018c280d1ad9e881b092dcb9f3304d88

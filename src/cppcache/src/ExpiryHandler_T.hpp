@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_EXPIRYHANDLER_T_H_
+#define GEODE_EXPIRYHANDLER_T_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -20,8 +25,6 @@
  *@version 1.0
  */
 
-#ifndef EXPIRYHANDLER_T_HPP
-#define EXPIRYHANDLER_T_HPP
 
 #include "ace/Event_Handler.h"
 #include <gfcpp/Log.hpp>
@@ -69,4 +72,5 @@ class CPPCACHE_EXPORT ExpiryHandler_T : public ACE_Event_Handler {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif  // !defined (EXPIRYHANDLER_T_HPP)
+
+#endif // GEODE_EXPIRYHANDLER_T_H_

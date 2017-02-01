@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_THINCLIENTHELPER_H_
+#define GEODE_INTEGRATION_TEST_THINCLIENTHELPER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_THINCLIENTHELPER_HPP
-#define TEST_THINCLIENTHELPER_HPP
 
 #include <gfcpp/GeodeCppCache.hpp>
 #include <ace/OS.h>
@@ -702,4 +705,5 @@ class RegionOperations {
   RegionPtr m_regionPtr;
 };
 
-#endif  // TEST_THINCLIENTHELPER_HPP
+
+#endif // GEODE_INTEGRATION_TEST_THINCLIENTHELPER_H_

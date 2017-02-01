@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_PDXLOCALREADER_H_
+#define GEODE_PDXLOCALREADER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,14 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
-* PdxLocalReader.hpp
-* Created on: Nov 3, 2011
-*      Author: npatel
-*/
-
-#ifndef _GEMFIRE_IMPL_PDXLOCALREADER_HPP_
-#define _GEMFIRE_IMPL_PDXLOCALREADER_HPP_
 
 #include <gfcpp/PdxReader.hpp>
 #include "PdxType.hpp"
@@ -221,4 +218,5 @@ typedef SharedPtr<PdxLocalReader> PdxLocalReaderPtr;
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif /* PDXLOCALREADER_HPP_ */
+
+#endif // GEODE_PDXLOCALREADER_H_

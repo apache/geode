@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_TALLYWRITER_H_
+#define GEODE_INTEGRATION_TEST_TALLYWRITER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef _TEST_TALLYWRITER_HPP_
-#define _TEST_TALLYWRITER_HPP_ 1
 
 #include <gfcpp/GeodeCppCache.hpp>
 
@@ -150,4 +153,5 @@ class TallyWriter : virtual public CacheWriter {
   }
 };
 
-#endif  //_TEST_TALLYWRITER_HPP_
+
+#endif // GEODE_INTEGRATION_TEST_TALLYWRITER_H_

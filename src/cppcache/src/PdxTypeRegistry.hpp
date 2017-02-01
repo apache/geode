@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_PDXTYPEREGISTRY_H_
+#define GEODE_PDXTYPEREGISTRY_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,15 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * PdxTypeRegistry.hpp
- *
- *  Created on: Dec 9, 2011
- *      Author: npatel
- */
-
-#ifndef _GEMFIRE_IMPL_PDXTYPEREGISTRY_HPP_
-#define _GEMFIRE_IMPL_PDXTYPEREGISTRY_HPP_
 
 #include <gfcpp/PdxSerializable.hpp>
 #include "PdxRemotePreservedData.hpp"
@@ -143,4 +139,5 @@ class CPPCACHE_EXPORT PdxTypeRegistry {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif /* PDXTYPEREGISTRY_HPP_ */
+
+#endif // GEODE_PDXTYPEREGISTRY_H_

@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_NANOTIMER_H_
+#define GEODE_NANOTIMER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,9 +20,6 @@
  * limitations under the License.
  */
 
-#ifndef _GEMFIRE_IMPL_NANOTIMER_HPP_
-#define _GEMFIRE_IMPL_NANOTIMER_HPP_
-
 #include <gfcpp/gfcpp_globals.hpp>
 
 namespace apache {
@@ -34,4 +36,4 @@ class CPPCACHE_EXPORT NanoTimer {
 }  // namespace geode
 }  // namespace apache
 
-#endif
+#endif // GEODE_NANOTIMER_H_

@@ -1,5 +1,8 @@
-#ifndef __GEMFIRE_RESULTSET_H__
-#define __GEMFIRE_RESULTSET_H__
+#pragma once
+
+#ifndef GEODE_GFCPP_RESULTSET_H_
+#define GEODE_GFCPP_RESULTSET_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -81,4 +84,4 @@ class CPPCACHE_EXPORT ResultSet : public SelectResults {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // ifndef __GEMFIRE_RESULTSET_H__
+#endif // GEODE_GFCPP_RESULTSET_H_

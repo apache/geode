@@ -1,5 +1,7 @@
-#ifndef __GEMFIRE_REGIONSHORTCUT_H__
-#define __GEMFIRE_REGIONSHORTCUT_H__
+#pragma once
+
+#ifndef GEODE_GFCPP_REGIONSHORTCUT_H_
+#define GEODE_GFCPP_REGIONSHORTCUT_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -74,4 +76,4 @@ enum RegionShortcut {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // ifndef __GEMFIRE_REGIONSHORTCUT_H__
+#endif // GEODE_GFCPP_REGIONSHORTCUT_H_

@@ -1,5 +1,7 @@
-#ifndef _GEMFIRE_STATISTICS_HOSTSTATSAMPLER_HPP_
-#define _GEMFIRE_STATISTICS_HOSTSTATSAMPLER_HPP_
+#pragma once
+
+#ifndef GEODE_STATISTICS_HOSTSTATSAMPLER_H_
+#define GEODE_STATISTICS_HOSTSTATSAMPLER_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -251,4 +253,4 @@ class CPPCACHE_EXPORT HostStatSampler : public ACE_Task_Base,
 }  // namespace geode
 }  // namespace apache
 
-#endif  // _GEMFIRE_STATISTICS_HOSTSTATSAMPLER_HPP_
+#endif // GEODE_STATISTICS_HOSTSTATSAMPLER_H_

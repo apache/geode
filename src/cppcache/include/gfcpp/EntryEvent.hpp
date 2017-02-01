@@ -1,5 +1,8 @@
-#ifndef _GEMFIRE_ENTRYEVENT_HPP_
-#define _GEMFIRE_ENTRYEVENT_HPP_
+#pragma once
+
+#ifndef GEODE_GFCPP_ENTRYEVENT_H_
+#define GEODE_GFCPP_ENTRYEVENT_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -90,4 +93,4 @@ class CPPCACHE_EXPORT EntryEvent : public apache::geode::client::SharedBase {
 }  // namespace geode
 }  // namespace apache
 
-#endif
+#endif // GEODE_GFCPP_ENTRYEVENT_H_

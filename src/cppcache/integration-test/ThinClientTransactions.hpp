@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_THINCLIENTTRANSACTIONS_H_
+#define GEODE_INTEGRATION_TEST_THINCLIENTTRANSACTIONS_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef THINCLIENTTRANSACTIONS_HPP_
-#define THINCLIENTTRANSACTIONS_HPP_
 
 #include "fw_dunit.hpp"
 #include <gfcpp/GeodeCppCache.hpp>
@@ -1107,4 +1110,5 @@ DUNIT_TASK_DEFINITION(SERVER1, CloseServer1)
   }
 END_TASK_DEFINITION
 
-#endif /* THINCLIENTTRANSACTIONS_HPP_ */
+
+#endif // GEODE_INTEGRATION_TEST_THINCLIENTTRANSACTIONS_H_

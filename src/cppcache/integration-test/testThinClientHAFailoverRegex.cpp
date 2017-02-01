@@ -281,7 +281,6 @@ const char* nvals[] = {"New Value-1", "New Value-2", "New Value-3",
 const char* regionNames[] = {"DistRegionAck", "DistRegionNoAck"};
 
 const bool USE_ACK = true;
-const bool NO_ACK = false;
 void initClientAndRegion(int redundancy) {
   g_redundancyLevel = redundancy;
   PropertiesPtr pp = Properties::create();

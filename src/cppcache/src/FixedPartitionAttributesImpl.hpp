@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_FIXEDPARTITIONATTRIBUTESIMPL_H_
+#define GEODE_FIXEDPARTITIONATTRIBUTESIMPL_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __FIXED_PARTITION_ATTRIBUTES__IMPL__
-#define __FIXED_PARTITION_ATTRIBUTES__IMPL__
 
 #include <gfcpp/Serializable.hpp>
 #include <gfcpp/DataInput.hpp>
@@ -122,4 +125,5 @@ class FixedPartitionAttributesImpl : public Serializable {
 }  // namespace geode
 }  // namespace apache
 
-#endif
+
+#endif // GEODE_FIXEDPARTITIONATTRIBUTESIMPL_H_

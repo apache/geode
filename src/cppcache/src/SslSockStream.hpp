@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_SSLSOCKSTREAM_H_
+#define GEODE_SSLSOCKSTREAM_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __SslSockStream_hpp__
-#define __SslSockStream_hpp__
 
 #include <ace/ACE.h>
 #include <ace/DLL.h>
@@ -90,4 +93,5 @@ class SslSockStream {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __SslSockStream_hpp__
+
+#endif // GEODE_SSLSOCKSTREAM_H_

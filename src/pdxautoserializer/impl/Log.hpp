@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_ede048400be44f9dde5948f28b51fc23
+#define APACHE_GEODE_GUARD_ede048400be44f9dde5948f28b51fc23
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,8 +20,6 @@
  * limitations under the License.
  */
 
-#ifndef _GFAS_LOG_HPP_
-#define _GFAS_LOG_HPP_
 
 #include <string>
 #include <iosfwd>
@@ -88,4 +91,5 @@ class Log {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // _GFAS_LOG_HPP_
+
+#endif // APACHE_GEODE_GUARD_ede048400be44f9dde5948f28b51fc23

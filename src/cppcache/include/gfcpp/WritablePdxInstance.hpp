@@ -1,5 +1,8 @@
-#ifndef __WRITABLE_PDXINSTANCE_HPP_
-#define __WRITABLE_PDXINSTANCE_HPP_
+#pragma once
+
+#ifndef GEODE_GFCPP_WRITABLEPDXINSTANCE_H_
+#define GEODE_GFCPP_WRITABLEPDXINSTANCE_H_
+
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -535,4 +538,5 @@ class CPPCACHE_EXPORT WritablePdxInstance : public PdxInstance {
 }  // namespace geode
 }  // namespace apache
 
-#endif /* __WRITABLE_PDXINSTANCE_HPP_ */
+
+#endif // GEODE_GFCPP_WRITABLEPDXINSTANCE_H_

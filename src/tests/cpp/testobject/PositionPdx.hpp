@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_16153fc06e90eeaa167430a34632e57d
+#define APACHE_GEODE_GUARD_16153fc06e90eeaa167430a34632e57d
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -19,8 +24,6 @@
  * @brief User class for testing the put functionality for object.
  */
 
-#ifndef __POSITIONPDX_HPP__
-#define __POSITIONPDX_HPP__
 
 #include <gfcpp/GeodeCppCache.hpp>
 #include <gfcpp/PdxSerializable.hpp>
@@ -101,4 +104,5 @@ class TESTOBJECT_EXPORT PositionPdx
 
 typedef apache::geode::client::SharedPtr<PositionPdx> PositionPdxPtr;
 }  // namespace testobject
-#endif
+
+#endif // APACHE_GEODE_GUARD_16153fc06e90eeaa167430a34632e57d

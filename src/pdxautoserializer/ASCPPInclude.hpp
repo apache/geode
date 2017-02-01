@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_ce84784877faf1099879ab9252de0187
+#define APACHE_GEODE_GUARD_ce84784877faf1099879ab9252de0187
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,8 +20,6 @@
  * limitations under the License.
  */
 
-#ifndef _GFAS_ASCPPINCLUDE_HPP_
-#define _GFAS_ASCPPINCLUDE_HPP_
 
 #define GFINCLUDE
 #define GFEXCLUDE
@@ -33,4 +36,5 @@
  #define __builtin_va_list int
  */
 
-#endif  // _GFAS_ASCPPINCLUDE_HPP_
+
+#endif // APACHE_GEODE_GUARD_ce84784877faf1099879ab9252de0187

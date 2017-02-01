@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_TXREGIONSTATE_H_
+#define GEODE_TXREGIONSTATE_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
  *      Author: ankurs
  */
 
-#ifndef TXREGIONSTATE_HPP_
-#define TXREGIONSTATE_HPP_
 
 #include <gfcpp/gf_types.hpp>
 #include <gfcpp/HashMapT.hpp>
@@ -48,4 +51,5 @@ _GF_PTR_DEF_(TXRegionState, TXRegionStatePtr);
 }  // namespace geode
 }  // namespace apache
 
-#endif /* TXREGIONSTATE_HPP_ */
+
+#endif // GEODE_TXREGIONSTATE_H_

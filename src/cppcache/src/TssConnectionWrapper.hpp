@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_TSSCONNECTIONWRAPPER_H_
+#define GEODE_TSSCONNECTIONWRAPPER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef _TSS_CONNECTION_WRAPPER_HPP_
-#define _TSS_CONNECTION_WRAPPER_HPP_
 #include <ace/TSS_T.h>
 #include <gfcpp/Pool.hpp>
 #include <map>
@@ -72,4 +75,5 @@ class TssConnectionWrapper {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif
+
+#endif // GEODE_TSSCONNECTIONWRAPPER_H_

@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_REGIONCOMMIT_H_
+#define GEODE_REGIONCOMMIT_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
  *      Author: ankurs
  */
 
-#ifndef REGIONCOMMIT_HPP_
-#define REGIONCOMMIT_HPP_
 
 #include <gfcpp/gf_types.hpp>
 #include <gfcpp/SharedBase.hpp>
@@ -60,4 +63,5 @@ class RegionCommit : public apache::geode::client::SharedBase {
 }  // namespace geode
 }  // namespace apache
 
-#endif /* REGIONCOMMIT_HPP_ */
+
+#endif // GEODE_REGIONCOMMIT_H_

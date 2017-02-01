@@ -1,5 +1,7 @@
-#ifndef __GEMFIRE_IMPL_MAPENTRY_T_HPP__
-#define __GEMFIRE_IMPL_MAPENTRY_T_HPP__
+#pragma once
+
+#ifndef GEODE_MAPENTRYT_H_
+#define GEODE_MAPENTRYT_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -290,4 +292,4 @@ inline int MapEntryST<TBase, 0, UPDATE_COUNT>::incUpdateCount(TBase* loc) {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __GEMFIRE_IMPL_MAPENTRY_T_HPP__
+#endif // GEODE_MAPENTRYT_H_

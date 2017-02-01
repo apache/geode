@@ -1,5 +1,8 @@
-#ifndef __GEMFIRE_CACHEXML_HPP__
-#define __GEMFIRE_CACHEXML_HPP__
+#pragma once
+
+#ifndef GEODE_CACHEXML_H_
+#define GEODE_CACHEXML_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -213,4 +216,5 @@ class CPPCACHE_EXPORT CacheXml {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif  // ifndef __GEMFIRE_CACHEXML_HPP__
+
+#endif // GEODE_CACHEXML_H_

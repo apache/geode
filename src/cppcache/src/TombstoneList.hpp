@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_TOMBSTONELIST_H_
+#define GEODE_TOMBSTONELIST_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,9 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#ifndef __GEMFIRE_IMPL_TOMBSTONELIST_H__
-#define __GEMFIRE_IMPL_TOMBSTONELIST_H__
 
 #include <list>
 #include <ace/Recursive_Thread_Mutex.h>
@@ -98,4 +100,4 @@ typedef SharedPtr<TombstoneList> TombstoneListPtr;
 }  // namespace geode
 }  // namespace apache
 
-#endif  // !defined (__GEMFIRE_IMPL_TOMBSTONELIST_H__)
+#endif // GEODE_TOMBSTONELIST_H_

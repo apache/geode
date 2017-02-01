@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_71203be2b9e093a3e3b66356ee334b67
+#define APACHE_GEODE_GUARD_71203be2b9e093a3e3b66356ee334b67
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -19,8 +24,6 @@
  * @brief User class for testing the put functionality for object.
  */
 
-#ifndef __DELTAPSTOBJECT_HPP__
-#define __DELTAPSTOBJECT_HPP__
 
 #include <gfcpp/GeodeCppCache.hpp>
 #include <string.h>
@@ -92,4 +95,5 @@ class TESTOBJECT_EXPORT DeltaPSTObject : public Cacheable, public Delta {
 };
 typedef apache::geode::client::SharedPtr<DeltaPSTObject> DeltaPSTObjectPtr;
 }  // namespace testobject
-#endif
+
+#endif // APACHE_GEODE_GUARD_71203be2b9e093a3e3b66356ee334b67

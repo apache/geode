@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_PRESERVEDDATAEXPIRYHANDLER_H_
+#define GEODE_PRESERVEDDATAEXPIRYHANDLER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
  *      Author: npatel
  */
 
-#ifndef __PRESERVEDDATAEXPIRYHANDLER_HPP__
-#define __PRESERVEDDATAEXPIRYHANDLER_HPP__
 #include <gfcpp/gfcpp_globals.hpp>
 #include <gfcpp/Cache.hpp>
 #include <gfcpp/PdxSerializable.hpp>
@@ -72,4 +75,5 @@ class CPPCACHE_EXPORT PreservedDataExpiryHandler : public ACE_Event_Handler {
 }  // namespace geode
 }  // namespace apache
 
-#endif /* __PRESERVEDDATAEXPIRYHANDLER_HPP__*/
+
+#endif // GEODE_PRESERVEDDATAEXPIRYHANDLER_H_

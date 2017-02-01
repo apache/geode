@@ -1,5 +1,7 @@
-#ifndef __GEMFIRE_PDXWRITER_H__
-#define __GEMFIRE_PDXWRITER_H__
+#pragma once
+
+#ifndef GEODE_GFCPP_PDXWRITER_H_
+#define GEODE_GFCPP_PDXWRITER_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -445,4 +447,5 @@ class CPPCACHE_EXPORT PdxWriter : public SharedBase {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif /* PDXWRITER_HPP_ */
+
+#endif // GEODE_GFCPP_PDXWRITER_H_

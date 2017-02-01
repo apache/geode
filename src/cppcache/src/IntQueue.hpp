@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTQUEUE_H_
+#define GEODE_INTQUEUE_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#if !defined(IMPL_INTQUEUE_INCLUDED)
-#define IMPL_INTQUEUE_INCLUDED
 
 #include <deque>
 #include <ace/ACE.h>
@@ -117,4 +120,4 @@ class CPPCACHE_EXPORT IntQueue {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // !defined (IMPL_INTQUEUE_INCLUDED)
+#endif // GEODE_INTQUEUE_H_

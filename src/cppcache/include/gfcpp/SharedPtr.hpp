@@ -1,5 +1,7 @@
-#ifndef _GEMFIRE_SHAREDPTR_HPP_
-#define _GEMFIRE_SHAREDPTR_HPP_
+#pragma once
+
+#ifndef GEODE_GFCPP_SHAREDPTR_H_
+#define GEODE_GFCPP_SHAREDPTR_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -280,4 +282,4 @@ bool instanceOf(const SharedPtr<Other>& other) {
 }  // namespace geode
 }  // namespace apache
 
-#endif
+#endif // GEODE_GFCPP_SHAREDPTR_H_

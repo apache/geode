@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_3063688f9fda2bf5152f1eec97ed4928
+#define APACHE_GEODE_GUARD_3063688f9fda2bf5152f1eec97ed4928
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -19,8 +24,6 @@
  * @brief User class for testing the put functionality for object.
  */
 
-#ifndef __PSTOBJECT_HPP__
-#define __PSTOBJECT_HPP__
 
 #include <gfcpp/GeodeCppCache.hpp>
 #include <string.h>
@@ -87,4 +90,5 @@ class TESTOBJECT_EXPORT PSTObject : public TimestampedObject {
 
 typedef apache::geode::client::SharedPtr<PSTObject> PSTObjectPtr;
 }  // namespace testobject
-#endif
+
+#endif // APACHE_GEODE_GUARD_3063688f9fda2bf5152f1eec97ed4928

@@ -1,5 +1,8 @@
-#ifndef _GEMFIRE_STATISTICS_LINUXPROCESSSTATS_HPP_
-#define _GEMFIRE_STATISTICS_LINUXPROCESSSTATS_HPP_
+#pragma once
+
+#ifndef GEODE_STATISTICS_LINUXPROCESSSTATS_H_
+#define GEODE_STATISTICS_LINUXPROCESSSTATS_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -16,6 +19,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include <gfcpp/gfcpp_globals.hpp>
 #include <gfcpp/statistics/Statistics.hpp>
 #include <gfcpp/statistics/StatisticsType.hpp>
@@ -79,4 +83,4 @@ class CPPCACHE_EXPORT LinuxProcessStats : public ProcessStats {
 }  // namespace geode
 }  // namespace apache
 
-#endif  //_GEMFIRE_STATISTICS_LINUXPROCESSSTATS_HPP_
+#endif // GEODE_STATISTICS_LINUXPROCESSSTATS_H_

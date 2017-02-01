@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_TCRPOOLENDPOINT_H_
+#define GEODE_TCRPOOLENDPOINT_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __TCR_POOL_ENDPOINT__
-#define __TCR_POOL_ENDPOINT__
 #include "TcrEndpoint.hpp"
 #include "PoolStatistics.hpp"
 namespace apache {
@@ -60,4 +63,5 @@ class TcrPoolEndPoint : public TcrEndpoint {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif
+
+#endif // GEODE_TCRPOOLENDPOINT_H_

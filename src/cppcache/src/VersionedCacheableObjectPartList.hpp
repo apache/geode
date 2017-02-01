@@ -1,5 +1,7 @@
-#ifndef _GEMFIRE_VERSIONEDCACHEABLEOBJECTPARTLIST_HPP_
-#define _GEMFIRE_VERSIONEDCACHEABLEOBJECTPARTLIST_HPP_
+#pragma once
+
+#ifndef GEODE_VERSIONEDCACHEABLEOBJECTPARTLIST_H_
+#define GEODE_VERSIONEDCACHEABLEOBJECTPARTLIST_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -283,4 +285,4 @@ class VersionedCacheableObjectPartList : public CacheableObjectPartList {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // _GEMFIRE_VERSIONEDCACHEABLEOBJECTPARTLIST_HPP_
+#endif // GEODE_VERSIONEDCACHEABLEOBJECTPARTLIST_H_

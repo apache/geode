@@ -1,5 +1,7 @@
-#ifndef __GEMFIRE_IMPL_UTILS_H__
-#define __GEMFIRE_IMPL_UTILS_H__
+#pragma once
+
+#ifndef GEODE_UTILS_H_
+#define GEODE_UTILS_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -224,4 +226,4 @@ class RandGen {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // ifndef __GEMFIRE_IMPL_UTILS_H__
+#endif // GEODE_UTILS_H_

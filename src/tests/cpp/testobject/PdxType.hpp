@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_1072d2981f0f5cd29b6a6a69e0abf84f
+#define APACHE_GEODE_GUARD_1072d2981f0f5cd29b6a6a69e0abf84f
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
  *      Author: npatel
  */
 
-#ifndef __PDXOBJECT_HPP__
-#define __PDXOBJECT_HPP__
 
 #include <gfcpp/PdxSerializable.hpp>
 #include <gfcpp/GeodeCppCache.hpp>
@@ -799,4 +802,5 @@ class TESTOBJECT_EXPORT PdxType : public PdxSerializable {
 };
 typedef SharedPtr<PdxTests::PdxType> PdxTypePtr;
 }  // namespace PdxTests
-#endif /* PDXOBJECT_HPP_ */
+
+#endif // APACHE_GEODE_GUARD_1072d2981f0f5cd29b6a6a69e0abf84f

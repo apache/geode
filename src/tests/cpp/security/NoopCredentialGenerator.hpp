@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_1f7c1dec923abb55cf489a3ad8997066
+#define APACHE_GEODE_GUARD_1f7c1dec923abb55cf489a3ad8997066
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef _GEMFIRE_NOOPCREDENTIALGENERATOR_HPP_
-#define _GEMFIRE_NOOPCREDENTIALGENERATOR_HPP_
 
 #include "CredentialGenerator.hpp"
 
@@ -60,4 +63,5 @@ class NoopCredentialGenerator : public CredentialGenerator {
 }  // namespace geode
 }  // namespace apache
 
-#endif
+
+#endif // APACHE_GEODE_GUARD_1f7c1dec923abb55cf489a3ad8997066

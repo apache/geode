@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_THINCLIENTDURABLE_H_
+#define GEODE_INTEGRATION_TEST_THINCLIENTDURABLE_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
  *      Author: abhaware
  */
 
-#ifndef THINCLIENTDURABLE_HPP_
-#define THINCLIENTDURABLE_HPP_
 
 #include "fw_dunit.hpp"
 #include "ThinClientHelper.hpp"
@@ -491,4 +494,5 @@ DUNIT_TASK_DEFINITION(SERVER1, CloseServers)
   }
 END_TASK_DEFINITION
 
-#endif /* THINCLIENTDURABLE_HPP_ */
+
+#endif // GEODE_INTEGRATION_TEST_THINCLIENTDURABLE_H_

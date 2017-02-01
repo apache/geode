@@ -1,5 +1,8 @@
-#ifndef __GEMFIRE_GFCPP_GLOBALS_H__
-#define __GEMFIRE_GFCPP_GLOBALS_H__
+#pragma once
+
+#ifndef GEODE_GFCPP_GFCPP_GLOBALS_H_
+#define GEODE_GFCPP_GFCPP_GLOBALS_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -113,4 +116,4 @@ extern void CPPCACHE_EXPORT setNewAndDelete(pNew, pDelete);
 #include "Log.hpp"
 #include "Assert.hpp"
 
-#endif  // __GEMFIRE_GFCPP_GLOBALS_H__
+#endif // GEODE_GFCPP_GFCPP_GLOBALS_H_

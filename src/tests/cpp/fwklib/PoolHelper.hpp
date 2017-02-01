@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_b2a51368e1c04b7833061e32a761f2df
+#define APACHE_GEODE_GUARD_b2a51368e1c04b7833061e32a761f2df
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,8 +20,6 @@
  * limitations under the License.
  */
 
-#ifndef __POOL_HELPER_HPP__
-#define __POOL_HELPER_HPP__
 
 #include <gfcpp/GeodeCppCache.hpp>
 #include <AtomicInc.hpp>
@@ -147,4 +150,5 @@ class PoolHelper {
 
 // ----------------------------------------------------------------------------
 
-#endif  // __POOL_HELPER_HPP__
+
+#endif // APACHE_GEODE_GUARD_b2a51368e1c04b7833061e32a761f2df

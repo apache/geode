@@ -1,5 +1,7 @@
-#ifndef _GEMFIRE_CACHEABLEOBJECTARRAY_HPP_
-#define _GEMFIRE_CACHEABLEOBJECTARRAY_HPP_
+#pragma once
+
+#ifndef GEODE_GFCPP_CACHEABLEOBJECTARRAY_H_
+#define GEODE_GFCPP_CACHEABLEOBJECTARRAY_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -101,4 +103,4 @@ class CPPCACHE_EXPORT CacheableObjectArray : public Cacheable,
 }  // namespace geode
 }  // namespace apache
 
-#endif  // _GEMFIRE_CACHEABLEOBJECTARRAY_HPP_
+#endif // GEODE_GFCPP_CACHEABLEOBJECTARRAY_H_

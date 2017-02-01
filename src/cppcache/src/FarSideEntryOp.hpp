@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_FARSIDEENTRYOP_H_
+#define GEODE_FARSIDEENTRYOP_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
  *      Author: ankurs
  */
 
-#ifndef FARSIDEENTRYOP_HPP_
-#define FARSIDEENTRYOP_HPP_
 
 #include <gfcpp/gfcpp_globals.hpp>
 #include <gfcpp/gf_types.hpp>
@@ -122,4 +125,5 @@ class FarSideEntryOp : public apache::geode::client::SharedBase {
 }  // namespace geode
 }  // namespace apache
 
-#endif /* FARSIDEENTRYOP_HPP_ */
+
+#endif // GEODE_FARSIDEENTRYOP_H_

@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_PDXREMOTEPRESERVEDDATA_H_
+#define GEODE_PDXREMOTEPRESERVEDDATA_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,15 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * PdxType.hpp
- *
- *  Created on: Dec 09, 2011
- *      Author: npatel
- */
-
-#ifndef _GEMFIRE_IMPL_PDXREMOTEPRESERVEDDATA_HPP_
-#define _GEMFIRE_IMPL_PDXREMOTEPRESERVEDDATA_HPP_
 
 #include <gfcpp/PdxUnreadFields.hpp>
 #include <vector>
@@ -117,4 +113,5 @@ class PdxRemotePreservedData : public PdxUnreadFields {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif
+
+#endif // GEODE_PDXREMOTEPRESERVEDDATA_H_

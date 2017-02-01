@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_THINCLIENTGATEWAYTEST_H_
+#define GEODE_INTEGRATION_TEST_THINCLIENTGATEWAYTEST_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,8 +20,6 @@
  * limitations under the License.
  */
 
-#ifndef THINCLIENTGATEWAYTEST_HPP_
-#define THINCLIENTGATEWAYTEST_HPP_
 
 #include "fw_dunit.hpp"
 #include "ThinClientHelper.hpp"
@@ -186,4 +189,5 @@ void runListenerInit(bool poolConfig = true, bool isLocator = true) {
   CALL_TASK(StopLocator1);
   CALL_TASK(StopLocator2);
 }
-#endif /*THINCLIENTGATEWAYTEST_HPP_*/
+
+#endif // GEODE_INTEGRATION_TEST_THINCLIENTGATEWAYTEST_H_

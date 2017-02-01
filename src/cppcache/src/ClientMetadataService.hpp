@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_CLIENTMETADATASERVICE_H_
+#define GEODE_CLIENTMETADATASERVICE_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef CLIENT_METADATA_SERVICE
-#define CLIENT_METADATA_SERVICE
 
 #include <ace/Task.h>
 #include "ClientMetadata.hpp"
@@ -207,4 +210,5 @@ class ClientMetadataService : public ACE_Task_Base,
 }  // namespace geode
 }  // namespace apache
 
-#endif
+
+#endif // GEODE_CLIENTMETADATASERVICE_H_

@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_07015f9e9a2d1cdc790e5e202a3742fe
+#define APACHE_GEODE_GUARD_07015f9e9a2d1cdc790e5e202a3742fe
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,8 +20,6 @@
  * limitations under the License.
  */
 
-#ifndef __GS_RANDOM_HPP__
-#define __GS_RANDOM_HPP__
 
 #include <gfcpp/gf_base.hpp>
 
@@ -234,4 +237,5 @@ class GsRandom {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif  // __GS_RANDOM_HPP__
+
+#endif // APACHE_GEODE_GUARD_07015f9e9a2d1cdc790e5e202a3742fe

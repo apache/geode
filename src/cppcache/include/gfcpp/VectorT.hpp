@@ -1,6 +1,7 @@
+#pragma once
 
-#ifndef _GEMFIRE_VECTORT_HPP_
-#define _GEMFIRE_VECTORT_HPP_
+#ifndef GEODE_GFCPP_VECTORT_H_
+#define GEODE_GFCPP_VECTORT_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -256,4 +257,4 @@ typedef SharedPtr<VectorOfCacheableKey> VectorOfCacheableKeyPtr;
 }  // namespace geode
 }  // namespace apache
 
-#endif
+#endif // GEODE_GFCPP_VECTORT_H_

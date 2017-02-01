@@ -1,5 +1,7 @@
-#ifndef __GEMFIRE_REGIONGLOBAL_H__
-#define __GEMFIRE_REGIONGLOBAL_H__
+#pragma once
+
+#ifndef GEODE_REGIONGLOBALLOCKS_H_
+#define GEODE_REGIONGLOBALLOCKS_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -41,4 +43,4 @@ class CPPCACHE_EXPORT RegionGlobalLocks {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // ifndef __GEMFIRE_REGIONGLOBAL_H__
+#endif // GEODE_REGIONGLOBALLOCKS_H_

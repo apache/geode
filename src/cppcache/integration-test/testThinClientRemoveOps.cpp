@@ -14,8 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TESTTHINCLIENTREMOVEOPS_HPP_
-#define TESTTHINCLIENTREMOVEOPS_HPP_
 
 #include "fw_dunit.hpp"
 #include <gfcpp/GeodeCppCache.hpp>
@@ -1737,5 +1735,3 @@ DUNIT_MAIN
     runRemoveOps1();
   }
 END_MAIN
-
-#endif /* TESTTHINCLIENTREMOVEOPS_HPP_ */

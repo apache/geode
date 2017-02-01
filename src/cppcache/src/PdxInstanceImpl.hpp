@@ -1,5 +1,8 @@
-#ifndef __PDXINSTANCE_IMPL_HPP_
-#define __PDXINSTANCE_IMPL_HPP_
+#pragma once
+
+#ifndef GEODE_PDXINSTANCEIMPL_H_
+#define GEODE_PDXINSTANCEIMPL_H_
+
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -1167,4 +1170,5 @@ typedef SharedPtr<PdxInstanceImpl> PdxInstanceImplPtr;
 }  // namespace geode
 }  // namespace apache
 
-#endif /* __PDXINSTANCE_IMPL_HPP_*/
+
+#endif // GEODE_PDXINSTANCEIMPL_H_

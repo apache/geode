@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_FAIRQUEUE_H_
+#define GEODE_FAIRQUEUE_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef _GEMFIRE_FAIRQUEUE_HPP_
-#define _GEMFIRE_FAIRQUEUE_HPP_
 
 #include <deque>
 #include <ace/ACE.h>
@@ -173,4 +176,4 @@ class FairQueue {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // ifndef _GEMFIRE_FAIRQUEUE_HPP_
+#endif // GEODE_FAIRQUEUE_H_

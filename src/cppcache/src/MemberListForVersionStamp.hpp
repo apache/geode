@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_MEMBERLISTFORVERSIONSTAMP_H_
+#define GEODE_MEMBERLISTFORVERSIONSTAMP_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __MemberListForVersionStamp_HPP__
-#define __MemberListForVersionStamp_HPP__
 
 #include <gfcpp/gfcpp_globals.hpp>
 #include <gfcpp/SharedPtr.hpp>
@@ -59,4 +62,5 @@ typedef SharedPtr<MemberListForVersionStamp> MemberListForVersionStampPtr;
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __MemberListForVersionStamp_HPP__
+
+#endif // GEODE_MEMBERLISTFORVERSIONSTAMP_H_

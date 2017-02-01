@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_THINCLIENTSSL_H_
+#define GEODE_INTEGRATION_TEST_THINCLIENTSSL_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -500,3 +505,5 @@ void doThinClientSSL(bool poolConfig = true, bool poolLocators = true) {
 
   CALL_TASK(CloseLocator1_With_SSL);
 }
+
+#endif // GEODE_INTEGRATION_TEST_THINCLIENTSSL_H_

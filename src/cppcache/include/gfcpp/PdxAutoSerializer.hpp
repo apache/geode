@@ -1,5 +1,8 @@
-#ifndef PDX_AUTO_SERIALIZER_HPP
-#define PDX_AUTO_SERIALIZER_HPP
+#pragma once
+
+#ifndef GEODE_GFCPP_PDXAUTOSERIALIZER_H_
+#define GEODE_GFCPP_PDXAUTOSERIALIZER_H_
+
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -524,4 +527,5 @@ inline void readPdxObject(apache::geode::client::PdxReaderPtr& pr,
 }  // namespace geode
 }  // namespace apache
 
-#endif  // _GEMFIRE_SERIALIZER_HPP_
+
+#endif // GEODE_GFCPP_PDXAUTOSERIALIZER_H_

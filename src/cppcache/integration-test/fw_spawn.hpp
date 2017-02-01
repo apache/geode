@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_FW_SPAWN_H_
+#define GEODE_INTEGRATION_TEST_FW_SPAWN_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __TEST_FW_SPAWN_H__
-#define __TEST_FW_SPAWN_H__
 // Spawn.cpp,v 1.4 2004/01/07 22:40:16 shuston Exp
 
 // @TODO, this out this include list..
@@ -123,4 +126,5 @@
 
 };  // namespace dunit.
 
-#endif  // __TEST_FW_SPAWN_H__
+
+#endif // GEODE_INTEGRATION_TEST_FW_SPAWN_H_

@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_d211265b7b7a98aa276892bb897cf15f
+#define APACHE_GEODE_GUARD_d211265b7b7a98aa276892bb897cf15f
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __PDX_CLASSV1_WITH_AUTO_HPP__
-#define __PDX_CLASSV1_WITH_AUTO_HPP__
 
 #include <gfcpp/PdxSerializable.hpp>
 #include <gfcpp/GeodeCppCache.hpp>
@@ -565,4 +568,5 @@ class GFIGNORE(TESTOBJECT_EXPORT) TestEqualsV1 : public PdxSerializable {
 };
 
 } /* namespace PdxTestsAuto */
-#endif /* PDXCLASSV1_HPP_ */
+
+#endif // APACHE_GEODE_GUARD_d211265b7b7a98aa276892bb897cf15f

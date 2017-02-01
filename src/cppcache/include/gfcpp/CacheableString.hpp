@@ -1,5 +1,7 @@
-#ifndef _GEMFIRE_CACHEABLESTRING_HPP_
-#define _GEMFIRE_CACHEABLESTRING_HPP_
+#pragma once
+
+#ifndef GEODE_GFCPP_CACHEABLESTRING_H_
+#define GEODE_GFCPP_CACHEABLESTRING_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -305,4 +307,4 @@ inline CacheablePtr createValueArr(const wchar_t* value) {
 }  // namespace geode
 }  // namespace apache
 
-#endif
+#endif // GEODE_GFCPP_CACHEABLESTRING_H_

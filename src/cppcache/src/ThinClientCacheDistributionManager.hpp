@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_THINCLIENTCACHEDISTRIBUTIONMANAGER_H_
+#define GEODE_THINCLIENTCACHEDISTRIBUTIONMANAGER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __THINCLIENT_CACHE_DISTRIBUTION_MANAGER_HPP__
-#define __THINCLIENT_CACHE_DISTRIBUTION_MANAGER_HPP__
 
 #include <gfcpp/gfcpp_globals.hpp>
 #include <gfcpp/SharedPtr.hpp>
@@ -62,4 +65,5 @@ typedef SharedPtr<ThinClientCacheDistributionManager>
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif  // __THINCLIENT_CACHE_DISTRIBUTION_MANAGER_HPP__
+
+#endif // GEODE_THINCLIENTCACHEDISTRIBUTIONMANAGER_H_

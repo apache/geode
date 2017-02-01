@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_LRULIST_H_
+#define GEODE_LRULIST_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __GEMFIRE_IMPL_LRULIST_H__
-#define __GEMFIRE_IMPL_LRULIST_H__
 
 #include <gfcpp/gfcpp_globals.hpp>
 #include <gfcpp/SharedPtr.hpp>
@@ -150,4 +153,4 @@ class LRUList {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __GEMFIRE_IMPL_LRULIST_H__
+#endif // GEODE_LRULIST_H_

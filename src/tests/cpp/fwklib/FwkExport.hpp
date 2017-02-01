@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_dd058cd17302e55845b453e0c42c27c9
+#define APACHE_GEODE_GUARD_dd058cd17302e55845b453e0c42c27c9
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -29,3 +34,5 @@
 #define TESTTASK extern "C" int32_t
 #define TEST_EXPORT extern "C"
 #endif
+
+#endif // APACHE_GEODE_GUARD_dd058cd17302e55845b453e0c42c27c9

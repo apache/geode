@@ -1,5 +1,8 @@
-#ifndef DELTA_HPP_
-#define DELTA_HPP_
+#pragma once
+
+#ifndef GEODE_GFCPP_DELTA_H_
+#define GEODE_GFCPP_DELTA_H_
+
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -94,4 +97,5 @@ class Delta {
 }  // namespace geode
 }  // namespace apache
 
-#endif /* DELTA_HPP_ */
+
+#endif // GEODE_GFCPP_DELTA_H_

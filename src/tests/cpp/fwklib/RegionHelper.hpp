@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_ecbb34b204212c99ce0936eb50297d23
+#define APACHE_GEODE_GUARD_ecbb34b204212c99ce0936eb50297d23
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,8 +20,6 @@
  * limitations under the License.
  */
 
-#ifndef __REGION_HELPER_HPP__
-#define __REGION_HELPER_HPP__
 
 #include <gfcpp/GeodeCppCache.hpp>
 #include <AtomicInc.hpp>
@@ -258,4 +261,5 @@ class RegionHelper {
 
 // ----------------------------------------------------------------------------
 
-#endif  // __REGION_HELPER_HPP__
+
+#endif // APACHE_GEODE_GUARD_ecbb34b204212c99ce0936eb50297d23

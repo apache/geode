@@ -14,13 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
-* testThinClientPdxInstance.cpp
-*
-*/
-
-#ifndef TESTTHINCLIENTPDXINSTANCE_HPP_
-#define TESTTHINCLIENTPDXINSTANCE_HPP_
 
 #include "fw_dunit.hpp"
 #include <gfcpp/GeodeCppCache.hpp>
@@ -2754,5 +2747,3 @@ DUNIT_MAIN
         2);  // Locator, caching = false, PdxReadSerialized = true
   }
 END_MAIN
-
-#endif /* TESTTHINCLIENTPDXINSTANCE_HPP_ */

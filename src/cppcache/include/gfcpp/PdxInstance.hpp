@@ -1,5 +1,7 @@
-#ifndef __GEMFIRE_PDXINSTANCE_HPP_
-#define __GEMFIRE_PDXINSTANCE_HPP_
+#pragma once
+
+#ifndef GEODE_GFCPP_PDXINSTANCE_H_
+#define GEODE_GFCPP_PDXINSTANCE_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -612,4 +614,5 @@ class CPPCACHE_EXPORT PdxInstance : public PdxSerializable {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif /* __GEMFIRE_PDXINSTANCE_HPP_ */
+
+#endif // GEODE_GFCPP_PDXINSTANCE_H_

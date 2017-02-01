@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_GFCPP_GEMFIRECACHE_H_
+#define GEODE_GFCPP_GEMFIRECACHE_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __GEMFIRE_GEMFIRECACHE_H__
-#define __GEMFIRE_GEMFIRECACHE_H__
 
 #include "gfcpp_globals.hpp"
 #include "gf_types.hpp"
@@ -79,4 +82,5 @@ class CPPCACHE_EXPORT GemFireCache : public RegionService {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif  // ifndef __GEMFIRE_GEMFIRECACHE_H__
+
+#endif // GEODE_GFCPP_GEMFIRECACHE_H_

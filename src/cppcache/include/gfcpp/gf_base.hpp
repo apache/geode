@@ -1,5 +1,8 @@
-#ifndef _GEMFIRE_GF_BASE_HPP_
-#define _GEMFIRE_GF_BASE_HPP_
+#pragma once
+
+#ifndef GEODE_GFCPP_GF_BASE_H_
+#define GEODE_GFCPP_GF_BASE_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -352,4 +355,4 @@ void operator delete[](void *p);
     x = NULL;                   \
   }
 
-#endif
+#endif // GEODE_GFCPP_GF_BASE_H_

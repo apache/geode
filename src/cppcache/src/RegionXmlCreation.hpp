@@ -1,5 +1,8 @@
-#ifndef _GEMFIRE_REGIONXMLCREATION_HPP_
-#define _GEMFIRE_REGIONXMLCREATION_HPP_
+#pragma once
+
+#ifndef GEODE_REGIONXMLCREATION_H_
+#define GEODE_REGIONXMLCREATION_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -127,4 +130,5 @@ class CPPCACHE_EXPORT RegionXmlCreation {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif  // #ifndef  _GEMFIRE_REGIONXMLCREATION_HPP_
+
+#endif // GEODE_REGIONXMLCREATION_H_

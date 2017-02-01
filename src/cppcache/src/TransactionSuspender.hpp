@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_TRANSACTIONSUSPENDER_H_
+#define GEODE_TRANSACTIONSUSPENDER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
  *      Author: ankurs
  */
 
-#ifndef TRANSACTIONSUSPENDER_HPP_
-#define TRANSACTIONSUSPENDER_HPP_
 
 #include "TXState.hpp"
 
@@ -42,4 +45,5 @@ class TransactionSuspender {
 }  // namespace geode
 }  // namespace apache
 
-#endif /* TRANSACTIONSUSPENDER_HPP_ */
+
+#endif // GEODE_TRANSACTIONSUSPENDER_H_

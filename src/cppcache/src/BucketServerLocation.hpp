@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_BUCKETSERVERLOCATION_H_
+#define GEODE_BUCKETSERVERLOCATION_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __BUCKET_SERVER_LOCATION__
-#define __BUCKET_SERVER_LOCATION__
 
 #include "ServerLocation.hpp"
 #include <string>
@@ -174,4 +177,5 @@ class BucketServerLocation : public ServerLocation {
 }  // namespace geode
 }  // namespace apache
 
-#endif
+
+#endif // GEODE_BUCKETSERVERLOCATION_H_

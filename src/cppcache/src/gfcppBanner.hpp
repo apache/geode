@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_GFCPPBANNER_H_
+#define GEODE_GFCPPBANNER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -26,3 +31,5 @@ class gfcppBanner {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
+
+#endif // GEODE_GFCPPBANNER_H_

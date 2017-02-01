@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_ADMINREGION_H_
+#define GEODE_ADMINREGION_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef _ADMIN_REGION_HPP_INCLUDED_
-#define _ADMIN_REGION_HPP_INCLUDED_
 
 #include <gfcpp/gf_types.hpp>
 #include "ThinClientCacheDistributionManager.hpp"
@@ -80,4 +83,5 @@ typedef SharedPtr<AdminRegion> AdminRegionPtr;
 }  // namespace geode
 }  // namespace apache
 
-#endif
+
+#endif // GEODE_ADMINREGION_H_

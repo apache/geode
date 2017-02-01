@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_43257b24105ffca3ff3bd16dc0cd17d2
+#define APACHE_GEODE_GUARD_43257b24105ffca3ff3bd16dc0cd17d2
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -25,8 +30,6 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef __FWKEXCEPTION_HPP__
-#define __FWKEXCEPTION_HPP__
 
 #include <string>
 
@@ -66,4 +69,5 @@ class FwkException {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __FWKEXCEPTION_HPP__
+
+#endif // APACHE_GEODE_GUARD_43257b24105ffca3ff3bd16dc0cd17d2

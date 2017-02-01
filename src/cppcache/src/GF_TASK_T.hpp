@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_GF_TASK_T_H_
+#define GEODE_GF_TASK_T_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
 *@version 1.0
 */
 
-#ifndef __GF_TASK_T_HPP__
-#define __GF_TASK_T_HPP__
 
 #include "DistributedSystemImpl.hpp"
 #include <ace/Task.h>
@@ -80,4 +83,5 @@ class CPPCACHE_EXPORT GF_TASK_T : public ACE_Task_Base {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif  // __GF_TASK_T_HPP__
+
+#endif // GEODE_GF_TASK_T_H_

@@ -1,5 +1,7 @@
-#ifndef _GEMFIRE_STATISTICS_STATISTICDESCRIPTOR_HPP_
-#define _GEMFIRE_STATISTICS_STATISTICDESCRIPTOR_HPP_
+#pragma once
+
+#ifndef GEODE_GFCPP_STATISTICS_STATISTICDESCRIPTOR_H_
+#define GEODE_GFCPP_STATISTICS_STATISTICDESCRIPTOR_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -88,4 +90,4 @@ class CPPCACHE_EXPORT StatisticDescriptor {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // _GEMFIRE_STATISTICS_STATISTICDESCRIPTOR_HPP_
+#endif // GEODE_GFCPP_STATISTICS_STATISTICDESCRIPTOR_H_

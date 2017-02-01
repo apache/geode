@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_CACHEIMPLHELPER_H_
+#define GEODE_INTEGRATION_TEST_CACHEIMPLHELPER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_CACHEIMPLHELPER_HPP
-#define TEST_CACHEIMPLHELPER_HPP
 
 #include <gfcpp/GeodeCppCache.hpp>
 #include <stdlib.h>
@@ -63,4 +66,5 @@ class CacheImplHelper : public CacheHelper {
     ASSERT(regionPtr != NULLPTR, "failed to create region.");
   }
 };
-#endif  // TEST_CACHEHELPER_HPP
+
+#endif // GEODE_INTEGRATION_TEST_CACHEIMPLHELPER_H_

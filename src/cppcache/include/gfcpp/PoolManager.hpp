@@ -1,5 +1,7 @@
-#ifndef __GEMFIRE_POOL_MANAGER_HPP__
-#define __GEMFIRE_POOL_MANAGER_HPP__
+#pragma once
+
+#ifndef GEODE_GFCPP_POOLMANAGER_H_
+#define GEODE_GFCPP_POOLMANAGER_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -95,4 +97,4 @@ class CPPCACHE_EXPORT PoolManager {
 }  // namespace geode
 }  // namespace apache
 
-#endif  //__GEMFIRE_POOL_MANAGER_HPP__
+#endif // GEODE_GFCPP_POOLMANAGER_H_

@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_7dbd8fa103bfe69138e0b0571a737c9c
+#define APACHE_GEODE_GUARD_7dbd8fa103bfe69138e0b0571a737c9c
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,8 +20,6 @@
  * limitations under the License.
  */
 
-#ifndef __TcpIpc_hpp__
-#define __TcpIpc_hpp__
 
 #include <gfcpp/gf_base.hpp>
 #include <ace/SOCK_Stream.h>
@@ -73,4 +76,5 @@ class TcpIpc {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __TcpIpc_hpp__
+
+#endif // APACHE_GEODE_GUARD_7dbd8fa103bfe69138e0b0571a737c9c

@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_e0125e37a3eca017a80d206a8d22c2e8
+#define APACHE_GEODE_GUARD_e0125e37a3eca017a80d206a8d22c2e8
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
  *      Author: abhaware
  */
 
-#ifndef TESTOBJECT1_HPP_
-#define TESTOBJECT1_HPP_
 
 #include <gfcpp/GeodeCppCache.hpp>
 #include <string>
@@ -65,4 +68,5 @@ class TESTOBJECT_EXPORT TestObject1 : public Cacheable {
 
 typedef SharedPtr<TestObject1> TestObject1Ptr;
 }  // namespace testobject
-#endif /* TESTOBJECT1_HPP_ */
+
+#endif // APACHE_GEODE_GUARD_e0125e37a3eca017a80d206a8d22c2e8

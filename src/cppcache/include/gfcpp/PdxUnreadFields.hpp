@@ -1,5 +1,7 @@
-#ifndef __GEMFIRE_PDXUNREADFIELDS_HPP_
-#define __GEMFIRE_PDXUNREADFIELDS_HPP_
+#pragma once
+
+#ifndef GEODE_GFCPP_PDXUNREADFIELDS_H_
+#define GEODE_GFCPP_PDXUNREADFIELDS_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -48,4 +50,4 @@ class CPPCACHE_EXPORT PdxUnreadFields : public SharedBase {
 }  // namespace geode
 }  // namespace apache
 
-#endif /* __GEMFIRE_PDXUNREADFIELDS_HPP_ */
+#endif // GEODE_GFCPP_PDXUNREADFIELDS_H_

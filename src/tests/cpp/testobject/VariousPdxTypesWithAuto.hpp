@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_99a40c6ce49041acf9d03a72cd57e1c2
+#define APACHE_GEODE_GUARD_99a40c6ce49041acf9d03a72cd57e1c2
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __VARIOUS_PDX_TYPES_WITH_AUTO_HPP_
-#define __VARIOUS_PDX_TYPES_WITH_AUTO_HPP_
 
 #include <gfcpp/PdxSerializable.hpp>
 #include <gfcpp/GeodeCppCache.hpp>
@@ -542,4 +545,5 @@ class GFIGNORE(TESTOBJECT_EXPORT) PdxInsideIGFSerializable
 typedef SharedPtr<PdxInsideIGFSerializable> PdxInsideIGFSerializablePtr;
 
 } /* namespace PdxTestsAuto */
-#endif /* __VARIOUSPDXTYPES_HPP_ */
+
+#endif // APACHE_GEODE_GUARD_99a40c6ce49041acf9d03a72cd57e1c2

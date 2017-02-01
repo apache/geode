@@ -1,5 +1,7 @@
-#ifndef _GEMFIRE_SYSTEMPROPERTIES_HPP_
-#define _GEMFIRE_SYSTEMPROPERTIES_HPP_
+#pragma once
+
+#ifndef GEODE_GFCPP_SYSTEMPROPERTIES_H_
+#define GEODE_GFCPP_SYSTEMPROPERTIES_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -507,4 +509,4 @@ class CPPCACHE_EXPORT SystemProperties {
 }  // namespace geode
 }  // namespace apache
 
-#endif
+#endif // GEODE_GFCPP_SYSTEMPROPERTIES_H_

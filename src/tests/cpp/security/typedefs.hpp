@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_8a35926faf964b72538dc78519ee0e9b
+#define APACHE_GEODE_GUARD_8a35926faf964b72538dc78519ee0e9b
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __TYPEDEFS_HPP_
-#define __TYPEDEFS_HPP_
 
 #ifdef _LINUX
 _Pragma("GCC system_header")
@@ -129,4 +132,5 @@ _Pragma("GCC system_header")
   }  // namespace geode
 }  // namespace apache
 
-#endif /*__TYPEDEFS_HPP_*/
+
+#endif // APACHE_GEODE_GUARD_8a35926faf964b72538dc78519ee0e9b

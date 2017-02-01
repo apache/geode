@@ -1,5 +1,8 @@
-#ifndef _GEMFIRE_REGIONEVENT_HPP_
-#define _GEMFIRE_REGIONEVENT_HPP_
+#pragma once
+
+#ifndef GEODE_GFCPP_REGIONEVENT_H_
+#define GEODE_GFCPP_REGIONEVENT_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -71,4 +74,4 @@ class CPPCACHE_EXPORT RegionEvent {
 }  // namespace geode
 }  // namespace apache
 
-#endif
+#endif // GEODE_GFCPP_REGIONEVENT_H_

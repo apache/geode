@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_DSMEMBERFORVERSIONSTAMP_H_
+#define GEODE_DSMEMBERFORVERSIONSTAMP_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __DSMemberForVersionStamp_HPP__
-#define __DSMemberForVersionStamp_HPP__
 
 #include <gfcpp/gfcpp_globals.hpp>
 #include <gfcpp/CacheableKey.hpp>
@@ -43,4 +46,5 @@ class DSMemberForVersionStamp : public CacheableKey {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __DSMemberForVersionStamp_HPP__
+
+#endif // GEODE_DSMEMBERFORVERSIONSTAMP_H_

@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_f3340c9b2d447c884bfa8bef6b826bb9
+#define APACHE_GEODE_GUARD_f3340c9b2d447c884bfa8bef6b826bb9
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __TimestampedObjectHPP__
-#define __TimestampedObjectHPP__
 
 #include <gfcpp/GeodeCppCache.hpp>
 
@@ -50,4 +53,5 @@ class TESTOBJECT_EXPORT TimestampedObject
 typedef apache::geode::client::SharedPtr<TimestampedObject>
     TimestampedObjectPtr;
 }  // namespace testobject
-#endif  // __TimestampedObjectHPP__
+
+#endif // APACHE_GEODE_GUARD_f3340c9b2d447c884bfa8bef6b826bb9

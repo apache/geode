@@ -1,5 +1,7 @@
-#ifndef _GEMFIRE_AUTODELETE_HPP_
-#define _GEMFIRE_AUTODELETE_HPP_
+#pragma once
+
+#ifndef GEODE_AUTODELETE_H_
+#define GEODE_AUTODELETE_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -68,4 +70,4 @@ class DeleteArray {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // #ifndef _GEMFIRE_AUTODELETE_HPP_
+#endif // GEODE_AUTODELETE_H_

@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_LOCATORLISTREQUEST_H_
+#define GEODE_LOCATORLISTREQUEST_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __LOCATORLISTREQUEST__
-#define __LOCATORLISTREQUEST__
 #include <string>
 #include "ServerLocationRequest.hpp"
 #include "GeodeTypeIdsImpl.hpp"
@@ -39,4 +42,5 @@ class LocatorListRequest : public ServerLocationRequest {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif
+
+#endif // GEODE_LOCATORLISTREQUEST_H_

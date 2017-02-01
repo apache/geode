@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_PDXREMOTEWRITER_H_
+#define GEODE_PDXREMOTEWRITER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
  *      Author: npatel
  */
 
-#ifndef PDXREMOTEWRITER_HPP_
-#define PDXREMOTEWRITER_HPP_
 
 #include "PdxLocalWriter.hpp"
 
@@ -238,4 +241,5 @@ typedef SharedPtr<PdxRemoteWriter> PdxRemoteWriterPtr;
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif /* PDXREMOTEWRITER_HPP_ */
+
+#endif // GEODE_PDXREMOTEWRITER_H_

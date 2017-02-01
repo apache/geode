@@ -1,5 +1,8 @@
-#ifndef __PDXINSTANCE_FACTORY_IMPL_HPP_
-#define __PDXINSTANCE_FACTORY_IMPL_HPP_
+#pragma once
+
+#ifndef GEODE_PDXINSTANCEFACTORYIMPL_H_
+#define GEODE_PDXINSTANCEFACTORYIMPL_H_
+
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -455,4 +458,5 @@ class CPPCACHE_EXPORT PdxInstanceFactoryImpl : public PdxInstanceFactory {
 }  // namespace geode
 }  // namespace apache
 
-#endif /* __PDXINSTANCE_FACTORY_IMPL_HPP_ */
+
+#endif // GEODE_PDXINSTANCEFACTORYIMPL_H_

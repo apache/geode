@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_TCRMESSAGE_H_
+#define GEODE_TCRMESSAGE_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __TCR_MESSAGE_HPP__
-#define __TCR_MESSAGE_HPP__
 
 #include <gfcpp/gfcpp_globals.hpp>
 #include "AtomicInc.hpp"
@@ -1224,4 +1227,5 @@ class TcrMessageHelper {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __TCR_MESSAGE_HPP__
+
+#endif // GEODE_TCRMESSAGE_H_

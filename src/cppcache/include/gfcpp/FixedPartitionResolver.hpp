@@ -1,5 +1,8 @@
-#ifndef GEMFIRE_FIXED_PARTITION_RESOLVER
-#define GEMFIRE_FIXED_PARTITION_RESOLVER
+#pragma once
+
+#ifndef GEODE_GFCPP_FIXEDPARTITIONRESOLVER_H_
+#define GEODE_GFCPP_FIXEDPARTITIONRESOLVER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -89,4 +92,5 @@ class CPPCACHE_EXPORT FixedPartitionResolver : public PartitionResolver {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif
+
+#endif // GEODE_GFCPP_FIXEDPARTITIONRESOLVER_H_

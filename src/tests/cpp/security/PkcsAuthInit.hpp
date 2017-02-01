@@ -1,5 +1,8 @@
-#ifndef _GEMFIRE__PKCSAUTHINIT__HPP
-#define _GEMFIRE__PKCSAUTHINIT__HPP
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_b6aee18fde62b9f395d7603d1d57c641
+#define APACHE_GEODE_GUARD_b6aee18fde62b9f395d7603d1d57c641
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -104,4 +107,5 @@ class PKCSAuthInitInternal : public AuthInitialize {
 }  // namespace geode
 }  // namespace apache
 
-#endif  //_GEMFIRE__PKCSAUTHINIT__HPP
+
+#endif // APACHE_GEODE_GUARD_b6aee18fde62b9f395d7603d1d57c641

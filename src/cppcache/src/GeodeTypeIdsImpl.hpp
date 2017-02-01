@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_GEODETYPEIDSIMPL_H_
+#define GEODE_GEODETYPEIDSIMPL_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef _GEODE_GEODETYPEIDSIMPL_HPP_
-#define _GEODE_GEODETYPEIDSIMPL_HPP_
 
 namespace apache {
 namespace geode {
@@ -79,4 +82,5 @@ class GeodeTypeIdsImpl {
 }  // namespace geode
 }  // namespace apache
 
-#endif
+
+#endif // GEODE_GEODETYPEIDSIMPL_H_

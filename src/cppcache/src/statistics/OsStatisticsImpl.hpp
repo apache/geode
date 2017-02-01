@@ -1,5 +1,8 @@
-#ifndef _GEMFIRE_STATISTICS_OSSTATISTICSIMPL_HPP_
-#define _GEMFIRE_STATISTICS_OSSTATISTICSIMPL_HPP_
+#pragma once
+
+#ifndef GEODE_STATISTICS_OSSTATISTICSIMPL_H_
+#define GEODE_STATISTICS_OSSTATISTICSIMPL_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -257,4 +260,4 @@ class OsStatisticsImpl : public Statistics,
 }  // namespace geode
 }  // namespace apache
 
-#endif  // _GEMFIRE_STATISTICS_OSSTATISTICSIMPL_HPP_
+#endif // GEODE_STATISTICS_OSSTATISTICSIMPL_H_

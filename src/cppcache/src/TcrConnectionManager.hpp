@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_TCRCONNECTIONMANAGER_H_
+#define GEODE_TCRCONNECTIONMANAGER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __TCR_CONNECTIONMANAGER_HPP__
-#define __TCR_CONNECTIONMANAGER_HPP__
 
 #include <gfcpp/gfcpp_globals.hpp>
 #include "GF_TASK_T.hpp"
@@ -208,4 +211,5 @@ class DistManagersLockGuard {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __TCR_CONNECTIONMANAGER_HPP__
+
+#endif // GEODE_TCRCONNECTIONMANAGER_H_

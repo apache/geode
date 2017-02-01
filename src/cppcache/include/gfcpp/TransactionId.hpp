@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_GFCPP_TRANSACTIONID_H_
+#define GEODE_GFCPP_TRANSACTIONID_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
  *      Author: ankurs
  */
 
-#ifndef TRANSACTIONID_H_
-#define TRANSACTIONID_H_
 
 #include "SharedBase.hpp"
 
@@ -44,4 +47,5 @@ class CPPCACHE_EXPORT TransactionId : public apache::geode::client::SharedBase {
 }  // namespace geode
 }  // namespace apache
 
-#endif /* TRANSACTIONID_H_ */
+
+#endif // GEODE_GFCPP_TRANSACTIONID_H_

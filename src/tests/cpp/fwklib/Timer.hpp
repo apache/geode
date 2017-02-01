@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_8d07450f18b766edac2c13c91b9680d4
+#define APACHE_GEODE_GUARD_8d07450f18b766edac2c13c91b9680d4
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,8 +20,6 @@
  * limitations under the License.
  */
 
-#ifndef __Timer_hpp__
-#define __Timer_hpp__
 
 #include <gfcpp/gf_base.hpp>
 #include "fwklib/FwkLog.hpp"
@@ -177,4 +180,5 @@ class HRTimer {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __Timer_hpp__
+
+#endif // APACHE_GEODE_GUARD_8d07450f18b766edac2c13c91b9680d4

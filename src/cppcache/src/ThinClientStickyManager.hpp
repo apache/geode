@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_THINCLIENTSTICKYMANAGER_H_
+#define GEODE_THINCLIENTSTICKYMANAGER_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __THINCLIENT_POOL_STICKY_MANAGER__
-#define __THINCLIENT_POOL_STICKY_MANAGER__
 
 #include "TssConnectionWrapper.hpp"
 #include <algorithm>
@@ -56,4 +59,5 @@ class ThinClientStickyManager {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif
+
+#endif // GEODE_THINCLIENTSTICKYMANAGER_H_

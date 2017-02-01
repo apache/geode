@@ -1,5 +1,7 @@
-#ifndef __GEMFIRE_REGIONINTERNAL_H__
-#define __GEMFIRE_REGIONINTERNAL_H__
+#pragma once
+
+#ifndef GEODE_REGIONINTERNAL_H_
+#define GEODE_REGIONINTERNAL_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -295,4 +297,4 @@ typedef SharedPtr<RegionInternal> RegionInternalPtr;
 }  // namespace geode
 }  // namespace apache
 
-#endif  // ifndef __GEMFIRE_REGIONINTERNAL_H__
+#endif // GEODE_REGIONINTERNAL_H_

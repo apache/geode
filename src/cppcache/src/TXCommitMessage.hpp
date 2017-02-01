@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_TXCOMMITMESSAGE_H_
+#define GEODE_TXCOMMITMESSAGE_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
  *      Author: ankurs
  */
 
-#ifndef TXCOMMITMESSAGE_HPP_
-#define TXCOMMITMESSAGE_HPP_
 
 #include <gfcpp/gfcpp_globals.hpp>
 #include <gfcpp/gf_types.hpp>
@@ -58,4 +61,5 @@ class TXCommitMessage : public apache::geode::client::Cacheable {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif /* TXCOMMITMESSAGE_HPP_ */
+
+#endif // GEODE_TXCOMMITMESSAGE_H_

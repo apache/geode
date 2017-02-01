@@ -1,6 +1,8 @@
+#pragma once
 
-#ifndef __GEMFIRE_INTERESTRESULTPOLICY_H__
-#define __GEMFIRE_INTERESTRESULTPOLICY_H__
+#ifndef GEODE_INTERESTRESULTPOLICY_H_
+#define GEODE_INTERESTRESULTPOLICY_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -49,4 +51,5 @@ class CPPCACHE_EXPORT InterestResultPolicy {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif  // ifndef __GEMFIRE_INTERESTRESULTPOLICY_H__
+
+#endif // GEODE_INTERESTRESULTPOLICY_H_

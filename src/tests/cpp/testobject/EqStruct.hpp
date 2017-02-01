@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_01922391216844a010651b52b4fa268b
+#define APACHE_GEODE_GUARD_01922391216844a010651b52b4fa268b
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -19,8 +24,6 @@
  * @brief User class for testing the put functionality for object.
  */
 
-#ifndef __EQSTRUCT_HPP__
-#define __EQSTRUCT_HPP__
 
 #include <gfcpp/GeodeCppCache.hpp>
 #include <string.h>
@@ -149,4 +152,5 @@ class TESTOBJECT_EXPORT EqStruct : public TimestampedObject {
 
 typedef apache::geode::client::SharedPtr<EqStruct> EqStructPtr;
 }  // namespace testobject
-#endif
+
+#endif // APACHE_GEODE_GUARD_01922391216844a010651b52b4fa268b

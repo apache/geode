@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_596076185d7a905f2040a9113cab41f2
+#define APACHE_GEODE_GUARD_596076185d7a905f2040a9113cab41f2
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -25,8 +30,6 @@
 
 // ----------------------------------------------------------------------------
 
-#ifndef __FWK_STR_CVT_HPP__
-#define __FWK_STR_CVT_HPP__
 
 #include "config.h"
 #include <gfcpp/gfcpp_globals.hpp>
@@ -348,4 +351,5 @@ class FwkStrCvt {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __FWK_STR_CVT_HPP__
+
+#endif // APACHE_GEODE_GUARD_596076185d7a905f2040a9113cab41f2

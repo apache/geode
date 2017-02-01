@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_4419550c0ee1c11f3f7580e8ae97f3e4
+#define APACHE_GEODE_GUARD_4419550c0ee1c11f3f7580e8ae97f3e4
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -19,8 +24,6 @@
  * @brief User class for testing the query functionality.
  */
 
-#ifndef __DELTAFASTASSETACT__HPP__
-#define __DELTAFASTASSETACT__HPP__
 
 #include <gfcpp/GeodeCppCache.hpp>
 #include <string.h>
@@ -148,4 +151,5 @@ class TESTOBJECT_EXPORT DeltaFastAssetAccount : public Cacheable, public Delta {
   }
 };
 }  // namespace testobject
-#endif
+
+#endif // APACHE_GEODE_GUARD_4419550c0ee1c11f3f7580e8ae97f3e4

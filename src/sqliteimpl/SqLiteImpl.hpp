@@ -1,5 +1,8 @@
-#ifndef _SqLiteIMPL_HPP__
-#define _SqLiteIMPL_HPP__
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_da3f13342a1583210e9ae3d60d356b5f
+#define APACHE_GEODE_GUARD_da3f13342a1583210e9ae3d60d356b5f
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -137,4 +140,5 @@ class SqLiteImpl : public PersistenceManager {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif  //_SqLiteIMPL_HPP__
+
+#endif // APACHE_GEODE_GUARD_da3f13342a1583210e9ae3d60d356b5f

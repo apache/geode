@@ -1,5 +1,8 @@
-#ifndef __DIFFIEHELLMAN__
-#define __DIFFIEHELLMAN__
+#pragma once
+
+#ifndef GEODE_DIFFIEHELLMAN_H_
+#define GEODE_DIFFIEHELLMAN_H_
+
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -109,4 +112,5 @@ class DiffieHellman {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __DIFFIEHELLMAN__
+
+#endif // GEODE_DIFFIEHELLMAN_H_

@@ -1,5 +1,7 @@
-#ifndef __GEMFIRE_PDXSERIALIZABLE_H__
-#define __GEMFIRE_PDXSERIALIZABLE_H__
+#pragma once
+
+#ifndef GEODE_GFCPP_PDXSERIALIZABLE_H_
+#define GEODE_GFCPP_PDXSERIALIZABLE_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -109,4 +111,4 @@ class CPPCACHE_EXPORT PdxSerializable : public CacheableKey {
 }  // namespace geode
 }  // namespace apache
 
-#endif /* PDXSERIALIZABLE_HPP_ */
+#endif // GEODE_GFCPP_PDXSERIALIZABLE_H_

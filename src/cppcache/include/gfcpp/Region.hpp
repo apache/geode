@@ -1,5 +1,7 @@
-#ifndef __GEMFIRE_REGION_H__
-#define __GEMFIRE_REGION_H__
+#pragma once
+
+#ifndef GEODE_GFCPP_REGION_H_
+#define GEODE_GFCPP_REGION_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -1450,4 +1452,4 @@ class CPPCACHE_EXPORT Region : public SharedBase {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // ifndef __GEMFIRE_REGION_H__
+#endif // GEODE_GFCPP_REGION_H_

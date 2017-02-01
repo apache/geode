@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_450b17d5d954d8270b6906f1510c355c
+#define APACHE_GEODE_GUARD_450b17d5d954d8270b6906f1510c355c
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,8 +20,6 @@
  * limitations under the License.
  */
 
-#ifndef __IpcHandler_hpp__
-#define __IpcHandler_hpp__
 
 #include <ace/SOCK_Stream.h>
 #include <ace/OS.h>
@@ -85,4 +88,5 @@ class IpcHandler {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // __IpcHandler_hpp__
+
+#endif // APACHE_GEODE_GUARD_450b17d5d954d8270b6906f1510c355c

@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_b6cf051f15f6d158175a22b44bbe4b98
+#define APACHE_GEODE_GUARD_b6cf051f15f6d158175a22b44bbe4b98
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,8 +20,6 @@
  * limitations under the License.
  */
 
-#ifndef __TimeSync_hpp__
-#define __TimeSync_hpp__
 
 #include "fwklib/PerfFwk.hpp"
 
@@ -90,4 +93,5 @@ class TimeSync : public ACE_Task_Base {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif  // __TimeSync_hpp__
+
+#endif // APACHE_GEODE_GUARD_b6cf051f15f6d158175a22b44bbe4b98

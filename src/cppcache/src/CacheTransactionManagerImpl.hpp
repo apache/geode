@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_CACHETRANSACTIONMANAGERIMPL_H_
+#define GEODE_CACHETRANSACTIONMANAGERIMPL_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
  *      Author: ankurs
  */
 
-#ifndef CACHETRANSACTIONMANAGERIMPL_H_
-#define CACHETRANSACTIONMANAGERIMPL_H_
 
 #include <gfcpp/CacheTransactionManager.hpp>
 #include <gfcpp/HashSetOfSharedBase.hpp>
@@ -108,4 +111,5 @@ class CacheTransactionManagerImpl
 }  // namespace geode
 }  // namespace apache
 
-#endif /* CACHETRANSACTIONMANAGERIMPL_H_ */
+
+#endif // GEODE_CACHETRANSACTIONMANAGERIMPL_H_

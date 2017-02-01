@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_PDXENUMINSTANTIATOR_H_
+#define GEODE_PDXENUMINSTANTIATOR_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,12 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
-* PdxEnumInstantiator.hpp
-*/
-
-#ifndef _GEMFIRE_PDXENUM_INSTANTIATOR_HPP_
-#define _GEMFIRE_PDXENUM_INSTANTIATOR_HPP_
 
 #include <gfcpp/Serializable.hpp>
 #include <gfcpp/CacheableEnum.hpp>
@@ -54,4 +53,5 @@ class PdxEnumInstantiator : public Serializable {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif /* _GEMFIRE_PDXENUM_INSTANTIATOR_HPP_ */
+
+#endif // GEODE_PDXENUMINSTANTIATOR_H_

@@ -1,7 +1,7 @@
-#ifndef _GEMFIRE_PooledBase_HPP_
-#define _GEMFIRE_PooledBase_HPP_
+#pragma once
 
-// PooledBase.hpp     -*- mode: c++ -*-
+#ifndef GEODE_POOLEDBASE_H_
+#define GEODE_POOLEDBASE_H_
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -61,6 +61,4 @@ class CPPCACHE_EXPORT PooledBase {
 }  // namespace geode
 }  // namespace apache
 
-#endif
-
-// the end...
+#endif // GEODE_POOLEDBASE_H_

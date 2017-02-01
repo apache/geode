@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_d7c8a71cb25b1a2fdc896009aee7509f
+#define APACHE_GEODE_GUARD_d7c8a71cb25b1a2fdc896009aee7509f
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef _SSLIMPL_HPP_INCLUDED_
-#define _SSLIMPL_HPP_INCLUDED_
 
 #include <gfcpp/gf_base.hpp>
 #include "ace/ACE.h"
@@ -56,4 +59,5 @@ CPPCACHE_EXPORT void* gf_create_SslImpl(ACE_SOCKET sock, const char* pubkeyfile,
 CPPCACHE_EXPORT void gf_destroy_SslImpl(void* impl);
 }
 
-#endif  // _SSLIMPL_HPP_INCLUDED_
+
+#endif // APACHE_GEODE_GUARD_d7c8a71cb25b1a2fdc896009aee7509f

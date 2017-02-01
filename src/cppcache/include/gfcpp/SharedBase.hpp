@@ -1,5 +1,7 @@
-#ifndef _GEMFIRE_SHAREDBASE_HPP_
-#define _GEMFIRE_SHAREDBASE_HPP_
+#pragma once
+
+#ifndef GEODE_GFCPP_SHAREDBASE_H_
+#define GEODE_GFCPP_SHAREDBASE_H_
 
 // SharedBase.hpp     -*- mode: c++ -*-
 
@@ -86,4 +88,4 @@ class CPPCACHE_EXPORT NullSharedBase : public SharedBase {
 
 #define NULLPTR ::apache::geode::client::NullSharedBase::s_instancePtr
 
-#endif  //#define _GEMFIRE_SHAREDBASE_HPP_
+#endif // GEODE_GFCPP_SHAREDBASE_H_

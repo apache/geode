@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_66e094f2e630a8aefdce2e4d93340f13
+#define APACHE_GEODE_GUARD_66e094f2e630a8aefdce2e4d93340f13
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
  *      Author: ankurs
  */
 
-#ifndef GFSSL_HPP_
-#define GFSSL_HPP_
 
 #include <ace/INET_Addr.h>
 #include <ace/OS.h>
@@ -39,4 +42,5 @@ class GFSsl {
   virtual void close() = 0;
 };
 
-#endif /* GFSSL_HPP_ */
+
+#endif // APACHE_GEODE_GUARD_66e094f2e630a8aefdce2e4d93340f13

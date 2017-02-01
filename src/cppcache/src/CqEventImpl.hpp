@@ -1,5 +1,8 @@
-#ifndef __GEMFIRE_CQ_EVENT_IMPL_H__
-#define __GEMFIRE_CQ_EVENT_IMPL_H__
+#pragma once
+
+#ifndef GEODE_CQEVENTIMPL_H_
+#define GEODE_CQEVENTIMPL_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -102,4 +105,4 @@ class CqEventImpl : public CqEvent {
 }  // namespace geode
 }  // namespace apache
 
-#endif  // ifndef __GEMFIRE_CQ_EVENT_IMPL_H__
+#endif // GEODE_CQEVENTIMPL_H_

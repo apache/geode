@@ -1,5 +1,8 @@
-#ifndef __GEMFIRE_UTIL_IMPL_HOSTASM_HPP__
-#define __GEMFIRE_UTIL_IMPL_HOSTASM_HPP__
+#pragma once
+
+#ifndef GEODE_HOSTASM_H_
+#define GEODE_HOSTASM_H_
+
 #ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -442,4 +445,5 @@ return true;
 #ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
 #pragma clang diagnostic pop
 #endif
-#endif
+
+#endif // GEODE_HOSTASM_H_

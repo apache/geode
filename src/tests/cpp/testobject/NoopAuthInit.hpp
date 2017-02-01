@@ -1,5 +1,8 @@
-#ifndef __NOOPAUTHINIT__
-#define __NOOPAUTHINIT__
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_c4d769074b0c6edf12cc639d50a34284
+#define APACHE_GEODE_GUARD_c4d769074b0c6edf12cc639d50a34284
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -82,4 +85,5 @@ class NoopAuthInit : public AuthInitialize {
 }  // namespace client
 }  // namespace geode
 }  // namespace apache
-#endif  //__NOOPAUTHINIT__
+
+#endif // APACHE_GEODE_GUARD_c4d769074b0c6edf12cc639d50a34284

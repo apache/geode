@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_THINCLIENTTASKS_C2S2_H_
+#define GEODE_INTEGRATION_TEST_THINCLIENTTASKS_C2S2_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -21,8 +26,6 @@
  *      Author: abhaware
  */
 
-#ifndef THINCLIENTTASKS_C2S2_HPP_
-#define THINCLIENTTASKS_C2S2_HPP_
 
 // define our own names for the 4 test processes
 #define PROCESS1 s1p1
@@ -91,4 +94,5 @@ void startServer() { CALL_TASK(startServerWithLocator); }
 
 void closeLocator() { CALL_TASK(CloseLocator); }
 
-#endif /* THINCLIENTTASKS_C2S2_HPP_ */
+
+#endif // GEODE_INTEGRATION_TEST_THINCLIENTTASKS_C2S2_H_

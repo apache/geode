@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef APACHE_GEODE_GUARD_447d8a867ee02dec66fc5d71c2102d35
+#define APACHE_GEODE_GUARD_447d8a867ee02dec66fc5d71c2102d35
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -53,3 +58,5 @@ class SqLiteHelper {
   int createTable();
   int executePragma(const char* pragmaName, int pragmaValue);
 };
+
+#endif // APACHE_GEODE_GUARD_447d8a867ee02dec66fc5d71c2102d35

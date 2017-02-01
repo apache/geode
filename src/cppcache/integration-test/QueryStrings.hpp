@@ -1,3 +1,8 @@
+#pragma once
+
+#ifndef GEODE_INTEGRATION_TEST_QUERYSTRINGS_H_
+#define GEODE_INTEGRATION_TEST_QUERYSTRINGS_H_
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,8 +19,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef TEST_QUERYSTRINGS_HPP
-#define TEST_QUERYSTRINGS_HPP
 
 #include <cstring>
 
@@ -726,4 +729,5 @@ const int constantExpectedRowsCQRS[1] = {35};
 
 }  // namespace testData
 
-#endif  // TEST_QUERYSTRINGS_HPP
+
+#endif // GEODE_INTEGRATION_TEST_QUERYSTRINGS_H_
