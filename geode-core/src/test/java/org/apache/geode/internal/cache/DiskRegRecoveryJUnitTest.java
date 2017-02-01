@@ -515,7 +515,9 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
   @Test
   public void testNoEvictionDuringRecoveryIfNoGIIRecoverValuesTrue() {
     String oldValue = System.getProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME);
+    String oldLruValue = System.getProperty(DiskStoreImpl.RECOVER_LRU_VALUES_PROPERTY_NAME);
     System.setProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, "true");
+    System.setProperty(DiskStoreImpl.RECOVER_LRU_VALUES_PROPERTY_NAME, "true");
     try {
       diskProps.setDiskDirs(dirs);
       diskProps.setPersistBackup(true);
@@ -559,6 +561,12 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
         System.setProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, oldValue);
       } else {
         System.clearProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME);
+      }
+
+      if (oldLruValue != null) {
+        System.setProperty(DiskStoreImpl.RECOVER_LRU_VALUES_PROPERTY_NAME, oldLruValue);
+      } else {
+        System.clearProperty(DiskStoreImpl.RECOVER_LRU_VALUES_PROPERTY_NAME);
       }
     }
   }

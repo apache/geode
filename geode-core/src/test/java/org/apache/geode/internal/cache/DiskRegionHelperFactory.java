@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache;
 import java.io.File;
 
 import org.apache.geode.cache.*;
+import org.apache.geode.cache.util.ObjectSizer;
 
 /**
  * 
@@ -76,6 +77,9 @@ public class DiskRegionHelperFactory {
       factory.setEvictionAttributes(
           EvictionAttributes.createLRUEntryAttributes(capacity, EvictionAction.OVERFLOW_TO_DISK));
 
+    } else if (diskProps.isHeapEviction()) {
+      factory.setEvictionAttributes(EvictionAttributes.createLRUHeapAttributes(ObjectSizer.DEFAULT,
+          EvictionAction.OVERFLOW_TO_DISK));
     }
 
     factory.setConcurrencyLevel(diskProps.getConcurrencyLevel());
@@ -155,6 +159,28 @@ public class DiskRegionHelperFactory {
     diskRegionProperties.setPersistBackup(true);
     diskRegionProperties.setSynchronous(false);
     diskRegionProperties.setOverflow(true);
+    return getRegion(cache, diskRegionProperties, Scope.LOCAL);
+  }
+
+  public static Region getSyncHeapLruAndPersistRegion(Cache cache,
+      DiskRegionProperties diskRegionProperties) {
+    if (diskRegionProperties == null) {
+      diskRegionProperties = new DiskRegionProperties();
+    }
+    diskRegionProperties.setPersistBackup(true);
+    diskRegionProperties.setSynchronous(true);
+    diskRegionProperties.setHeapEviction(true);
+    return getRegion(cache, diskRegionProperties, Scope.LOCAL);
+  }
+
+  public static Region getAsyncHeapLruAndPersistRegion(Cache cache,
+      DiskRegionProperties diskRegionProperties) {
+    if (diskRegionProperties == null) {
+      diskRegionProperties = new DiskRegionProperties();
+    }
+    diskRegionProperties.setPersistBackup(true);
+    diskRegionProperties.setSynchronous(false);
+    diskRegionProperties.setHeapEviction(true);
     return getRegion(cache, diskRegionProperties, Scope.LOCAL);
   }
 

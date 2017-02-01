@@ -47,11 +47,13 @@ import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.internal.util.TransformUtils;
 import org.apache.geode.pdx.internal.PdxWriterImpl;
+
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+
 import org.apache.logging.log4j.Logger;
 
 import java.io.*;
@@ -2421,6 +2423,24 @@ public final class Oplog implements CompactableOplog, Flushable {
   }
 
   /**
+   * Returns true if the values for the given disk recovery store should be recovered.
+   */
+  private boolean recoverLruValue(DiskRecoveryStore drs) {
+    if (isLruValueRecoveryDisabled(drs)) {
+      return false;
+    } else if (drs.lruLimitExceeded()) {
+      this.stats.incRecoveredValuesSkippedDueToLRU();
+      return false;
+    }
+    return true;
+  }
+
+  private boolean isLruValueRecoveryDisabled(DiskRecoveryStore store) {
+    return !store.getDiskStore().isOffline() && !getParent().RECOVER_LRU_VALUES
+        && !store.getEvictionAttributes().getAlgorithm().isNone();
+  }
+
+  /**
    * Reads an oplog entry of type Create
    * 
    * @param dis DataInputStream from which the oplog is being read
@@ -2465,10 +2485,10 @@ public final class Oplog implements CompactableOplog, Flushable {
         this.stats.incRecoveryRecordsSkipped();
         incSkipped();
       }
-    } else if (recoverValue && drs.lruLimitExceeded() && !getParent().isOfflineCompacting()) {
-      this.stats.incRecoveredValuesSkippedDueToLRU();
-      recoverValue = false;
+    } else if (recoverValue && !getParent().isOfflineCompacting()) {
+      recoverValue = recoverLruValue(drs);
     }
+
     CompactionRecord p2cr = null;
     long crOffset;
     if (EntryBits.isAnyInvalid(userBits) || EntryBits.isTombstone(userBits)) {
@@ -2659,9 +2679,8 @@ public final class Oplog implements CompactableOplog, Flushable {
         incSkipped();
         this.stats.incRecoveryRecordsSkipped();
       }
-    } else if (recoverValue && drs.lruLimitExceeded() && !getParent().isOfflineCompacting()) {
-      this.stats.incRecoveredValuesSkippedDueToLRU();
-      recoverValue = false;
+    } else if (recoverValue && !getParent().isOfflineCompacting()) {
+      recoverValue = recoverLruValue(drs);
     }
 
     byte[] objValue = null;
@@ -2884,9 +2903,8 @@ public final class Oplog implements CompactableOplog, Flushable {
         incSkipped();
         this.stats.incRecoveryRecordsSkipped();
       }
-    } else if (recoverValue && drs.lruLimitExceeded() && !getParent().isOfflineCompacting()) {
-      this.stats.incRecoveredValuesSkippedDueToLRU();
-      recoverValue = false;
+    } else if (recoverValue && !getParent().isOfflineCompacting()) {
+      recoverValue = recoverLruValue(drs);
     }
 
     byte[] objValue = null;
@@ -6176,15 +6194,13 @@ public final class Oplog implements CompactableOplog, Flushable {
 
     HashMap<Long, DiskRegionInfo> targetRegions = new HashMap<Long, DiskRegionInfo>(this.regionMap);
     synchronized (diskRecoveryStores) {
-      // Don't bother to include any stores that have reached the lru limit
       Iterator<DiskRecoveryStore> itr = diskRecoveryStores.values().iterator();
       while (itr.hasNext()) {
         DiskRecoveryStore store = itr.next();
-        if (store.lruLimitExceeded()) {
+        if (isLruValueRecoveryDisabled(store) || store.lruLimitExceeded()) {
           itr.remove();
         }
       }
-
       // Get the a sorted list of live entries from the target regions
       targetRegions.keySet().retainAll(diskRecoveryStores.keySet());
     }

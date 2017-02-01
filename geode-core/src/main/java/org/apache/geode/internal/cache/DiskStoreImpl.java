@@ -124,10 +124,20 @@ public class DiskStoreImpl implements DiskStore {
       DistributionConfig.GEMFIRE_PREFIX + "disk.recoverValues";
   public static final String RECOVER_VALUES_SYNC_PROPERTY_NAME =
       DistributionConfig.GEMFIRE_PREFIX + "disk.recoverValuesSync";
+
+  /**
+   * Allows recovering values for LRU regions. By default values are not recovered for LRU regions
+   * during recovery.
+   */
+  public static final String RECOVER_LRU_VALUES_PROPERTY_NAME =
+      DistributionConfig.GEMFIRE_PREFIX + "disk.recoverLruValues";
+
   boolean RECOVER_VALUES = getBoolean(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, true);
   boolean RECOVER_VALUES_SYNC = getBoolean(DiskStoreImpl.RECOVER_VALUES_SYNC_PROPERTY_NAME, false);
   boolean FORCE_KRF_RECOVERY =
       getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disk.FORCE_KRF_RECOVERY", false);
+  final boolean RECOVER_LRU_VALUES =
+      getBoolean(DiskStoreImpl.RECOVER_LRU_VALUES_PROPERTY_NAME, false);
 
   public static boolean getBoolean(String sysProp, boolean def) {
     return Boolean.valueOf(System.getProperty(sysProp, Boolean.valueOf(def).toString()));

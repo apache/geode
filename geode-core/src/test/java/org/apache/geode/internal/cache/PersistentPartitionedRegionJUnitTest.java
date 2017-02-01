@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache;
 
 import org.apache.geode.cache.*;
+import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.FileUtil;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
@@ -24,9 +25,11 @@ import org.junit.experimental.categories.Category;
 
 import java.io.File;
 import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 @Category(IntegrationTest.class)
 public class PersistentPartitionedRegionJUnitTest {
@@ -190,7 +193,132 @@ public class PersistentPartitionedRegionJUnitTest {
     assertEquals(1000, bucket.getDiskRegion().getStats().getNumEntriesInVM());
   }
 
+  @Test
+  public void testValuesAreNotRecoveredForHeapLruRegions() {
+    createLRURegionAndValidateRecovery(false, true, 10, 0);
+  }
+
+  @Test
+  public void testValuesAreNotRecoveredForHeapLruRegionsWithRegionClose() {
+    createLRURegionAndValidateRecovery(true, true, 10, 0);
+  }
+
+  @Test
+  public void testValuesAreNotRecoveredForHeapLruRegionsWithRecoverPropertySet() {
+    String oldValue = System.getProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME);
+    System.setProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, "true");
+
+    try {
+      createLRURegionAndValidateRecovery(false, true, 10, 0);
+    } finally {
+      if (oldValue != null) {
+        System.setProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, oldValue);
+      } else {
+        System.clearProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME);
+      }
+    }
+  }
+
+  @Test
+  public void testValuesAreRecoveredForHeapLruRegionsWithRecoverValueAndRecoverLruPropertySet() {
+    String oldValue = System.getProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME);
+    System.setProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, "true");
+
+    String lruOldValue = System.getProperty(DiskStoreImpl.RECOVER_LRU_VALUES_PROPERTY_NAME);
+    System.setProperty(DiskStoreImpl.RECOVER_LRU_VALUES_PROPERTY_NAME, "true");
+
+    try {
+      createLRURegionAndValidateRecovery(false, true, 10, 10);
+    } finally {
+      if (oldValue != null) {
+        System.setProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, oldValue);
+      } else {
+        System.clearProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME);
+      }
+      
+      if (lruOldValue != null) {
+        System.setProperty(DiskStoreImpl.RECOVER_LRU_VALUES_PROPERTY_NAME, lruOldValue);
+      } else {
+        System.clearProperty(DiskStoreImpl.RECOVER_LRU_VALUES_PROPERTY_NAME);
+      }
+    }
+  }
+
+  @Test
+  public void testValuesAreNotRecoveredForEntryLruRegion() {
+    createLRURegionAndValidateRecovery(false, false, 10, 0);
+  }
+
+  @Test
+  public void testValuesAreNotRecoveredForEntryLruRegionWithRegionClose() {
+    createLRURegionAndValidateRecovery(true, false, 10, 0);
+  }
+
+  private void createLRURegionAndValidateRecovery(boolean isRegionClose, boolean heapLru, int size, int expectedInMemory) {
+    PartitionedRegion region;
+    boolean entryLru = !heapLru;
+    region = (PartitionedRegion) createRegion(-1, heapLru, entryLru);
+
+    for (int i = 0; i < size; i++) {
+      region.put(new Integer(i), new Integer(i));
+    }
+
+    if (isRegionClose) {
+      region.close();
+    } else {
+      cache.close();
+    }
+
+    final CountDownLatch recoveryDone = new CountDownLatch(1);
+    DiskStoreObserver.setInstance(new DiskStoreObserver() {
+      @Override
+      public void afterAsyncValueRecovery(DiskStoreImpl store) {
+        recoveryDone.countDown();
+      }
+    });
+    region = (PartitionedRegion) createRegion(-1, heapLru, entryLru);
+
+    // Wait for recovery to finish.
+    try {
+      recoveryDone.await();
+    } catch (InterruptedException ie) {
+      fail("Found interrupted exception while waiting for recovery.");
+    }
+
+    int valuesInVm = getValuesInVM(region, size);
+    assertEquals("Values for lru regions should not be recovered from Disk.", expectedInMemory, valuesInVm);
+
+    BucketRegion bucket = region.getBucketRegion("A");
+    assertEquals((size - expectedInMemory), bucket.getDiskRegion().getStats().getNumOverflowOnDisk());
+    assertEquals(expectedInMemory, bucket.getDiskRegion().getStats().getNumEntriesInVM());
+
+    // Load values into memory using get.
+    for (int i = 0; i < size; i++) {
+      region.get(new Integer(i));
+    }
+    assertEquals(size, bucket.getDiskRegion().getStats().getNumEntriesInVM());
+  }
+
+  private int getValuesInVM(Region region, int size) {
+    int valuesInVm = 0;
+    for (int i = 0; i < size; i++) {
+      try {
+        Object value = ((LocalRegion) region).getValueInVM(new Integer(i));
+        if (value != null) {
+          valuesInVm++;
+        }
+      } catch (EntryNotFoundException e) {
+        fail("Entry not found not expected but occured ");
+      }
+    }
+    return valuesInVm;
+  }
+
   private Region createRegion(int ttl) {
+    return createRegion(ttl, false, false);
+  }
+
+  private Region createRegion(int ttl, boolean isHeapEviction, boolean isEntryEviction) {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOG_LEVEL, "info");
@@ -205,6 +333,15 @@ public class PersistentPartitionedRegionJUnitTest {
     if (ttl > 0) {
       rf.setEntryTimeToLive(new ExpirationAttributes(ttl, ExpirationAction.DESTROY));
     }
+
+    if (isEntryEviction) {
+      rf.setEvictionAttributes(
+          EvictionAttributes.createLRUEntryAttributes(10, EvictionAction.OVERFLOW_TO_DISK));
+    } else if (isHeapEviction) {
+      rf.setEvictionAttributes(EvictionAttributes.createLRUHeapAttributes(ObjectSizer.DEFAULT,
+          EvictionAction.OVERFLOW_TO_DISK));
+    }
+
     Region region = rf.create("region");
     return region;
   }

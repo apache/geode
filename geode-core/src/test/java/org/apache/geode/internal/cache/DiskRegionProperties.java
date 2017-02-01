@@ -50,6 +50,7 @@ public class DiskRegionProperties {
   private int initialCapacity = 16;
   private float loadFactor = 0.75f;
   private boolean statisticsEnabled = false;
+  private boolean isHeapEviction = false;
 
   public DiskRegionProperties() {}
 
@@ -64,6 +65,10 @@ public class DiskRegionProperties {
 
   public boolean isOverflow() {
     return isOverflow;
+  }
+
+  public boolean isHeapEviction() {
+    return isHeapEviction;
   }
 
   public boolean isPersistBackup() {
@@ -128,6 +133,10 @@ public class DiskRegionProperties {
     this.isOverflow = isOverflow;
   }
 
+  public void setHeapEviction(boolean isHeapEviction) {
+    this.isHeapEviction = isHeapEviction;
+  }
+
   public void setPersistBackup(boolean isPersistBackup) {
     this.isPersistBackup = isPersistBackup;
   }
@@ -160,16 +169,13 @@ public class DiskRegionProperties {
     this.timeInterval = timeInterval;
   }
 
-
   public String getRegionName() {
     return regionName;
   }
 
-
   public void setRegionName(String regionName) {
     this.regionName = regionName;
   }
-
 
   public void setStatisticsEnabled(boolean v) {
     this.statisticsEnabled = v;
