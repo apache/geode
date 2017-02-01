@@ -5186,7 +5186,14 @@ public final class Oplog implements CompactableOplog, Flushable {
     // flush(olf, true);
   }
 
+  private static final int MAX_CHANNEL_RETRIES = 5;
+
   private final void flush(OplogFile olf, boolean doSync) throws IOException {
+    int flushed;
+    int channelBytesWritten;
+    int numChannelRetries = 0;
+    int bbStartPos;
+    long channelStartPos;
     try {
       synchronized (this.lock/* olf */) {
         if (olf.RAFClosed) {
@@ -5195,9 +5202,27 @@ public final class Oplog implements CompactableOplog, Flushable {
         ByteBuffer bb = olf.writeBuf;
         if (bb != null && bb.position() != 0) {
           bb.flip();
-          int flushed = 0;
+          flushed = 0;
           do {
-            flushed += olf.channel.write(bb);
+            channelBytesWritten = 0;
+            bbStartPos = bb.position();
+            channelStartPos = olf.channel.position();
+            // differentiate between bytes written on this channel.write() iteration and the
+            // total number of bytes written to the channel on this call
+            channelBytesWritten = olf.channel.write(bb);
+            flushed += channelBytesWritten;
+            // Expect channelBytesWritten and the changes in pp.position() and channel.position() to
+            // be the same. If they are not, then the channel.write() silently failed. The following
+            // retry separates spurious failures from permanent channel failures.
+            if (channelBytesWritten != bb.position() - bbStartPos) {
+              if (numChannelRetries++ < MAX_CHANNEL_RETRIES) {
+                // Reset the ByteBuffer position, but take into account anything that did get
+                // written to the channel
+                bb.position(bbStartPos + (int) (olf.channel.position() - channelStartPos));
+              } else {
+                throw new IOException("Failed to write Oplog entry to" + olf.f.getName());
+              }
+            }
           } while (bb.hasRemaining());
           // update bytesFlushed after entire writeBuffer is flushed to fix bug
           // 41201
@@ -5222,6 +5247,11 @@ public final class Oplog implements CompactableOplog, Flushable {
 
   private final void flush(OplogFile olf, ByteBuffer b1, ByteBuffer b2) throws IOException {
     try {
+      long channelStartPos;
+      long expectedWritten;
+      long flushed;
+      int numChannelRetries = 0;
+      boolean retryWrite = false;
       synchronized (this.lock/* olf */) {
         if (olf.RAFClosed) {
           return;
@@ -5229,7 +5259,25 @@ public final class Oplog implements CompactableOplog, Flushable {
         this.bbArray[0] = b1;
         this.bbArray[1] = b2;
         b1.flip();
-        long flushed = olf.channel.write(this.bbArray);
+        int b1StartPos = b1.position();
+        int b2StartPos = b2.position();
+        expectedWritten = b1.limit() - b1StartPos + b2.limit() - b2StartPos;
+        channelStartPos = olf.channel.position();
+
+        do {
+          retryWrite = false;
+          flushed = olf.channel.write(this.bbArray);
+          if (flushed != expectedWritten) {
+            if (numChannelRetries++ < MAX_CHANNEL_RETRIES) {
+              retryWrite = true;
+              olf.channel.position(channelStartPos);
+              b1.position(b1StartPos);
+              b2.position(b2StartPos);
+            } else {
+              throw new IOException("Failed to write Oplog entry to" + olf.f.getName());
+            }
+          }
+        } while (retryWrite);
         this.bbArray[0] = null;
         this.bbArray[1] = null;
         // update bytesFlushed after entire writeBuffer is flushed to fix bug 41201
@@ -6380,6 +6428,18 @@ public final class Oplog implements CompactableOplog, Flushable {
   @Override
   public String toString() {
     return "oplog#" + getOplogId() /* + "DEBUG" + System.identityHashCode(this) */;
+  }
+
+  /**
+   * Method to be used only for testing
+   * 
+   * @param ch Object to replace the channel in the Oplog.crf
+   * @return original channel object
+   */
+  UninterruptibleFileChannel testSetCrfChannel(UninterruptibleFileChannel ch) {
+    UninterruptibleFileChannel chPrev = this.crf.channel;
+    this.crf.channel = ch;
+    return chPrev;
   }
 
   // //////// Methods used during recovery //////////////
