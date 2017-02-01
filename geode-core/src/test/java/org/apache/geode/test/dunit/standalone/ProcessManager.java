@@ -16,6 +16,8 @@ package org.apache.geode.test.dunit.standalone;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 
+import com.jayway.awaitility.Awaitility;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -32,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 
@@ -66,8 +69,7 @@ public class ProcessManager {
   public synchronized void launchVM(String version, int vmNum, boolean bouncedVM)
       throws IOException {
     if (processes.containsKey(vmNum)) {
-      throw new IllegalStateException(
-          "VM " + vmNum + " is already running.");
+      throw new IllegalStateException("VM " + vmNum + " is already running.");
     }
 
     String[] cmd = buildJavaCommand(vmNum, namingPort, version);
@@ -172,7 +174,7 @@ public class ProcessManager {
 
   private String[] buildJavaCommand(int vmNum, int namingPort, String version) {
     String cmd = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
-    String dunitClasspath = System.getProperty("java.class.path");
+    String dunitClasspath = getClasspath();
     String classPath;
     if (!VersionManager.isCurrentVersion(version)) {
       classPath = versionManager.getClasspath(version) + File.pathSeparator + dunitClasspath;
@@ -232,6 +234,21 @@ public class ProcessManager {
     cmds.toArray(rst);
 
     return rst;
+  }
+
+  private String getClasspath() {
+    String classpath = System.getProperty("java.class.path");
+    // Workaround for GEODE-2386
+    long endTime = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
+    while (classpath.contains("gradle-worker.jar") && System.nanoTime() < endTime) {
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        // do nothing
+      }
+      classpath = System.getProperty("java.class.path");
+    }
+    return classpath;
   }
 
   private String removeJREJars(String classpath) {
