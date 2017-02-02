@@ -486,6 +486,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
+  @Category(FlakyTest.class)
   @Test
   public void testSSLEnabledLocatorDiesWhenConnectingToNonSSLLocator() {
     IgnoredException.addIgnoredException("Remote host closed connection during handshake");
