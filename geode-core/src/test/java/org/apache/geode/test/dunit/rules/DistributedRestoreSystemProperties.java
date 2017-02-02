@@ -49,8 +49,10 @@ public class DistributedRestoreSystemProperties extends RestoreSystemProperties
     this.invoker.invokeInEveryVM(new SerializableRunnable() {
       @Override
       public void run() {
-        originalProperties = getProperties();
-        setProperties(new Properties(originalProperties));
+        if (originalProperties == null) {
+          originalProperties = getProperties();
+          setProperties(new Properties(originalProperties));
+        }
       }
     });
   }
@@ -61,8 +63,10 @@ public class DistributedRestoreSystemProperties extends RestoreSystemProperties
     this.invoker.invokeInEveryVM(new SerializableRunnable() {
       @Override
       public void run() {
-        setProperties(originalProperties);
-        originalProperties = null;
+        if (originalProperties != null) {
+          setProperties(originalProperties);
+          originalProperties = null;
+        }
       }
     });
   }
