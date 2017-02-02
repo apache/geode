@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
 import org.apache.logging.log4j.Logger;
@@ -46,7 +47,7 @@ import org.apache.geode.internal.logging.LogService;
  * the coordinator and arguments like region and buckets. It invokes search on the local index and
  * provides a result collector. The locally collected results are sent to the search coordinator.
  */
-public class LuceneFunction extends FunctionAdapter implements InternalEntity {
+public class LuceneFunction implements Function, InternalEntity {
   private static final long serialVersionUID = 1L;
   public static final String ID = LuceneFunction.class.getName();
 

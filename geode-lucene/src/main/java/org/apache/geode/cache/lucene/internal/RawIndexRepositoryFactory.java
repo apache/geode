@@ -33,12 +33,16 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 public class RawIndexRepositoryFactory extends IndexRepositoryFactory {
   public RawIndexRepositoryFactory() {}
 
-  public IndexRepository createIndexRepository(final Integer bucketId, LuceneSerializer serializer,
-      LuceneIndexImpl index, PartitionedRegion userRegion) throws IOException {
+  @Override
+  public IndexRepository computeIndexRepository(final Integer bucketId, LuceneSerializer serializer,
+      LuceneIndexImpl index, PartitionedRegion userRegion, IndexRepository oldRepository)
+      throws IOException {
     final IndexRepository repo;
+    if (oldRepository != null) {
+      oldRepository.cleanup();
+    }
     LuceneRawIndex indexForRaw = (LuceneRawIndex) index;
     BucketRegion dataBucket = getMatchingBucket(userRegion, bucketId);
-
     Directory dir = null;
     if (indexForRaw.withPersistence()) {
       String bucketLocation = LuceneServiceImpl.getUniqueIndexName(index.getName(),

@@ -16,6 +16,7 @@ package org.apache.geode.cache.lucene.internal;
 
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -28,10 +29,12 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.geode.distributed.DistributedLockService;
+import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.internal.cache.BucketAdvisor;
-import org.apache.geode.internal.cache.partitioned.Bucket;
+import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.IndexWriter;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -83,8 +86,16 @@ public class PartitionedRepositoryManagerJUnitTest {
     when(userRegion.getDataStore()).thenReturn(userDataStore);
     when(cache.getRegion("/testRegion")).thenReturn(userRegion);
     serializer = new HeterogeneousLuceneSerializer(new String[] {"a", "b"});
-
+    DLockService lockService = mock(DLockService.class);
+    when(lockService.lock(any(), anyLong(), anyLong())).thenReturn(true);
+    DLockService.addLockServiceForTests(PartitionedRegionHelper.PARTITION_LOCK_SERVICE_NAME,
+        lockService);
     createIndexAndRepoManager();
+  }
+
+  @After
+  public void tearDown() {
+    DLockService.removeLockServiceForTests(PartitionedRegionHelper.PARTITION_LOCK_SERVICE_NAME);
   }
 
   protected void createIndexAndRepoManager() {
@@ -250,11 +261,8 @@ public class PartitionedRepositoryManagerJUnitTest {
     dataBuckets.put(id, mockBucket);
 
     BucketAdvisor mockBucketAdvisor = Mockito.mock(BucketAdvisor.class);
-    DistributedLockService lockService = Mockito.mock(DistributedLockService.class);
-    when(fileBucket.getLockService()).thenReturn(lockService);
     when(fileBucket.getBucketAdvisor()).thenReturn(mockBucketAdvisor);
     when(mockBucketAdvisor.isPrimary()).thenReturn(true);
-    repoManager.createRepository(mockBucket.getId());
     return mockBucket;
   }
 }

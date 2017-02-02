@@ -18,10 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.Region;
@@ -90,21 +87,14 @@ public abstract class AbstractPartitionedRepositoryManager implements Repository
     return repos;
   }
 
-  public abstract IndexRepository createOneIndexRepository(final Integer bucketId,
-      LuceneSerializer serializer, LuceneIndexImpl index, PartitionedRegion userRegion)
-      throws IOException;
+  public abstract IndexRepository computeRepository(final Integer bucketId,
+      LuceneSerializer serializer, LuceneIndexImpl index, PartitionedRegion userRegion,
+      IndexRepository oldRepository) throws IOException;
 
-  protected IndexRepository createRepository(Integer bucketId) throws BucketNotFoundException {
+  protected IndexRepository computeRepository(Integer bucketId) throws BucketNotFoundException {
     IndexRepository repo = indexRepositories.compute(bucketId, (key, oldRepository) -> {
-      if (oldRepository != null && !oldRepository.isClosed()) {
-        return oldRepository;
-      }
-      if (oldRepository != null) {
-        oldRepository.cleanup();
-      }
-
       try {
-        return createOneIndexRepository(bucketId, serializer, index, userRegion);
+        return computeRepository(bucketId, serializer, index, userRegion, oldRepository);
       } catch (IOException e) {
         throw new InternalGemFireError("Unable to create index repository", e);
       }
@@ -122,14 +112,12 @@ public abstract class AbstractPartitionedRepositoryManager implements Repository
       return repo;
     }
 
-    throw new BucketNotFoundException(
-        "Colocated index buckets not found for bucket id " + bucketId);
-  }
+    repo = computeRepository(bucketId);
 
-  protected void cleanRepository(Integer bucketId) throws BucketNotFoundException {
-    IndexRepository repo = indexRepositories.remove(bucketId);
-    if (repo != null) {
-      repo.cleanup();
+    if (repo == null) {
+      throw new BucketNotFoundException(
+          "Unable to create lucene index because no longer primary for bucket " + bucketId);
     }
+    return repo;
   }
 }

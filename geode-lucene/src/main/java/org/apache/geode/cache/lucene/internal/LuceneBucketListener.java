@@ -14,8 +14,6 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
-import org.apache.geode.GemFireException;
-import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.partition.PartitionListenerAdapter;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.internal.cache.BucketNotFoundException;
@@ -37,7 +35,7 @@ public class LuceneBucketListener extends PartitionListenerAdapter {
   public void afterPrimary(int bucketId) {
     dm.getWaitingThreadPool().execute(() -> {
       try {
-        lucenePartitionRepositoryManager.createRepository(bucketId);
+        lucenePartitionRepositoryManager.computeRepository(bucketId);
       } catch (BucketNotFoundException e) {
         logger.warn(
             "Index repository could not be created when index chunk region bucket became primary. "
@@ -54,7 +52,7 @@ public class LuceneBucketListener extends PartitionListenerAdapter {
   public void afterSecondary(int bucketId) {
     dm.getWaitingThreadPool().execute(() -> {
       try {
-        lucenePartitionRepositoryManager.cleanRepository(bucketId);
+        lucenePartitionRepositoryManager.computeRepository(bucketId);
       } catch (Exception e) {
         logger.warn("Exception while cleaning up Lucene Index Repository", e);
       }

@@ -44,7 +44,6 @@ import org.apache.logging.log4j.Logger;
 
 public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
   Logger logger = LogService.getLogger();
-  private final static int MAX_TRIES = 500;
 
   private int limit = LuceneQueryFactory.DEFAULT_LIMIT;
   private int pageSize = LuceneQueryFactory.DEFAULT_PAGESIZE;
@@ -108,24 +107,18 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
 
     // TODO provide a timeout to the user?
     TopEntries<K> entries = null;
-    int numTries = 0;
-    while (entries == null && numTries++ < MAX_TRIES) {
-      try {
-        TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(context);
-        ResultCollector<TopEntriesCollector, TopEntries<K>> rc =
-            (ResultCollector<TopEntriesCollector, TopEntries<K>>) onRegion().withArgs(context)
-                .withCollector(collector).execute(LuceneFunction.ID);
-        entries = rc.getResult();
-      } catch (FunctionException e) {
-        if (e.getCause() instanceof LuceneQueryException) {
-          throw new LuceneQueryException(e);
-        } else if (e.getCause() instanceof BucketNotFoundException) {
-          logger.debug("Retrying due to index on bucket not found:" + e);
-          // throw e;
-        } else {
-          e.printStackTrace();
-          throw e;
-        }
+    try {
+      TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(context);
+      ResultCollector<TopEntriesCollector, TopEntries<K>> rc =
+          (ResultCollector<TopEntriesCollector, TopEntries<K>>) onRegion().withArgs(context)
+              .withCollector(collector).execute(LuceneFunction.ID);
+      entries = rc.getResult();
+    } catch (FunctionException e) {
+      if (e.getCause() instanceof LuceneQueryException) {
+        throw new LuceneQueryException(e);
+      } else {
+        e.printStackTrace();
+        throw e;
       }
     }
     return entries;

@@ -40,27 +40,40 @@ public class IndexRepositoryFactory {
 
   public IndexRepositoryFactory() {}
 
-  public IndexRepository createIndexRepository(final Integer bucketId, LuceneSerializer serializer,
-      LuceneIndexImpl index, PartitionedRegion userRegion) throws IOException {
-    final IndexRepository repo;
+  public IndexRepository computeIndexRepository(final Integer bucketId, LuceneSerializer serializer,
+      LuceneIndexImpl index, PartitionedRegion userRegion, final IndexRepository oldRepository)
+      throws IOException {
     LuceneIndexForPartitionedRegion indexForPR = (LuceneIndexForPartitionedRegion) index;
     BucketRegion fileBucket = getMatchingBucket(indexForPR.getFileRegion(), bucketId);
     BucketRegion chunkBucket = getMatchingBucket(indexForPR.getChunkRegion(), bucketId);
     BucketRegion dataBucket = getMatchingBucket(userRegion, bucketId);
     boolean success = false;
     if (fileBucket == null || chunkBucket == null) {
+      oldRepository.cleanup();
       return null;
     }
     if (!fileBucket.getBucketAdvisor().isPrimary()) {
-      throw new IOException("Not creating the index because we are not the primary");
+      oldRepository.cleanup();
+      return null;
     }
-    DistributedLockService lockService =
-        DistributedLockService.getServiceNamed(PartitionedRegionHelper.PARTITION_LOCK_SERVICE_NAME);
-    String lockName = FILE_REGION_LOCK_FOR_BUCKET_ID + fileBucket.getFullPath() + bucketId;
-    if (lockService != null) {
-      // lockService will be null for testing at this point
-      lockService.lock(lockName, -1, -1);
+
+    if (oldRepository != null && !oldRepository.isClosed()) {
+      return oldRepository;
     }
+
+    if (oldRepository != null && oldRepository.isClosed()) {
+      oldRepository.cleanup();
+    }
+    DistributedLockService lockService = getLockService();
+    String lockName = getLockName(bucketId, fileBucket);
+    while (!lockService.lock(lockName, 100, -1)) {
+      if (!fileBucket.getBucketAdvisor().isPrimary()) {
+        return null;
+      }
+    }
+
+
+    final IndexRepository repo;
     try {
       RegionDirectory dir =
           new RegionDirectory(fileBucket, chunkBucket, indexForPR.getFileSystemStats());
@@ -72,12 +85,19 @@ public class IndexRepositoryFactory {
       return repo;
     } finally {
       if (!success) {
-        if (lockService != null) {
-          lockService.unlock(lockName);
-        }
+        lockService.unlock(lockName);
       }
     }
 
+  }
+
+  private String getLockName(final Integer bucketId, final BucketRegion fileBucket) {
+    return FILE_REGION_LOCK_FOR_BUCKET_ID + fileBucket.getFullPath() + bucketId;
+  }
+
+  private DistributedLockService getLockService() {
+    return DistributedLockService
+        .getServiceNamed(PartitionedRegionHelper.PARTITION_LOCK_SERVICE_NAME);
   }
 
   /**
