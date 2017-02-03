@@ -22,6 +22,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.Stack;
 import java.util.zip.ZipEntry;
@@ -32,51 +35,36 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 /****
- * Utilities class to zip/unzip folder
+ * Utilities class to zip/unzip directory
  *
  */
 public class ZipUtils {
 
-  public static void zip(String sourceFolderPath, String targetFilePath) throws Exception {
-    File sourceFolder = new File(sourceFolderPath);
-    File targetFile = new File(targetFilePath);
-
-    if (!sourceFolder.exists()) {
-      throw new Exception("Source folder does not exist");
-    }
-
-    FileOutputStream fos = new FileOutputStream(targetFile);
-    ZipOutputStream zos = new ZipOutputStream(fos);
-    URI baseURI = sourceFolder.toURI();
-
-    Stack<File> fileStack = new Stack<File>();
-    fileStack.push(sourceFolder);
-
-    while (!fileStack.isEmpty()) {
-      File directory = fileStack.pop();
-
-      for (File child : directory.listFiles()) {
-        String name = baseURI.relativize(child.toURI()).getPath();
-
-        if (child.isDirectory()) {
-          fileStack.push(child);
-          zos.putNextEntry(new ZipEntry(name));
-        } else {
-          if (!name.endsWith("zip")) {
-            ZipEntry zipEntry = new ZipEntry(name);
-            zos.putNextEntry(zipEntry);
-            InputStream in = new FileInputStream(child);
-            IOUtils.copy(in, zos);
-            IOUtils.closeQuietly(in);
-          }
+  public static void zipDirectory(Path sourceDirectory, Path targetFile) throws IOException {
+    Path p = Files.createFile(targetFile);
+    try (ZipOutputStream zs = new ZipOutputStream(Files.newOutputStream(p))) {
+      Files.walk(sourceDirectory).filter(path -> !Files.isDirectory(path)).forEach(path -> {
+        ZipEntry zipEntry = new ZipEntry(sourceDirectory.relativize(path).toString());
+        try {
+          zs.putNextEntry(zipEntry);
+          zs.write(Files.readAllBytes(path));
+          zs.closeEntry();
+        } catch (Exception e) {
+          throw new RuntimeException("Unable to write zip file", e);
         }
-      }
+      });
     }
-    IOUtils.closeQuietly(zos);
   }
 
+  public static void zipDirectory(String sourceDirectoryPath, String targetFilePath)
+      throws IOException {
+    Path sourceDirectory = Paths.get(sourceDirectoryPath);
+    Path targetFile = Paths.get(targetFilePath);
 
-  public static void unzip(String zipFilePath, String outputFolderPath) throws IOException {
+    zipDirectory(sourceDirectory, targetFile);
+  }
+
+  public static void unzip(String zipFilePath, String outputDirectoryPath) throws IOException {
     ZipFile zipFile = new ZipFile(zipFilePath);
     @SuppressWarnings("unchecked")
     Enumeration<ZipEntry> zipEntries = (Enumeration<ZipEntry>) zipFile.entries();
@@ -84,7 +72,7 @@ public class ZipUtils {
     try {
       while (zipEntries.hasMoreElements()) {
         ZipEntry zipEntry = zipEntries.nextElement();
-        String fileName = outputFolderPath + File.separator + zipEntry.getName();
+        String fileName = outputDirectoryPath + File.separator + zipEntry.getName();
 
         if (zipEntry.isDirectory()) {
           FileUtils.forceMkdir(new File(fileName));
