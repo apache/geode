@@ -22,7 +22,7 @@
 #include "gf_defs.hpp"
 #include <gfcpp/CacheableBuiltins.hpp>
 #include "Serializable.hpp"
-#include "GemFireClassIds.hpp"
+#include "GeodeClassIds.hpp"
 #include "CacheableString.hpp"
 
 using namespace System;
@@ -58,10 +58,10 @@ namespace Apache
         inline static CacheableStringArray^ Create(array<String^>^ strings)
         {
           return (strings != nullptr && strings->Length > 0 ?
-            gcnew CacheableStringArray(strings) : nullptr);
+                  gcnew CacheableStringArray(strings) : nullptr);
         }
-        
-         /// <summary>
+
+        /// <summary>
         /// Serializes this managed object.
         /// </summary>
         /// <param name="output">
@@ -90,7 +90,7 @@ namespace Apache
         {
           virtual uint32_t get() override
           {
-            return GemFireClassIds::CacheableStringArray;
+            return GeodeClassIds::CacheableStringArray;
           }
         }
 
@@ -101,12 +101,12 @@ namespace Apache
         {
           virtual uint32_t get() override
           {
-            int size = 0; 
-            for( int i = 0; i < m_value->Length; i++ )
+            int size = 0;
+            for (int i = 0; i < m_value->Length; i++)
             {
               size += m_value[i]->Length;
             }
-            return (uint32_t) (size + sizeof(this));
+            return (uint32_t)(size + sizeof(this));
           }
 
         }
@@ -155,7 +155,7 @@ namespace Apache
         static IGFSerializable^ Create(apache::geode::client::Serializable* obj)
         {
           return (obj != nullptr ?
-            gcnew CacheableStringArray(obj) : nullptr);
+                  gcnew CacheableStringArray(obj) : nullptr);
         }
 
       private:
@@ -170,8 +170,8 @@ namespace Apache
 
 
         inline CacheableStringArray()
-          : Serializable() 
-        { 
+          : Serializable()
+        {
           //apache::geode::client::Serializable* sp = apache::geode::client::CacheableStringArray::createDeserializable();
           //SetSP(sp);
         }

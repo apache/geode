@@ -176,8 +176,7 @@ namespace Apache
 
         NativePtr->setCacheWriter( mg_libpath.CharPtr,
           mg_factoryFunctionName.CharPtr );
+      }
     }  // namespace Client
   }  // namespace Geode
 }  // namespace Apache
-
- } //namespace 

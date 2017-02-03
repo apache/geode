@@ -32,8 +32,8 @@ namespace Apache
     {
 
       /// <summary>
-      /// GemFireCache represents the singleton cache that must be created
-      /// in order to connect to Gemfire server.
+      /// GeodeCache represents the singleton cache that must be created
+      /// in order to connect to Geode server.
       /// </summary>
       /// <remarks>
       /// Caches are obtained from Crest methods on the
@@ -49,10 +49,10 @@ namespace Apache
       /// A cache can have multiple root regions, each with a different name.
       /// </para>
       /// </remarks>
-      public interface class IGemFireCache : IRegionService
+      public interface class IGeodeCache : IRegionService
       {
-      public:        
-        
+      public:
+
         /// <summary>
         /// Returns the name of this cache.
         /// </summary>
@@ -63,14 +63,14 @@ namespace Apache
         /// <returns>the string name of this cache</returns>
         property String^ Name
         {
-          String^ get( );
+          String^ get();
         }
 
         /// <summary>
         /// Initializes the cache from an XML file.
         /// </summary>
         /// <param name="cacheXml">pathname of a <c>cache.xml</c> file</param>
-        void InitializeDeclarativeCache( String^ cacheXml );
+        void InitializeDeclarativeCache(String^ cacheXml);
 
         /// <summary>
         /// Returns the distributed system used to
@@ -82,8 +82,8 @@ namespace Apache
         /// </remarks>
         property DistributedSystem^ DistributedSystem
         {
-          Apache::Geode::Client::DistributedSystem^ get( );
-        } 
+          Apache::Geode::Client::DistributedSystem^ get();
+        }
 
         /// <summary>
         /// Returns the cache transaction manager of
@@ -91,13 +91,13 @@ namespace Apache
         /// </summary>
         property Apache::Geode::Client::CacheTransactionManager^ CacheTransactionManager
         {
-          Apache::Geode::Client::CacheTransactionManager^ get( );
+          Apache::Geode::Client::CacheTransactionManager^ get();
         }
 
-				///<summary>
-				/// Returns whether Cache saves unread fields for Pdx types.
-				///</summary>
-				bool GetPdxIgnoreUnreadFields();
+        ///<summary>
+        /// Returns whether Cache saves unread fields for Pdx types.
+        ///</summary>
+        bool GetPdxIgnoreUnreadFields();
 
         ///<summary>
         /// Returns whether { @link PdxInstance} is preferred for PDX types instead of .NET object.

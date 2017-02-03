@@ -28,7 +28,7 @@ namespace Apache
     namespace Client
     {
 
-			 interface class IGFSerializable;
+      interface class IGFSerializable;
       /*
       generic<class TKey>
       ref class ResultCollector;
@@ -45,33 +45,33 @@ namespace Apache
         /// <summary>
         /// add result from a single function execution
         /// </summary>
-        void AddResult(  TResult rs );
+        void AddResult(TResult rs);
 
         /// <summary>
         /// get result 
         /// </summary>
-        System::Collections::Generic::ICollection<TResult>^  GetResult(); 
+        System::Collections::Generic::ICollection<TResult>^  GetResult();
 
         /// <summary>
         /// get result 
         /// </summary>
-        System::Collections::Generic::ICollection<TResult>^  GetResult(UInt32 timeout); 
+        System::Collections::Generic::ICollection<TResult>^  GetResult(UInt32 timeout);
 
         /// <summary>
         ///Call back provided to caller, which is called after function execution is
         ///complete and caller can retrieve results using getResult()
         /// </summary>
-  //generic<class TKey>
-	void EndResults(); 
+        //generic<class TKey>
+        void EndResults();
 
-  /// <summary>
-  ///GemFire will invoke this method before re-executing function (in case of
-  /// Function Execution HA) This is to clear the previous execution results from
-   /// the result collector
-  /// @since 6.5
-  /// </summary>
-  //generic<class TKey>
-  void ClearResults(/*bool*/);
+        /// <summary>
+        ///Geode will invoke this method before re-executing function (in case of
+        /// Function Execution HA) This is to clear the previous execution results from
+        /// the result collector
+        /// @since 6.5
+        /// </summary>
+        //generic<class TKey>
+        void ClearResults(/*bool*/);
 
       };
     }  // namespace Client

@@ -360,7 +360,7 @@ namespace Apache.Geode.Client.UnitTests
 
     public override int GetHashCode()
     {
-      return m_first.GetHashCode() ;
+      return m_first.GetHashCode();
     }
 
     #region IPdxSerializable Members
@@ -372,7 +372,7 @@ namespace Apache.Geode.Client.UnitTests
     }
 
     public void ToData(IPdxWriter writer)
-    {      
+    {
       writer.WriteInt("m_first", m_first);
       writer.MarkIdentityField("m_first");
       writer.WriteLong("m_second", m_second);
@@ -380,9 +380,9 @@ namespace Apache.Geode.Client.UnitTests
 
     #endregion
 
-   
 
-    
+
+
   };
 
   public class OtherType : IGFSerializable
@@ -393,12 +393,12 @@ namespace Apache.Geode.Client.UnitTests
     public enum ExceptionType
     {
       None,
-      Gemfire,
+      Geode,
       System,
       // below are with inner exceptions
-      GemfireGemfire,
-      GemfireSystem,
-      SystemGemfire,
+      GeodeGeode,
+      GeodeSystem,
+      SystemGeode,
       SystemSystem
     }
 
@@ -447,17 +447,17 @@ namespace Apache.Geode.Client.UnitTests
       {
         case ExceptionType.None:
           break;
-        case ExceptionType.Gemfire:
+        case ExceptionType.Geode:
           throw new GemFireIOException("Throwing an exception");
         case ExceptionType.System:
           throw new IOException("Throwing an exception");
-        case ExceptionType.GemfireGemfire:
+        case ExceptionType.GeodeGeode:
           throw new GemFireIOException("Throwing an exception with inner " +
             "exception", new CacheServerException("This is an inner exception"));
-        case ExceptionType.GemfireSystem:
+        case ExceptionType.GeodeSystem:
           throw new CacheServerException("Throwing an exception with inner " +
             "exception", new IOException("This is an inner exception"));
-        case ExceptionType.SystemGemfire:
+        case ExceptionType.SystemGeode:
           throw new ApplicationException("Throwing an exception with inner " +
             "exception", new CacheServerException("This is an inner exception"));
         case ExceptionType.SystemSystem:
@@ -475,17 +475,17 @@ namespace Apache.Geode.Client.UnitTests
       {
         case ExceptionType.None:
           break;
-        case ExceptionType.Gemfire:
+        case ExceptionType.Geode:
           throw new GemFireIOException("Throwing an exception");
         case ExceptionType.System:
           throw new IOException("Throwing an exception");
-        case ExceptionType.GemfireGemfire:
+        case ExceptionType.GeodeGeode:
           throw new GemFireIOException("Throwing an exception with inner " +
             "exception", new CacheServerException("This is an inner exception"));
-        case ExceptionType.GemfireSystem:
+        case ExceptionType.GeodeSystem:
           throw new CacheServerException("Throwing an exception with inner " +
             "exception", new IOException("This is an inner exception"));
-        case ExceptionType.SystemGemfire:
+        case ExceptionType.SystemGeode:
           throw new ApplicationException("Throwing an exception with inner " +
             "exception", new CacheServerException("This is an inner exception"));
         case ExceptionType.SystemSystem:
@@ -521,7 +521,7 @@ namespace Apache.Geode.Client.UnitTests
     {
       return m_struct.First.GetHashCode() ^ m_struct.Second.GetHashCode();
     }
-    
+
     public override bool Equals(object obj)
     {
       OtherType ot = obj as OtherType;
@@ -541,15 +541,15 @@ namespace Apache.Geode.Client.UnitTests
     public enum ExceptionType
     {
       None,
-      Gemfire,
+      Geode,
       System,
       // below are with inner exceptions
-      GemfireGemfire,
-      GemfireSystem,
-      SystemGemfire,
+      GeodeGeode,
+      GeodeSystem,
+      SystemGeode,
       SystemSystem
     }
-    
+
     public OtherType2()
     {
       m_exType = ExceptionType.None;
@@ -595,17 +595,17 @@ namespace Apache.Geode.Client.UnitTests
       {
         case ExceptionType.None:
           break;
-        case ExceptionType.Gemfire:
+        case ExceptionType.Geode:
           throw new GemFireIOException("Throwing an exception");
         case ExceptionType.System:
           throw new IOException("Throwing an exception");
-        case ExceptionType.GemfireGemfire:
+        case ExceptionType.GeodeGeode:
           throw new GemFireIOException("Throwing an exception with inner " +
             "exception", new CacheServerException("This is an inner exception"));
-        case ExceptionType.GemfireSystem:
+        case ExceptionType.GeodeSystem:
           throw new CacheServerException("Throwing an exception with inner " +
             "exception", new IOException("This is an inner exception"));
-        case ExceptionType.SystemGemfire:
+        case ExceptionType.SystemGeode:
           throw new ApplicationException("Throwing an exception with inner " +
             "exception", new CacheServerException("This is an inner exception"));
         case ExceptionType.SystemSystem:
@@ -623,17 +623,17 @@ namespace Apache.Geode.Client.UnitTests
       {
         case ExceptionType.None:
           break;
-        case ExceptionType.Gemfire:
+        case ExceptionType.Geode:
           throw new GemFireIOException("Throwing an exception");
         case ExceptionType.System:
           throw new IOException("Throwing an exception");
-        case ExceptionType.GemfireGemfire:
+        case ExceptionType.GeodeGeode:
           throw new GemFireIOException("Throwing an exception with inner " +
             "exception", new CacheServerException("This is an inner exception"));
-        case ExceptionType.GemfireSystem:
+        case ExceptionType.GeodeSystem:
           throw new CacheServerException("Throwing an exception with inner " +
             "exception", new IOException("This is an inner exception"));
-        case ExceptionType.SystemGemfire:
+        case ExceptionType.SystemGeode:
           throw new ApplicationException("Throwing an exception with inner " +
             "exception", new CacheServerException("This is an inner exception"));
         case ExceptionType.SystemSystem:
@@ -690,12 +690,12 @@ namespace Apache.Geode.Client.UnitTests
     public enum ExceptionType
     {
       None,
-      Gemfire,
+      Geode,
       System,
       // below are with inner exceptions
-      GemfireGemfire,
-      GemfireSystem,
-      SystemGemfire,
+      GeodeGeode,
+      GeodeSystem,
+      SystemGeode,
       SystemSystem
     }
 
@@ -744,17 +744,17 @@ namespace Apache.Geode.Client.UnitTests
       {
         case ExceptionType.None:
           break;
-        case ExceptionType.Gemfire:
+        case ExceptionType.Geode:
           throw new GemFireIOException("Throwing an exception");
         case ExceptionType.System:
           throw new IOException("Throwing an exception");
-        case ExceptionType.GemfireGemfire:
+        case ExceptionType.GeodeGeode:
           throw new GemFireIOException("Throwing an exception with inner " +
             "exception", new CacheServerException("This is an inner exception"));
-        case ExceptionType.GemfireSystem:
+        case ExceptionType.GeodeSystem:
           throw new CacheServerException("Throwing an exception with inner " +
             "exception", new IOException("This is an inner exception"));
-        case ExceptionType.SystemGemfire:
+        case ExceptionType.SystemGeode:
           throw new ApplicationException("Throwing an exception with inner " +
             "exception", new CacheServerException("This is an inner exception"));
         case ExceptionType.SystemSystem:
@@ -772,17 +772,17 @@ namespace Apache.Geode.Client.UnitTests
       {
         case ExceptionType.None:
           break;
-        case ExceptionType.Gemfire:
+        case ExceptionType.Geode:
           throw new GemFireIOException("Throwing an exception");
         case ExceptionType.System:
           throw new IOException("Throwing an exception");
-        case ExceptionType.GemfireGemfire:
+        case ExceptionType.GeodeGeode:
           throw new GemFireIOException("Throwing an exception with inner " +
             "exception", new CacheServerException("This is an inner exception"));
-        case ExceptionType.GemfireSystem:
+        case ExceptionType.GeodeSystem:
           throw new CacheServerException("Throwing an exception with inner " +
             "exception", new IOException("This is an inner exception"));
-        case ExceptionType.SystemGemfire:
+        case ExceptionType.SystemGeode:
           throw new ApplicationException("Throwing an exception with inner " +
             "exception", new CacheServerException("This is an inner exception"));
         case ExceptionType.SystemSystem:
@@ -838,12 +838,12 @@ namespace Apache.Geode.Client.UnitTests
     public enum ExceptionType
     {
       None,
-      Gemfire,
+      Geode,
       System,
       // below are with inner exceptions
-      GemfireGemfire,
-      GemfireSystem,
-      SystemGemfire,
+      GeodeGeode,
+      GeodeSystem,
+      SystemGeode,
       SystemSystem
     }
 
@@ -892,17 +892,17 @@ namespace Apache.Geode.Client.UnitTests
       {
         case ExceptionType.None:
           break;
-        case ExceptionType.Gemfire:
+        case ExceptionType.Geode:
           throw new GemFireIOException("Throwing an exception");
         case ExceptionType.System:
           throw new IOException("Throwing an exception");
-        case ExceptionType.GemfireGemfire:
+        case ExceptionType.GeodeGeode:
           throw new GemFireIOException("Throwing an exception with inner " +
             "exception", new CacheServerException("This is an inner exception"));
-        case ExceptionType.GemfireSystem:
+        case ExceptionType.GeodeSystem:
           throw new CacheServerException("Throwing an exception with inner " +
             "exception", new IOException("This is an inner exception"));
-        case ExceptionType.SystemGemfire:
+        case ExceptionType.SystemGeode:
           throw new ApplicationException("Throwing an exception with inner " +
             "exception", new CacheServerException("This is an inner exception"));
         case ExceptionType.SystemSystem:
@@ -920,17 +920,17 @@ namespace Apache.Geode.Client.UnitTests
       {
         case ExceptionType.None:
           break;
-        case ExceptionType.Gemfire:
+        case ExceptionType.Geode:
           throw new GemFireIOException("Throwing an exception");
         case ExceptionType.System:
           throw new IOException("Throwing an exception");
-        case ExceptionType.GemfireGemfire:
+        case ExceptionType.GeodeGeode:
           throw new GemFireIOException("Throwing an exception with inner " +
             "exception", new CacheServerException("This is an inner exception"));
-        case ExceptionType.GemfireSystem:
+        case ExceptionType.GeodeSystem:
           throw new CacheServerException("Throwing an exception with inner " +
             "exception", new IOException("This is an inner exception"));
-        case ExceptionType.SystemGemfire:
+        case ExceptionType.SystemGeode:
           throw new ApplicationException("Throwing an exception with inner " +
             "exception", new CacheServerException("This is an inner exception"));
         case ExceptionType.SystemSystem:
@@ -987,12 +987,12 @@ namespace Apache.Geode.Client.UnitTests
     public enum ExceptionType
     {
       None,
-      Gemfire,
+      Geode,
       System,
       // below are with inner exceptions
-      GemfireGemfire,
-      GemfireSystem,
-      SystemGemfire,
+      GeodeGeode,
+      GeodeSystem,
+      SystemGeode,
       SystemSystem
     }
 
@@ -1041,17 +1041,17 @@ namespace Apache.Geode.Client.UnitTests
       {
         case ExceptionType.None:
           break;
-        case ExceptionType.Gemfire:
+        case ExceptionType.Geode:
           throw new GemFireIOException("Throwing an exception");
         case ExceptionType.System:
           throw new IOException("Throwing an exception");
-        case ExceptionType.GemfireGemfire:
+        case ExceptionType.GeodeGeode:
           throw new GemFireIOException("Throwing an exception with inner " +
             "exception", new CacheServerException("This is an inner exception"));
-        case ExceptionType.GemfireSystem:
+        case ExceptionType.GeodeSystem:
           throw new CacheServerException("Throwing an exception with inner " +
             "exception", new IOException("This is an inner exception"));
-        case ExceptionType.SystemGemfire:
+        case ExceptionType.SystemGeode:
           throw new ApplicationException("Throwing an exception with inner " +
             "exception", new CacheServerException("This is an inner exception"));
         case ExceptionType.SystemSystem:
@@ -1069,17 +1069,17 @@ namespace Apache.Geode.Client.UnitTests
       {
         case ExceptionType.None:
           break;
-        case ExceptionType.Gemfire:
+        case ExceptionType.Geode:
           throw new GemFireIOException("Throwing an exception");
         case ExceptionType.System:
           throw new IOException("Throwing an exception");
-        case ExceptionType.GemfireGemfire:
+        case ExceptionType.GeodeGeode:
           throw new GemFireIOException("Throwing an exception with inner " +
             "exception", new CacheServerException("This is an inner exception"));
-        case ExceptionType.GemfireSystem:
+        case ExceptionType.GeodeSystem:
           throw new CacheServerException("Throwing an exception with inner " +
             "exception", new IOException("This is an inner exception"));
-        case ExceptionType.SystemGemfire:
+        case ExceptionType.SystemGeode:
           throw new ApplicationException("Throwing an exception with inner " +
             "exception", new CacheServerException("This is an inner exception"));
         case ExceptionType.SystemSystem:
@@ -1136,12 +1136,12 @@ namespace Apache.Geode.Client.UnitTests
     public enum ExceptionType
     {
       None,
-      Gemfire,
+      Geode,
       System,
       // below are with inner exceptions
-      GemfireGemfire,
-      GemfireSystem,
-      SystemGemfire,
+      GeodeGeode,
+      GeodeSystem,
+      SystemGeode,
       SystemSystem
     }
 
@@ -1190,17 +1190,17 @@ namespace Apache.Geode.Client.UnitTests
       {
         case ExceptionType.None:
           break;
-        case ExceptionType.Gemfire:
+        case ExceptionType.Geode:
           throw new GemFireIOException("Throwing an exception");
         case ExceptionType.System:
           throw new IOException("Throwing an exception");
-        case ExceptionType.GemfireGemfire:
+        case ExceptionType.GeodeGeode:
           throw new GemFireIOException("Throwing an exception with inner " +
             "exception", new CacheServerException("This is an inner exception"));
-        case ExceptionType.GemfireSystem:
+        case ExceptionType.GeodeSystem:
           throw new CacheServerException("Throwing an exception with inner " +
             "exception", new IOException("This is an inner exception"));
-        case ExceptionType.SystemGemfire:
+        case ExceptionType.SystemGeode:
           throw new ApplicationException("Throwing an exception with inner " +
             "exception", new CacheServerException("This is an inner exception"));
         case ExceptionType.SystemSystem:
@@ -1218,17 +1218,17 @@ namespace Apache.Geode.Client.UnitTests
       {
         case ExceptionType.None:
           break;
-        case ExceptionType.Gemfire:
+        case ExceptionType.Geode:
           throw new GemFireIOException("Throwing an exception");
         case ExceptionType.System:
           throw new IOException("Throwing an exception");
-        case ExceptionType.GemfireGemfire:
+        case ExceptionType.GeodeGeode:
           throw new GemFireIOException("Throwing an exception with inner " +
             "exception", new CacheServerException("This is an inner exception"));
-        case ExceptionType.GemfireSystem:
+        case ExceptionType.GeodeSystem:
           throw new CacheServerException("Throwing an exception with inner " +
             "exception", new IOException("This is an inner exception"));
-        case ExceptionType.SystemGemfire:
+        case ExceptionType.SystemGeode:
           throw new ApplicationException("Throwing an exception with inner " +
             "exception", new CacheServerException("This is an inner exception"));
         case ExceptionType.SystemSystem:

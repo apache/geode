@@ -36,19 +36,19 @@
 // These provide Doxygen with namespace and file descriptions.
 
 /// @namespace Apache::Geode
-/// This namespace contains all the GemFire .NET classes and utility classes.
+/// This namespace contains all the Geode .NET classes and utility classes.
 
 /// @namespace Apache::Geode::Client
-/// This namespace contains all the GemFire .NET API classes and enumerations.
+/// This namespace contains all the Geode .NET API classes and enumerations.
 
 /// @namespace Apache::Geode::Client
-/// This namespace contains all the GemFire .NET Generics API classes and enumerations.
+/// This namespace contains all the Geode .NET Generics API classes and enumerations.
 
 /// @namespace Apache::Geode::Client::Internal
-/// This namespace contains internal GemFire non-public .NET classes.
+/// This namespace contains internal Geode non-public .NET classes.
 
 /// @namespace Apache::Geode::Client::Template
-/// This namespace contains internal GemFire .NET template classes.
+/// This namespace contains internal Geode .NET template classes.
 
 /// @file gf_includes.hpp
 /// Provides a commonly-used set of include directives.
@@ -74,7 +74,7 @@
 /// CacheableInt64Array, BooleanArray and CharArray
 
 /// @file CacheableBuiltins.hpp
-/// Declared the built-in GemFire serializable types.
+/// Declared the built-in Geode serializable types.
 
 /// @file CacheableDate.hpp
 /// Declares the CacheableDate class.
@@ -137,13 +137,13 @@
 /// Declares the EntryEvent class.
 
 /// @file ExceptionTypes.hpp
-/// Declares the GemFire exception type classes.
+/// Declares the Geode exception type classes.
 
 /// @file ExpirationAction.hpp
 /// Declares the ExpirationAction enumeration and Expiration class.
 
-/// @file GemFireClassIds.hpp
-/// Declares the GemFireClassIds class.
+/// @file GeodeClassIds.hpp
+/// Declares the GeodeClassIds class.
 
 /// @file IRegionService.hpp
 /// Declares the IRegionService interface.
@@ -151,11 +151,11 @@
 /// @file IRegionService.hpp
 /// Declares the IRegionService interface.
 
-/// @file IGemFireCache.hpp
-/// Declares the IGemFireCache interface.
+/// @file IGeodeCache.hpp
+/// Declares the IGeodeCache interface.
 
-/// @file IGemFireCache.hpp
-/// Declares the IGemFireCache interface.
+/// @file IGeodeCache.hpp
+/// Declares the IGeodeCache interface.
 
 /// @file ICacheableKey.hpp
 /// Declares the ICacheableKey interface.

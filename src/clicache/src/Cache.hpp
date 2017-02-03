@@ -22,7 +22,7 @@
 //#include "impl/NativeWrapper.hpp"
 #include "RegionShortcut.hpp"
 //#include "RegionFactory.hpp"
-#include "IGemFireCache.hpp"
+#include "IGeodeCache.hpp"
 //#include "IRegionService.hpp"
 #include "IRegion.hpp"
 //#include "QueryService.hpp"
@@ -39,13 +39,13 @@ namespace Apache
     namespace Client
     {
 
-				generic<class TKey, class TResult>
-				ref class QueryService;
+      generic<class TKey, class TResult>
+      ref class QueryService;
 
-				ref class RegionFactory;
-				enum class ExpirationAction;
+      ref class RegionFactory;
+      enum class ExpirationAction;
       ref class DistributedSystem;
-	  ref class CacheTransactionManager2PC;
+      ref class CacheTransactionManager2PC;
       //ref class FunctionService;
 
       /// <summary>
@@ -63,7 +63,7 @@ namespace Apache
       /// </para>
       /// </remarks>
       public ref class Cache sealed
-        : public IGemFireCache, Internal::SBWrap<apache::geode::client::Cache>
+        : public IGeodeCache, Internal::SBWrap<apache::geode::client::Cache>
       {
       public:
 
@@ -71,7 +71,7 @@ namespace Apache
         /// Initializes the cache from an XML file.
         /// </summary>
         /// <param name="cacheXml">pathname of a <c>cache.xml</c> file</param>
-        virtual void InitializeDeclarativeCache( String^ cacheXml );
+        virtual void InitializeDeclarativeCache(String^ cacheXml);
 
         /// <summary>
         /// Returns the name of this cache.
@@ -83,7 +83,7 @@ namespace Apache
         /// <returns>the string name of this cache</returns>
         virtual property String^ Name
         {
-          String^ get( );
+          String^ get();
         }
 
         /// <summary>
@@ -97,7 +97,7 @@ namespace Apache
         /// <returns>true if this cache is closed, otherwise false</returns>
         virtual property bool IsClosed
         {
-          bool get( );
+          bool get();
         }
 
         /// <summary>
@@ -110,7 +110,7 @@ namespace Apache
         /// </remarks>
         virtual property Apache::Geode::Client::DistributedSystem^ DistributedSystem
         {
-          Apache::Geode::Client::DistributedSystem^ get( );
+          Apache::Geode::Client::DistributedSystem^ get();
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace Apache
         /// </summary>
         virtual property Apache::Geode::Client::CacheTransactionManager^ CacheTransactionManager
         {
-          Apache::Geode::Client::CacheTransactionManager^ get( );
+          Apache::Geode::Client::CacheTransactionManager^ get();
         }
 
         /// <summary>
@@ -133,7 +133,7 @@ namespace Apache
         /// <exception cref="CacheClosedException">
         /// if the cache is already closed.
         /// </exception>
-        virtual void Close( );
+        virtual void Close();
 
         /// <summary>
         /// Terminates this object cache and releases all the local resources.
@@ -147,7 +147,7 @@ namespace Apache
         /// <exception cref="CacheClosedException">
         /// if the cache is already closed.
         /// </exception>
-        virtual void Close( bool keepalive );
+        virtual void Close(bool keepalive);
 
         /// <summary>
         /// Send the client-ready message to the server for a durable client.        
@@ -159,8 +159,8 @@ namespace Apache
         /// <exception cref="IllegalStateException">
         /// if there was a problem sending the message to the server.
         /// </exception>
-        virtual void ReadyForEvents( );
-  
+        virtual void ReadyForEvents();
+
         /// <summary>
         /// Returns an existing region given the full path from root, or null 
         /// if no such region exists.
@@ -172,7 +172,7 @@ namespace Apache
         /// <param name="path">the pathname of the region</param>
         /// <returns>the region</returns>
         generic<class TKey, class TValue>
-        virtual IRegion<TKey, TValue>^ GetRegion( String^ path );
+        virtual IRegion<TKey, TValue>^ GetRegion(String^ path);
 
         /// <summary>
         /// Returns an array of root regions in the cache. This set is a
@@ -207,7 +207,7 @@ namespace Apache
         /// before actually firing a query.
         /// </remarks>
         generic<class TKey, class TResult>
-        virtual Client::QueryService<TKey, TResult>^ GetQueryService(String^ poolName );
+        virtual Client::QueryService<TKey, TResult>^ GetQueryService(String^ poolName);
 
         /// <summary>
         /// Returns the instance of <see cref="RegionFactory" /> to create the region
@@ -217,7 +217,7 @@ namespace Apache
         /// </remarks>
         /// <param name="regionShortcut">the regionShortcut to set the default region attributes</param>
         /// <returns>Instance of RegionFactory</returns>
-        RegionFactory^ CreateRegionFactory(RegionShortcut regionShortcut); 
+        RegionFactory^ CreateRegionFactory(RegionShortcut regionShortcut);
 
         /// <summary>
         /// Returns the instance of <see cref="IRegionService" /> to do the operation on Cache with different Credential.
@@ -240,10 +240,10 @@ namespace Apache
         /// <returns>Instance of IRegionService</returns>
         IRegionService^ CreateAuthenticatedView(Properties<String^, Object^>^ credentials, String^ poolName);
 
-				///<summary>
-				/// Returns whether Cache saves unread fields for Pdx types.
-				///</summary>
-				virtual bool GetPdxIgnoreUnreadFields();
+        ///<summary>
+        /// Returns whether Cache saves unread fields for Pdx types.
+        ///</summary>
+        virtual bool GetPdxIgnoreUnreadFields();
 
         ///<summary>
         /// Returns whether { @link PdxInstance} is preferred for PDX types instead of .NET object.
@@ -268,10 +268,10 @@ namespace Apache
         /// <returns>
         /// The managed wrapper object; null if the native pointer is null.
         /// </returns>
-        inline static Cache^ Create( apache::geode::client::Cache* nativeptr )
+        inline static Cache^ Create(apache::geode::client::Cache* nativeptr)
         {
-          return ( nativeptr != nullptr ?
-            gcnew Cache( nativeptr ) : nullptr );
+          return (nativeptr != nullptr ?
+                  gcnew Cache(nativeptr) : nullptr);
         }
 
 
@@ -281,8 +281,8 @@ namespace Apache
         /// Private constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline Cache( apache::geode::client::Cache* nativeptr )
-          : SBWrap( nativeptr ) { }
+        inline Cache(apache::geode::client::Cache* nativeptr)
+          : SBWrap(nativeptr) { }
       };
     }  // namespace Client
   }  // namespace Geode

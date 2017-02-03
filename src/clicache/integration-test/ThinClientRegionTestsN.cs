@@ -52,7 +52,7 @@ namespace Apache.Geode.Client.UnitTests
     }
   }
 
- [Serializable]
+  [Serializable]
   public class CustomPartitionResolver1<TValue> : IFixedPartitionResolver<int, TValue>
   {
     public CustomPartitionResolver1()
@@ -81,25 +81,32 @@ namespace Apache.Geode.Client.UnitTests
     {
       Util.Log("CustomPartitionResolver1::GetPartitionName");
       int newkey = entryEvent.Key % 6;
-      if (newkey == 0) {
+      if (newkey == 0)
+      {
         return "P1";
       }
-      else if (newkey == 1) {
+      else if (newkey == 1)
+      {
         return "P2";
       }
-      else if (newkey == 2) {
+      else if (newkey == 2)
+      {
         return "P3";
       }
-      else if (newkey == 3) {
+      else if (newkey == 3)
+      {
         return "P4";
       }
-      else if (newkey == 4) {
+      else if (newkey == 4)
+      {
         return "P5";
       }
-      else if (newkey == 5) {
+      else if (newkey == 5)
+      {
         return "P6";
       }
-      else {
+      else
+      {
         return "Invalid";
       }
     }
@@ -134,25 +141,32 @@ namespace Apache.Geode.Client.UnitTests
       string key = entryEvent.Key.ToString();
       int numKey = Convert.ToInt32(key);
       int newkey = numKey % 6;
-      if (newkey == 0) {
+      if (newkey == 0)
+      {
         return "P1";
       }
-      else if (newkey == 1) {
+      else if (newkey == 1)
+      {
         return "P2";
       }
-      else if (newkey == 2) {
+      else if (newkey == 2)
+      {
         return "P3";
       }
-      else if (newkey == 3) {
+      else if (newkey == 3)
+      {
         return "P4";
       }
-      else if (newkey == 4) {
+      else if (newkey == 4)
+      {
         return "P5";
       }
-      else if (newkey == 5) {
+      else if (newkey == 5)
+      {
         return "P6";
       }
-      else {
+      else
+      {
         return "Invalid";
       }
     }
@@ -187,16 +201,20 @@ namespace Apache.Geode.Client.UnitTests
       string key = entryEvent.Key.ToString();
       int numKey = Convert.ToInt32(key);
       int newkey = numKey % 3;
-      if (newkey == 0) {
+      if (newkey == 0)
+      {
         return "P1";
       }
-      else if (newkey == 1) {
+      else if (newkey == 1)
+      {
         return "P2";
       }
-      else if (newkey == 2) {
+      else if (newkey == 2)
+      {
         return "P3";
       }
-      else {
+      else
+      {
         return "Invalid";
       }
     }
@@ -339,13 +357,15 @@ namespace Apache.Geode.Client.UnitTests
     [TearDown]
     public override void EndTest()
     {
-      try {
+      try
+      {
         m_client1.Call(DestroyRegions);
         m_client2.Call(DestroyRegions);
         CacheHelper.ClearEndpoints();
         CacheHelper.ClearLocators();
       }
-      finally {
+      finally
+      {
         CacheHelper.StopJavaServers();
         CacheHelper.StopJavaLocators();
       }
@@ -379,12 +399,12 @@ namespace Apache.Geode.Client.UnitTests
         }
         catch (GemFireIOException ex)
         {
-          if (exType == OtherType.ExceptionType.Gemfire)
+          if (exType == OtherType.ExceptionType.Geode)
           {
             // Successfully changed exception back and forth
             Util.Log("Got expected exception in Put: " + ex);
           }
-          else if (exType == OtherType.ExceptionType.GemfireGemfire)
+          else if (exType == OtherType.ExceptionType.GeodeGeode)
           {
             if (ex.InnerException is CacheServerException)
             {
@@ -403,7 +423,7 @@ namespace Apache.Geode.Client.UnitTests
         }
         catch (CacheServerException ex)
         {
-          if (exType == OtherType.ExceptionType.GemfireSystem)
+          if (exType == OtherType.ExceptionType.GeodeSystem)
           {
             if (ex.InnerException is IOException)
             {
@@ -434,7 +454,7 @@ namespace Apache.Geode.Client.UnitTests
         }
         catch (ApplicationException ex)
         {
-          if (exType == OtherType.ExceptionType.SystemGemfire)
+          if (exType == OtherType.ExceptionType.SystemGeode)
           {
             if (ex.InnerException is CacheServerException)
             {
@@ -534,7 +554,7 @@ namespace Apache.Geode.Client.UnitTests
       TallyWriter<object, object> writer = new TallyWriter<object, object>();
       attrMutator.SetCacheWriter(writer);
     }
-    
+
     public void ClearRegionStep2()
     {
       //Console.WriteLine("IRegion<object, object> Name = {0}", m_regionNames[0]);
@@ -613,7 +633,7 @@ namespace Apache.Geode.Client.UnitTests
       {
         Assert.Fail("Expected region size 2");
       }
-      
+
       if (!region0.ContainsKey(m_keys[0]))
       {
         Assert.Fail("m_key[0] is not on Server");
@@ -664,7 +684,7 @@ namespace Apache.Geode.Client.UnitTests
         }
       }
 
-      ICollection<object>  keyvCol = region0.GetSubscriptionService().GetInterestList();
+      ICollection<object> keyvCol = region0.GetSubscriptionService().GetInterestList();
       string[] keyv = new string[keyvCol.Count];
       keyvCol.CopyTo(keyv, 0);
 
@@ -829,7 +849,7 @@ namespace Apache.Geode.Client.UnitTests
       region1.GetSubscriptionService().UnregisterAllKeys();
     }
 
-    public void RegexInterestAllStep9() 
+    public void RegexInterestAllStep9()
     {
       UpdateEntry(m_regionNames[0], m_keys[0], m_vals[0], false);
       VerifyEntry(m_regionNames[0], m_keys[1], m_vals[1], false);
@@ -837,7 +857,7 @@ namespace Apache.Geode.Client.UnitTests
       VerifyEntry(m_regionNames[1], m_keys[3], m_vals[3], false);
     }
 
-    public void RegexInterestAllStep10() 
+    public void RegexInterestAllStep10()
     {
       VerifyEntry(m_regionNames[0], m_keys[0], m_nvals[0]);
       VerifyEntry(m_regionNames[0], m_keys[1], m_vals[1]);
@@ -993,7 +1013,7 @@ namespace Apache.Geode.Client.UnitTests
       Util.Log("Step three completes");
     }
 
-    public void PutAllStep4() 
+    public void PutAllStep4()
     {
       Dictionary<object, object> map0 = new Dictionary<object, object>();
       Dictionary<object, object> map1 = new Dictionary<object, object>();
@@ -1017,7 +1037,7 @@ namespace Apache.Geode.Client.UnitTests
       Util.Log("Put All Complets");
     }
 
-    public void PutAllStep5() 
+    public void PutAllStep5()
     {
       VerifyCreated(m_regionNames[0], m_keys[0]);
       VerifyCreated(m_regionNames[0], m_keys[1]);
@@ -1031,11 +1051,11 @@ namespace Apache.Geode.Client.UnitTests
       Util.Log("StepFive complete.");
     }
 
-    public void PutAllStep6() 
+    public void PutAllStep6()
     {
       Dictionary<object, object> map0 = new Dictionary<object, object>();
       Dictionary<object, object> map1 = new Dictionary<object, object>();
-      
+
       object key0 = m_keys[0];
       object key1 = m_keys[1];
       string val0 = m_nvals[0];
@@ -1106,7 +1126,7 @@ namespace Apache.Geode.Client.UnitTests
       VerifyDestroyed(m_regionNames[1], m_keys[3]);
       VerifyDestroyed(m_regionNames[1], m_keys[4]);
       VerifyDestroyed(m_regionNames[1], m_keys[5]);
-      
+
       IRegion<object, object> region0 = CacheHelper.GetVerifyRegion<object, object>(m_regionNames[0]);
       IRegion<object, object> region1 = CacheHelper.GetVerifyRegion<object, object>(m_regionNames[1]);
       Assert.AreEqual(region0.Count, 0, "Remove all should remove the entries specified");
@@ -1307,8 +1327,8 @@ namespace Apache.Geode.Client.UnitTests
     }
 
     void putGetTest()
-    { 
-      
+    {
+
     }
 
     void runPdxAppDomainTest(bool caching, bool readPdxSerialized)
@@ -1319,7 +1339,7 @@ namespace Apache.Geode.Client.UnitTests
       CacheHelper.StartJavaServerWithLocators(1, "GFECS1", 1);
       Util.Log("Cacheserver 1 started.");
 
-     
+
       m_client1.Call(InitializeAppDomain);
 
       m_client1.Call(CreateTCRegions_Pool_AD2, RegionNames,
@@ -1336,7 +1356,7 @@ namespace Apache.Geode.Client.UnitTests
 
       //putGetTest.TestAllKeyValuePairs(m_client1, m_client2,
       //RegionNames[0], true, pool);
-     // m_client1.Call(TestAllKeyValuePairsAD, RegionNames[0], true, pool);
+      // m_client1.Call(TestAllKeyValuePairsAD, RegionNames[0], true, pool);
       m_client1.Call(CloseCacheAD);
 
       Util.Log("Client 1 closed");
@@ -1422,7 +1442,7 @@ namespace Apache.Geode.Client.UnitTests
 
       m_client1.Call(CreateTCRegion2, TradeKeyRegion, true, true, TradeKeyResolver.Create(),
         CacheHelper.Locators, true);
-      Util.Log("Client 1 (pool locators) region created");          
+      Util.Log("Client 1 (pool locators) region created");
 
       PutGetTests putGetTest = new PutGetTests();
       m_client1.Call(putGetTest.DoPRSHTradeResolverTasks, TradeKeyRegion);
@@ -1502,7 +1522,7 @@ namespace Apache.Geode.Client.UnitTests
 
       CacheHelper.ClearEndpoints();
       CacheHelper.ClearLocators();
-    }    
+    }
 
     void runCheckPut()
     {
@@ -1558,11 +1578,11 @@ namespace Apache.Geode.Client.UnitTests
       Util.Log("StepOne (pool locators) complete.");
 
       m_client1.Call(DoPutsOtherTypeWithEx, OtherType.ExceptionType.None);
-      m_client1.Call(DoPutsOtherTypeWithEx, OtherType.ExceptionType.Gemfire);
+      m_client1.Call(DoPutsOtherTypeWithEx, OtherType.ExceptionType.Geode);
       m_client1.Call(DoPutsOtherTypeWithEx, OtherType.ExceptionType.System);
-      m_client1.Call(DoPutsOtherTypeWithEx, OtherType.ExceptionType.GemfireGemfire);
-      m_client1.Call(DoPutsOtherTypeWithEx, OtherType.ExceptionType.GemfireSystem);
-      m_client1.Call(DoPutsOtherTypeWithEx, OtherType.ExceptionType.SystemGemfire);
+      m_client1.Call(DoPutsOtherTypeWithEx, OtherType.ExceptionType.GeodeGeode);
+      m_client1.Call(DoPutsOtherTypeWithEx, OtherType.ExceptionType.GeodeSystem);
+      m_client1.Call(DoPutsOtherTypeWithEx, OtherType.ExceptionType.SystemGeode);
       m_client1.Call(DoPutsOtherTypeWithEx, OtherType.ExceptionType.SystemSystem);
 
       m_client1.Call(Close);
@@ -1820,7 +1840,7 @@ namespace Apache.Geode.Client.UnitTests
     {
       runFailoverInterestAll(false);
     }
-    
+
     void runFailoverInterestAll(bool ssl)
     {
       CacheHelper.SetupJavaServers(true, "cacheserver_notify_subscription.xml",
@@ -2101,15 +2121,15 @@ namespace Apache.Geode.Client.UnitTests
       m_client1.Call(CreateTCRegions_Pool, RegionNames2,
           CacheHelper.Locators, "__TESTPOOL1_", false);
       Util.Log("StepOne (pool locators) complete.");
-       
+
       m_client1.Call(IdictionaryRegionOperations, "DistRegionAck");
       Util.Log("IdictionaryRegionOperations complete.");
 
       m_client1.Call(IdictionaryRegionNullKeyOperations, "DistRegionAck");
-      Util.Log("IdictionaryRegionNullKeyOperations complete."); 
+      Util.Log("IdictionaryRegionNullKeyOperations complete.");
 
       m_client1.Call(IdictionaryRegionArrayOperations, "DistRegionAck");
-      Util.Log("IdictionaryRegionArrayOperations complete.");     
+      Util.Log("IdictionaryRegionArrayOperations complete.");
 
       m_client1.Call(Close);
       Util.Log("Client 1 closed");
@@ -2127,7 +2147,7 @@ namespace Apache.Geode.Client.UnitTests
     public void EmptyByteArrayTest()
     {
       IRegion<int, byte[]> region = CacheHelper.GetVerifyRegion<int, byte[]>(RegionNames3[0]);
-      
+
       IRegionService regServ = region.RegionService;
 
       Cache cache = regServ as Cache;
@@ -2142,7 +2162,7 @@ namespace Apache.Geode.Client.UnitTests
       Util.Log("Put non empty byteArray in region");
 
       Assert.AreEqual(2, region[1].Length);
-      
+
       region[2] = System.Text.Encoding.ASCII.GetBytes("TestString");
       Util.Log("Put string in region");
 
@@ -2185,7 +2205,7 @@ namespace Apache.Geode.Client.UnitTests
       m_client1.Call(CheckAndPutKey);
       Util.Log("Check for ContainsKeyOnServer complete.");
 
-     
+
       CacheHelper.StopJavaServer(1);
       Util.Log("Cacheserver 1 stopped.");
     }

@@ -28,39 +28,39 @@ namespace Apache
     namespace Client
     {
 
-				/// <summary>
-				/// When a domain class implements PdxSerializable it marks 
-				/// itself as a PDX. 
-				/// The implementation of toData provides the serialization 
-				/// code and fromData provides the deserialization code. 
-				/// These methods also define each field name and field type 
-				/// of the PDX. Domain classes should serialize and de-serialize 
-				/// all its member fields in same order in toData and fromData 
-				/// method. 
-				/// A domain class which implements this interface should register delgate <see cref="Serializable.RegisterPdxType" /> to create new 
-				/// instance of type for de-serilization.
-				/// </summary>
-				public interface class IPdxSerializable
-				{
-				public:
+      /// <summary>
+      /// When a domain class implements PdxSerializable it marks 
+      /// itself as a PDX. 
+      /// The implementation of toData provides the serialization 
+      /// code and fromData provides the deserialization code. 
+      /// These methods also define each field name and field type 
+      /// of the PDX. Domain classes should serialize and de-serialize 
+      /// all its member fields in same order in toData and fromData 
+      /// method. 
+      /// A domain class which implements this interface should register delgate <see cref="Serializable.RegisterPdxType" /> to create new 
+      /// instance of type for de-serilization.
+      /// </summary>
+      public interface class IPdxSerializable
+      {
+      public:
 
-					/// <summary>
-					/// Serializes this object in gemfire PDX format.
-					/// </summary>
-					/// <param name="writer">
-					/// the IPdxWriter object to use for serializing the object
-					/// </param>
-					void ToData( IPdxWriter^ writer );
+        /// <summary>
+        /// Serializes this object in geode PDX format.
+        /// </summary>
+        /// <param name="writer">
+        /// the IPdxWriter object to use for serializing the object
+        /// </param>
+        void ToData(IPdxWriter^ writer);
 
-					/// <summary>
-					/// Deserialize this object.
-					/// </summary>
-					/// <param name="reader">
-					/// the IPdxReader stream to use for reading the object data
-					/// </param>
-					void FromData( IPdxReader^ reader );
+        /// <summary>
+        /// Deserialize this object.
+        /// </summary>
+        /// <param name="reader">
+        /// the IPdxReader stream to use for reading the object data
+        /// </param>
+        void FromData(IPdxReader^ reader);
 
-				};
+      };
     }  // namespace Client
   }  // namespace Geode
 }  // namespace Apache

@@ -23,7 +23,7 @@
 #include "IGFSerializable.hpp"
 #include "ExpirationAction.hpp"
 #include "DiskPolicyType.hpp"
-#include "GemFireClassIds.hpp"
+#include "GeodeClassIds.hpp"
 
 #include "ICacheLoader.hpp"
 #include "ICacheWriter.hpp"
@@ -68,7 +68,7 @@ namespace Apache
       /// <seealso cref="Region.Attributes" />
       generic <class TKey, class TValue>
       public ref class RegionAttributes sealed
-				: public Client::Internal::SBWrap<apache::geode::client::RegionAttributes>, public IGFSerializable
+        : public Client::Internal::SBWrap<apache::geode::client::RegionAttributes>, public IGFSerializable
       {
       public:
 
@@ -80,7 +80,7 @@ namespace Apache
         /// </returns>
         property Apache::Geode::Client::ICacheLoader<TKey, TValue>^ CacheLoader
         {
-          Apache::Geode::Client::ICacheLoader<TKey, TValue>^ get( );
+          Apache::Geode::Client::ICacheLoader<TKey, TValue>^ get();
         }
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace Apache
         /// </returns>
         property ICacheWriter<TKey, TValue>^ CacheWriter
         {
-          ICacheWriter<TKey, TValue>^ get( );
+          ICacheWriter<TKey, TValue>^ get();
         }
 
         /// <summary>
@@ -102,7 +102,7 @@ namespace Apache
         /// </returns>
         property ICacheListener<TKey, TValue>^ CacheListener
         {
-          ICacheListener<TKey, TValue>^ get( );
+          ICacheListener<TKey, TValue>^ get();
         }
 
         /// <summary>
@@ -113,7 +113,7 @@ namespace Apache
         /// </returns>
         property IPartitionResolver<TKey, TValue>^ PartitionResolver
         {
-          IPartitionResolver<TKey, TValue>^ get( );
+          IPartitionResolver<TKey, TValue>^ get();
         }
 
         /// <summary>
@@ -122,7 +122,7 @@ namespace Apache
         /// <returns>the timeToLive duration for this region, in seconds</returns>
         property int32_t RegionTimeToLive
         {
-          int32_t get( );
+          int32_t get();
         }
 
         /// <summary>
@@ -131,7 +131,7 @@ namespace Apache
         /// <returns>the timeToLive action for this region</returns>
         property ExpirationAction RegionTimeToLiveAction
         {
-          ExpirationAction get( );
+          ExpirationAction get();
         }
 
         /// <summary>
@@ -140,7 +140,7 @@ namespace Apache
         /// <returns>the IdleTimeout duration for this region, in seconds</returns>
         property int32_t RegionIdleTimeout
         {
-          int32_t get( );
+          int32_t get();
         }
 
         /// <summary>
@@ -149,7 +149,7 @@ namespace Apache
         /// <returns>the idleTimeout action for this region</returns>
         property ExpirationAction RegionIdleTimeoutAction
         {
-          ExpirationAction get( );
+          ExpirationAction get();
         }
 
         /// <summary>
@@ -158,7 +158,7 @@ namespace Apache
         /// <returns>the timeToLive duration for entries in this region, in seconds</returns>
         property int32_t EntryTimeToLive
         {
-          int32_t get( );
+          int32_t get();
         }
 
         /// <summary>
@@ -167,7 +167,7 @@ namespace Apache
         /// <returns>the timeToLive action for entries in this region</returns>
         property ExpirationAction EntryTimeToLiveAction
         {
-          ExpirationAction get( );
+          ExpirationAction get();
         }
 
         /// <summary>
@@ -176,7 +176,7 @@ namespace Apache
         /// <returns>the idleTimeout duration for entries in this region, in seconds</returns>
         property int32_t EntryIdleTimeout
         {
-          int32_t get( );
+          int32_t get();
         }
 
         /// <summary>
@@ -185,7 +185,7 @@ namespace Apache
         /// <returns>the idleTimeout action for entries in this region</returns>
         property ExpirationAction EntryIdleTimeoutAction
         {
-          ExpirationAction get( );
+          ExpirationAction get();
         }
 
         /// <summary>
@@ -194,7 +194,7 @@ namespace Apache
         /// <returns>true if caching is enabled</returns>
         property bool CachingEnabled
         {
-          bool get( );
+          bool get();
         }
 
 
@@ -206,7 +206,7 @@ namespace Apache
         /// <returns>the initial capacity</returns>
         property int32_t InitialCapacity
         {
-          int32_t get( );
+          int32_t get();
         }
 
         /// <summary>
@@ -215,7 +215,7 @@ namespace Apache
         /// <returns>the load factor</returns>
         property Single LoadFactor
         {
-          Single get( );
+          Single get();
         }
 
         /// <summary>
@@ -225,7 +225,7 @@ namespace Apache
         /// <seealso cref="AttributesFactory" />
         property int32_t ConcurrencyLevel
         {
-          int32_t get( );
+          int32_t get();
         }
 
         /// <summary>
@@ -235,7 +235,7 @@ namespace Apache
         /// <returns>the maximum LRU size, or 0 for no limit</returns>
         property uint32_t LruEntriesLimit
         {
-          uint32_t get( );
+          uint32_t get();
         }
 
         /// <summary>
@@ -244,7 +244,7 @@ namespace Apache
         /// <returns>the disk policy type, default is null</returns>
         property DiskPolicyType DiskPolicy
         {
-          DiskPolicyType get( );
+          DiskPolicyType get();
         }
 
         /// <summary>
@@ -253,7 +253,7 @@ namespace Apache
         /// <returns>the LRU eviction action</returns>
         property ExpirationAction LruEvictionAction
         {
-          ExpirationAction get( );
+          ExpirationAction get();
         }
 
         /// <summary>
@@ -263,7 +263,7 @@ namespace Apache
         /// <returns>the CacheLoader library path</returns>
         property String^ CacheLoaderLibrary
         {
-          String^ get( );
+          String^ get();
         }
 
         /// <summary>
@@ -273,7 +273,7 @@ namespace Apache
         /// <returns>the CacheLoader factory function name</returns>
         property String^ CacheLoaderFactory
         {
-          String^ get( );
+          String^ get();
         }
 
         /// <summary>
@@ -283,7 +283,7 @@ namespace Apache
         /// <returns>the CacheListener library path</returns>
         property String^ CacheListenerLibrary
         {
-          String^ get( );
+          String^ get();
         }
 
         /// <summary>
@@ -293,7 +293,7 @@ namespace Apache
         /// <returns>the PartitionResolver library path</returns>
         property String^ PartitionResolverLibrary
         {
-          String^ get( );
+          String^ get();
         }
 
         /// <summary>
@@ -303,7 +303,7 @@ namespace Apache
         /// <returns>the CacheListener factory function name</returns>
         property String^ CacheListenerFactory
         {
-          String^ get( );
+          String^ get();
         }
 
         /// <summary>
@@ -313,7 +313,7 @@ namespace Apache
         /// <returns>the PartitionResolver factory function name</returns>
         property String^ PartitionResolverFactory
         {
-          String^ get( );
+          String^ get();
         }
 
         /// <summary>
@@ -323,7 +323,7 @@ namespace Apache
         /// <returns>the CacheWriter library path</returns>
         property String^ CacheWriterLibrary
         {
-          String^ get( );
+          String^ get();
         }
 
         /// <summary>
@@ -333,7 +333,7 @@ namespace Apache
         /// <returns>the CacheWriter factory function name</returns>
         property String^ CacheWriterFactory
         {
-          String^ get( );
+          String^ get();
         }
 
         /// <summary>
@@ -341,14 +341,14 @@ namespace Apache
         /// </summary>
         /// <param name="other">attribute object to compare</param>
         /// <returns>true if equal</returns>
-        bool Equals( RegionAttributes<TKey, TValue>^ other );
+        bool Equals(RegionAttributes<TKey, TValue>^ other);
 
         /// <summary>
         /// True if all the attributes are equal to those of <c>other</c>.
         /// </summary>
         /// <param name="other">attribute object to compare</param>
         /// <returns>true if equal</returns>
-        virtual bool Equals( Object^ other ) override;
+        virtual bool Equals(Object^ other) override;
 
         /// <summary>
         /// Throws IllegalStateException if the attributes are not suited for serialization
@@ -356,7 +356,7 @@ namespace Apache
         /// directly instead of providing the library path and factory function.
         /// </summary>
         /// <exception cref="IllegalStateException">if the attributes cannot be serialized</exception>
-        void ValidateSerializableAttributes( );
+        void ValidateSerializableAttributes();
 
         /// <summary>
         /// This method returns the list of endpoints (servername:portnumber) separated by commas.
@@ -364,7 +364,7 @@ namespace Apache
         /// <returns>list of endpoints</returns>
         property String^ Endpoints
         {
-          String^ get( );
+          String^ get();
         }
 
         /// <summary>
@@ -373,7 +373,7 @@ namespace Apache
         /// <returns>pool name</returns>
         property String^ PoolName
         {
-          String^ get( );
+          String^ get();
         }
 
         /// <summary>
@@ -382,16 +382,16 @@ namespace Apache
         /// <returns>true if enabled</returns>
         property bool ClientNotificationEnabled
         {
-          bool get( );
+          bool get();
         }
         /// <summary>
         /// True if cloning is enabled for in case of delta.
         /// </summary>
         /// <returns>true if enabled</returns>
 
-        property bool CloningEnabled 
+        property bool CloningEnabled
         {
-          bool get( );
+          bool get();
         }
 
         /// <summary>
@@ -401,7 +401,7 @@ namespace Apache
         /// <returns>the PersistenceManager library path</returns>
         property String^ PersistenceLibrary
         {
-          String^ get( );
+          String^ get();
         }
 
         /// <summary>
@@ -411,7 +411,7 @@ namespace Apache
         /// <returns>the PersistenceManager factory function name</returns>
         property String^ PersistenceFactory
         {
-          String^ get( );
+          String^ get();
         }
 
         /// <summary>
@@ -420,7 +420,7 @@ namespace Apache
         /// <returns>properties for the PersistenceManager</returns>
         property Properties<String^, String^>^ PersistenceProperties
         {
-          Properties<String^, String^>^ get( );
+          Properties<String^, String^>^ get();
         }
 
         /// <summary>
@@ -430,28 +430,28 @@ namespace Apache
         /// <seealso cref="AttributesFactory" />
         property bool ConcurrencyChecksEnabled
         {
-          bool get( );
+          bool get();
         }
 
         /// <summary>
         /// Serializes this Properties object.
         /// </summary>
         /// <param name="output">the DataOutput stream to use for serialization</param>
-        virtual void ToData( DataOutput^ output );
+        virtual void ToData(DataOutput^ output);
 
         /// <summary>
         /// Deserializes this Properties object.
         /// </summary>
         /// <param name="input">the DataInput stream to use for reading data</param>
         /// <returns>the deserialized Properties object</returns>
-        virtual IGFSerializable^ FromData( DataInput^ input );
+        virtual IGFSerializable^ FromData(DataInput^ input);
 
         /// <summary>
         /// return the size of this object in bytes
         /// </summary>
         virtual property uint32_t ObjectSize
         {
-          virtual uint32_t get( )
+          virtual uint32_t get()
           {
             return 0;  //don't care
           }
@@ -464,9 +464,9 @@ namespace Apache
         /// <seealso cref="../../IGFSerializable.ClassId" />
         virtual property uint32_t ClassId
         {
-          inline virtual uint32_t get( )
+          inline virtual uint32_t get()
           {
-            return GemFireClassIds::RegionAttributes;
+            return GeodeClassIds::RegionAttributes;
           }
         }
 
@@ -481,10 +481,10 @@ namespace Apache
         /// <returns>
         /// The managed wrapper object; null if the native pointer is null.
         /// </returns>
-        inline static RegionAttributes<TKey, TValue>^ Create( apache::geode::client::RegionAttributes* nativeptr )
+        inline static RegionAttributes<TKey, TValue>^ Create(apache::geode::client::RegionAttributes* nativeptr)
         {
-          return ( nativeptr != nullptr ?
-            gcnew RegionAttributes<TKey, TValue>( nativeptr ) : nullptr );
+          return (nativeptr != nullptr ?
+                  gcnew RegionAttributes<TKey, TValue>(nativeptr) : nullptr);
         }
 
 
@@ -494,8 +494,8 @@ namespace Apache
         /// Private constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline RegionAttributes<TKey, TValue>( apache::geode::client::RegionAttributes* nativeptr )
-          : SBWrap( nativeptr ) { }
+        inline RegionAttributes<TKey, TValue>(apache::geode::client::RegionAttributes* nativeptr)
+          : SBWrap(nativeptr) { }
       };
     }  // namespace Client
   }  // namespace Geode

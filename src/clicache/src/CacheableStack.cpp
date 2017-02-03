@@ -23,7 +23,7 @@
 #include "DataInput.hpp"
 #include <GeodeTypeIdsImpl.hpp>
 #include "impl/SafeConvert.hpp"
-#include "GemFireClassIds.hpp"
+#include "GeodeClassIds.hpp"
 
 using namespace System;
 using namespace System::Collections::Generic;
@@ -39,11 +39,11 @@ namespace Apache
 
       void CacheableStack::ToData(DataOutput^ output)
       {
-        if(m_stack != nullptr)
+        if (m_stack != nullptr)
         {
           output->WriteArrayLen((int32_t)m_stack->Count);
           for each (Object^ obj in m_stack) {
-					  output->WriteObject(obj);
+            output->WriteObject(obj);
           }
         }
         else
@@ -58,10 +58,10 @@ namespace Apache
         if (len > 0)
         {
           System::Collections::Generic::Stack<Object^>^ stack = safe_cast<System::Collections::Generic::Stack<Object^>^>(m_stack);
-          for( int i = 0; i < len; i++)
+          for (int i = 0; i < len; i++)
           {
             (stack)->Push(input->ReadObject());
-//            Push(input->ReadObject());
+            //            Push(input->ReadObject());
           }
         }
         return this;
@@ -69,22 +69,22 @@ namespace Apache
 
       uint32_t CacheableStack::ClassId::get()
       {
-        return GemFireClassIds::CacheableStack;
+        return GeodeClassIds::CacheableStack;
       }
 
       uint32_t CacheableStack::ObjectSize::get()
-      { 
+      {
         //TODO:
         /*uint32_t size = static_cast<uint32_t> (sizeof(CacheableStack^));
         for each (IGFSerializable^ val in this) {
-          if (val != nullptr) {
-            size += val->ObjectSize;
-          }
+        if (val != nullptr) {
+        size += val->ObjectSize;
+        }
         }*/
         return m_stack->Count;
-    }  // namespace Client
-  }  // namespace Geode
-}  // namespace Apache
+      }  // namespace Client
+    }  // namespace Geode
+  }  // namespace Apache
 
- } //namespace 
+} //namespace 
 

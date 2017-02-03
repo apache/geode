@@ -24,13 +24,13 @@ namespace Apache.Geode.Client.UnitTests
   using NUnit.Framework;
   using Apache.Geode.DUnitFramework;
   using Apache.Geode.Client.Tests;
-  
+
   using Apache.Geode.Client;
 
   using QueryStatics = Apache.Geode.Client.Tests.QueryStatics;
   using QueryCategory = Apache.Geode.Client.Tests.QueryCategory;
   using QueryStrings = Apache.Geode.Client.Tests.QueryStrings;
-  
+
   [TestFixture]
   [Category("group1")]
   [Category("unicast_only")]
@@ -135,7 +135,7 @@ namespace Apache.Geode.Client.UnitTests
 
       QueryService<object, object> qs = null;
       qs = PoolManager/*<object, object>*/.Find("__TESTPOOL1_").GetQueryService<object, object>();
-    
+
       Query<object> qry = qs.NewQuery("select distinct * from /" + QERegionName);
       ISelectResults<object> results = qry.Execute();
       Int32 count = results.Size;
@@ -155,7 +155,7 @@ namespace Apache.Geode.Client.UnitTests
       Int32 count = results.Size;
       Assert.AreEqual(4, count, "Expected 4 as number of portfolio objects.");
     }
-    
+
     public void StepOne(string locators, bool isPdx)
     {
       m_isPdx = isPdx;
@@ -172,12 +172,12 @@ namespace Apache.Geode.Client.UnitTests
       Apache.Geode.Client.RegionAttributes<object, object> regattrs = region.Attributes;
       region.CreateSubRegion(QueryRegionNames[1], regattrs);
     }
-    
+
     public void StepTwo(bool isPdx)
     {
       m_isPdx = isPdx;
       IRegion<object, object> region0 = CacheHelper.GetRegion<object, object>(QueryRegionNames[0]);
-      IRegion<object, object> subRegion0 = (IRegion<object, object>) region0.GetSubRegion(QueryRegionNames[1]);
+      IRegion<object, object> subRegion0 = (IRegion<object, object>)region0.GetSubRegion(QueryRegionNames[1]);
       IRegion<object, object> region1 = CacheHelper.GetRegion<object, object>(QueryRegionNames[1]);
       IRegion<object, object> region2 = CacheHelper.GetRegion<object, object>(QueryRegionNames[2]);
       IRegion<object, object> region3 = CacheHelper.GetRegion<object, object>(QueryRegionNames[3]);
@@ -260,7 +260,7 @@ namespace Apache.Geode.Client.UnitTests
           {
             Util.Log("Skipping query index {0} for Pdx because it is function type.", qryIdx);
             qryIdx++;
-            continue;  
+            continue;
           }
         }
 
@@ -343,7 +343,7 @@ namespace Apache.Geode.Client.UnitTests
           }
         }
 
-        qryIdx++;        
+        qryIdx++;
       }
 
       Assert.IsFalse(ErrorOccurred, "One or more query validation errors occurred.");
@@ -387,7 +387,7 @@ namespace Apache.Geode.Client.UnitTests
             paramList[ind] = numVal;
             //Util.Log("NIL::PQRS::361 Interger Args:: paramList[0] = {1}", ind, paramList[ind]);
           }
-          catch (FormatException )
+          catch (FormatException)
           {
             //Console.WriteLine("Param string is not a sequence of digits.");
             paramList[ind] = (System.String)QueryStatics.QueryParamSet[qryIdx][ind];
@@ -470,7 +470,7 @@ namespace Apache.Geode.Client.UnitTests
             }
           }
         }
-        
+
         qryIdx++;
       }
 
@@ -562,7 +562,7 @@ namespace Apache.Geode.Client.UnitTests
             paramList[ind] = numVal;
             //Util.Log("NIL::PQRS:: Interger Args:: paramList[0] = {1}", ind, paramList[ind]);
           }
-          catch (FormatException )
+          catch (FormatException)
           {
             //Console.WriteLine("Param string is not a sequence of digits.");
             paramList[ind] = (System.String)QueryStatics.QueryParamSet[qryIdx][ind];
@@ -659,7 +659,7 @@ namespace Apache.Geode.Client.UnitTests
         }
 
         Util.Log("Query index {0} has {1} rows and {2} fields.", qryIdx, rows, fields);
-        
+
         qryIdx++;
       }
 
@@ -715,7 +715,7 @@ namespace Apache.Geode.Client.UnitTests
             paramList[ind] = numVal;
             //Util.Log("NIL::PQRS:: Interger Args:: paramList[0] = {1}", ind, paramList[ind]);
           }
-          catch (FormatException )
+          catch (FormatException)
           {
             //Console.WriteLine("Param string is not a sequence of digits.");
             paramList[ind] = (System.String)QueryStatics.QueryParamSetSS[qryIdx][ind];
@@ -753,7 +753,7 @@ namespace Apache.Geode.Client.UnitTests
         }
 
         Util.Log("Query index {0} has {1} rows and {2} fields.", qryIdx, rows, fields);
-        
+
         qryIdx++;
       }
 
@@ -846,7 +846,7 @@ namespace Apache.Geode.Client.UnitTests
             paramList[ind] = numVal;
             //Util.Log("NIL::PQRS:: Interger Args:: paramList[0] = {1}", ind, paramList[ind]);
           }
-          catch (FormatException )
+          catch (FormatException)
           {
             //Console.WriteLine("Param string is not a sequence of digits.");
             paramList[ind] = (System.String)QueryStatics.QueryParamSetSS[qryIdx][ind];
@@ -1099,7 +1099,7 @@ namespace Apache.Geode.Client.UnitTests
       qs = PoolManager/*<object, object>*/.Find("__TESTPOOL1_").GetQueryService<object, object>();
 
       Query<object> query = qs.NewQuery(QueryStatics.StructSetParamQueries[5].Query);
-      
+
 
       try
       {
@@ -1116,7 +1116,7 @@ namespace Apache.Geode.Client.UnitTests
             paramList[ind] = numVal;
             //Util.Log("NIL::PQRS:: Interger Args:: paramList[0] = {1}", ind, paramList[ind]);
           }
-          catch (FormatException )
+          catch (FormatException)
           {
             //Console.WriteLine("Param string is not a sequence of digits.");
             paramList[ind] = (System.String)QueryStatics.QueryParamSetSS[5][ind];
@@ -1158,7 +1158,7 @@ namespace Apache.Geode.Client.UnitTests
             paramList[ind] = numVal;
             //Util.Log("NIL::PQRS:: Interger Args:: paramList[0] = {1}", ind, paramList[ind]);
           }
-          catch (FormatException )
+          catch (FormatException)
           {
             //Console.WriteLine("Param string is not a sequence of digits.");
             paramList[ind] = (System.String)QueryStatics.QueryParamSetSS[5][ind];
@@ -1175,7 +1175,7 @@ namespace Apache.Geode.Client.UnitTests
         Assert.Fail("Sixth execute unwanted exception: {0}", excp.Message);
       }
     }
-    
+
     public void StepThreeRQ()
     {
       bool ErrorOccurred = false;
@@ -1185,7 +1185,7 @@ namespace Apache.Geode.Client.UnitTests
       int qryIdx = 0;
 
       foreach (QueryStrings qrystr in QueryStatics.RegionQueries)
-      {        
+      {
         if (qrystr.Category == QueryCategory.Unsupported)
         {
           Util.Log("Skipping query index {0} because it is unsupported.", qryIdx);
@@ -1214,7 +1214,7 @@ namespace Apache.Geode.Client.UnitTests
             QueryStatics.RegionQueryRowCounts[qryIdx], results.Size);
           qryIdx++;
           continue;
-        }        
+        }
         qryIdx++;
       }
 
@@ -1222,37 +1222,37 @@ namespace Apache.Geode.Client.UnitTests
 
       try
       {
-          ISelectResults<object> results = region.Query<object>("");
-          Assert.Fail("Expected IllegalArgumentException exception for empty predicate");
+        ISelectResults<object> results = region.Query<object>("");
+        Assert.Fail("Expected IllegalArgumentException exception for empty predicate");
       }
       catch (IllegalArgumentException ex)
       {
-          Util.Log("got expected IllegalArgumentException exception for empty predicate:");
-          Util.Log(ex.Message);
+        Util.Log("got expected IllegalArgumentException exception for empty predicate:");
+        Util.Log(ex.Message);
       }
 
 
       try
       {
-          ISelectResults<object> results = region.Query<object>(QueryStatics.RegionQueries[0].Query, 2200000);
-          Assert.Fail("Expected IllegalArgumentException exception for invalid timeout");
+        ISelectResults<object> results = region.Query<object>(QueryStatics.RegionQueries[0].Query, 2200000);
+        Assert.Fail("Expected IllegalArgumentException exception for invalid timeout");
       }
       catch (IllegalArgumentException ex)
       {
-          Util.Log("got expected IllegalArgumentException exception for invalid timeout:");
-          Util.Log(ex.Message);
+        Util.Log("got expected IllegalArgumentException exception for invalid timeout:");
+        Util.Log(ex.Message);
       }
 
-      
+
       try
       {
-          ISelectResults<object> results = region.Query<object>("bad predicate");
-          Assert.Fail("Expected QueryException exception for wrong predicate");
+        ISelectResults<object> results = region.Query<object>("bad predicate");
+        Assert.Fail("Expected QueryException exception for wrong predicate");
       }
       catch (QueryException ex)
       {
-          Util.Log("got expected QueryException exception for wrong predicate:");
-          Util.Log(ex.Message);
+        Util.Log("got expected QueryException exception for wrong predicate:");
+        Util.Log(ex.Message);
       }
     }
 
@@ -1286,44 +1286,44 @@ namespace Apache.Geode.Client.UnitTests
           qryIdx++;
           continue;
         }
-        
+
         qryIdx++;
       }
 
       Assert.IsFalse(ErrorOccurred, "One or more query validation errors occurred.");
       try
       {
-          bool existsValue = region.ExistsValue("");
-          Assert.Fail("Expected IllegalArgumentException exception for empty predicate");
+        bool existsValue = region.ExistsValue("");
+        Assert.Fail("Expected IllegalArgumentException exception for empty predicate");
       }
       catch (IllegalArgumentException ex)
       {
-          Util.Log("got expected IllegalArgumentException exception for empty predicate:");
-          Util.Log(ex.Message);
+        Util.Log("got expected IllegalArgumentException exception for empty predicate:");
+        Util.Log(ex.Message);
       }
 
 
       try
       {
-          bool existsValue = region.ExistsValue(QueryStatics.RegionQueries[0].Query, 2200000);
-          Assert.Fail("Expected IllegalArgumentException exception for invalid timeout");
+        bool existsValue = region.ExistsValue(QueryStatics.RegionQueries[0].Query, 2200000);
+        Assert.Fail("Expected IllegalArgumentException exception for invalid timeout");
       }
       catch (IllegalArgumentException ex)
       {
-          Util.Log("got expected IllegalArgumentException exception for invalid timeout:");
-          Util.Log(ex.Message);
+        Util.Log("got expected IllegalArgumentException exception for invalid timeout:");
+        Util.Log(ex.Message);
       }
 
-      
+
       try
       {
-          bool existsValue = region.ExistsValue("bad predicate");
-          Assert.Fail("Expected QueryException exception for wrong predicate");
+        bool existsValue = region.ExistsValue("bad predicate");
+        Assert.Fail("Expected QueryException exception for wrong predicate");
       }
       catch (QueryException ex)
       {
-          Util.Log("got expected QueryException exception for wrong predicate:");
-          Util.Log(ex.Message);
+        Util.Log("got expected QueryException exception for wrong predicate:");
+        Util.Log(ex.Message);
       }
     }
 
@@ -1385,36 +1385,36 @@ namespace Apache.Geode.Client.UnitTests
 
       try
       {
-          Object result = region.SelectValue("");
-          Assert.Fail("Expected IllegalArgumentException exception for empty predicate");
+        Object result = region.SelectValue("");
+        Assert.Fail("Expected IllegalArgumentException exception for empty predicate");
       }
       catch (IllegalArgumentException ex)
       {
-          Util.Log("got expected IllegalArgumentException exception for empty predicate:");
-          Util.Log(ex.Message);
+        Util.Log("got expected IllegalArgumentException exception for empty predicate:");
+        Util.Log(ex.Message);
       }
 
 
       try
       {
-          Object result = region.SelectValue(QueryStatics.RegionQueries[0].Query, 2200000);
-          Assert.Fail("Expected IllegalArgumentException exception for invalid timeout");
+        Object result = region.SelectValue(QueryStatics.RegionQueries[0].Query, 2200000);
+        Assert.Fail("Expected IllegalArgumentException exception for invalid timeout");
       }
       catch (IllegalArgumentException ex)
       {
-          Util.Log("got expected IllegalArgumentException exception for invalid timeout:");
-          Util.Log(ex.Message);
+        Util.Log("got expected IllegalArgumentException exception for invalid timeout:");
+        Util.Log(ex.Message);
       }
 
       try
       {
-          Object result = region.SelectValue("bad predicate");
-          Assert.Fail("Expected QueryException exception for wrong predicate");
+        Object result = region.SelectValue("bad predicate");
+        Assert.Fail("Expected QueryException exception for wrong predicate");
       }
       catch (QueryException ex)
       {
-          Util.Log("got expected QueryException exception for wrong predicate:");
-          Util.Log(ex.Message);
+        Util.Log("got expected QueryException exception for wrong predicate:");
+        Util.Log(ex.Message);
       }
     }
 
@@ -1459,13 +1459,13 @@ namespace Apache.Geode.Client.UnitTests
 
       Assert.IsFalse(ErrorOccurred, "Query expected exceptions did not occur.");
     }
-    
+
     //private void CreateRegions(object p, object USE_ACK, object endPoint1, bool p_4)
     //{
     //  throw new Exception("The method or operation is not implemented.");
     //}
 
-    
+
     //public void CompareMap(CacheableHashMap map1, CacheableHashMap map2)
     //{
     //  if (map1.Count != map2.Count)
@@ -1979,6 +1979,6 @@ namespace Apache.Geode.Client.UnitTests
       }
       m_isPdx = false;
     }
-    
+
   }
 }

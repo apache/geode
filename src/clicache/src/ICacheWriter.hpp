@@ -49,11 +49,11 @@ namespace Apache
       /// region modification occurs. 
       /// </para><para>
       /// Before a region is updated via a put, create, or destroy operation,
-      /// GemFire will call an <c>ICacheWriter</c> that is installed anywhere in any
+      /// Geode will call an <c>ICacheWriter</c> that is installed anywhere in any
       /// participating cache for that region, preferring a local <c>ICacheWriter</c>
       /// if there is one. Usually there will be only one <c>ICacheWriter</c> in
       /// the distributed system. If there are multiple <c>ICacheWriter</c>s
-      /// available in the distributed system, the GemFire
+      /// available in the distributed system, the Geode
       /// implementation always prefers one that is stored locally, or else picks one
       /// arbitrarily. In any case, only one <c>ICacheWriter</c> will be invoked.
       /// </para><para>
@@ -98,7 +98,7 @@ namespace Apache
         /// </param>
         /// <seealso cref="Region.Put" />
         /// <seealso cref="Region.Get" />
-        bool BeforeUpdate( EntryEvent<TKey, TValue>^ ev );
+        bool BeforeUpdate(EntryEvent<TKey, TValue>^ ev);
 
         /// <summary>
         /// Called before an entry is created. Entry creation is initiated by a
@@ -116,7 +116,7 @@ namespace Apache
         /// <seealso cref="Region.Create" />
         /// <seealso cref="Region.Put" />
         /// <seealso cref="Region.Get" />
-        bool BeforeCreate( EntryEvent<TKey, TValue>^ ev );
+        bool BeforeCreate(EntryEvent<TKey, TValue>^ ev);
 
         /// <summary>
         /// Called before an entry is destroyed.
@@ -131,12 +131,12 @@ namespace Apache
         /// event object associated with destroying the entry
         /// </param>
         /// <seealso cref="Region.Destroy" />
-        bool BeforeDestroy( EntryEvent<TKey, TValue>^ ev );
+        bool BeforeDestroy(EntryEvent<TKey, TValue>^ ev);
 
         /// <summary>
         /// Called before this region is cleared.
         /// </summary>
-        bool BeforeRegionClear( RegionEvent<TKey, TValue>^ ev );
+        bool BeforeRegionClear(RegionEvent<TKey, TValue>^ ev);
 
         /// <summary>
         /// Called before this region is destroyed.
@@ -145,7 +145,7 @@ namespace Apache
         /// event object associated with destroying the region
         /// </param>
         /// <seealso cref="Region.DestroyRegion" />
-        bool BeforeRegionDestroy( RegionEvent<TKey, TValue>^ ev );
+        bool BeforeRegionDestroy(RegionEvent<TKey, TValue>^ ev);
 
         /// <summary>
         /// Called when the region containing this callback is destroyed, when
@@ -164,7 +164,7 @@ namespace Apache
         /// <param name="region">region to close</param>
         /// <seealso cref="Cache.Close" />
         /// <seealso cref="Region.DestroyRegion" />
-        void Close( IRegion<TKey, TValue>^ region );
+        void Close(IRegion<TKey, TValue>^ region);
       };
     }  // namespace Client
   }  // namespace Geode

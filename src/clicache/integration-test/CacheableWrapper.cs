@@ -25,7 +25,7 @@ namespace Apache.Geode.Client.UnitTests
   using NUnit.Framework;
 
   /// <summary>
-  /// Interface class for wrappers of gemfire cacheable types.
+  /// Interface class for wrappers of geode cacheable types.
   /// </summary>
   /// <remarks>
   /// This interface has various useful functions like setting value randomly,
@@ -61,7 +61,7 @@ namespace Apache.Geode.Client.UnitTests
     }
 
     public abstract void InitRandomValue(int maxSize);
-    
+
     public abstract uint GetChecksum(IGFSerializable cacheableObject);
 
     public virtual uint GetChecksum()
@@ -71,7 +71,7 @@ namespace Apache.Geode.Client.UnitTests
   }
 
   /// <summary>
-  /// Interface class for wrappers of gemfire cacheable key types.
+  /// Interface class for wrappers of geode cacheable key types.
   /// </summary>
   /// <remarks>
   /// This interface has various useful functions like setting value randomly,

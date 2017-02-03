@@ -10,3 +10,4 @@ Install-Package https://download.microsoft.com/download/0/B/C/0BC321A4-013F-479C
     -Hash ED8D88D0AB88832754302BFC2A374E803B3A21C1590B428092944272F9EA30FE `
     -ArgumentList @("/quiet", "/log", $log) `
     -Log $log -Verbose
+

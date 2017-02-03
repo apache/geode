@@ -19,7 +19,7 @@
 
 #include "gf_defs.hpp"
 #include "IGFSerializable.hpp"
-#include "GemFireClassIds.hpp"
+#include "GeodeClassIds.hpp"
 
 
 using namespace System;
@@ -133,7 +133,7 @@ namespace Apache
         {
           virtual uint32_t get()
           {
-            return GemFireClassIds::CacheableObjectArray;
+            return GeodeClassIds::CacheableObjectArray;
           }
         }
 

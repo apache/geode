@@ -20,7 +20,7 @@
 using namespace System;
 #include "../DataOutput.hpp"
 #include "../DataInput.hpp"
-#include "../GemFireClassIds.hpp"
+#include "../GeodeClassIds.hpp"
 
 namespace Apache
 {
@@ -49,12 +49,12 @@ namespace Apache
           Int32 getFixedTypeSize();
         public:
           PdxFieldType(String^ fieldName,
-                        String^ className,
-                        Byte typeId,
-                        Int32 sequenceId,
-                        bool isVariableLengthType,
-                        Int32 fixedSize,
-                        Int32 varLenFieldIdx)
+                       String^ className,
+                       Byte typeId,
+                       Int32 sequenceId,
+                       bool isVariableLengthType,
+                       Int32 fixedSize,
+                       Int32 varLenFieldIdx)
           {
             m_cachedHashcode = 0;
             m_fieldName = fieldName;
@@ -99,8 +99,8 @@ namespace Apache
 
           property bool IdentityField
           {
-            bool get() {return m_isIdentityField;}
-            void set(bool value) {m_isIdentityField = value;}
+            bool get() { return m_isIdentityField; }
+            void set(bool value) { m_isIdentityField = value; }
           }
 
           property Int32 Size
@@ -125,26 +125,26 @@ namespace Apache
             void set(Int32 Value);
           }
 
-           virtual bool Equals(Object^ otherObj) override;
-           virtual Int32 GetHashCode() override;
+          virtual bool Equals(Object^ otherObj) override;
+          virtual Int32 GetHashCode() override;
 
-           virtual void ToData( DataOutput^ output );
-           virtual IGFSerializable^ FromData( DataInput^ input );
-           virtual property uint32_t ObjectSize
-           {
-             uint32_t get( ){return 0;}
-           }
-           virtual property uint32_t ClassId
-           {
-             uint32_t get( ){return m_typeId;}
-           }
-           virtual String^ ToString( ) override
-           {
-             return "PdxFieldName:" + m_fieldName + ", TypeId: " + m_typeId + ", VarLenFieldIdx:" + m_varLenFieldIdx + ", sequenceid:" + m_sequenceId;
-           }
+          virtual void ToData(DataOutput^ output);
+          virtual IGFSerializable^ FromData(DataInput^ input);
+          virtual property uint32_t ObjectSize
+          {
+            uint32_t get(){ return 0; }
+          }
+          virtual property uint32_t ClassId
+          {
+            uint32_t get(){ return m_typeId; }
+          }
+          virtual String^ ToString() override
+          {
+            return "PdxFieldName:" + m_fieldName + ", TypeId: " + m_typeId + ", VarLenFieldIdx:" + m_varLenFieldIdx + ", sequenceid:" + m_sequenceId;
+          }
         };
-    }  // namespace Client
-  }  // namespace Geode
-}  // namespace Apache
+      }  // namespace Client
+    }  // namespace Geode
+  }  // namespace Apache
 
 }

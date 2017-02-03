@@ -23,7 +23,7 @@
 #include <gfcpp/CacheableString.hpp>
 #include "impl/ManagedString.hpp"
 #include "CacheableKey.hpp"
-#include "GemFireClassIds.hpp"
+#include "GeodeClassIds.hpp"
 
 using namespace System;
 
@@ -74,7 +74,7 @@ namespace Apache
         inline static CacheableString^ Create(String^ value)
         {
           return (value != nullptr ?
-            gcnew CacheableString(value, true) : nullptr);
+                  gcnew CacheableString(value, true) : nullptr);
         }
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace Apache
           }
         }
 
-        
+
         /// <summary>
         /// return the size of this object in bytes
         /// </summary>
@@ -132,9 +132,9 @@ namespace Apache
         inline static CacheableString^ Create(array<Char>^ value)
         {
           return (value != nullptr && value->Length > 0 ?
-            gcnew CacheableString(value, true) : nullptr);
+                  gcnew CacheableString(value, true) : nullptr);
         }
-        
+
         /// <summary>
         /// Return a string representation of the object.
         /// This returns the same string as <c>Value</c> property.
@@ -174,7 +174,7 @@ namespace Apache
           }
         }
 
-         /// <summary>
+        /// <summary>
         /// Static function to check whether IsNullOrEmpty.
         /// </summary>
         /// <remarks>
@@ -189,7 +189,7 @@ namespace Apache
         /// <summary>
         /// Implicit conversion operator to underlying <c>System.String</c>.
         /// </summary>
-        inline static operator String^ (CacheableString^ str)
+        inline static operator String ^ (CacheableString^ str)
         {
           return (str != nullptr ? CacheableString::GetString(str) : nullptr);
         }
@@ -219,22 +219,22 @@ namespace Apache
       internal:
         static IGFSerializable^ CreateDeserializable()
         {
-          return gcnew CacheableString(GemFireClassIds::CacheableASCIIString);
+          return gcnew CacheableString(GeodeClassIds::CacheableASCIIString);
         }
-        
+
         static IGFSerializable^ createDeserializableHuge()
         {
-          return gcnew CacheableString(GemFireClassIds::CacheableASCIIStringHuge);
+          return gcnew CacheableString(GeodeClassIds::CacheableASCIIStringHuge);
         }
 
         static IGFSerializable^ createUTFDeserializable()
         {
-          return gcnew CacheableString(GemFireClassIds::CacheableString);
+          return gcnew CacheableString(GeodeClassIds::CacheableString);
         }
 
         static IGFSerializable^ createUTFDeserializableHuge()
         {
-          return gcnew CacheableString(GemFireClassIds::CacheableStringHuge);
+          return gcnew CacheableString(GeodeClassIds::CacheableStringHuge);
         }
         /// <summary>
         /// Factory function to register wrapper
@@ -242,7 +242,7 @@ namespace Apache
         static IGFSerializable^ Create(apache::geode::client::Serializable* obj)
         {
           return (obj != nullptr ?
-            gcnew CacheableString(obj) : nullptr);
+                  gcnew CacheableString(obj) : nullptr);
         }
 
         /// <summary>
@@ -250,14 +250,14 @@ namespace Apache
         /// from the given managed string.
         /// </summary>
         static void GetCacheableString(String^ value,
-          apache::geode::client::CacheableStringPtr& cStr);
+                                       apache::geode::client::CacheableStringPtr& cStr);
 
         /// <summary>
         /// Internal function to create a <c>apache::geode::client::CacheableString</c>
         /// from the given managed array of characters.
         /// </summary>
         static void GetCacheableString(array<Char>^ value,
-          apache::geode::client::CacheableStringPtr& cStr);
+                                       apache::geode::client::CacheableStringPtr& cStr);
 
         /// <summary>
         /// Get the <c>System.String</c> from the given
@@ -281,21 +281,21 @@ namespace Apache
           return cStr->Value;
         }
 
-				CacheableString(uint32_t type): CacheableKey()
+        CacheableString(uint32_t type) : CacheableKey()
         {
           m_type = type;
         }
 
       private:
         String^ m_value;
-        uint32_t m_type; 
+        uint32_t m_type;
         int m_hashcode;
 
-        CacheableString(): CacheableKey()
+        CacheableString() : CacheableKey()
         {
-          m_type = GemFireClassIds::CacheableASCIIString;
-        }        
-         
+          m_type = GeodeClassIds::CacheableASCIIString;
+        }
+
         void SetStringType();
         /// <summary>
         /// Private constructor to create a CacheableString without checking

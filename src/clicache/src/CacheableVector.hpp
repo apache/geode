@@ -19,7 +19,7 @@
 
 #include "gf_defs.hpp"
 #include "IGFSerializable.hpp"
-#include "GemFireClassIds.hpp"
+#include "GeodeClassIds.hpp"
 
 
 using namespace System;
@@ -44,12 +44,12 @@ namespace Apache
         /// <summary>
         /// Allocates a new empty instance.
         /// </summary>
-        inline CacheableVector(System::Collections::IList^ arrayList)          
-        { 
+        inline CacheableVector(System::Collections::IList^ arrayList)
+        {
           m_arrayList = arrayList;
         }
 
-        
+
         /// <summary>
         /// Static function to create a new empty instance.
         /// </summary>
@@ -66,7 +66,7 @@ namespace Apache
           return gcnew CacheableVector(list);
         }
 
-        
+
         // Region: IGFSerializable Members
 
         /// <summary>
@@ -105,7 +105,7 @@ namespace Apache
         {
           virtual uint32_t get()
           {
-            return GemFireClassIds::CacheableVector;
+            return GeodeClassIds::CacheableVector;
           }
         }
 
@@ -127,8 +127,8 @@ namespace Apache
           return gcnew CacheableVector(gcnew System::Collections::ArrayList());
         }
 
-        private:
-          System::Collections::IList^ m_arrayList; 
+      private:
+        System::Collections::IList^ m_arrayList;
       };
     }  // namespace Client
   }  // namespace Geode

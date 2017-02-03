@@ -23,7 +23,7 @@ namespace Apache.Geode.Client.UnitTests
   using NUnit.Framework;
   using Apache.Geode.DUnitFramework;
   using Apache.Geode.Client;
-  
+
   #region Helper class
 
   public class CacheableHelper
@@ -114,15 +114,15 @@ namespace Apache.Geode.Client.UnitTests
 
     public static bool IsContainerTypeId(uint typeId)
     {
-      return (typeId == GemFireClassIds.CacheableObjectArray) ||
-        (typeId == GemFireClassIds.CacheableVector) ||
-        (typeId == GemFireClassIds.CacheableArrayList) ||
-        (typeId == GemFireClassIds.CacheableStack) ||
-        (typeId == GemFireClassIds.CacheableHashMap) ||
-        (typeId == GemFireClassIds.CacheableIdentityHashMap) ||
-        (typeId == GemFireClassIds.CacheableHashTable) ||
-        (typeId == GemFireClassIds.CacheableLinkedHashSet) ||
-        (typeId == GemFireClassIds.CacheableHashSet);
+      return (typeId == GeodeClassIds.CacheableObjectArray) ||
+        (typeId == GeodeClassIds.CacheableVector) ||
+        (typeId == GeodeClassIds.CacheableArrayList) ||
+        (typeId == GeodeClassIds.CacheableStack) ||
+        (typeId == GeodeClassIds.CacheableHashMap) ||
+        (typeId == GeodeClassIds.CacheableIdentityHashMap) ||
+        (typeId == GeodeClassIds.CacheableHashTable) ||
+        (typeId == GeodeClassIds.CacheableLinkedHashSet) ||
+        (typeId == GeodeClassIds.CacheableHashSet);
     }
 
     public static bool IsUnhandledType(uint typeId)
@@ -131,9 +131,9 @@ namespace Apache.Geode.Client.UnitTests
       // not work on Windows without significant workarounds; also see
       // the corresponding comment in C++ testThinClientCacheables.
       // Also skipping C# specific classes.
-      return (typeId == GemFireClassIds.CacheableFileName) ||
-        (typeId == GemFireClassIds.CacheableManagedObject) ||
-        (typeId == GemFireClassIds.CacheableManagedObjectXml);
+      return (typeId == GeodeClassIds.CacheableFileName) ||
+        (typeId == GeodeClassIds.CacheableManagedObject) ||
+        (typeId == GeodeClassIds.CacheableManagedObjectXml);
     }
     public static long ConstantDateTime = 0;
     public static void RegisterBuiltins(long dateTime)
@@ -142,33 +142,33 @@ namespace Apache.Geode.Client.UnitTests
       CacheableWrapperFactory.ClearStaticVaraiables();
       #region Cacheable keys
 
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableBoolean,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableBoolean,
         typeof(CacheableBooleanWrapper), CacheableBooleanWrapper.Create, typeof(bool));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableByte,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableByte,
         typeof(CacheableByteWrapper), CacheableByteWrapper.Create, typeof(sbyte));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableCharacter,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableCharacter,
         typeof(CacheableCharacterWrapper), CacheableCharacterWrapper.Create, typeof(Char));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableDate,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableDate,
         typeof(CacheableDateWrapper), CacheableDateWrapper.Create, typeof(DateTime));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableDouble,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableDouble,
         typeof(CacheableDoubleWrapper), CacheableDoubleWrapper.Create, typeof(Double));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableFileName,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableFileName,
         typeof(CacheableFileNameWrapper), CacheableFileNameWrapper.Create, typeof(CacheableFileName));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableFloat,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableFloat,
         typeof(CacheableFloatWrapper), CacheableFloatWrapper.Create, typeof(float));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableInt16,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableInt16,
         typeof(CacheableInt16Wrapper), CacheableInt16Wrapper.Create, typeof(Int16));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableInt32,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableInt32,
         typeof(CacheableInt32Wrapper), CacheableInt32Wrapper.Create, typeof(Int32));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableInt64,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableInt64,
         typeof(CacheableInt64Wrapper), CacheableInt64Wrapper.Create, typeof(Int64));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableASCIIString,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableASCIIString,
         typeof(CacheableStringWrapper), CacheableStringWrapper.Create, typeof(string));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableString,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableString,
         typeof(CacheableUnicodeStringWrapper), CacheableUnicodeStringWrapper.Create);
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableASCIIStringHuge,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableASCIIStringHuge,
         typeof(CacheableHugeStringWrapper), CacheableHugeStringWrapper.Create);
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableStringHuge,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableStringHuge,
         typeof(CacheableHugeUnicodeStringWrapper), CacheableHugeUnicodeStringWrapper.Create);
       CacheableWrapperFactory.RegisterKeyType(10001,
       typeof(PdxCDataWrapper), PdxCDataWrapper.Create, typeof(PdxCData));
@@ -180,55 +180,55 @@ namespace Apache.Geode.Client.UnitTests
 
       #region Other cacheables
 
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableBytes,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableBytes,
         typeof(CacheableBytesWrapper), CacheableBytesWrapper.Create, typeof(byte[]));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableDoubleArray,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableDoubleArray,
         typeof(CacheableDoubleArrayWrapper), CacheableDoubleArrayWrapper.Create, typeof(Double[]));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableFloatArray,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableFloatArray,
         typeof(CacheableFloatArrayWrapper), CacheableFloatArrayWrapper.Create, typeof(float[]));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableHashMap,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableHashMap,
         typeof(CacheableHashMapWrapper), CacheableHashMapWrapper.Create, typeof(Dictionary<object, object>));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableHashTable,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableHashTable,
         typeof(CacheableHashTableWrapper), CacheableHashTableWrapper.Create, typeof(System.Collections.Hashtable));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableIdentityHashMap,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableIdentityHashMap,
         typeof(CacheableIdentityHashMapWrapper), CacheableIdentityHashMapWrapper.Create, typeof(Dictionary<object, object>));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableHashSet,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableHashSet,
         typeof(CacheableHashSetWrapper), CacheableHashSetWrapper.Create, typeof(CacheableHashSet));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableLinkedHashSet,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableLinkedHashSet,
         typeof(CacheableLinkedHashSetWrapper), CacheableLinkedHashSetWrapper.Create, typeof(CacheableLinkedHashSet));
 
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableInt16Array,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableInt16Array,
         typeof(CacheableInt16ArrayWrapper), CacheableInt16ArrayWrapper.Create, typeof(Int16[]));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableInt32Array,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableInt32Array,
         typeof(CacheableInt32ArrayWrapper), CacheableInt32ArrayWrapper.Create, typeof(Int32[]));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableInt64Array,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableInt64Array,
         typeof(CacheableInt64ArrayWrapper), CacheableInt64ArrayWrapper.Create, typeof(Int64[]));
       {//old one
-        //CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableNullString,
+        //CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableNullString,
         //  typeof(CacheableNullStringWrapper), CacheableNullStringWrapper.Create);
-        //CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableASCIIString,
+        //CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableASCIIString,
         //  typeof(CacheableEmptyStringWrapper), CacheableEmptyStringWrapper.Create);
-        //CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableString,
+        //CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableString,
         //  typeof(CacheableEmptyUnicodeStringWrapper), CacheableEmptyUnicodeStringWrapper.Create);
       }
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableStringArray,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableStringArray,
         typeof(CacheableStringArrayWrapper), CacheableStringArrayWrapper.Create, typeof(string[]));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableUndefined,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableUndefined,
         typeof(CacheableUndefinedWrapper), CacheableUndefinedWrapper.Create, typeof(CacheableUndefined));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableVector,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableVector,
         typeof(CacheableVectorWrapper), CacheableVectorWrapper.Create, typeof(System.Collections.ArrayList));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableObjectArray,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableObjectArray,
         typeof(CacheableObjectArrayWrapper), CacheableObjectArrayWrapper.Create, typeof(CacheableObjectArray));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableArrayList,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableArrayList,
         typeof(CacheableArrayListWrapper), CacheableArrayListWrapper.Create, typeof(List<object>));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableStack,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableStack,
         typeof(CacheableStackWrapper), CacheableStackWrapper.Create, typeof(Stack<object>));
 
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableManagedObject,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableManagedObject,
         typeof(CacheableObjectWrapper), CacheableObjectWrapper.Create, typeof(CacheableObject));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableManagedObjectXml,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableManagedObjectXml,
         typeof(CacheableObjectXmlWrapper), CacheableObjectXmlWrapper.Create, typeof(CacheableObjectXml));
-     
+
 
 
       #endregion
@@ -240,35 +240,35 @@ namespace Apache.Geode.Client.UnitTests
       CacheableWrapperFactory.ClearStaticVaraiables();
       #region Cacheable keys
 
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableBoolean,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableBoolean,
         typeof(CacheableBooleanWrapper), CacheableBooleanWrapper.Create, typeof(bool));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableByte,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableByte,
         typeof(CacheableByteWrapper), CacheableByteWrapper.Create, typeof(sbyte));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableCharacter,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableCharacter,
         typeof(CacheableCharacterWrapper), CacheableCharacterWrapper.Create, typeof(Char));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableDate,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableDate,
         typeof(CacheableDateWrapper), CacheableDateWrapper.Create, typeof(DateTime));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableDouble,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableDouble,
         typeof(CacheableDoubleWrapper), CacheableDoubleWrapper.Create, typeof(Double));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableFileName,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableFileName,
         typeof(CacheableFileNameWrapper), CacheableFileNameWrapper.Create, typeof(CacheableFileName));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableFloat,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableFloat,
         typeof(CacheableFloatWrapper), CacheableFloatWrapper.Create, typeof(float));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableInt16,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableInt16,
         typeof(CacheableInt16Wrapper), CacheableInt16Wrapper.Create, typeof(Int16));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableInt32,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableInt32,
         typeof(CacheableInt32Wrapper), CacheableInt32Wrapper.Create, typeof(Int32));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableInt64,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableInt64,
         typeof(CacheableInt64Wrapper), CacheableInt64Wrapper.Create, typeof(Int64));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableASCIIString,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableASCIIString,
         typeof(CacheableStringWrapper), CacheableStringWrapper.Create, typeof(string));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableString,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableString,
         typeof(CacheableUnicodeStringWrapper), CacheableUnicodeStringWrapper.Create);
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableASCIIStringHuge,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableASCIIStringHuge,
         typeof(CacheableHugeStringWrapper), CacheableHugeStringWrapper.Create);
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableStringHuge,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableStringHuge,
         typeof(CacheableHugeUnicodeStringWrapper), CacheableHugeUnicodeStringWrapper.Create);
-      
+
       //need to register pdx type
       Serializable.RegisterPdxType(PdxCData.CreateDeserializable);
 
@@ -276,53 +276,53 @@ namespace Apache.Geode.Client.UnitTests
 
       #region Other cacheables
 
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableBytes,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableBytes,
         typeof(CacheableBytesWrapper), CacheableBytesWrapper.Create, typeof(byte[]));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableDoubleArray,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableDoubleArray,
         typeof(CacheableDoubleArrayWrapper), CacheableDoubleArrayWrapper.Create, typeof(Double[]));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableFloatArray,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableFloatArray,
         typeof(CacheableFloatArrayWrapper), CacheableFloatArrayWrapper.Create, typeof(float[]));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableHashMap,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableHashMap,
         typeof(CacheableHashMapWrapper), CacheableHashMapWrapper.Create, typeof(Dictionary<object, object>));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableHashTable,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableHashTable,
         typeof(CacheableHashTableWrapper), CacheableHashTableWrapper.Create, typeof(System.Collections.Hashtable));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableIdentityHashMap,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableIdentityHashMap,
         typeof(CacheableIdentityHashMapWrapper), CacheableIdentityHashMapWrapper.Create, typeof(Dictionary<object, object>));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableHashSet,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableHashSet,
         typeof(CacheableHashSetWrapper), CacheableHashSetWrapper.Create, typeof(CacheableHashSet));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableLinkedHashSet,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableLinkedHashSet,
         typeof(CacheableLinkedHashSetWrapper), CacheableLinkedHashSetWrapper.Create, typeof(CacheableLinkedHashSet));
 
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableInt16Array,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableInt16Array,
         typeof(CacheableInt16ArrayWrapper), CacheableInt16ArrayWrapper.Create, typeof(Int16[]));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableInt32Array,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableInt32Array,
         typeof(CacheableInt32ArrayWrapper), CacheableInt32ArrayWrapper.Create, typeof(Int32[]));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableInt64Array,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableInt64Array,
         typeof(CacheableInt64ArrayWrapper), CacheableInt64ArrayWrapper.Create, typeof(Int64[]));
       {//old one
-        //CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableNullString,
+        //CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableNullString,
         //  typeof(CacheableNullStringWrapper), CacheableNullStringWrapper.Create);
-        //CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableASCIIString,
+        //CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableASCIIString,
         //  typeof(CacheableEmptyStringWrapper), CacheableEmptyStringWrapper.Create);
-        //CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableString,
+        //CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableString,
         //  typeof(CacheableEmptyUnicodeStringWrapper), CacheableEmptyUnicodeStringWrapper.Create);
       }
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableStringArray,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableStringArray,
         typeof(CacheableStringArrayWrapper), CacheableStringArrayWrapper.Create, typeof(string[]));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableUndefined,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableUndefined,
         typeof(CacheableUndefinedWrapper), CacheableUndefinedWrapper.Create, typeof(CacheableUndefined));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableVector,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableVector,
         typeof(CacheableVectorWrapper), CacheableVectorWrapper.Create, typeof(System.Collections.ArrayList));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableObjectArray,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableObjectArray,
         typeof(CacheableObjectArrayWrapper), CacheableObjectArrayWrapper.Create, typeof(CacheableObjectArray));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableArrayList,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableArrayList,
         typeof(CacheableArrayListWrapper), CacheableArrayListWrapper.Create, typeof(List<object>));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableStack,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableStack,
         typeof(CacheableStackWrapper), CacheableStackWrapper.Create, typeof(Stack<object>));
 
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableManagedObject,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableManagedObject,
         typeof(CacheableObjectWrapper), CacheableObjectWrapper.Create, typeof(CacheableObject));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableManagedObjectXml,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableManagedObjectXml,
         typeof(CacheableObjectXmlWrapper), CacheableObjectXmlWrapper.Create, typeof(CacheableObjectXml));
 
 
@@ -336,34 +336,34 @@ namespace Apache.Geode.Client.UnitTests
       CacheableWrapperFactory.ClearStaticVaraiables();
       #region Cacheable keys
 
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableBoolean,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableBoolean,
         typeof(CacheableBooleanWrapper), CacheableBooleanWrapper.Create, typeof(bool));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableByte,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableByte,
         typeof(CacheableByteWrapper), CacheableByteWrapper.Create, typeof(sbyte));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableCharacter,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableCharacter,
         typeof(CacheableCharacterWrapper), CacheableCharacterWrapper.Create, typeof(Char));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableDate,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableDate,
         typeof(CacheableDateWrapper), CacheableDateWrapper.Create, typeof(DateTime));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableDouble,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableDouble,
         typeof(CacheableDoubleWrapper), CacheableDoubleWrapper.Create, typeof(Double));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableFileName,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableFileName,
         typeof(CacheableFileNameWrapper), CacheableFileNameWrapper.Create, typeof(CacheableFileName));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableFloat,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableFloat,
         typeof(CacheableFloatWrapper), CacheableFloatWrapper.Create, typeof(float));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableInt16,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableInt16,
         typeof(CacheableInt16Wrapper), CacheableInt16Wrapper.Create, typeof(Int16));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableInt32,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableInt32,
         typeof(CacheableInt32Wrapper), CacheableInt32Wrapper.Create, typeof(Int32));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableInt64,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableInt64,
         typeof(CacheableInt64Wrapper), CacheableInt64Wrapper.Create, typeof(Int64));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableASCIIString,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableASCIIString,
         typeof(CacheableStringWrapper), CacheableStringWrapper.Create, typeof(string));
-      CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableString,
+      CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableString,
         typeof(CacheableUnicodeStringWrapper), CacheableUnicodeStringWrapper.Create);
       {
-        //CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableASCIIStringHuge,
+        //CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableASCIIStringHuge,
         //  typeof(CacheableHugeStringWrapper), CacheableHugeStringWrapper.Create);
-        //CacheableWrapperFactory.RegisterKeyType(GemFireClassIds.CacheableStringHuge,
+        //CacheableWrapperFactory.RegisterKeyType(GeodeClassIds.CacheableStringHuge,
         //  typeof(CacheableHugeUnicodeStringWrapper), CacheableHugeUnicodeStringWrapper.Create);
       }
       CacheableWrapperFactory.RegisterKeyType(10001,
@@ -377,53 +377,53 @@ namespace Apache.Geode.Client.UnitTests
 
       #region Other cacheables
 
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableBytes,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableBytes,
         typeof(CacheableBytesWrapper), CacheableBytesWrapper.Create, typeof(byte[]));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableDoubleArray,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableDoubleArray,
         typeof(CacheableDoubleArrayWrapper), CacheableDoubleArrayWrapper.Create, typeof(Double[]));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableFloatArray,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableFloatArray,
         typeof(CacheableFloatArrayWrapper), CacheableFloatArrayWrapper.Create, typeof(float[]));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableHashMap,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableHashMap,
         typeof(CacheableHashMapWrapper), CacheableHashMapWrapper.Create, typeof(Dictionary<object, object>));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableHashTable,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableHashTable,
         typeof(CacheableHashTableWrapper), CacheableHashTableWrapper.Create, typeof(System.Collections.Hashtable));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableIdentityHashMap,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableIdentityHashMap,
         typeof(CacheableIdentityHashMapWrapper), CacheableIdentityHashMapWrapper.Create, typeof(Dictionary<object, object>));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableHashSet,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableHashSet,
         typeof(CacheableHashSetWrapper), CacheableHashSetWrapper.Create, typeof(CacheableHashSet));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableLinkedHashSet,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableLinkedHashSet,
         typeof(CacheableLinkedHashSetWrapper), CacheableLinkedHashSetWrapper.Create, typeof(CacheableLinkedHashSet));
 
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableInt16Array,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableInt16Array,
         typeof(CacheableInt16ArrayWrapper), CacheableInt16ArrayWrapper.Create, typeof(Int16[]));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableInt32Array,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableInt32Array,
         typeof(CacheableInt32ArrayWrapper), CacheableInt32ArrayWrapper.Create, typeof(Int32[]));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableInt64Array,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableInt64Array,
         typeof(CacheableInt64ArrayWrapper), CacheableInt64ArrayWrapper.Create, typeof(Int64[]));
       {//old one
-        //CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableNullString,
+        //CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableNullString,
         //  typeof(CacheableNullStringWrapper), CacheableNullStringWrapper.Create);
-        //CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableASCIIString,
+        //CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableASCIIString,
         //  typeof(CacheableEmptyStringWrapper), CacheableEmptyStringWrapper.Create);
-        //CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableString,
+        //CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableString,
         //  typeof(CacheableEmptyUnicodeStringWrapper), CacheableEmptyUnicodeStringWrapper.Create);
       }
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableStringArray,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableStringArray,
         typeof(CacheableStringArrayWrapper), CacheableStringArrayWrapper.Create, typeof(string[]));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableUndefined,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableUndefined,
         typeof(CacheableUndefinedWrapper), CacheableUndefinedWrapper.Create, typeof(CacheableUndefined));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableVector,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableVector,
         typeof(CacheableVectorWrapper), CacheableVectorWrapper.Create, typeof(System.Collections.ArrayList));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableObjectArray,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableObjectArray,
         typeof(CacheableObjectArrayWrapper), CacheableObjectArrayWrapper.Create, typeof(CacheableObjectArray));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableArrayList,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableArrayList,
         typeof(CacheableArrayListWrapper), CacheableArrayListWrapper.Create, typeof(List<object>));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableStack,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableStack,
         typeof(CacheableStackWrapper), CacheableStackWrapper.Create, typeof(Stack<object>));
 
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableManagedObject,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableManagedObject,
         typeof(CacheableObjectWrapper), CacheableObjectWrapper.Create, typeof(CacheableObject));
-      CacheableWrapperFactory.RegisterType(GemFireClassIds.CacheableManagedObjectXml,
+      CacheableWrapperFactory.RegisterType(GeodeClassIds.CacheableManagedObjectXml,
         typeof(CacheableObjectXmlWrapper), CacheableObjectXmlWrapper.Create, typeof(CacheableObjectXml));
 
 
@@ -617,18 +617,18 @@ namespace Apache.Geode.Client.UnitTests
     public override void InitKey(int keyIndex, int maxSize)
     {
       //m_cacheableObject = DateTime.Today.AddMinutes(keyIndex % 0xFFFF);
-      DateTime dt = new DateTime(CacheableHelper.ConstantDateTime + keyIndex*TimeSpan.TicksPerMinute );
+      DateTime dt = new DateTime(CacheableHelper.ConstantDateTime + keyIndex * TimeSpan.TicksPerMinute);
       m_cacheableObject = dt;
       Util.Log(" datevalue initkey " + dt.ToString());
     }
 
     private DateTime createRoundOffDTVal(DateTime dt)
-    { 
+    {
       long ticksToAdd = dt.Ticks % TimeSpan.TicksPerMillisecond;
-        ticksToAdd = (ticksToAdd >= (TimeSpan.TicksPerMillisecond/ 2) ?
-          (TimeSpan.TicksPerMillisecond - ticksToAdd) : -ticksToAdd);
-        dt = dt.AddTicks(ticksToAdd);
-        return dt;
+      ticksToAdd = (ticksToAdd >= (TimeSpan.TicksPerMillisecond / 2) ?
+        (TimeSpan.TicksPerMillisecond - ticksToAdd) : -ticksToAdd);
+      dt = dt.AddTicks(ticksToAdd);
+      return dt;
     }
 
     public override void InitRandomValue(int maxSize)
@@ -827,7 +827,7 @@ namespace Apache.Geode.Client.UnitTests
       Assert.IsNotNull(value, "GetChecksum: Null object.");
       return CacheableHelper.CRC32(BitConverter.GetBytes(value));
     }
-    
+
     public override int GetHashCodeN(object cacheableObject)
     {
       float val = (float)cacheableObject;
@@ -1502,20 +1502,20 @@ namespace Apache.Geode.Client.UnitTests
         int index = 0;
         foreach (UInt32 valueTypeId in valueTypeIds)
         {
-          if ((valueTypeId == GemFireClassIds.CacheableASCIIStringHuge ||
-            valueTypeId == GemFireClassIds.CacheableStringHuge)
-              && !(keyTypeId == GemFireClassIds.CacheableBoolean))
+          if ((valueTypeId == GeodeClassIds.CacheableASCIIStringHuge ||
+            valueTypeId == GeodeClassIds.CacheableStringHuge)
+              && !(keyTypeId == GeodeClassIds.CacheableBoolean))
           {
             continue;
           }
-          if ((keyTypeId == GemFireClassIds.CacheableASCIIStringHuge ||
-            keyTypeId == GemFireClassIds.CacheableStringHuge)
-              && !(valueTypeId == GemFireClassIds.CacheableBoolean))
+          if ((keyTypeId == GeodeClassIds.CacheableASCIIStringHuge ||
+            keyTypeId == GeodeClassIds.CacheableStringHuge)
+              && !(valueTypeId == GeodeClassIds.CacheableBoolean))
           {
             continue;
           }
           // null object does not work on server side during deserialization
-          if (valueTypeId == GemFireClassIds.CacheableNullString)
+          if (valueTypeId == GeodeClassIds.CacheableNullString)
           {
             continue;
           }
@@ -1605,19 +1605,19 @@ namespace Apache.Geode.Client.UnitTests
         int index = 0;
         foreach (UInt32 valueTypeId in valueTypeIds)
         {
-          if ((valueTypeId == GemFireClassIds.CacheableASCIIStringHuge ||
-            valueTypeId == GemFireClassIds.CacheableStringHuge)
-            && !(keyTypeId == GemFireClassIds.CacheableBoolean))
+          if ((valueTypeId == GeodeClassIds.CacheableASCIIStringHuge ||
+            valueTypeId == GeodeClassIds.CacheableStringHuge)
+            && !(keyTypeId == GeodeClassIds.CacheableBoolean))
           {
             continue;
           }
-          if ((keyTypeId == GemFireClassIds.CacheableASCIIStringHuge ||
-            keyTypeId == GemFireClassIds.CacheableStringHuge)
-            && !(valueTypeId == GemFireClassIds.CacheableBoolean))
+          if ((keyTypeId == GeodeClassIds.CacheableASCIIStringHuge ||
+            keyTypeId == GeodeClassIds.CacheableStringHuge)
+            && !(valueTypeId == GeodeClassIds.CacheableBoolean))
           {
             continue;
           }
-          if (valueTypeId == GemFireClassIds.CacheableNullString)
+          if (valueTypeId == GeodeClassIds.CacheableNullString)
           {
             continue;
           }
@@ -1713,20 +1713,20 @@ namespace Apache.Geode.Client.UnitTests
         int index = 0;
         foreach (UInt32 valueTypeId in valueTypeIds)
         {
-          if ((valueTypeId == GemFireClassIds.CacheableASCIIStringHuge ||
-            valueTypeId == GemFireClassIds.CacheableStringHuge)
-            && !(keyTypeId == GemFireClassIds.CacheableBoolean))
+          if ((valueTypeId == GeodeClassIds.CacheableASCIIStringHuge ||
+            valueTypeId == GeodeClassIds.CacheableStringHuge)
+            && !(keyTypeId == GeodeClassIds.CacheableBoolean))
           {
             continue;
           }
-          if ((keyTypeId == GemFireClassIds.CacheableASCIIStringHuge ||
-            keyTypeId == GemFireClassIds.CacheableStringHuge)
-            && !(valueTypeId == GemFireClassIds.CacheableBoolean))
+          if ((keyTypeId == GeodeClassIds.CacheableASCIIStringHuge ||
+            keyTypeId == GeodeClassIds.CacheableStringHuge)
+            && !(valueTypeId == GeodeClassIds.CacheableBoolean))
           {
             continue;
           }
           // null object does not work on server side during deserialization
-          if (valueTypeId == GemFireClassIds.CacheableNullString)
+          if (valueTypeId == GeodeClassIds.CacheableNullString)
           {
             continue;
           }
@@ -2209,9 +2209,9 @@ namespace Apache.Geode.Client.UnitTests
         {
           ms.WriteByte((byte)(c & 0xff));
           byte uByte = (byte)((c >> 8) & 0xff);
-          if(uByte != 0x00)
+          if (uByte != 0x00)
             ms.WriteByte(uByte);
-        }        
+        }
       }
       return CacheableHelper.CRC32(ms.ToArray());
     }
@@ -2361,7 +2361,7 @@ namespace Apache.Geode.Client.UnitTests
         }
         wrapper = CacheableWrapperFactory.CreateInstance(obj);
         Assert.IsNotNull(wrapper, "CacheableObjectArrayWrapper.GetChecksum:" +
-          " Could not create an instance of typeId [{0}].", wrapper.TypeId );
+          " Could not create an instance of typeId [{0}].", wrapper.TypeId);
         ckSum ^= wrapper.GetChecksum(obj);
       }
       return ckSum;
@@ -2592,7 +2592,7 @@ namespace Apache.Geode.Client.UnitTests
     #region Static factory creation function
 
     public static CacheableKeyWrapper Create()
-    {      
+    {
       return new PdxCDataWrapper();
     }
 
@@ -2639,12 +2639,13 @@ namespace Apache.Geode.Client.UnitTests
     public override void InitKey(int keyIndex, int maxSize)
     {
       //PdxCData value = CacheableHelper.RandPdxCData();
-      PdxCData value = new PdxCData(keyIndex, keyIndex*2999);
+      PdxCData value = new PdxCData(keyIndex, keyIndex * 2999);
       m_cacheableObject = value;
     }
   }
 
-  public class TypesClass {
+  public class TypesClass
+  {
     private Object[,] typesArray;
     private Object NullItem = null;
     public TypesClass()
@@ -2713,7 +2714,7 @@ namespace Apache.Geode.Client.UnitTests
       { /*TypeIds.ObjectArrayId ,*/ new object[]{(object)0 , (object)1 , (object)2 , (object)3 , (object)4 , (object)5 , (object)6 , (object)7 }, new object[]{(object)0 , (object)1 , (object)2 , (object)3 , (object)4 , (object)5 , (object)6 , (object)7 }, new object[]{(object)0 , (object)1 , (object)2 , (object)3 , (object)4 , (object)5 , (object)6 , (object)7 }, 
         new object[]{(object)0 , (object)1 , (object)2 , (object)3 , (object)4 , (object)5 , (object)6 , (object)7 }, new object[]{(object)0 , (object)1 , (object)2 , (object)3 , (object)4 , (object)5 , (object)6 , (object)7 }, new object[]{(object)0 , (object)1 , (object)2 , (object)3 , (object)4 , (object)5 , (object)6 , (object)7 }, new object[]{(object)0 , (object)1 , (object)2 , (object)3 , (object)4 , (object)5 , (object)6 , (object)7 },
         new object[]{(object)0 , (object)1 , (object)2 , (object)3 , (object)4 , (object)5 , (object)6 , (object)7 } }      
-      };      
+      };
     }
 
     public enum TypeIds
@@ -2733,7 +2734,7 @@ namespace Apache.Geode.Client.UnitTests
       UlongId,
       UshortId,
       StringId,
-      ObjectId, 
+      ObjectId,
       //These all array types will be values only.
       BoolArrayId,
       ByteArrayId,
@@ -2775,7 +2776,7 @@ namespace Apache.Geode.Client.UnitTests
     {
       return NullItem;
     }
-  
-};
+
+  };
   #endregion
 }

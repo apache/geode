@@ -82,7 +82,7 @@ namespace Apache
         {
           virtual uint32_t get() override
           {
-            return GemFireClassIds::CacheableHashTable;
+            return GeodeClassIds::CacheableHashTable;
           }
         }
 

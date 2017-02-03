@@ -48,7 +48,7 @@ namespace Apache
         /// </summary>
         /// <param name="properties">initialize with the given properties</param>
         //generic <class TPropKey, class TPropValue>
-        SystemProperties( Properties<String^, String^>^ properties );
+        SystemProperties(Properties<String^, String^>^ properties);
 
         /// <summary>
         /// Constructor.
@@ -63,12 +63,12 @@ namespace Apache
         /// <param name="properties">these overwrite any other values already set</param>
         /// <param name="configFile">see summary</param>
         //generic <class TPropKey, class TPropValue>
-        SystemProperties( Properties<String^, String^>^ properties, String^ configFile );
+        SystemProperties(Properties<String^, String^>^ properties, String^ configFile);
 
         /// <summary>
         /// Prints all settings to the process log.
         /// </summary>
-        void LogSettings( );
+        void LogSettings();
 
         /// <summary>
         /// Returns the sampling interval, that is,
@@ -77,7 +77,7 @@ namespace Apache
         /// <returns>the statistics sampling interval</returns>
         property int32_t StatisticsSampleInterval
         {
-          int32_t get( );
+          int32_t get();
         }
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace Apache
         /// <returns>true if enabled</returns>
         property bool StatisticsEnabled
         {
-          bool get( );
+          bool get();
         }
 
         /// <summary>
@@ -95,7 +95,7 @@ namespace Apache
         /// <returns>the filename</returns>
         property String^ StatisticsArchiveFile
         {
-          String^ get( );
+          String^ get();
         }
 
         /// <summary>
@@ -104,7 +104,7 @@ namespace Apache
         /// <returns>the filename</returns>
         property String^ LogFileName
         {
-          String^ get( );
+          String^ get();
         }
 
         /// <summary>
@@ -113,7 +113,7 @@ namespace Apache
         /// <returns>the log level</returns>
         property LogLevel GFLogLevel
         {
-          LogLevel get( );
+          LogLevel get();
         }
 
         /// <summary>
@@ -126,7 +126,7 @@ namespace Apache
         /// <returns>true if enabled</returns>
         property bool HeapLRULimitEnabled
         {
-          bool get( );
+          bool get();
         }
 
         /// <summary>
@@ -138,7 +138,7 @@ namespace Apache
         /// <returns>the HeapLRULimit value</returns>
         property size_t HeapLRULimit
         {
-          size_t get( );
+          size_t get();
         }
 
         /// <summary>
@@ -149,7 +149,7 @@ namespace Apache
         /// <returns>the HeapLRUDelta value</returns>
         property int32_t HeapLRUDelta
         {
-          int32_t get( );
+          int32_t get();
         }
 
         /// <summary>
@@ -158,7 +158,7 @@ namespace Apache
         /// <returns>the MaxSocketBufferSize value</returns>
         property int32_t MaxSocketBufferSize
         {
-          int32_t get( );
+          int32_t get();
         }
 
         /// <summary>
@@ -167,7 +167,7 @@ namespace Apache
         /// <returns>the PingInterval value</returns>
         property int32_t PingInterval
         {
-          int32_t get( );
+          int32_t get();
         }
 
         /// <summary>
@@ -176,7 +176,7 @@ namespace Apache
         /// <returns>the RedundancyMonitorInterval value</returns>
         property int32_t RedundancyMonitorInterval
         {
-          int32_t get( );
+          int32_t get();
         }
 
         /// <summary>
@@ -185,7 +185,7 @@ namespace Apache
         /// <returns>the NotifyAckInterval value</returns>
         property int32_t NotifyAckInterval
         {
-          int32_t get( );
+          int32_t get();
         }
 
         /// <summary>
@@ -194,7 +194,7 @@ namespace Apache
         /// <returns>the NotifyDupCheckLife value</returns>
         property int32_t NotifyDupCheckLife
         {
-          int32_t get( );
+          int32_t get();
         }
 
         /// <summary>
@@ -203,7 +203,7 @@ namespace Apache
         /// <returns>true if enabled</returns>
         property bool DebugStackTraceEnabled
         {
-          bool get( );
+          bool get();
         }
 
         /// <summary>
@@ -211,7 +211,7 @@ namespace Apache
         /// is enabled. If "log-file" property has been specified then they are
         /// created in the same directory as the log file, and having the same
         /// prefix as log file. By default crash dumps are created in the
-        /// current working directory and have the "gemfire_cpp" prefix.
+        /// current working directory and have the "geode_cpp" prefix.
         ///
         /// The actual dump file will have timestamp and process ID
         /// in the full name.
@@ -238,7 +238,7 @@ namespace Apache
         /// <returns>the name</returns>
         property String^ Name
         {
-          String^ get( );
+          String^ get();
         }
 
         /// <summary>
@@ -247,7 +247,7 @@ namespace Apache
         /// <returns>the filename</returns>
         property String^ CacheXmlFile
         {
-          String^ get( );
+          String^ get();
         }
 
         /// <summary>
@@ -256,7 +256,7 @@ namespace Apache
         /// <returns>the maximum limit</returns>
         property int32_t LogFileSizeLimit
         {
-          int32_t get( );
+          int32_t get();
         }
 
         /// <summary>
@@ -265,16 +265,16 @@ namespace Apache
         /// <returns>the maximum limit</returns>
         property int32_t LogDiskSpaceLimit
         {
-          int32_t get( );
+          int32_t get();
         }
 
-		/// <summary>
+        /// <summary>
         /// Returns the maximum statistics file size, in bytes, or 0 if unlimited.
         /// </summary>
         /// <returns>the maximum limit</returns>
         property int32_t StatsFileSizeLimit
         {
-          int32_t get( );
+          int32_t get();
         }
 
         /// <summary>
@@ -283,16 +283,16 @@ namespace Apache
         /// <returns>the maximum limit</returns>
         property int32_t StatsDiskSpaceLimit
         {
-          int32_t get( );
+          int32_t get();
         }
 
-		/// <summary>
+        /// <summary>
         /// Returns the max queue size for notification messages
         /// </summary>
         /// <returns>the max queue size</returns>
         property uint32_t MaxQueueSize
         {
-          uint32_t get( );
+          uint32_t get();
         }
 
         /// <summary>
@@ -301,7 +301,7 @@ namespace Apache
         /// <returns>true if enabled</returns>
         property bool SSLEnabled
         {
-          bool get( );
+          bool get();
         }
 
         /// <summary>
@@ -310,7 +310,7 @@ namespace Apache
         /// <returns>the SSL private keystore file path</returns>
         property String^ SSLKeyStore
         {
-          String^ get( );
+          String^ get();
         }
 
         /// <summary>
@@ -319,7 +319,7 @@ namespace Apache
         /// <returns>the SSL public certificate trust store file path</returns>
         property String^ SSLTrustStore
         {
-          String^ get( );
+          String^ get();
         }
 
         // adongre
@@ -329,7 +329,7 @@ namespace Apache
         /// <returns>Returns the client keystore password.</returns>
         property String^ SSLKeystorePassword
         {
-          String^ get( );
+          String^ get();
         }
 
         /// <summary>
@@ -338,7 +338,7 @@ namespace Apache
         /// <returns>true if enabled</returns>
         property bool IsSecurityOn
         {
-          bool get( );
+          bool get();
         }
 
         /// <summary>
@@ -347,7 +347,7 @@ namespace Apache
         /// <returns>the security properties</returns>
         //generic <class TPropKey, class TPropValue>
         property Properties<String^, String^>^ GetSecurityProperties {
-          Properties<String^, String^>^ get( );
+          Properties<String^, String^>^ get();
         }
 
         /// <summary>
@@ -356,7 +356,7 @@ namespace Apache
         /// <returns>the durable client ID</returns>
         property String^ DurableClientId
         {
-          String^ get( );
+          String^ get();
         }
 
         /// <summary>
@@ -365,7 +365,7 @@ namespace Apache
         /// <returns>the durable client timeout</returns>
         property uint32_t DurableTimeout
         {
-          uint32_t get( );
+          uint32_t get();
         }
 
         /// <summary>
@@ -374,7 +374,7 @@ namespace Apache
         /// <returns>the connect timeout used for server and locator handshakes</returns>
         property uint32_t ConnectTimeout
         {
-          uint32_t get( );
+          uint32_t get();
         }
 
         /// <summary>
@@ -383,7 +383,7 @@ namespace Apache
         /// <returns>the conflate event option</returns>
         property String^ ConflateEvents
         {
-          String^ get( );
+          String^ get();
         }
 
         /// <summary>
@@ -392,7 +392,7 @@ namespace Apache
         /// <returns>the timeout for suspended transactions</returns>
         property uint32_t SuspendedTxTimeout
         {
-          uint32_t get( );
+          uint32_t get();
         }
 
         /// <summary>
@@ -401,7 +401,7 @@ namespace Apache
         /// <returns>true if enabled or false by default.</returns>
         property bool ReadTimeoutUnitInMillis
         {
-          bool get( );
+          bool get();
         }
         /// <summary>
         /// True if app want to clear pdx types ids on client disconnect
@@ -409,7 +409,7 @@ namespace Apache
         /// <returns>true if enabled</returns>
         property bool OnClientDisconnectClearPdxTypeIds
         {
-          bool get( );
+          bool get();
         }
 
       internal:
@@ -423,10 +423,10 @@ namespace Apache
         /// the managed wrapper object, or null if the native pointer is null.
         /// </returns>
         inline static SystemProperties^ Create(
-          apache::geode::client::SystemProperties* nativeptr )
+          apache::geode::client::SystemProperties* nativeptr)
         {
-          return ( nativeptr != nullptr ?
-            gcnew SystemProperties( nativeptr ) : nullptr );
+          return (nativeptr != nullptr ?
+                  gcnew SystemProperties(nativeptr) : nullptr);
         }
 
 
@@ -436,8 +436,8 @@ namespace Apache
         /// Private constructor to wrap a native object pointer
         /// </summary>
         /// <param name="nativeptr">The native object pointer</param>
-        inline SystemProperties( apache::geode::client::SystemProperties* nativeptr )
-          : UMWrap( nativeptr, false ) { }
+        inline SystemProperties(apache::geode::client::SystemProperties* nativeptr)
+          : UMWrap(nativeptr, false) { }
       };
     }  // namespace Client
   }  // namespace Geode

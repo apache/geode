@@ -67,39 +67,39 @@ namespace Apache
 
         Int32 PdxFieldType::VarLenOffsetIndex::get()
         {
-          return m_vlOffsetIndex;    
+          return m_vlOffsetIndex;
         }
 
         void PdxFieldType::VarLenOffsetIndex::set(Int32 val)
         {
-          m_vlOffsetIndex = val;    
+          m_vlOffsetIndex = val;
         }
 
         Int32 PdxFieldType::RelativeOffset::get()
         {
-          return m_relativeOffset;    
+          return m_relativeOffset;
         }
 
         void PdxFieldType::RelativeOffset::set(Int32 val)
         {
-          m_relativeOffset = val;    
-        }          
+          m_relativeOffset = val;
+        }
 
-				//it compares fieldname and type-id
-        bool PdxFieldType::Equals(Object^ otherObj) 
+        //it compares fieldname and type-id
+        bool PdxFieldType::Equals(Object^ otherObj)
         {
-          if(otherObj == nullptr)
+          if (otherObj == nullptr)
             return false;
 
           PdxFieldType^ otherFieldType = dynamic_cast<PdxFieldType^>(otherObj);
 
-          if(otherFieldType == nullptr)
+          if (otherFieldType == nullptr)
             return false;
 
-          if(otherFieldType == this)
+          if (otherFieldType == this)
             return true;
 
-          if(otherFieldType->m_fieldName == m_fieldName && otherFieldType->m_typeId == m_typeId)
+          if (otherFieldType->m_fieldName == m_fieldName && otherFieldType->m_typeId == m_typeId)
             return true;
 
           return false;
@@ -108,35 +108,35 @@ namespace Apache
         Int32 PdxFieldType::GetHashCode()
         {
           int hash = m_cachedHashcode;
-          if(hash == 0)
+          if (hash == 0)
           {
-            if(m_fieldName != nullptr) 
+            if (m_fieldName != nullptr)
             {
-              hash = hash*31 + m_fieldName->GetHashCode();
+              hash = hash * 31 + m_fieldName->GetHashCode();
             }
 
             hash = hash * 31 + m_typeId;
-            if(hash == 0)
+            if (hash == 0)
               hash = 1;
             m_cachedHashcode = hash;
           }
-        
+
           return m_cachedHashcode;
         }
 
-        void PdxFieldType::ToData( DataOutput^ output )
+        void PdxFieldType::ToData(DataOutput^ output)
         {
           output->WriteString(m_fieldName);
           output->WriteInt32(m_sequenceId);
           output->WriteInt32(m_varLenFieldIdx);
           output->WriteByte(m_typeId);
-          
+
           output->WriteInt32(m_relativeOffset);
           output->WriteInt32(m_vlOffsetIndex);
           output->WriteBoolean(m_isIdentityField);
         }
-        
-        IGFSerializable^ PdxFieldType::FromData( DataInput^ input )
+
+        IGFSerializable^ PdxFieldType::FromData(DataInput^ input)
         {
           m_fieldName = input->ReadString();
           m_sequenceId = input->ReadInt32();
@@ -149,42 +149,42 @@ namespace Apache
 
           m_fixedSize = getFixedTypeSize();
 
-          if(m_fixedSize != -1)
-						m_isVariableLengthType = false;
+          if (m_fixedSize != -1)
+            m_isVariableLengthType = false;
           else
             m_isVariableLengthType = true;
-          
-					return this;
+
+          return this;
         }
 
         Int32 PdxFieldType::getFixedTypeSize()
         {
-           switch (m_typeId) 
-           {
-           case PdxTypes::BYTE:
-           case PdxTypes::BOOLEAN:
-              return GemFireClassIds::BOOLEAN_SIZE;
-  
-           case PdxTypes::SHORT:
-           case PdxTypes::CHAR:
+          switch (m_typeId)
+          {
+          case PdxTypes::BYTE:
+          case PdxTypes::BOOLEAN:
+            return GeodeClassIds::BOOLEAN_SIZE;
+
+          case PdxTypes::SHORT:
+          case PdxTypes::CHAR:
             //case apache::geode::client::GeodeTypeIds::CacheableChar: //TODO
-              return GemFireClassIds::CHAR_SIZE;
-  
-           case PdxTypes::INT:
-           case PdxTypes::FLOAT:
+            return GeodeClassIds::CHAR_SIZE;
+
+          case PdxTypes::INT:
+          case PdxTypes::FLOAT:
             //case DSCODE.ENUM:
-              return GemFireClassIds::INTEGER_SIZE;
-        
-           case PdxTypes::LONG:
-           case PdxTypes::DOUBLE:
-           case PdxTypes::DATE:
-              return GemFireClassIds::LONG_SIZE;
-        
+            return GeodeClassIds::INTEGER_SIZE;
+
+          case PdxTypes::LONG:
+          case PdxTypes::DOUBLE:
+          case PdxTypes::DATE:
+            return GeodeClassIds::LONG_SIZE;
+
           default:
             return -1;
-    }  // namespace Client
-  }  // namespace Geode
-}  // namespace Apache
+          }  // namespace Client
+        }  // namespace Geode
+      }  // namespace Apache
 
     }
   }

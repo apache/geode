@@ -35,20 +35,20 @@ namespace Apache
 
       /// <summary>
       /// DistributedSystem encapsulates this applications "connection" into the
-      /// GemFire Java servers.
+      /// Geode Java servers.
       /// </summary>
       /// <remarks>
-      /// In order to participate as a client in the GemFire Java servers
+      /// In order to participate as a client in the Geode Java servers
       /// distributed system, each application needs to connect to the
       /// DistributedSystem.
       /// </remarks>
       public ref class DistributedSystem sealed
-				: public Client::Internal::SBWrap<apache::geode::client::DistributedSystem>
+        : public Client::Internal::SBWrap<apache::geode::client::DistributedSystem>
       {
       public:
 
         /// <summary>
-        /// Initializes the Native Client system to be able to connect to the GemFire Java servers.
+        /// Initializes the Native Client system to be able to connect to the Geode Java servers.
         /// </summary>
         /// <param name="name">the name of the system to connect to</param>
         /// <exception cref="IllegalArgumentException">if name is null</exception>
@@ -60,11 +60,11 @@ namespace Apache
         /// An application can have one only one connection to a DistributedSystem.
         /// </exception>
         /// <exception cref="UnknownException">otherwise</exception>
-        static DistributedSystem^ Connect( String^ name );
+        static DistributedSystem^ Connect(String^ name);
 
         /// <summary>
         /// Initializes the Native Client system to be able to connect to the
-        /// GemFire Java servers.
+        /// Geode Java servers.
         /// </summary>
         /// <param name="name">the name of the system to connect to</param>
         /// <param name="config">the set of properties</param>
@@ -77,8 +77,8 @@ namespace Apache
         /// An application can have one only one connection to a DistributedSystem.
         /// </exception>
         /// <exception cref="UnknownException">otherwise</exception>
-        static DistributedSystem^ Connect( String^ name, Properties<String^, String^>^ config );
-        
+        static DistributedSystem^ Connect(String^ name, Properties<String^, String^>^ config);
+
         /// <summary>
         /// Disconnect from the distributed system.
         /// </summary>
@@ -92,7 +92,7 @@ namespace Apache
         /// <returns>the SystemProperties</returns>
         static property Apache::Geode::Client::SystemProperties^ SystemProperties
         {
-          static Apache::Geode::Client::SystemProperties^ get( );
+          static Apache::Geode::Client::SystemProperties^ get();
         }
 
         /// <summary>
@@ -101,7 +101,7 @@ namespace Apache
         /// <returns>the name of the DistributedSystem instance.</returns>
         property String^ Name
         {
-          String^ get( );
+          String^ get();
         }
 
         /// <summary>
@@ -110,14 +110,14 @@ namespace Apache
         /// <returns>true if connected, false otherwise</returns>
         static property bool IsConnected
         {
-          static bool get( );
+          static bool get();
         }
 
         /// <summary>
         /// Returns a reference to this DistributedSystem instance.
         /// </summary>
         /// <returns>the DistributedSystem instance</returns>
-        static DistributedSystem^ GetInstance( );
+        static DistributedSystem^ GetInstance();
 
 
       internal:
@@ -145,7 +145,7 @@ namespace Apache
         static void registerCliCallback();
 
         static void unregisterCliCallback();
-          /// <summary>
+        /// <summary>
         /// Stuff that needs to be done for Connect in each AppDomain.
         /// </summary>
         static void AppDomainInstanceInitialization(
@@ -187,7 +187,7 @@ namespace Apache
         /// </summary>
         ~DistributedSystem();
 
-       
+
 
         /// <summary>
         /// Periodically adjust memory pressure of unmanaged heap for GC.

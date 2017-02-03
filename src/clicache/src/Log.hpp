@@ -90,7 +90,7 @@ namespace Apache
 
       /// <summary>
       /// Defines methods available to clients that want to write a log message
-      /// to their GemFire system's shared log file.
+      /// to their Geode system's shared log file.
       /// </summary>
       /// <remarks>
       /// Any attempt to use an instance after its connection is disconnected
@@ -168,7 +168,7 @@ namespace Apache
         /// </summary>
         /// <param name="level">the logging level</param>
         /// <param name="logFileName">the log file name</param>
-        static void Init( LogLevel level, String^ logFileName );
+        static void Init(LogLevel level, String^ logFileName);
 
         /// <summary>
         /// Initializes logging facility with given level, filename, and file size limit.
@@ -177,49 +177,49 @@ namespace Apache
         /// <param name="logFileName">the log file name</param>
         /// <param name="logFileLimit">maximum allowable size of the log file, in bytes, 
         ///        or 0 for the default (1 Gbyte)</param>
-        static void Init( LogLevel level, String^ logFileName, int32_t logFileLimit );
+        static void Init(LogLevel level, String^ logFileName, int32_t logFileLimit);
 
         /// <summary>
         /// Closes logging facility (until next init).
         /// </summary>
-        static void Close( );
+        static void Close();
 
         /// <summary>
         /// Returns the current log level.
         /// </summary>
-        static LogLevel Level( );
+        static LogLevel Level();
 
         /// <summary>
         /// Sets the current log level.
         /// </summary>
-        static void SetLevel( LogLevel level );
+        static void SetLevel(LogLevel level);
 
         /// <summary>
         /// Returns the name of the current log file.
         /// NOTE: This function is for debugging only, as it is not completely
         /// thread-safe!
         /// </summary>
-        static String^ LogFileName( );
+        static String^ LogFileName();
 
         /// <summary>
         /// True if log messages at the given level are enabled.
         /// </summary>
-        static bool Enabled( LogLevel level );
+        static bool Enabled(LogLevel level);
 
         /// <summary>
         /// Logs a message at the given level.
         /// </summary>
-        static void Write( LogLevel level, String^ msg );
+        static void Write(LogLevel level, String^ msg);
 
         /// <summary>
         /// Logs both a message and a thrown exception.
         /// </summary>
-        static void LogThrow( LogLevel level, String^ msg, System::Exception^ ex );
+        static void LogThrow(LogLevel level, String^ msg, System::Exception^ ex);
 
         /// <summary>
         /// Logs both a message and a caught exception.
         /// </summary>
-        static void LogCatch( LogLevel level, String^ msg, System::Exception^ ex );
+        static void LogCatch(LogLevel level, String^ msg, System::Exception^ ex);
 
         // Convenience functions with variable number of arguments
         // as in String.Format
@@ -228,98 +228,98 @@ namespace Apache
         /// Error level logging with variable number of arguments using
         /// format as in <c>System.String.Format</c>.
         /// </summary>
-        inline static void Error( String^ format, ... array<Object^>^ args )
+        inline static void Error(String^ format, ... array<Object^>^ args)
         {
-          if(staticLogLevel >= LogLevel::Error)
-            Log::Write( LogLevel::Error, String::Format(
-              System::Globalization::CultureInfo::CurrentCulture, format, args ) );
+          if (staticLogLevel >= LogLevel::Error)
+            Log::Write(LogLevel::Error, String::Format(
+            System::Globalization::CultureInfo::CurrentCulture, format, args));
         }
 
         /// <summary>
         /// Warning level logging with variable number of arguments using
         /// format as in <c>System.String.Format</c>.
         /// </summary>
-        inline static void Warning( String^ format, ... array<Object^>^ args )
+        inline static void Warning(String^ format, ... array<Object^>^ args)
         {
-          if(staticLogLevel >= LogLevel::Warning)
-            Log::Write( LogLevel::Warning, String::Format(
-              System::Globalization::CultureInfo::CurrentCulture, format, args ) );
+          if (staticLogLevel >= LogLevel::Warning)
+            Log::Write(LogLevel::Warning, String::Format(
+            System::Globalization::CultureInfo::CurrentCulture, format, args));
         }
 
         /// <summary>
         /// Info level logging with variable number of arguments using
         /// format as in <c>System.String.Format</c>.
         /// </summary>
-        inline static void Info( String^ format, ... array<Object^>^ args )
+        inline static void Info(String^ format, ... array<Object^>^ args)
         {
-          if(staticLogLevel >= LogLevel::Info)
-            Log::Write( LogLevel::Info, String::Format(
-              System::Globalization::CultureInfo::CurrentCulture, format, args ) );
+          if (staticLogLevel >= LogLevel::Info)
+            Log::Write(LogLevel::Info, String::Format(
+            System::Globalization::CultureInfo::CurrentCulture, format, args));
         }
 
         /// <summary>
         /// Config level logging with variable number of arguments using
         /// format as in <c>System.String.Format</c>.
         /// </summary>
-        inline static void Config( String^ format, ... array<Object^>^ args )
+        inline static void Config(String^ format, ... array<Object^>^ args)
         {
-          if(staticLogLevel >= LogLevel::Config)
-            Log::Write( LogLevel::Config, String::Format(
-              System::Globalization::CultureInfo::CurrentCulture, format, args ) );
+          if (staticLogLevel >= LogLevel::Config)
+            Log::Write(LogLevel::Config, String::Format(
+            System::Globalization::CultureInfo::CurrentCulture, format, args));
         }
 
         /// <summary>
         /// Fine level logging with variable number of arguments using
         /// format as in <c>System.String.Format</c>.
         /// </summary>
-        inline static void Fine( String^ format, ... array<Object^>^ args )
+        inline static void Fine(String^ format, ... array<Object^>^ args)
         {
-          if(staticLogLevel >= LogLevel::Fine)
-            Log::Write( LogLevel::Fine, String::Format(
-              System::Globalization::CultureInfo::CurrentCulture, format, args ) );
+          if (staticLogLevel >= LogLevel::Fine)
+            Log::Write(LogLevel::Fine, String::Format(
+            System::Globalization::CultureInfo::CurrentCulture, format, args));
         }
 
         /// <summary>
         /// Finer level logging with variable number of arguments using
         /// format as in <c>System.String.Format</c>.
         /// </summary>
-        inline static void Finer( String^ format, ... array<Object^>^ args )
+        inline static void Finer(String^ format, ... array<Object^>^ args)
         {
-          if(staticLogLevel >= LogLevel::Finer)
-            Log::Write( LogLevel::Finer, String::Format(
-              System::Globalization::CultureInfo::CurrentCulture, format, args ) );
+          if (staticLogLevel >= LogLevel::Finer)
+            Log::Write(LogLevel::Finer, String::Format(
+            System::Globalization::CultureInfo::CurrentCulture, format, args));
         }
 
         /// <summary>
         /// Finest level logging with variable number of arguments using
         /// format as in <c>System.String.Format</c>.
         /// </summary>
-        inline static void Finest( String^ format, ... array<Object^>^ args )
+        inline static void Finest(String^ format, ... array<Object^>^ args)
         {
-          if(staticLogLevel >= LogLevel::Finest)
-            Log::Write( LogLevel::Finest, String::Format(
-              System::Globalization::CultureInfo::CurrentCulture, format, args ) );
+          if (staticLogLevel >= LogLevel::Finest)
+            Log::Write(LogLevel::Finest, String::Format(
+            System::Globalization::CultureInfo::CurrentCulture, format, args));
         }
 
         /// <summary>
         /// Debug level logging with variable number of arguments using
         /// format as in <c>System.String.Format</c>.
         /// </summary>
-        inline static void Debug( String^ format, ... array<Object^>^ args )
+        inline static void Debug(String^ format, ... array<Object^>^ args)
         {
-          if(staticLogLevel >= LogLevel::Debug)
-          Log::Write( LogLevel::Debug, String::Format(
-            System::Globalization::CultureInfo::CurrentCulture, format, args ) );
+          if (staticLogLevel >= LogLevel::Debug)
+            Log::Write(LogLevel::Debug, String::Format(
+            System::Globalization::CultureInfo::CurrentCulture, format, args));
         }
       internal:
 
-        static void SetLogLevel( LogLevel level)
+        static void SetLogLevel(LogLevel level)
         {
           staticLogLevel = level;
         }
 
-       private:
-         static LogLevel staticLogLevel =  LogLevel::Null;
+      private:
+        static LogLevel staticLogLevel = LogLevel::Null;
       };
     }  // namespace Client
   }  // namespace Geode

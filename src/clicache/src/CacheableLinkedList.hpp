@@ -79,47 +79,47 @@ namespace Apache
         {
           virtual uint32_t get()
           {
-            return GemFireClassIds::CacheableLinkedList;
+            return GeodeClassIds::CacheableLinkedList;
           }
         }
 
         // Region: IGFSerializable Members
 
-      virtual void ToData(DataOutput^ output)
-      {
-        if(m_linkedList != nullptr)
+        virtual void ToData(DataOutput^ output)
         {
-          output->WriteArrayLen(m_linkedList->Count);
-          for each (Object^ obj in m_linkedList) {
-						//TODO::split
-            output->WriteObject(obj);
+          if (m_linkedList != nullptr)
+          {
+            output->WriteArrayLen(m_linkedList->Count);
+            for each (Object^ obj in m_linkedList) {
+              //TODO::split
+              output->WriteObject(obj);
+            }
           }
+          else
+            output->WriteByte(0xFF);
         }
-        else
-          output->WriteByte(0xFF);
-      }
 
-      virtual IGFSerializable^ FromData(DataInput^ input)
-      {
-        int len = input->ReadArrayLen();
-        for( int i = 0; i < len; i++)
+        virtual IGFSerializable^ FromData(DataInput^ input)
         {
-          m_linkedList->AddLast(input->ReadObject());
+          int len = input->ReadArrayLen();
+          for (int i = 0; i < len; i++)
+          {
+            m_linkedList->AddLast(input->ReadObject());
+          }
+          return this;
         }
-        return this;
-      }
 
-      /*uint32_t ObjectSize::get()
-      {
+        /*uint32_t ObjectSize::get()
+        {
         //TODO::
         uint32_t size = static_cast<uint32_t> (sizeof(CacheableVector^));
         for each (IGFSerializable^ val in this) {
-          if (val != nullptr) {
-            size += val->ObjectSize;
-          }
+        if (val != nullptr) {
+        size += val->ObjectSize;
+        }
         }
         return m_linkedList->Count;
-      }*/
+        }*/
 
         virtual property uint32_t ObjectSize
         {

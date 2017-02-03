@@ -23,7 +23,7 @@
 #include "DataInput.hpp"
 #include "DataOutput.hpp"
 #include "Log.hpp"
-#include "GemFireClassIds.hpp"
+#include "GeodeClassIds.hpp"
 
 using namespace System;
 
@@ -35,15 +35,15 @@ namespace Apache
     {
 
       CacheableDate::CacheableDate(DateTime dateTime)
-        : m_dateTime(dateTime),m_hashcode(0)
+        : m_dateTime(dateTime), m_hashcode(0)
       {
 
         // Round off dateTime to the nearest millisecond.
         int64_t ticksToAdd = m_dateTime.Ticks % TimeSpan::TicksPerMillisecond;
         ticksToAdd = (ticksToAdd >= (TimeSpan::TicksPerMillisecond / 2) ?
-          (TimeSpan::TicksPerMillisecond - ticksToAdd) : -ticksToAdd);
+                      (TimeSpan::TicksPerMillisecond - ticksToAdd) : -ticksToAdd);
         m_dateTime = m_dateTime.AddTicks(ticksToAdd);
-        
+
       }
 
       void CacheableDate::ToData(DataOutput^ output)
@@ -69,13 +69,13 @@ namespace Apache
       }
 
       uint32_t CacheableDate::ObjectSize::get()
-      { 
-        return (uint32_t)sizeof(DateTime); 
+      {
+        return (uint32_t)sizeof(DateTime);
       }
 
       uint32_t CacheableDate::ClassId::get()
       {
-        return GemFireClassIds::CacheableDate;
+        return GeodeClassIds::CacheableDate;
       }
 
       String^ CacheableDate::ToString()
@@ -90,7 +90,7 @@ namespace Apache
           TimeSpan epochSpan = m_dateTime - EpochTime;
           int64_t millitime =
             epochSpan.Ticks / TimeSpan::TicksPerMillisecond;
-          m_hashcode =  (int) millitime ^ (int) ((int64)millitime >> 32);
+          m_hashcode = (int)millitime ^ (int)((int64)millitime >> 32);
         }
         return m_hashcode;
       }
@@ -98,7 +98,7 @@ namespace Apache
       bool CacheableDate::Equals(ICacheableKey^ other)
       {
         if (other == nullptr ||
-          other->ClassId != GemFireClassIds::CacheableDate) {
+            other->ClassId != GeodeClassIds::CacheableDate) {
           return false;
         }
         return m_dateTime.Equals(static_cast<CacheableDate^>(
@@ -114,9 +114,9 @@ namespace Apache
           return (m_dateTime == otherDate->m_dateTime);
         }
         return false;
-    }  // namespace Client
-  }  // namespace Geode
-}  // namespace Apache
+      }  // namespace Client
+    }  // namespace Geode
+  }  // namespace Apache
 
- } //namespace 
+} //namespace 
 
