@@ -98,8 +98,7 @@ public class ExportImportClusterConfigurationCommands extends AbstractCommandsSu
       for (Configuration config : sc.getEntireConfiguration().values()) {
         sc.writeConfigToFile(config);
       }
-
-      ZipUtils.zip(sc.getSharedConfigurationDirPath(), zipFile.getCanonicalPath());
+      ZipUtils.zipDirectory(sc.getSharedConfigurationDirPath(), zipFile.getCanonicalPath());
 
       InfoResultData infoData = ResultBuilder.createInfoResultData();
       byte[] byteData = FileUtils.readFileToByteArray(zipFile);
