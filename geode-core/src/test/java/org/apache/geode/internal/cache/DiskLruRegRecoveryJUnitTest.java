@@ -64,6 +64,7 @@ public class DiskLruRegRecoveryJUnitTest extends DiskRegionTestingBase {
 
     DiskRegionProperties diskProps = new DiskRegionProperties();
     Region nonLruRegion = null;
+    int numRegions = 1;
 
     diskProps.setDiskDirs(dirs);
     diskProps.setPersistBackup(true);
@@ -78,6 +79,7 @@ public class DiskLruRegRecoveryJUnitTest extends DiskRegionTestingBase {
     }
 
     if (addNonLruRegion) {
+      numRegions++;
       nonLruRegion = createNonLruRegion();
     }
 
@@ -98,7 +100,8 @@ public class DiskLruRegRecoveryJUnitTest extends DiskRegionTestingBase {
       }
     }
 
-    final CountDownLatch recoveryDone = new CountDownLatch(1);
+    // Regions are created with its own disk store.
+    final CountDownLatch recoveryDone = new CountDownLatch(numRegions);
     DiskStoreObserver.setInstance(new DiskStoreObserver() {
       @Override
       public void afterAsyncValueRecovery(DiskStoreImpl store) {
