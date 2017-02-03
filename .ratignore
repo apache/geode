@@ -1,0 +1,33 @@
+# text files
+.*\.clang-format$
+.*\.clang-tidy$
+.*\.gitignore$
+.*\.ratignore$
+.*md$
+.*json$
+.*deprecated_xml_instructions.txt$
+
+# generated files
+.*Resources.Designer.cs$
+.*Settings.Designer.cs$
+
+# public domain
+.*CPPDictionary.hpp$
+.*CPPSymbol.hpp$
+.*CPP_parser.g$
+.*DictEntry.hpp$
+.*Dictionary.cpp$
+.*Dictionary.hpp$
+.*STDCTokenTypes.txt$
+.*Support.cpp$
+
+# expect script
+.*changepasswd$
+
+# doxygen
+.*package-list$
+.*testframeworkdox.txt$
+
+# patches
+.*patches$
+.*ACE.config.h.in$
