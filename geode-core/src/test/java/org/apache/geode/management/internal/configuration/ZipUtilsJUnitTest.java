@@ -75,7 +75,7 @@ public class ZipUtilsJUnitTest {
     assertFalse(zipFile.exists());
     assertFalse(zipFile.isFile());
 
-    ZipUtils.zip(sourceFolder.getCanonicalPath(), zipFile.getCanonicalPath());
+    ZipUtils.zipDirectory(sourceFolder.getCanonicalPath(), zipFile.getCanonicalPath());
     assertTrue(zipFile.exists());
     assertTrue(zipFile.isFile());
 
