@@ -98,7 +98,6 @@ public abstract class AbstractPartitionedRepositoryManager implements Repository
       } catch (IOException e) {
         throw new InternalGemFireError("Unable to create index repository", e);
       }
-
     });
     return repo;
   }
@@ -116,7 +115,7 @@ public abstract class AbstractPartitionedRepositoryManager implements Repository
 
     if (repo == null) {
       throw new BucketNotFoundException(
-          "Unable to create lucene index because no longer primary for bucket " + bucketId);
+          "Unable to find lucene index because no longer primary for bucket " + bucketId);
     }
     return repo;
   }

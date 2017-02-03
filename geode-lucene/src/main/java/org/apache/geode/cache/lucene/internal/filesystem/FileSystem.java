@@ -15,6 +15,10 @@
 
 package org.apache.geode.cache.lucene.internal.filesystem;
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.logging.log4j.Logger;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
@@ -32,7 +36,8 @@ import java.util.concurrent.ConcurrentMap;
  *
  */
 public class FileSystem {
-  // private final Cache cache;
+  private static final Logger logger = LogService.getLogger();
+
   private final ConcurrentMap<String, File> fileRegion;
   private final ConcurrentMap<ChunkKey, byte[]> chunkRegion;
 
@@ -63,6 +68,16 @@ public class FileSystem {
   public File createFile(final String name) throws IOException {
     // TODO lock region ?
     final File file = new File(this, name);
+    if (null != fileRegion.putIfAbsent(name, file)) {
+      throw new IOException("File exists.");
+    }
+    stats.incFileCreates(1);
+    // TODO unlock region ?
+    return file;
+  }
+
+  public File putIfAbsentFile(String name, File file) throws IOException {
+    // TODO lock region ?
     if (null != fileRegion.putIfAbsent(name, file)) {
       throw new IOException("File exists.");
     }
@@ -115,27 +130,27 @@ public class FileSystem {
   }
 
   public void renameFile(String source, String dest) throws IOException {
+
     final File sourceFile = fileRegion.get(source);
     if (null == sourceFile) {
       throw new FileNotFoundException(source);
     }
 
-    final File destFile = createFile(dest);
+    final File destFile = new File(this, dest);
 
     destFile.chunks = sourceFile.chunks;
     destFile.created = sourceFile.created;
     destFile.length = sourceFile.length;
     destFile.modified = sourceFile.modified;
     destFile.id = sourceFile.id;
-    updateFile(destFile);
 
     // TODO - What is the state of the system if
     // things crash in the middle of moving this file?
     // Seems like we will have two files pointing
     // at the same data
+    putIfAbsentFile(dest, destFile);
 
     fileRegion.remove(source);
-
     stats.incFileRenames(1);
   }
 
@@ -149,12 +164,16 @@ public class FileSystem {
         chunkRegion.remove(key);
         key.chunkId++;
       }
-
       return null;
     }
 
     final byte[] chunk = chunkRegion.get(key);
-    stats.incReadBytes(chunk.length);
+    if (chunk != null) {
+      stats.incReadBytes(chunk.length);
+    } else {
+      logger.debug("Chunk was null for file:" + file.getName() + " file id: " + key.getFileId()
+          + " chunkKey:" + key.chunkId);
+    }
     return chunk;
   }
 

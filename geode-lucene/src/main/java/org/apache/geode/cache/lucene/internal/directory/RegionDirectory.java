@@ -109,7 +109,6 @@ public class RegionDirectory extends BaseDirectory {
   public IndexInput openInput(String name, IOContext context) throws IOException {
     ensureOpen();
     final File file = fs.getFile(name);
-
     return new FileIndexInput(name, file);
   }
 

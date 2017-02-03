@@ -18,9 +18,7 @@ package org.apache.geode.cache.lucene.internal.filesystem;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.Serializable;
 import java.nio.file.Files;
 import java.util.UUID;
 

@@ -107,18 +107,22 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
 
     // TODO provide a timeout to the user?
     TopEntries<K> entries = null;
-    try {
-      TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(context);
-      ResultCollector<TopEntriesCollector, TopEntries<K>> rc =
-          (ResultCollector<TopEntriesCollector, TopEntries<K>>) onRegion().withArgs(context)
-              .withCollector(collector).execute(LuceneFunction.ID);
-      entries = rc.getResult();
-    } catch (FunctionException e) {
-      if (e.getCause() instanceof LuceneQueryException) {
-        throw new LuceneQueryException(e);
-      } else {
-        e.printStackTrace();
-        throw e;
+    while (entries == null) {
+      try {
+        TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(context);
+        ResultCollector<TopEntriesCollector, TopEntries<K>> rc =
+            (ResultCollector<TopEntriesCollector, TopEntries<K>>) onRegion().withArgs(context)
+                .withCollector(collector).execute(LuceneFunction.ID);
+        entries = rc.getResult();
+      } catch (FunctionException e) {
+        if (e.getCause() instanceof BucketNotFoundException) {
+          entries = null;
+        } else if (e.getCause() instanceof LuceneQueryException) {
+          throw new LuceneQueryException(e);
+        } else {
+          e.printStackTrace();
+          throw e;
+        }
       }
     }
     return entries;

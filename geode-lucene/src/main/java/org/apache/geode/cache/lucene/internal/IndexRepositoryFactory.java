@@ -20,9 +20,7 @@ import org.apache.geode.cache.lucene.internal.directory.RegionDirectory;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepositoryImpl;
 import org.apache.geode.cache.lucene.internal.repository.serializer.LuceneSerializer;
-import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.DistributedLockService;
-import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
@@ -31,7 +29,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.jgroups.blocks.locking.LockService;
 
 public class IndexRepositoryFactory {
 
@@ -49,11 +46,15 @@ public class IndexRepositoryFactory {
     BucketRegion dataBucket = getMatchingBucket(userRegion, bucketId);
     boolean success = false;
     if (fileBucket == null || chunkBucket == null) {
-      oldRepository.cleanup();
+      if (oldRepository != null) {
+        oldRepository.cleanup();
+      }
       return null;
     }
     if (!fileBucket.getBucketAdvisor().isPrimary()) {
-      oldRepository.cleanup();
+      if (oldRepository != null) {
+        oldRepository.cleanup();
+      }
       return null;
     }
 
@@ -61,7 +62,7 @@ public class IndexRepositoryFactory {
       return oldRepository;
     }
 
-    if (oldRepository != null && oldRepository.isClosed()) {
+    if (oldRepository != null) {
       oldRepository.cleanup();
     }
     DistributedLockService lockService = getLockService();
@@ -71,7 +72,6 @@ public class IndexRepositoryFactory {
         return null;
       }
     }
-
 
     final IndexRepository repo;
     try {
@@ -83,6 +83,10 @@ public class IndexRepositoryFactory {
           dataBucket, lockService, lockName);
       success = true;
       return repo;
+    } catch (IOException e) {
+      logger.info("Exception thrown while constructing Lucene Index for bucket:" + bucketId
+          + " for file region:" + fileBucket.getFullPath());
+      throw e;
     } finally {
       if (!success) {
         lockService.unlock(lockName);
