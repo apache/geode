@@ -25,18 +25,8 @@ import static org.junit.Assert.fail;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.GemFireIOException;
-import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache.CacheWriterException;
-import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.cache.Scope;
-import org.apache.geode.cache.client.ClientCacheFactory;
-import org.apache.geode.cache.client.NoAvailableServersException;
-import org.apache.geode.cache.client.Pool;
-import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.*;
+import org.apache.geode.cache.client.*;
 import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.Op;
 import org.apache.geode.cache.client.internal.PoolImpl;
@@ -49,15 +39,7 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.dunit.DistributedTestUtils;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.NetworkUtils;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.*;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.ClientServerTest;
@@ -771,6 +753,144 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
     clientCacheFactory.setPoolSubscriptionEnabled(true);
     getClientCache(clientCacheFactory);
   }
+
+
+  @Test
+  public void testProxyRegionClientServerOp() throws Exception {
+    // start server first
+    final String REGION_NAME = "testProxyRegionClientServerOp";
+    PORT1 = initServerCache(false);
+    // Create regions on servers.
+    server1.invoke(new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        Cache c = CacheFactory.getAnyInstance();
+        assertNotNull(c);
+        Region<Object, Object> r =
+            c.createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
+        assertNotNull(r);
+        return null;
+      }
+    });
+
+    String host = NetworkUtils.getServerHostName(server1.getHost());
+
+    Properties props = new Properties();
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    ClientCacheFactory ccf = new ClientCacheFactory(props);
+    ccf.addPoolServer(host, PORT1);
+
+    ClientCache clientCache = ccf.create();
+    Region<Object, Object> clientRegion =
+        clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
+    assertNotNull(clientRegion);
+
+    // let us populate this region from client.
+    for (int i = 0; i < 10; i++) {
+      clientRegion.put(i, i * 10);
+    }
+    // Verify using gets
+    for (int i = 0; i < 10; i++) {
+      assertEquals(i * 10, clientRegion.get(i));
+    }
+    assertEquals(10, clientRegion.size());
+    assertFalse(clientRegion.isEmpty());
+    // delete all the entries from the server
+    server1.invoke(new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        Cache c = CacheFactory.getAnyInstance();
+        assertNotNull(c);
+        Region<Object, Object> r = c.getRegion(REGION_NAME);
+        assertNotNull(r);
+        for (int i = 0; i < 10; i++) {
+          r.remove(i);
+        }
+        return null;
+      }
+    });
+    assertEquals(0, clientRegion.size());
+    assertTrue(clientRegion.isEmpty());
+
+    clientRegion.destroyRegion();
+  }
+
+
+  @Test
+  public void testProxyRegionClientServerOpPR() throws Exception {
+    // start server first
+    final String REGION_NAME = "testProxyRegionClientServerOpPR";
+    PORT1 = initServerCache(false);
+    int PORT2 = initServerCache2(false);
+    // Create regions on servers.
+    server1.invoke(new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        Cache c = CacheFactory.getAnyInstance();
+        assertNotNull(c);
+        Region<Object, Object> r =
+            c.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
+        assertNotNull(r);
+        return null;
+      }
+    });
+
+    server2.invoke(new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        Cache c = CacheFactory.getAnyInstance();
+        assertNotNull(c);
+        Region<Object, Object> r =
+            c.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
+        assertNotNull(r);
+        return null;
+      }
+    });
+    String host = NetworkUtils.getServerHostName(server1.getHost());
+
+    Properties props = new Properties();
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    ClientCacheFactory ccf = new ClientCacheFactory(props);
+    ccf.addPoolServer(host, PORT1);
+    ccf.addPoolServer(host, PORT2);
+
+    ClientCache clientCache = ccf.create();
+    Region<Object, Object> clientRegion =
+        clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
+    assertNotNull(clientRegion);
+
+    // let us populate this region from client.
+    for (int i = 0; i < 10; i++) {
+      clientRegion.put(i, i * 10);
+    }
+    // Verify using gets
+    for (int i = 0; i < 10; i++) {
+      assertEquals(i * 10, clientRegion.get(i));
+    }
+    assertEquals(10, clientRegion.size());
+    assertFalse(clientRegion.isEmpty());
+    // delete all the entries from the server
+    server1.invoke(new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        Cache c = CacheFactory.getAnyInstance();
+        assertNotNull(c);
+        Region<Object, Object> r = c.getRegion(REGION_NAME);
+        assertNotNull(r);
+        for (int i = 0; i < 10; i++) {
+          r.remove(i);
+        }
+        return null;
+      }
+    });
+    assertEquals(0, clientRegion.size());
+    assertTrue(clientRegion.isEmpty());
+
+    clientRegion.destroyRegion();
+  }
+
 
 
   private void createCache(Properties props) throws Exception {
