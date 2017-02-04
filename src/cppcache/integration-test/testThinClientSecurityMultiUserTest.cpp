@@ -171,8 +171,7 @@ class UserThread : public ACE_Task_Base {
       other.printStackTrace();
       m_failed = true;
       char tmp[256] = {'\0'};
-      sprintf(tmp, "Some other gemfire exception got for user id = %d",
-              m_userId);
+      sprintf(tmp, "Some other geode exception got for user id = %d", m_userId);
       LOG(tmp);
       LOG(other.getMessage());
       m_failed = true;
@@ -212,8 +211,7 @@ class UserThread : public ACE_Task_Base {
       other.printStackTrace();
       m_failed = true;
       char tmp[256] = {'\0'};
-      sprintf(tmp, "Some other gemfire exception got for user id = %d",
-              m_userId);
+      sprintf(tmp, "Some other geode exception got for user id = %d", m_userId);
       LOG(tmp);
       LOG(other.getMessage());
       m_failed = true;

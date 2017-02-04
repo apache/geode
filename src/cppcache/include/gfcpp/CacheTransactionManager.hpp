@@ -69,7 +69,7 @@ class CPPCACHE_EXPORT CacheTransactionManager
    * node. This can only happen if rebalancing/recovery happens during a
    * transaction that involves a PartitionedRegion.
    *
-   * @throws TransactionInDoubtException when GemFire cannot tell which nodes
+   * @throws TransactionInDoubtException when Geode cannot tell which nodes
    * have applied the transaction and which have not. This only occurs if nodes
    * fail mid-commit, and only then in very rare circumstances.
    */

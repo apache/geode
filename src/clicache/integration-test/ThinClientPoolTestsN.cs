@@ -298,7 +298,7 @@ namespace Apache.Geode.Client.UnitTests
             .Create();
         Assert.Fail("invalid_cache_pool.xml did not throw exception");
       }
-      catch (GemFireException excp)
+      catch (GeodeException excp)
       {
         Util.Log("Expected {0}: {1}", excp.GetType().Name, excp.Message);
       }
@@ -315,7 +315,7 @@ namespace Apache.Geode.Client.UnitTests
             .Create();
         Assert.Fail("invalid_cache_pool2.xml did not throw exception");
       }
-      catch (GemFireException excp)
+      catch (GeodeException excp)
       {
         Util.Log("Expected {0}: {1}", excp.GetType().Name, excp.Message);
       }
@@ -332,7 +332,7 @@ namespace Apache.Geode.Client.UnitTests
             .Create();
         Assert.Fail("invalid_cache_pool3.xml did not throw exception");
       }
-      catch (GemFireException excp)
+      catch (GeodeException excp)
       {
         Util.Log("Expected {0}: {1}", excp.GetType().Name, excp.Message);
       }
@@ -349,7 +349,7 @@ namespace Apache.Geode.Client.UnitTests
             .Create();
         Assert.Fail("invalid_cache_pool4.xml did not throw exception");
       }
-      catch (GemFireException excp)
+      catch (GeodeException excp)
       {
         Util.Log("Expected {0}: {1}", excp.GetType().Name, excp.Message);
       }

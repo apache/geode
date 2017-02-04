@@ -4016,7 +4016,7 @@ DUNIT_MAIN
     // MixedVersionNestedPdxOps
     { runNestedPdxOpsWithVersioning(); }
 
-    // Pdxobject In Gemfire Serializable Ops
+    // Pdxobject In Geode Serializable Ops
     //{
     //  runPdxInGFSOps();
     //}

@@ -27,7 +27,7 @@ const char* StatisticDescriptorImpl::DoubleTypeName = "Float";
 
 /**
  * Describes an individual statistic whose value is updated by an
- * application and may be archived by GemFire.  These descriptions are
+ * application and may be archived by Geode.  These descriptions are
  * gathered together in a {@link StatisticsType}.
  * <P>
  * To get an instance of this interface use an instance of

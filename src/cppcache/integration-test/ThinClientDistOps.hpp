@@ -404,8 +404,8 @@ void createEntryTwice(const char* name, const char* key, const char* value) {
   regPtr->create(keyPtr, valPtr);
   try {
     regPtr->create(keyPtr, valPtr);
-  } catch (const EntryExistsException& gemfireExcp) {
-    LOG(gemfireExcp.getMessage());
+  } catch (const EntryExistsException& geodeExcp) {
+    LOG(geodeExcp.getMessage());
     LOG("createEntryTwice() Clean Exit.");
     return;
   }
@@ -761,8 +761,8 @@ DUNIT_TASK_DEFINITION(CLIENT1, StepEight_Pool)
       reg->create(keyPtr, valPtr);
       sprintf(message, "Third create on Key %s ", CREATE_TWICE_KEY);
       LOG(message);
-    } catch (const EntryExistsException& gemfireExcp) {
-      LOG(gemfireExcp.getMessage());
+    } catch (const EntryExistsException& geodeExcp) {
+      LOG(geodeExcp.getMessage());
       ASSERT(false,
              "Creating KEY Twice on a caching-enabled false region should be "
              "allowed.");
@@ -802,8 +802,8 @@ DUNIT_TASK_DEFINITION(CLIENT1, StepEight_Pool_Sticky)
       reg->create(keyPtr, valPtr);
       sprintf(message, "Third create on Key %s ", CREATE_TWICE_KEY);
       LOG(message);
-    } catch (const EntryExistsException& gemfireExcp) {
-      LOG(gemfireExcp.getMessage());
+    } catch (const EntryExistsException& geodeExcp) {
+      LOG(geodeExcp.getMessage());
       ASSERT(false,
              "Creating KEY Twice on a caching-enabled false region should be "
              "allowed.");

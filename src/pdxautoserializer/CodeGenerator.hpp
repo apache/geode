@@ -145,7 +145,7 @@ class CodeGenerator {
                          const std::string& outputVarName) = 0;
 
   /**
-   * Generate the code for typeId function of gemfire
+   * Generate the code for typeId function of geode
    * Serializable/DataSerializable interface.
    */
   virtual void genTypeId(const std::string& methodPrefix) = 0;

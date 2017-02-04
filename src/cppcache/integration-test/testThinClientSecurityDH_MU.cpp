@@ -115,7 +115,7 @@ void initClientAuth(char credentialsType, const char* dhAlgo) {
 
   config->insert("security-client-dhalgo", dhAlgo);
   std::string testsrc = ACE_OS::getenv("TESTSRC");
-  testsrc += "/keystore/gemfire.pem";
+  testsrc += "/keystore/geode.pem";
   printf("KeyStore Path is: %s", testsrc.c_str());
   config->insert("security-client-kspath", testsrc.c_str());
 
@@ -260,15 +260,15 @@ void initSecurityServer(int instance) {
         cmdServerAuthenticator += " security-server-kspath=";
         cmdServerAuthenticator += testsrc;
         cmdServerAuthenticator +=
-            " security-server-ksalias=gemfire1 "
-            "security-server-kspasswd=gemfire";
+            " security-server-ksalias=geode1 "
+            "security-server-kspasswd=geode";
       } else if (instance == 2) {
         testsrc += "/keystore/gemfire2.keystore";
         cmdServerAuthenticator += " security-server-kspath=";
         cmdServerAuthenticator += testsrc;
         cmdServerAuthenticator +=
-            " security-server-ksalias=gemfire2 "
-            "security-server-kspasswd=gemfire";
+            " security-server-ksalias=geode2 "
+            "security-server-kspasswd=geode";
       }
 
       printf("Input to server cmd is -->  %s\n",

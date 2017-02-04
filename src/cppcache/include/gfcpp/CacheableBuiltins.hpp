@@ -447,12 +447,26 @@ class CacheableContainerType : public Cacheable, public TBase {
       return (value != NULL ? c##Ptr(new c(value, length, true)) : NULLPTR);   \
     }                                                                          \
     /**                                                                      \ \
+     * \                                                                       \
+     * \ \                                                                             \
      * Create a cacheable array taking ownership of the given array          \ \
+     * \                                                                       \
+     * \ \                                                                             \
      * without creating a copy.                                              \ \
+     * \                                                                       \
+     * \ \                                                                             \
      *                                                                       \ \
+     * \                                                                       \
+     * \ \                                                                             \
      * Note that the application has to ensure that the given array is       \ \
+     * \                                                                       \
+     * \ \                                                                             \
      * not deleted (apart from this class) and is allocated on the heap      \ \
+     * \                                                                       \
+     * \ \                                                                             \
      * using the "new" operator.                                             \ \
+     * \                                                                       \
+     * \ \                                                                             \
      */                                                                        \
     inline static c##Ptr createNoCopy(p* value, int32_t length) {              \
       return (value != NULL ? c##Ptr(new c(value, length)) : NULLPTR);         \

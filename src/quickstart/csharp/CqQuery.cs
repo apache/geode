@@ -20,7 +20,7 @@
  *
  * This example takes the following steps:
  *
- * 1. Create a GemFire Cache Programmatically.
+ * 1. Create a Geode Cache Programmatically.
  * 2. Create the example Region Programmatically.
  * 3. Populate some query objects on the Region.
  * 4. Register a cqQuery listener
@@ -32,7 +32,7 @@
 // Use standard namespaces
 using System;
 
-// Use the GemFire namespace
+// Use the Geode namespace
 using Apache.Geode.Client;
 
 // Use the "Tests" namespace for the query objects.
@@ -72,13 +72,13 @@ namespace Apache.Geode.Client.QuickStart
     {
       try
       {
-        // Create a GemFire Cache Programmatically.
+        // Create a Geode Cache Programmatically.
         CacheFactory cacheFactory = CacheFactory.CreateCacheFactory();
         Cache cache = cacheFactory.SetSubscriptionEnabled(true)
                                   .AddServer("localhost", 50505)
                                   .Create();
 
-        Console.WriteLine("Created the GemFire Cache");
+        Console.WriteLine("Created the Geode Cache");
 
         RegionFactory regionFactory = cache.CreateRegionFactory(RegionShortcut.PROXY);
         // Create the example Region programmatically.
@@ -173,16 +173,16 @@ namespace Apache.Geode.Client.QuickStart
 	//Close the cq
         qry.Close();
 
-        // Close the GemFire Cache.
+        // Close the Geode Cache.
         cache.Close();
 
-        Console.WriteLine("Closed the GemFire Cache");
+        Console.WriteLine("Closed the Geode Cache");
 
       }
       // An exception should not occur
-      catch (GemFireException gfex)
+      catch (GeodeException gfex)
       {
-        Console.WriteLine("CqQuery GemFire Exception: {0}", gfex.Message);
+        Console.WriteLine("CqQuery Geode Exception: {0}", gfex.Message);
       }
     }
   }

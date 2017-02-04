@@ -20,7 +20,7 @@
  *
  * This example takes the following steps:
  *
- * 1. Create a GemFire Cache using CacheFactory. By default it will connect to "localhost" at port 40404".
+ * 1. Create a Geode Cache using CacheFactory. By default it will connect to "localhost" at port 40404".
  * 2. Create a Example Region.
  * 3. PutAll Entries (Key and Value pairs) into the Region.
  * 4. GetAll Entries from the Region.
@@ -32,7 +32,7 @@
 using System;
 using System.Collections.Generic;
 
-// Use the GemFire namespace
+// Use the Geode namespace
 using Apache.Geode.Client;
 
 namespace Apache.Geode.Client.QuickStart
@@ -44,10 +44,10 @@ namespace Apache.Geode.Client.QuickStart
     {
       try
       {
-        //Create a GemFire Cache using CacheFactory. By default it will connect to "localhost" at port 40404".
+        //Create a Geode Cache using CacheFactory. By default it will connect to "localhost" at port 40404".
         Cache cache = CacheFactory.CreateCacheFactory().Create();
 
-        Console.WriteLine("Created the GemFire Cache");
+        Console.WriteLine("Created the Geode Cache");
 
         //Set Attributes for the region.
         RegionFactory regionFactory = cache.CreateRegionFactory(RegionShortcut.CACHING_PROXY);
@@ -80,15 +80,15 @@ namespace Apache.Geode.Client.QuickStart
 
         Console.WriteLine("Obtained 100 entries from the Region");
 
-        // Close the GemFire Cache.
+        // Close the Geode Cache.
         cache.Close();
 
-        Console.WriteLine("Closed the GemFire Cache");
+        Console.WriteLine("Closed the Geode Cache");
       }
       // An exception should not occur
-      catch (GemFireException gfex)
+      catch (GeodeException gfex)
       {
-        Console.WriteLine("PutAllGetAllOperations GemFire Exception: {0}", gfex.Message);
+        Console.WriteLine("PutAllGetAllOperations Geode Exception: {0}", gfex.Message);
       }
     }
   }

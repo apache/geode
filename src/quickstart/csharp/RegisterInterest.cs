@@ -21,7 +21,7 @@
  * This example takes the following steps:
  *
  * 1. Create CacheFactory using the user specified properties or from the gfcpp.properties file by default.
- * 2. Create a GemFire Cache.
+ * 2. Create a Geode Cache.
  * 3. Get the example Region from the Cache.
  * 4. Call registerAllKeys() and unregisterAllKeys() on the Region.
  * 5. Call registerKeys() and unregisterKeys() on the Region.
@@ -33,7 +33,7 @@
 using System;
 using System.Collections.Generic;
 
-// Use the GemFire namespace
+// Use the Geode namespace
 using Apache.Geode.Client;
 
 namespace Apache.Geode.Client.QuickStart
@@ -52,10 +52,10 @@ namespace Apache.Geode.Client.QuickStart
 
         Console.WriteLine("Created CacheFactory");
 
-        // Create a GemFire Cache with the "clientRegisterInterest.xml" Cache XML file.
+        // Create a Geode Cache with the "clientRegisterInterest.xml" Cache XML file.
         Cache cache = cacheFactory.Create();
 
-        Console.WriteLine("Created the GemFire Cache");
+        Console.WriteLine("Created the Geode Cache");
 
         // Get the example Region from the Cache which is declared in the Cache XML file.
         IRegion<string, string> region = cache.GetRegion<string, string>("exampleRegion");
@@ -105,15 +105,15 @@ namespace Apache.Geode.Client.QuickStart
 
         Console.WriteLine("Called RegisterRegex() and UnregisterRegex() with getInitialValues argument");
         
-        // Close the GemFire Cache.
+        // Close the Geode Cache.
         cache.Close();
 
-        Console.WriteLine("Closed the GemFire Cache");
+        Console.WriteLine("Closed the Geode Cache");
       }
       // An exception should not occur
-      catch (GemFireException gfex)
+      catch (GeodeException gfex)
       {
-        Console.WriteLine("RegisterInterest GemFire Exception: {0}", gfex.Message);
+        Console.WriteLine("RegisterInterest Geode Exception: {0}", gfex.Message);
       }
     }
   }

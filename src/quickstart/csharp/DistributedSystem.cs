@@ -20,7 +20,7 @@
  * This example connects to two distributed systems.
  * This example takes the following steps:
  *
- * 1. Create a GemFire Cache.
+ * 1. Create a Geode Cache.
  * 2. Now it creates a Pool with poolName1.
  * 3. Adds server(localhost:40404) to a pool factory.
  * 4. Creates a generic region "root1" with the pool then creates a generic subregion "exampleRegion" with the pool.  
@@ -38,7 +38,7 @@
 // Use standard namespaces
 using System;
 
-// Use the GemFire namespaces
+// Use the Geode namespaces
 //using Apache.Geode.Client;
 using Apache.Geode.Client;
 
@@ -102,12 +102,12 @@ namespace Apache.Geode.Client.QuickStart
     {
       try
       {
-        // Create a GemFire Cache.
+        // Create a Geode Cache.
         CacheFactory cacheFactory = CacheFactory.CreateCacheFactory();
 
         Cache cache = cacheFactory.SetSubscriptionEnabled(true).Create();
 
-        Console.WriteLine("Created the GemFire Cache");
+        Console.WriteLine("Created the Geode Cache");
 
         //test on first distributem system
         TestDistributedSystem(cache, "localhost", 40404, "poolName1", "exampleRegion1");
@@ -115,15 +115,15 @@ namespace Apache.Geode.Client.QuickStart
         //test on second distributed system
         TestDistributedSystem(cache, "localhost", 40405, "poolName2", "exampleRegion2");
 
-        // Close the GemFire Cache.
+        // Close the Geode Cache.
         cache.Close();
 
-        Console.WriteLine("Closed the GemFire Cache");
+        Console.WriteLine("Closed the Geode Cache");
       }
       // An exception should not occur
-      catch (GemFireException gfex)
+      catch (GeodeException gfex)
       {
-        Console.WriteLine("DistributedSystem GemFire Exception: {0}", gfex.Message);
+        Console.WriteLine("DistributedSystem Geode Exception: {0}", gfex.Message);
       }
     }
   }

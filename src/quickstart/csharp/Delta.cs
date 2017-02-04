@@ -20,7 +20,7 @@
  *
  * This example takes the following steps:
  *
- * 1. Create a GemFire Cache.
+ * 1. Create a Geode Cache.
  * 2. Get the example Region from the Cache.
  * 3. Put an Entry into the Region.
  * 4. Set delta for a value.
@@ -35,7 +35,7 @@
 // Use standard namespaces
 using System;
 
-// Use the GemFire namespace
+// Use the Geode namespace
 using Apache.Geode.Client;
 
 namespace Apache.Geode.Client.QuickStart
@@ -47,13 +47,13 @@ namespace Apache.Geode.Client.QuickStart
     {
       try
       {
-        // Create a GemFire Cache through XMLs/clientDelta.xml
+        // Create a Geode Cache through XMLs/clientDelta.xml
         Properties<string, string> prop = Properties<string, string>.Create<string, string>();
         prop.Insert("cache-xml-file", "XMLs/clientDelta.xml");
         CacheFactory cacheFactory = CacheFactory.CreateCacheFactory(prop);
         Cache cache = cacheFactory.Create();
 
-        Console.WriteLine("Created the GemFire Cache");
+        Console.WriteLine("Created the Geode Cache");
 
         // Get the example Region from the Cache which is declared in the Cache XML file.
         IRegion<string, DeltaExample> region = cache.GetRegion<string, DeltaExample>("exampleRegion");
@@ -86,24 +86,24 @@ namespace Apache.Geode.Client.QuickStart
 
         //Verification
         if( retVal.getField1() != 9 )
-          throw new GemFireException("First field should have been 9");
+          throw new GeodeException("First field should have been 9");
         if( retVal.getField2() != 15 )
-          throw new GemFireException("Second field should have been 15");
+          throw new GeodeException("Second field should have been 15");
         if( retVal.getField3() != 20 )
-          throw new GemFireException("Third field should have been 20");
+          throw new GeodeException("Third field should have been 20");
         
         Console.WriteLine("Delta has been successfully applied at server");
 
-        // Close the GemFire Cache.
+        // Close the Geode Cache.
         cache.Close();
 
-        Console.WriteLine("Closed the GemFire Cache");
+        Console.WriteLine("Closed the Geode Cache");
 
       }
       // An exception should not occur
-      catch (GemFireException gfex)
+      catch (GeodeException gfex)
       {
-        Console.WriteLine("Delta GemFire Exception: {0}", gfex.Message);
+        Console.WriteLine("Delta Geode Exception: {0}", gfex.Message);
       }
     }
   }

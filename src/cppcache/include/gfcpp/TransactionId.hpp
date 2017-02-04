@@ -34,7 +34,7 @@ namespace geode {
 namespace client {
 
 /** The TransactionId interface is a "marker" interface that
-* represents a unique GemFire transaction.
+* represents a unique Geode transaction.
 * @see Cache#getCacheTransactionManager
 * @see CacheTransactionManager#getTransactionId
 */

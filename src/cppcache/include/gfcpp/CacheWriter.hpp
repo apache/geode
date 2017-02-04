@@ -65,13 +65,13 @@ class RegionEvent;
  * application-specific behavior before the cache is modified.
  *
  * <p>Before the region is updated via a put, create, or destroy operation,
- * GemFire will call a <code>CacheWriter</code> that is installed anywhere in
+ * Geode will call a <code>CacheWriter</code> that is installed anywhere in
  * any
  * participating cache for that region, preferring a local
  * <code>CacheWriter</code>
  * if there is one. Usually there will be only one <code>CacheWriter</code> in
  * the distributed system. If there are multiple <code>CacheWriter</code>s
- * available in the distributed system, the GemFire
+ * available in the distributed system, the Geode
  * implementation always prefers one that is stored locally, or else picks one
  * arbitrarily. In any case, only one <code>CacheWriter</code> will be invoked.
  *

@@ -21,7 +21,7 @@
  *
  * This example shows IPdxInstanceFactory and IPdxInstance usage. 
  *
- * 1. Create a GemFire Cache.
+ * 1. Create a Geode Cache.
  * 2. Creates the PdxInstanceFactory for Person class.
  * 3. Then creates instance of PdxInstance
  * 4. It does put.
@@ -32,7 +32,7 @@
 // Use standard namespaces
 using System;
 using System.Reflection;
-// Use the GemFire namespace
+// Use the Geode namespace
 using Apache.Geode.Client;
 
 
@@ -80,13 +80,13 @@ namespace Apache.Geode.Client.QuickStart
 
         CacheFactory cacheFactory = CacheFactory.CreateCacheFactory();
 
-        Console.WriteLine("Connected to the GemFire Distributed System");
+        Console.WriteLine("Connected to the Geode Distributed System");
 
-        // Create a GemFire Cache with the "clientPdxRemoteQuery.xml" Cache XML file.
+        // Create a Geode Cache with the "clientPdxRemoteQuery.xml" Cache XML file.
         // Set SetPdxReadSerialized to true to access PdxInstance
         Cache cache = cacheFactory.Set("cache-xml-file", "XMLs/clientPdxInstance.xml").Create();
 
-        Console.WriteLine("Created the GemFire Cache");
+        Console.WriteLine("Created the Geode Cache");
 
         // Get the example Region from the Cache which is declared in the Cache XML file.
         IRegion<string, IPdxInstance> region = cache.GetRegion<string, IPdxInstance>("Person");
@@ -121,16 +121,16 @@ namespace Apache.Geode.Client.QuickStart
         else
            Console.WriteLine("PdxInstance doesn't returns all fields value expected");
         
-        // Close the GemFire Cache.
+        // Close the Geode Cache.
         cache.Close();
 
-        Console.WriteLine("Closed the GemFire Cache");
+        Console.WriteLine("Closed the Geode Cache");
 
       }
       // An exception should not occur
-      catch (GemFireException gfex)
+      catch (GeodeException gfex)
       {
-        Console.WriteLine("PdxInstance GemFire Exception: {0}", gfex.Message);
+        Console.WriteLine("PdxInstance Geode Exception: {0}", gfex.Message);
       }
     }
   }

@@ -129,7 +129,7 @@ class TSSUserAttributesWrapper {
   TSSUserAttributesWrapper(const TSSUserAttributesWrapper&);
 
  public:
-  static ACE_TSS<TSSUserAttributesWrapper> s_gemfireTSSUserAttributes;
+  static ACE_TSS<TSSUserAttributesWrapper> s_geodeTSSUserAttributes;
   UserAttributesPtr getUserAttributes() { return m_userAttribute; }
   void setUserAttributes(UserAttributesPtr userAttr) {
     m_userAttribute = userAttr;

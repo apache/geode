@@ -116,8 +116,8 @@ CqQueryPtr CqService::newCq(std::string& cqName, std::string& queryString,
   UserAttributesPtr ua;
   ua = NULLPTR;
   if (m_tccdm != NULL && m_tccdm->isMultiUserMode()) {
-    ua = TSSUserAttributesWrapper::s_gemfireTSSUserAttributes
-             ->getUserAttributes();
+    ua =
+        TSSUserAttributesWrapper::s_geodeTSSUserAttributes->getUserAttributes();
   }
 
   CqServicePtr cqs(this);

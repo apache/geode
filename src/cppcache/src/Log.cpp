@@ -71,8 +71,8 @@ std::string* g_logFileWithExt = NULL;
 size_t g_bytesWritten = 0;
 bool g_isLogFileOpened = false;
 
-size_t g_fileSizeLimit = GEMFIRE_MAX_LOG_FILE_LIMIT;
-size_t g_diskSpaceLimit = GEMFIRE_MAX_LOG_DISK_LIMIT;
+size_t g_fileSizeLimit = GEODE_MAX_LOG_FILE_LIMIT;
+size_t g_diskSpaceLimit = GEODE_MAX_LOG_DISK_LIMIT;
 
 char g_logFileNameBuffer[2048] = {0};
 
@@ -204,12 +204,12 @@ void Log::init(LogLevel level, const char* logFileName, int32 logFileLimit,
   if (g_logMutex == NULL) g_logMutex = new ACE_Thread_Mutex("Log::logMutex");
 
   if (logDiskSpaceLimit <
-      0 /*|| logDiskSpaceLimit > GEMFIRE_MAX_LOG_DISK_LIMIT*/) {
-    logDiskSpaceLimit = GEMFIRE_MAX_LOG_DISK_LIMIT;
+      0 /*|| logDiskSpaceLimit > GEODE_MAX_LOG_DISK_LIMIT*/) {
+    logDiskSpaceLimit = GEODE_MAX_LOG_DISK_LIMIT;
   }
 
-  if (logFileLimit < 0 || logFileLimit > GEMFIRE_MAX_LOG_FILE_LIMIT) {
-    logFileLimit = GEMFIRE_MAX_LOG_FILE_LIMIT;
+  if (logFileLimit < 0 || logFileLimit > GEODE_MAX_LOG_FILE_LIMIT) {
+    logFileLimit = GEODE_MAX_LOG_FILE_LIMIT;
   }
 
   ACE_Guard<ACE_Thread_Mutex> guard(*g_logMutex);
@@ -417,7 +417,7 @@ void Log::init(LogLevel level, const char* logFileName, int32 logFileLimit,
       if (renameResult < 0) {
         std::string msg = "Could not rename: " +
           *g_logFileWithExt + " to: " + rollFile;
-        throw GemfireIOException(msg.c_str());
+        throw GeodeIOException(msg.c_str());
       }
       */
     }
@@ -462,7 +462,7 @@ void Log::writeBanner() {
   if (GF_FILEEXISTS(dirname) != 0 && ACE_OS::mkdir(dirname) != 0) {
     std::string msg =
         "Error in creating directories for: " + std::string(dirname);
-    throw GemfireIOException(msg.c_str());
+    throw GeodeIOException(msg.c_str());
   }
   // retry some number of times before giving up when file is busy etc.
   int maxTries = 10;
@@ -488,7 +488,7 @@ void Log::writeBanner() {
     g_isLogFileOpened = false;
     return;
     // std::string msg = "Error in opening log file: " + *g_logFile;
-    // throw GemfireIOException(msg.c_str());
+    // throw GeodeIOException(msg.c_str());
   } else {
     g_isLogFileOpened = true;
   }
@@ -509,7 +509,7 @@ void Log::writeBanner() {
     // we should be continue,
     // fclose( g_log );
     // std::string msg = "Error in writing banner to log file: " + *g_logFile;
-    // throw GemfireIOException(msg.c_str());
+    // throw GeodeIOException(msg.c_str());
     return;
   }
 
@@ -716,7 +716,7 @@ void Log::put(LogLevel level, const char* msg) {
                 ACE_OS::thr_self(), g_bytesWritten);*/
         // std::string msg =
         // "Could not rename: " + *g_logFileWithExt + " to: " + rollFile;
-        // throw GemfireIOException(msg.c_str());
+        // throw GeodeIOException(msg.c_str());
         return;  // no need to throw exception try next time
       }
 
@@ -799,7 +799,7 @@ void Log::put(LogLevel level, const char* msg) {
       g_log = NULL;
       // g_isLogFileOpened = false;
       // std::string msg = "Error in writing to log file: " + *g_logFile;
-      // throw GemfireIOException(msg.c_str());
+      // throw GeodeIOException(msg.c_str());
     } else {
       fflush(g_log);
     }
@@ -808,13 +808,13 @@ void Log::put(LogLevel level, const char* msg) {
 
 void Log::putThrow(LogLevel level, const char* msg, const Exception& ex) {
   char buf[128] = {0};
-  ACE_OS::snprintf(buf, 128, "GemFire exception %s thrown: ", ex.getName());
+  ACE_OS::snprintf(buf, 128, "Geode exception %s thrown: ", ex.getName());
   put(level, (std::string(buf) + ex.getMessage() + "\n" + msg).c_str());
 }
 
 void Log::putCatch(LogLevel level, const char* msg, const Exception& ex) {
   char buf[128] = {0};
-  ACE_OS::snprintf(buf, 128, "GemFire exception %s caught: ", ex.getName());
+  ACE_OS::snprintf(buf, 128, "Geode exception %s caught: ", ex.getName());
   put(level, (std::string(buf) + ex.getMessage() + "\n" + msg).c_str());
 }
 

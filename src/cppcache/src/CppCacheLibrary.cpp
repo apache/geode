@@ -93,7 +93,7 @@ CppCacheLibrary* CppCacheLibrary::initLib(void) {
 void CppCacheLibrary::closeLib(void) {
   // ACE::fini(); This should not happen..... Things might be using ace beyond
   // the life of
-  // using gemfire.
+  // using geode.
 }
 
 // called during DLL initialization

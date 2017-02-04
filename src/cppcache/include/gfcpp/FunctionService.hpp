@@ -54,10 +54,10 @@ class CPPCACHE_EXPORT FunctionService : public SharedBase {
   /**
    * Returns a {@link Execution} object that can be used to execute a data
    * dependent function on the specified Region.<br>
-   * When invoked from a GemFire client, the method returns an Execution
+   * When invoked from a Geode client, the method returns an Execution
    * instance that sends a message to one of the connected servers as specified
    * by the {@link Pool} for the region. Depending on the filters setup on the
-   * {@link Execution}, the function is executed on all GemFire members that
+   * {@link Execution}, the function is executed on all Geode members that
    * define the data region, or a subset of members.
    * {@link Execution::withFilter(filter)}).
    *

@@ -34,7 +34,7 @@
  *
  * After that test demonstrartes query on .NET objects without having corresponding java classes at server.
  *
- * 1. Create a GemFire Cache.
+ * 1. Create a Geode Cache.
  * 2. Get the Person from the Cache.
  * 3. Populate some query Person objects on the Region.
  * 4. Get the pool, get the Query Service from Pool. Pool is define in clientPdxRemoteQuery.xml. 
@@ -47,7 +47,7 @@
 // Use standard namespaces
 using System;
 using System.Reflection;
-// Use the GemFire namespace
+// Use the Geode namespace
 using Apache.Geode.Client;
 
 
@@ -173,12 +173,12 @@ namespace Apache.Geode.Client.QuickStart
 
         CacheFactory cacheFactory = CacheFactory.CreateCacheFactory();
 
-        Console.WriteLine("Connected to the GemFire Distributed System");
+        Console.WriteLine("Connected to the Geode Distributed System");
 
-        // Create a GemFire Cache with the "clientPdxRemoteQuery.xml" Cache XML file.
+        // Create a Geode Cache with the "clientPdxRemoteQuery.xml" Cache XML file.
         Cache cache = cacheFactory.Set("cache-xml-file", "XMLs/clientPdxSerializer.xml").Create();
 
-        Console.WriteLine("Created the GemFire Cache");
+        Console.WriteLine("Created the Geode Cache");
 
         // Get the example Region from the Cache which is declared in the Cache XML file.
         IRegion<string, Person> region = cache.GetRegion<string, Person>("Person");
@@ -234,16 +234,16 @@ namespace Apache.Geode.Client.QuickStart
         }
 
         
-        // Close the GemFire Cache.
+        // Close the Geode Cache.
         cache.Close();
 
-        Console.WriteLine("Closed the GemFire Cache");
+        Console.WriteLine("Closed the Geode Cache");
 
       }
       // An exception should not occur
-      catch (GemFireException gfex)
+      catch (GeodeException gfex)
       {
-        Console.WriteLine("PdxSerializer GemFire Exception: {0}", gfex.Message);
+        Console.WriteLine("PdxSerializer Geode Exception: {0}", gfex.Message);
       }
     }
   }

@@ -22,11 +22,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("GemFireGacInstall")]
-[assembly: AssemblyDescription("GemFire utility to install/uninstall to GAC")]
+[assembly: AssemblyTitle("GeodeGacInstall")]
+[assembly: AssemblyDescription("Geode utility to install/uninstall to GAC")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("GemStone Systems Inc.")]
-[assembly: AssemblyProduct("GemFireGacInstall")]
+[assembly: AssemblyProduct("GeodeGacInstall")]
 [assembly: AssemblyCopyright("Copyright © GemStone Systems Inc. 2006")]
 [assembly: AssemblyTrademark("All Rights Reserved")]
 [assembly: AssemblyCulture("")]

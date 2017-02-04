@@ -411,7 +411,7 @@ bool gf_verifyDH(const char *subject, const unsigned char *challenge,
         X509_NAME_oneline(X509_get_subject_name(m_serverCerts[item]), NULL, 0);
 
     // Ignore first letter for comparision, openssl adds / before subject name
-    // e.g. /CN=gemfire1
+    // e.g. /CN=geode1
     if (strcmp((const char *)certsubject + 1, subject) == 0) {
       evpkey = X509_get_pubkey(m_serverCerts[item]);
       cert = m_serverCerts[item];

@@ -154,7 +154,7 @@ namespace Apache.Geode.Plugins.SQLite
     public static readonly string PersistenceDir = "PersistenceDirectory";
     public static readonly string MaxPageCount = "max_page_count";
     public static readonly string PageSize = "page_size";
-    public static readonly string DefaultPersistenceDir = "GemFireRegionData";
+    public static readonly string DefaultPersistenceDir = "GeodeRegionData";
     public static readonly string DefaultMaxPageCount = "2147483646";
     public static readonly string DefaultPageSize = "65536";
     #endregion

@@ -37,7 +37,7 @@ class QueryService;
 
 /**
  * A RegionService provides access to existing {@link Region regions} that exist
- * in a {@link GemFireCache GemFire cache}.
+ * in a {@link GeodeCache Geode cache}.
  * Regions can be obtained using {@link #getRegion}
  * and queried using {@link #getQueryService}.
  * The service should be {@link #close closed} to free up resources

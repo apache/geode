@@ -53,7 +53,7 @@ class Connector {
    * is thrown.
    *
    * <p> If <code>len</code> bytes cannot be read for any reason, then an
-   * <code>GemfireIOException</code> is thrown.
+   * <code>GeodeIOException</code> is thrown.
    *
    * <p> The <code>read(b)</code> method for class <code>InputStream</code>
    * has the same effect as: <pre><code> read(b, 0, b.length) </code></pre>
@@ -64,7 +64,7 @@ class Connector {
    * complete.
    * @return     the total number of bytes read into the buffer, or
    *             <code>-1</code> if an error was encountered.
-   * @exception  GemfireIOException, TimeoutException, IllegalArgumentException,
+   * @exception  GeodeIOException, TimeoutException, IllegalArgumentException,
    * OutOfMemoryException.
    */
   virtual int32_t receive(char *b, int32_t len, uint32_t waitSeconds,
@@ -79,7 +79,7 @@ class Connector {
    * @param      waitSeconds   the number of seconds to allow the write to
    * complete.
    * @return     the actual number of bytes written.
-   * @exception  GemfireIOException, TimeoutException, IllegalArgumentException.
+   * @exception  GeodeIOException, TimeoutException, IllegalArgumentException.
    */
   virtual int32_t send(const char *b, int32_t len, uint32_t waitSeconds,
                        uint32_t waitMicroSeconds) = 0;

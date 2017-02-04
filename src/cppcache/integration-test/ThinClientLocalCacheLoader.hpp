@@ -96,7 +96,7 @@ END_TASK_DEFINITION
 
 DUNIT_TASK_DEFINITION(CLIENT1, SetupClient)
   {
-    // Create a GemFire Cache with the "client_Loader.xml" Cache XML file.
+    // Create a Geode Cache with the "client_Loader.xml" Cache XML file.
     const char* clientXmlFile = "client_Loader.xml";
     static char* path = ACE_OS::getenv("TESTSRC");
     std::string clientXml = path;
@@ -105,7 +105,7 @@ DUNIT_TASK_DEFINITION(CLIENT1, SetupClient)
     CacheFactoryPtr cacheFactoryPtr = CacheFactory::createCacheFactory()->set(
         "cache-xml-file", clientXml.c_str());
     cachePtr = cacheFactoryPtr->create();
-    LOGINFO("Created the GemFire Cache");
+    LOGINFO("Created the Geode Cache");
 
     // Get the example Region from the Cache which is declared in the Cache XML
     // file.

@@ -237,7 +237,7 @@ GfErrType TcrEndpoint::createNewConnection(
       err = GF_TIMOUT;
       m_needToConnectInLock = true;  // while creating the connection
       apache::geode::client::millisleep(50);
-    } catch (const GemfireIOException& ex) {
+    } catch (const GeodeIOException& ex) {
       LOGINFO("IO error[%d] in handshake with endpoint[%s]: %s",
               ACE_OS::last_error(), m_name.c_str(), ex.getMessage());
       err = GF_IOERR;
@@ -696,12 +696,12 @@ int TcrEndpoint::receiveNotification(volatile bool& isRunning) {
       // If there is no notification, this exception is expected
       // But this is valid only when *no* data has been received
       // otherwise if data has been read then TcrConnection will throw
-      // a GemfireIOException which will cause the channel to close.
+      // a GeodeIOException which will cause the channel to close.
       LOGDEBUG(
           "receiveNotification timed out: no data received from "
           "endpoint %s",
           m_name.c_str());
-    } catch (const GemfireIOException& e) {
+    } catch (const GeodeIOException& e) {
       // Endpoint is disconnected, this exception is expected
       LOGFINER(
           "IO exception while receiving subscription event for endpoint %s: %s",
@@ -1000,7 +1000,7 @@ GfErrType TcrEndpoint::sendRequestWithRetry(
         // epFailure = true;
         failReason = "timed out waiting for endpoint";
         createNewConn = true;
-      } catch (const GemfireIOException& ex) {
+      } catch (const GeodeIOException& ex) {
         error = GF_IOERR;
         epFailure = true;
         failReason = "IO error for endpoint";

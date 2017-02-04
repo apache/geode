@@ -48,7 +48,7 @@ namespace client {
 class CPPCACHE_EXPORT Execution : public SharedBase {
  public:
   /**
-   * Specifies a data filter of routing objects for selecting the GemFire
+   * Specifies a data filter of routing objects for selecting the Geode
    * members
    * to execute the function.
    * <p>

@@ -73,7 +73,7 @@ namespace Apache
         virtual void Close(Apache::Geode::Client::IRegion<TKey, TValue>^ region)
         {
         }
-		virtual void AfterRegionDisconnected(Apache::Geode::Client::IRegion<TKey, TValue>^ region)
+		    virtual void AfterRegionDisconnected(Apache::Geode::Client::IRegion<TKey, TValue>^ region)
         {
         }
       };

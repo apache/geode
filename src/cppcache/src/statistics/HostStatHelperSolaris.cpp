@@ -70,7 +70,7 @@ void HostStatHelperSolaris::refreshProcess(ProcessStats* processStats) {
 
   ACE_OS::snprintf(procFileName, 64, "/proc/%lu/psinfo", (uint32)thePid);
   // fread was returning errno 2 FILENOTFOUND so it was switched to read
-  // This matches what was done in the Gemfire Project also
+  // This matches what was done in the Geode Project also
   fPtr = open(procFileName, O_RDONLY, 0); /* read only */
   if (fPtr != -1) {
     if (read(fPtr, &currentInfo, sizeof(currentInfo)) != sizeof(currentInfo)) {

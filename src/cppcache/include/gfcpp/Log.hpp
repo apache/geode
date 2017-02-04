@@ -32,16 +32,16 @@
 
 /******************************************************************************/
 
-#ifndef GEMFIRE_HIGHEST_LOG_LEVEL
-#define GEMFIRE_HIGHEST_LOG_LEVEL All
+#ifndef GEODE_HIGHEST_LOG_LEVEL
+#define GEODE_HIGHEST_LOG_LEVEL All
 #endif
 
-#ifndef GEMFIRE_MAX_LOG_FILE_LIMIT
-#define GEMFIRE_MAX_LOG_FILE_LIMIT (1024 * 1024 * 1024)
+#ifndef GEODE_MAX_LOG_FILE_LIMIT
+#define GEODE_MAX_LOG_FILE_LIMIT (1024 * 1024 * 1024)
 #endif
 
-#ifndef GEMFIRE_MAX_LOG_DISK_LIMIT
-#define GEMFIRE_MAX_LOG_DISK_LIMIT (1024ll * 1024ll * 1024ll * 1024ll)
+#ifndef GEODE_MAX_LOG_DISK_LIMIT
+#define GEODE_MAX_LOG_DISK_LIMIT (1024ll * 1024ll * 1024ll * 1024ll)
 #endif
 
 #define _GF_MSG_LIMIT 8192
@@ -68,7 +68,7 @@ class Exception;
     apache::geode::client::Log::log(level, expr)
 
 /** Defines methods available to clients that want to write a log message
-  * to their GemFire system's shared log file.
+  * to their Geode system's shared log file.
   * <p>
   * This class must be initialized prior to its use:
   * @ref Log::init
@@ -228,7 +228,7 @@ class CPPCACHE_EXPORT Log {
    * enough space left to hold the formatted log-line (around 70 chars).
    *
    * This is provided so that applications wishing to use the same format
-   * as GemFire log-lines can do so easily. A log-line starts with the prefix
+   * as Geode log-lines can do so easily. A log-line starts with the prefix
    * given below which is filled in by this method:
    * [<level> <date> <time> <timezone> <host>:<process ID> <thread ID>]
    *
@@ -245,7 +245,7 @@ class CPPCACHE_EXPORT Log {
    */
   static bool enabled(LogLevel level) {
     return (((s_doingDebug && level == Debug) ||
-             GEMFIRE_HIGHEST_LOG_LEVEL >= level) &&
+             GEODE_HIGHEST_LOG_LEVEL >= level) &&
             s_logLevel >= level);
   }
 
@@ -276,7 +276,7 @@ class CPPCACHE_EXPORT Log {
    * Returns whether "error" log messages are enabled.
    */
   static bool errorEnabled() {
-    return GEMFIRE_HIGHEST_LOG_LEVEL >= Error && s_logLevel >= Error;
+    return GEODE_HIGHEST_LOG_LEVEL >= Error && s_logLevel >= Error;
   }
 
   /**
@@ -309,7 +309,7 @@ class CPPCACHE_EXPORT Log {
    * Returns whether "warning" log messages are enabled.
    */
   static bool warningEnabled() {
-    return GEMFIRE_HIGHEST_LOG_LEVEL >= Warning && s_logLevel >= Warning;
+    return GEODE_HIGHEST_LOG_LEVEL >= Warning && s_logLevel >= Warning;
   }
 
   /**
@@ -342,7 +342,7 @@ class CPPCACHE_EXPORT Log {
    * Returns whether "info" log messages are enabled.
    */
   static bool infoEnabled() {
-    return GEMFIRE_HIGHEST_LOG_LEVEL >= Info && s_logLevel >= Info;
+    return GEODE_HIGHEST_LOG_LEVEL >= Info && s_logLevel >= Info;
   }
 
   /**
@@ -375,7 +375,7 @@ class CPPCACHE_EXPORT Log {
    * Returns whether "config" log messages are enabled.
    */
   static bool configEnabled() {
-    return GEMFIRE_HIGHEST_LOG_LEVEL >= Config && s_logLevel >= Config;
+    return GEODE_HIGHEST_LOG_LEVEL >= Config && s_logLevel >= Config;
   }
 
   /**
@@ -408,7 +408,7 @@ class CPPCACHE_EXPORT Log {
    * Returns whether "fine" log messages are enabled.
    */
   static bool fineEnabled() {
-    return GEMFIRE_HIGHEST_LOG_LEVEL >= Fine && s_logLevel >= Fine;
+    return GEODE_HIGHEST_LOG_LEVEL >= Fine && s_logLevel >= Fine;
   }
 
   /**
@@ -441,7 +441,7 @@ class CPPCACHE_EXPORT Log {
    * Returns whether "finer" log messages are enabled.
    */
   static bool finerEnabled() {
-    return GEMFIRE_HIGHEST_LOG_LEVEL >= Finer && s_logLevel >= Finer;
+    return GEODE_HIGHEST_LOG_LEVEL >= Finer && s_logLevel >= Finer;
   }
 
   /**
@@ -474,7 +474,7 @@ class CPPCACHE_EXPORT Log {
    * Returns whether "finest" log messages are enabled.
    */
   static bool finestEnabled() {
-    return GEMFIRE_HIGHEST_LOG_LEVEL >= Finest && s_logLevel >= Finest;
+    return GEODE_HIGHEST_LOG_LEVEL >= Finest && s_logLevel >= Finest;
   }
 
   /**
@@ -507,7 +507,7 @@ class CPPCACHE_EXPORT Log {
    * Returns whether "debug" log messages are enabled.
    */
   static bool debugEnabled() {
-    return (s_doingDebug || GEMFIRE_HIGHEST_LOG_LEVEL >= Debug) &&
+    return (s_doingDebug || GEODE_HIGHEST_LOG_LEVEL >= Debug) &&
            s_logLevel >= Debug;
   }
 

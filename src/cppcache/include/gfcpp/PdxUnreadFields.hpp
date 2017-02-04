@@ -28,7 +28,7 @@ namespace geode {
 namespace client {
 
 /**
- * Marker interface for an object that GemFire creates and returns
+ * Marker interface for an object that Geode creates and returns
  * from {@link PdxReader#readUnreadFields() readUnreadFields}.
  * If you call readUnreadFields then you must also call
  * {@link PdxWriter#writeUnreadFields(PdxUnreadFields) writeUnreadFields} when

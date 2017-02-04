@@ -175,7 +175,7 @@ DistributedSystemPtr DistributedSystem::connect(
       Log::init(g_sysProps->logLevel(), logFilename,
                 g_sysProps->logFileSizeLimit(),
                 g_sysProps->logDiskSpaceLimit());
-    } catch (const GemfireIOException&) {
+    } catch (const GeodeIOException&) {
       Log::close();
       TcrMessage::cleanup();
       CppCacheLibrary::closeLib();
@@ -191,8 +191,7 @@ DistributedSystemPtr DistributedSystem::connect(
 
   try {
     std::string gfcpp = CppCacheLibrary::getProductDir();
-    LOGCONFIG("Using GemFire Native Client Product Directory: %s",
-              gfcpp.c_str());
+    LOGCONFIG("Using Geode Native Client Product Directory: %s", gfcpp.c_str());
   } catch (const Exception&) {
     LOGERROR(
         "Unable to determine Product Directory. Please set the "
@@ -228,7 +227,7 @@ DistributedSystemPtr DistributedSystem::connect(
     LOGCONFIG("Operators new and delete have been set.");
   }
 #endif
-  // Log the Gemfire system properties
+  // Log the Geode system properties
   g_sysProps->logSettings();
 
   /* if (strlen(g_sysProps->securityClientDhAlgo())>0) {
@@ -290,7 +289,7 @@ DistributedSystemPtr DistributedSystem::connect(
   m_connected = true;
   dptr = dp;
   *m_instance_ptr = dptr;
-  LOGCONFIG("Starting the GemFire Native Client");
+  LOGCONFIG("Starting the Geode Native Client");
 
   return dptr;
 }
@@ -373,7 +372,7 @@ void DistributedSystem::disconnect() {
   // Free up library resources
   CppCacheLibrary::closeLib();
 
-  LOGCONFIG("Stopped the GemFire Native Client");
+  LOGCONFIG("Stopped the Geode Native Client");
 
   Log::close();
 

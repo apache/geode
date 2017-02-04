@@ -85,7 +85,7 @@ class GetAllWork : public PooledWork<GfErrType>,
                                      m_aCallbackArgument);
     m_reply = new TcrMessageReply(true, m_poolDM);
     if (m_poolDM->isMultiUserMode()) {
-      m_userAttribute = TSSUserAttributesWrapper::s_gemfireTSSUserAttributes
+      m_userAttribute = TSSUserAttributesWrapper::s_geodeTSSUserAttributes
                             ->getUserAttributes();
     }
 
@@ -679,7 +679,7 @@ GfErrType ThinClientPoolDM::sendRequestToAllServers(
   FunctionExecution* fePtrList = new FunctionExecution[csArray->length()];
   ThreadPool* threadPool = TPSingleton::instance();
   UserAttributesPtr userAttr =
-      TSSUserAttributesWrapper::s_gemfireTSSUserAttributes->getUserAttributes();
+      TSSUserAttributesWrapper::s_geodeTSSUserAttributes->getUserAttributes();
   for (int i = 0; i < csArray->length(); i++) {
     CacheableStringPtr cs = csArray[i];
     std::string endpointStr(cs->asChar());
@@ -997,7 +997,7 @@ QueryServicePtr ThinClientPoolDM::getQueryServiceWithoutCheck() {
 void ThinClientPoolDM::sendUserCacheCloseMessage(bool keepAlive) {
   LOGDEBUG("ThinClientPoolDM::sendUserCacheCloseMessage");
   UserAttributesPtr userAttribute =
-      TSSUserAttributesWrapper::s_gemfireTSSUserAttributes->getUserAttributes();
+      TSSUserAttributesWrapper::s_geodeTSSUserAttributes->getUserAttributes();
 
   std::map<std::string, UserConnectionAttributes*>& uca =
       userAttribute->getUserConnectionServers();
@@ -1513,7 +1513,7 @@ GfErrType ThinClientPoolDM::sendSyncRequest(
                                      request, version, singleHopConnFound,
                                      connFound, serverLocation);
     } else {
-      userAttr = TSSUserAttributesWrapper::s_gemfireTSSUserAttributes
+      userAttr = TSSUserAttributesWrapper::s_geodeTSSUserAttributes
                      ->getUserAttributes();
       if (userAttr == NULLPTR) {
         LOGWARN("Attempted operation type %d without credentials",
@@ -2148,7 +2148,7 @@ GfErrType ThinClientPoolDM::sendRequestToEP(const TcrMessage& request,
         error = this->sendUserCredentials(this->getCredentials(currentEndpoint),
                                           conn, false, isServerException);
       } else if (this->m_isMultiUserMode) {
-        ua = TSSUserAttributesWrapper::s_gemfireTSSUserAttributes
+        ua = TSSUserAttributesWrapper::s_geodeTSSUserAttributes
                  ->getUserAttributes();
         if (ua == NULLPTR) {
           LOGWARN("Attempted operation type %d without credentials",

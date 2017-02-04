@@ -151,7 +151,7 @@ CacheHelper::CacheHelper(const bool isThinclient,
     cachePtr = CacheFactory::createCacheFactory(pp)->create();
     m_doDisconnect = false;
   } catch (const Exception& excp) {
-    LOG("GemFire exception while creating cache, logged in following line");
+    LOG("Geode exception while creating cache, logged in following line");
     LOG(excp.getMessage());
   } catch (...) {
     LOG("Throwing exception while creating cache....");
@@ -174,7 +174,7 @@ CacheHelper::CacheHelper(const bool isThinclient, bool pdxIgnoreUnreadFields,
     cachePtr = cfPtr->create();
     m_doDisconnect = false;
   } catch (const Exception& excp) {
-    LOG("GemFire exception while creating cache, logged in following line");
+    LOG("Geode exception while creating cache, logged in following line");
     LOG(excp.getMessage());
   } catch (...) {
     LOG("Throwing exception while creating cache....");
@@ -222,7 +222,7 @@ CacheHelper::CacheHelper(const bool isthinClient, const char* poolName,
 
     cachePtr = cacheFac->create();
   } catch (const Exception& excp) {
-    LOG("GemFire exception while creating cache, logged in following line");
+    LOG("Geode exception while creating cache, logged in following line");
     LOG(excp.getMessage());
   } catch (...) {
     LOG("Throwing exception while creating cache....");
@@ -1281,7 +1281,7 @@ void CacheHelper::initServer(int instance, const char* xml,
   printf("  creating dir = %s \n", sname.c_str());
   ACE_OS::mkdir(sname.c_str());
 
-  //    sprintf( cmd, "/bin/cp %s/../test.gemfire.properties
+  //    sprintf( cmd, "/bin/cp %s/../test.geode.properties
   //    %s/",currDir.c_str(),
   // currDir.c_str()  );
   // LOG( cmd );
@@ -1308,7 +1308,7 @@ void CacheHelper::initServer(int instance, const char* xml,
   }
 
   if (locHostport != NULL) {  // check number of locator host port.
-    std::string gemfireProperties = generateGemfireProperties(currDir, ssl);
+    std::string geodeProperties = generateGeodeProperties(currDir, ssl);
 
     sprintf(
         cmd,
@@ -1319,7 +1319,7 @@ void CacheHelper::initServer(int instance, const char* xml,
         "--J=-Dgemfire.tombstone-gc-hreshold=%ld "
         "--J=-Dgemfire.security-log-level=%s --J=-Xmx1024m --J=-Xms128m 2>&1",
         gfjavaenv, GFSH, classpath, sname.c_str(), xmlFile.c_str(),
-        currDir.c_str(), portNum, gfLogLevel, gemfireProperties.c_str(),
+        currDir.c_str(), portNum, gfLogLevel, geodeProperties.c_str(),
         authParam, deltaProperty.c_str(),
         testServerGC ? userTombstone_timeout : defaultTombstone_timeout,
         testServerGC ? userTombstone_gc_threshold
@@ -1514,7 +1514,7 @@ void CacheHelper::closeLocator(int instance, bool ssl) {
   terminate_process_file(currDir + "/vf.gf.locator.pid",
                          std::chrono::seconds(10));
 
-  sprintf(cmd, "%s .%stest.gemfire.properties", DELETE_COMMAND, PATH_SEP);
+  sprintf(cmd, "%s .%stest.geode.properties", DELETE_COMMAND, PATH_SEP);
   LOG(cmd);
   ACE_OS::system(cmd);
 
@@ -1651,11 +1651,11 @@ void CacheHelper::initLocator(int instance, bool ssl, bool multiDS, int dsId,
 
   ACE_OS::mkdir(locDirname.c_str());
 
-  std::string gemfireFile =
-      generateGemfireProperties(currDir, ssl, dsId, remoteLocator);
+  std::string geodeFile =
+      generateGeodeProperties(currDir, ssl, dsId, remoteLocator);
 
   sprintf(cmd, "%s/bin/%s stop locator --dir=%s --properties-file=%s ",
-          gfjavaenv, GFSH, currDir.c_str(), gemfireFile.c_str());
+          gfjavaenv, GFSH, currDir.c_str(), geodeFile.c_str());
 
   LOG(cmd);
   ACE_OS::system(cmd);
@@ -1664,7 +1664,7 @@ void CacheHelper::initLocator(int instance, bool ssl, bool multiDS, int dsId,
           "%s/bin/%s start locator --name=%s --port=%d --dir=%s "
           "--properties-file=%s ",
           gfjavaenv, GFSH, locDirname.c_str(), portnum, currDir.c_str(),
-          gemfireFile.c_str());
+          geodeFile.c_str());
 
   LOG(cmd);
   ACE_OS::system(cmd);
@@ -1769,21 +1769,20 @@ int CacheHelper::getNumLocatorListUpdates(const char* s) {
   return numMatched;
 }
 
-std::string CacheHelper::generateGemfireProperties(const std::string& path,
-                                                   const bool ssl,
-                                                   const int dsId,
-                                                   const int remoteLocator) {
+std::string CacheHelper::generateGeodeProperties(const std::string& path,
+                                                 const bool ssl, const int dsId,
+                                                 const int remoteLocator) {
   char cmd[2048];
   std::string keystore = std::string(ACE_OS::getenv("TESTSRC")) + "/keystore";
 
-  std::string gemfireFile = path;
-  gemfireFile += "/test.gemfire.properties";
-  sprintf(cmd, "%s %s%stest.gemfire.properties", DELETE_COMMAND, path.c_str(),
+  std::string geodeFile = path;
+  geodeFile += "/test.geode.properties";
+  sprintf(cmd, "%s %s%stest.geode.properties", DELETE_COMMAND, path.c_str(),
           PATH_SEP);
   LOG(cmd);
   ACE_OS::system(cmd);
   FILE* urandom = /*ACE_OS::*/
-      fopen(gemfireFile.c_str(), "w");
+      fopen(geodeFile.c_str(), "w");
   char gemStr[258];
   sprintf(gemStr, "locators=localhost[%d],localhost[%d],localhost[%d]\n",
           CacheHelper::staticLocatorHostPort1,
@@ -1822,6 +1821,6 @@ std::string CacheHelper::generateGemfireProperties(const std::string& path,
   fflush(urandom);
   /*ACE_OS::*/
   fclose(urandom);
-  LOG(gemfireFile.c_str());
-  return gemfireFile;
+  LOG(geodeFile.c_str());
+  return geodeFile;
 }

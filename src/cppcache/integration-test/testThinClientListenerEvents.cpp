@@ -33,7 +33,7 @@ class SimpleCacheListener;
 typedef apache::geode::client::SharedPtr<SimpleCacheListener>
     SimpleCacheListenerPtr;
 
-// Use the "gemfire" namespace.
+// Use the "geode" namespace.
 using namespace apache::geode::client;
 
 // The SimpleCacheListener class.

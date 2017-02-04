@@ -33,7 +33,7 @@ class EntryEvent;
  * Implementers of interface <code>FixedPartitionResolver</code> helps to
  * achieve explicit mapping of a "user defined" partition to a data member node.
  * <p>
- * GemFire uses the partition name returned by
+ * Geode uses the partition name returned by
  * {@link FixedPartitionResolver#getPartitionName(EntryEvent,
  * CacheableHashSetPtr)}
  * to determine on which member the data is being managed. Say, for example, you

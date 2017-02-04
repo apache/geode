@@ -46,7 +46,7 @@ class SystemProperties;
 
 /**
 * @class DistributedSystemImpl DistributedSystemImpl.hpp
-* A "connection" to a GemFire distributed system.
+* A "connection" to a Geode distributed system.
 * The connection will be through a (host, port) pair.
 */
 

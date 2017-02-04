@@ -3548,7 +3548,7 @@ DUNIT_MAIN
       runNestedPdxOps(true, true);  // pool with locators
     }
 
-    // Pdxobject In Gemfire Serializable Ops
+    // Pdxobject In Geode Serializable Ops
     {
       runPdxInGFSOps(true);        // pool with server endpoints
       runPdxInGFSOps(true, true);  // pool with locators

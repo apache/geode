@@ -567,7 +567,7 @@ class CPPCACHE_EXPORT PdxInstance : public PdxSerializable {
 
   // From PdxSerializable
   /**
-   * @brief serialize this object in gemfire PDX format. This is an internal
+   * @brief serialize this object in geode PDX format. This is an internal
    * method.
    * @param PdxWriter to serialize the PDX object
    */

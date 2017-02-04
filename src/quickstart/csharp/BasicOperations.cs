@@ -20,7 +20,7 @@
  *
  * This example takes the following steps:
  *
- * 1. Create a GemFire Cache.
+ * 1. Create a Geode Cache.
  * 2. Create the example Region with generics support programmatically.
  * 3.a. Put Entries (Key and Value pairs) into the Region.
  * 3.b. If in 64 bit mode put over 4 GB data to demonstrate capacity.
@@ -34,7 +34,7 @@
 // Use standard namespaces
 using System;
 
-// Use the GemFire namespace
+// Use the Geode namespace
 using Apache.Geode.Client;
 
 // To check for available memory.
@@ -50,12 +50,12 @@ namespace Apache.Geode.Client.QuickStart
     {
       try
       {
-        // Create a GemFire Cache.
+        // Create a Geode Cache.
         CacheFactory cacheFactory = CacheFactory.CreateCacheFactory();
 
         Cache cache = cacheFactory.Create();
 
-        Console.WriteLine("Created the GemFire Cache");
+        Console.WriteLine("Created the Geode Cache");
 
         RegionFactory regionFactory = cache.CreateRegionFactory(RegionShortcut.CACHING_PROXY);
 
@@ -112,15 +112,15 @@ namespace Apache.Geode.Client.QuickStart
 
         Console.WriteLine("Destroyed the second Entry in the Region");
 
-        // Close the GemFire Cache.
+        // Close the Geode Cache.
         cache.Close();
 
-        Console.WriteLine("Closed the GemFire Cache");
+        Console.WriteLine("Closed the Geode Cache");
       }
       // An exception should not occur
-      catch (GemFireException gfex)
+      catch (GeodeException gfex)
       {
-        Console.WriteLine("BasicOperations GemFire Exception: {0}", gfex.Message);
+        Console.WriteLine("BasicOperations Geode Exception: {0}", gfex.Message);
       }
     }
   }

@@ -874,7 +874,7 @@ GfErrType ThinClientRedundancyManager::sendSyncRequestCq(
   while (attempts--) {
     if (err != GF_NOERR || m_redundantEndpoints.empty()) {
       UserAttributesPtr userAttr =
-          TSSUserAttributesWrapper::s_gemfireTSSUserAttributes
+          TSSUserAttributesWrapper::s_geodeTSSUserAttributes
               ->getUserAttributes();
       if (userAttr != NULLPTR) proxyCache = userAttr->getProxyCache();
       err = maintainRedundancyLevel();

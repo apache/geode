@@ -41,10 +41,10 @@ class EntryEvent;
 * class equals method so it properly verifies equality for the
 * PartitionResolver implementation. This might mean verifying that class names
 * are the same or that the returned routing objects are the same etc.. When you
-* initiate the partitioned region on multiple nodes, GemFire uses the equals
+* initiate the partitioned region on multiple nodes, Geode uses the equals
 * method to ensure you are using the same PartitionResolver implementation for
 * all of the nodes for the region.
-* GemFire uses the routing object's hashCode to determine where the data is
+* Geode uses the routing object's hashCode to determine where the data is
 * being managed. Say, for example, you want to colocate all Trades by month and
 * year.The key is implemented by TradeKey class which also implements the
 * PartitionResolver interface.

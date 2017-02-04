@@ -155,7 +155,7 @@ ResultCollectorPtr ExecutionImpl::execute(const char* fn, uint32_t timeout,
 
   LOGDEBUG("ExecutionImpl::execute: isHAHasResultOptimizeForWrite = %d",
            isHAHasResultOptimizeForWrite);
-  TXState* txState = TSSTXStateWrapper::s_gemfireTSSTXState->getTXState();
+  TXState* txState = TSSTXStateWrapper::s_geodeTSSTXState->getTXState();
 
   if (txState != NULL && m_allServer == true) {
     throw UnsupportedOperationException(

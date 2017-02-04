@@ -18,7 +18,7 @@
 #include "SqLiteImpl.hpp"
 
 namespace {
-std::string g_default_persistence_directory = "GemFireRegionData";
+std::string g_default_persistence_directory = "GeodeRegionData";
 }  // namespace
 
 using namespace apache::geode::client;

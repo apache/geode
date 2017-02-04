@@ -22,11 +22,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("GemFire.NETCacheTemplates")]
-[assembly: AssemblyDescription("Templates for GemFire Native Client .NET Cache")]
+[assembly: AssemblyTitle("Geode.NETCacheTemplates")]
+[assembly: AssemblyDescription("Templates for Geode Native Client .NET Cache")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Pivotal Software, Inc.")]
-[assembly: AssemblyProduct("GemFire.NETCacheTemplates")]
+[assembly: AssemblyProduct("Geode.NETCacheTemplates")]
 [assembly: AssemblyCopyright("Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements.  See the NOTICE file distributed with this work for additional information regarding copyright ownership.")]
 [assembly: AssemblyTrademark("All Rights Reserved")]
 [assembly: AssemblyCulture("")]

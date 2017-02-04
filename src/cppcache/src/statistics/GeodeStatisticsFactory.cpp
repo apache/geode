@@ -89,8 +89,7 @@ GeodeStatisticsFactory::~GeodeStatisticsFactory() {
     statsTypeMap.unbind_all();
 
   } catch (const Exception& ex) {
-    Log::warningCatch("~GeodeStatisticsFactory swallowing GemFire exception",
-                      ex);
+    Log::warningCatch("~GeodeStatisticsFactory swallowing Geode exception", ex);
 
   } catch (const std::exception& ex) {
     std::string what = "~GeodeStatisticsFactory swallowing std::exception: ";

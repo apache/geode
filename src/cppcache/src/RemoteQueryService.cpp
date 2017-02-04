@@ -65,8 +65,8 @@ QueryPtr RemoteQueryService::newQuery(const char* querystring) {
     return QueryPtr(
         new RemoteQuery(querystring, RemoteQueryServicePtr(this), m_tccdm));
   } else {
-    UserAttributesPtr ua = TSSUserAttributesWrapper::s_gemfireTSSUserAttributes
-                               ->getUserAttributes();
+    UserAttributesPtr ua =
+        TSSUserAttributesWrapper::s_geodeTSSUserAttributes->getUserAttributes();
     TryReadGuard guard(m_rwLock, m_invalid);
 
     if (m_invalid) {

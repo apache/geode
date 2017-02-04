@@ -46,7 +46,7 @@ namespace statistics {
 class StatisticsManager;
 
 /**
- * Gemfire's implementation of {@link StatisticsFactory}.
+ * Geode's implementation of {@link StatisticsFactory}.
  *
  */
 class GeodeStatisticsFactory : public StatisticsFactory {

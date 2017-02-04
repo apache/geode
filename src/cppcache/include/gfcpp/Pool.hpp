@@ -37,7 +37,7 @@ class Cache;
 class CacheFactory;
 class PoolAttributes;
 /**
- * A pool of connections to connect from a client to a set of GemFire Cache
+ * A pool of connections to connect from a client to a set of Geode Cache
  * Servers.
  * <p>Instances of this interface are created using
  * {@link PoolFactory#create}.

@@ -35,7 +35,7 @@ typedef enum { INT_TYPE = 5, LONG_TYPE = 6, DOUBLE_TYPE = 8 } FieldType;
 
 /**
  * Describes an individual statistic whose value is updated by an
- * application and may be archived by GemFire.  These descriptions are
+ * application and may be archived by Geode.  These descriptions are
  * gathered together in a {@link StatisticsType}.
  *
  * <P>
@@ -98,7 +98,7 @@ class StatisticDescriptorImpl : public StatisticDescriptor {
                           int8 statIsCounter, int8 statIsLargerBetter);
 
  public:
-  /** GfFieldType defined in gemfire.h.
+  /** GfFieldType defined in geode.h.
    * It describes the date type of an individual descriptor.
    * Supported date types are INT, LONG, and DOUBLE.
    */

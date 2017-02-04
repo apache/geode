@@ -31,7 +31,7 @@ typedef SharedPtr<UserFunctionExecutionException>
     UserFunctionExecutionExceptionPtr;
 
 /**
-* @brief UserFunctionExecutionException class is used to encapsulate gemfire
+* @brief UserFunctionExecutionException class is used to encapsulate geode
 *sendException in case of Function execution.
 **/
 class UserFunctionExecutionException : public Serializable {
@@ -97,12 +97,12 @@ class UserFunctionExecutionException : public Serializable {
 
   /**
   *@brief return as CacheableStringPtr the Exception message returned from
-  *gemfire sendException api.
+  *geode sendException api.
   **/
   CacheableStringPtr getMessage() { return m_message; }
 
   /**
-  *@brief return as CacheableStringPtr the Exception name returned from gemfire
+  *@brief return as CacheableStringPtr the Exception name returned from geode
   *sendException api.
   **/
   CacheableStringPtr getName() {

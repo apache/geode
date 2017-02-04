@@ -435,9 +435,9 @@ DUNIT_TASK_DEFINITION(CLIENT1, StepThree)
         LOGINFO("ResultSet Query returned %d rows", resultsPtr->size());
         LOG("Testing bug #1026 Complete");
         // Iterate through the rows of the query result.
-      } catch (const Exception& gemfireExcp) {
-        LOGERROR("CqQuery GemFire Exception: %s", gemfireExcp.getMessage());
-        FAIL(gemfireExcp.getMessage());
+      } catch (const Exception& geodeExcp) {
+        LOGERROR("CqQuery Geode Exception: %s", geodeExcp.getMessage());
+        FAIL(geodeExcp.getMessage());
       }
     }
 

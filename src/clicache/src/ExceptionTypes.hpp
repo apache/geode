@@ -33,24 +33,24 @@ namespace Apache
     namespace Client
     {
 
-      ref class GemFireException;
+      ref class GeodeException;
 
       /// <summary>
-      /// Factory delegate to create a managed GemFire exception.
+      /// Factory delegate to create a managed Geode exception.
       /// </summary>
       /// <remarks>
       /// For each managed exception class, its factory delegate is registered
       /// and maintained in a static dictionary mapped to its corresponding
-      /// native GemFire C++ exception name.
+      /// native Geode C++ exception name.
       /// </remarks>
-      delegate GemFireException^ CreateException2(
+      delegate GeodeException^ CreateException2(
         const apache::geode::client::Exception& nativeEx, System::Exception^ innerException);
 
       /// <summary>
-      /// The base exception class of all managed GemFire exceptions.
+      /// The base exception class of all managed Geode exceptions.
       /// </summary>
       [Serializable]
-      public ref class GemFireException
+      public ref class GeodeException
         : public System::Exception
       {
       private:
@@ -61,8 +61,8 @@ namespace Apache
         literal String^ MgSysExPrefix = "GFCLI_EXCEPTION:";
 
         /// <summary>
-        /// This contains a mapping of the native GemFire exception class
-        /// name to the factory delegate of the corresponding managed GemFire
+        /// This contains a mapping of the native Geode exception class
+        /// name to the factory delegate of the corresponding managed Geode
         /// exception class.
         /// </summary>
         static Dictionary<String^, CreateException2^>^ Native2ManagedExMap =
@@ -77,12 +77,12 @@ namespace Apache
         public:
 
           /// <summary>
-          /// The name of the native GemFire exception class.
+          /// The name of the native Geode exception class.
           /// </summary>
           String^ m_name;
 
           /// <summary>
-          /// The factory delegate of the managed GemFire exception class
+          /// The factory delegate of the managed Geode exception class
           /// corresponding to <c>m_name</c>
           /// </summary>
           CreateException2^ m_delegate;
@@ -101,29 +101,29 @@ namespace Apache
         static Dictionary<String^, CreateException2^>^ Init( );
 
         /// <summary>
-        /// Create the managed GemFire exception for a given native GemFire exception.
+        /// Create the managed Geode exception for a given native Geode exception.
         /// As a special case normal system exceptions are also created when the
         /// native exception is a wrapper of a managed system exception.
         /// </summary>
         /// <remarks>
-        /// Wherever the native GemFire C++ code raises a <c>apache::geode::client::Exception</c>,
+        /// Wherever the native Geode C++ code raises a <c>apache::geode::client::Exception</c>,
         /// the CLI wrapper code should have a catch-all for those and use
-        /// this function to create the corresponding managed GemFire exception.
-        /// If no managed GemFire exception has been defined (or has not been
+        /// this function to create the corresponding managed Geode exception.
+        /// If no managed Geode exception has been defined (or has not been
         /// added using _GF_MG_EXCEPTION_ADD3 in ExceptionTypesMN.cpp) then a
-        /// generic <c>GemFireException</c> exception is returned.
+        /// generic <c>GeodeException</c> exception is returned.
         /// </remarks>
-        /// <param name="nativeEx">The native GemFire exception object</param>
+        /// <param name="nativeEx">The native Geode exception object</param>
         /// <returns>
-        /// The managed GemFire exception object corresponding to the provided
-        /// native GemFire exception object.
+        /// The managed Geode exception object corresponding to the provided
+        /// native Geode exception object.
         /// </returns>
         static Exception^ Get(const apache::geode::client::Exception& nativeEx);
 
         /// <summary>
         /// Get the stack trace for the given native exception.
         /// </summary>
-        /// <param name="nativeEx">The native GemFire exception object</param>
+        /// <param name="nativeEx">The native Geode exception object</param>
         /// <returns>The stack trace of the native exception.</returns>
         inline static String^ GetStackTrace(
           const apache::geode::client::Exception& nativeEx )
@@ -141,8 +141,8 @@ namespace Apache
         /// <remarks>
         /// This method is to handle conversion of managed exceptions to
         /// C++ exception for those thrown by managed callbacks.
-        /// For non-Gemfire .NET exceptions we wrap it inside the generic
-        /// <c>GemfireException</c> with a special prefix in message.
+        /// For non-Geode .NET exceptions we wrap it inside the generic
+        /// <c>GeodeException</c> with a special prefix in message.
         /// While converting the exception back from C++ to .NET if the
         /// prefix is found in the message, then it tries to construct
         /// the original exception by reflection on the name of exception
@@ -152,14 +152,14 @@ namespace Apache
         inline static apache::geode::client::ExceptionPtr GetNative(Exception^ ex)
         {
           if (ex != nullptr) {
-            GemFireException^ gfEx = dynamic_cast<GemFireException^>(ex);
+            GeodeException^ gfEx = dynamic_cast<GeodeException^>(ex);
             if (gfEx != nullptr) {
               return gfEx->GetNative();
             }
             else {
               apache::geode::client::ExceptionPtr cause;
               if (ex->InnerException != nullptr) {
-                cause = GemFireException::GetNative(ex->InnerException);
+                cause = GeodeException::GetNative(ex->InnerException);
               }
               ManagedString mg_exStr(MgSysExPrefix + ex->ToString());
               return apache::geode::client::ExceptionPtr(new apache::geode::client::Exception(
@@ -171,7 +171,7 @@ namespace Apache
 
         /// <summary>
         /// Gets the C++ native exception object for this managed
-        /// <c>GemFireException</c>.
+        /// <c>GeodeException</c>.
         /// </summary>
         virtual apache::geode::client::ExceptionPtr GetNative()
         {
@@ -179,7 +179,7 @@ namespace Apache
           ManagedString mg_msg(msg);
           apache::geode::client::ExceptionPtr cause;
           if (this->InnerException != nullptr) {
-            cause = GemFireException::GetNative(this->InnerException);
+            cause = GeodeException::GetNative(this->InnerException);
           }
           return apache::geode::client::ExceptionPtr(new apache::geode::client::Exception(mg_msg.CharPtr,
               NULL, false, cause));
@@ -191,8 +191,8 @@ namespace Apache
         /// <remarks>
         /// This method is to handle conversion of managed exceptions to
         /// C++ exception for those thrown by managed callbacks.
-        /// For non-Gemfire .NET exceptions we wrap it inside the generic
-        /// <c>GemfireException</c> with a special prefix in message.
+        /// For non-Geode .NET exceptions we wrap it inside the generic
+        /// <c>GeodeException</c> with a special prefix in message.
         /// While converting the exception back from C++ to .NET if the
         /// prefix is found in the message, then it tries to construct
         /// the original exception by reflection on the name of exception
@@ -204,7 +204,7 @@ namespace Apache
           if (ex != nullptr) {
             apache::geode::client::ExceptionPtr cause;
             if (ex->InnerException != nullptr) {
-              cause = GemFireException::GetNative(ex->InnerException);
+              cause = GeodeException::GetNative(ex->InnerException);
             }
             ManagedString mg_exStr(MgSysExPrefix + ex->ToString());
             throw apache::geode::client::Exception(mg_exStr.CharPtr, NULL, false, cause);
@@ -213,7 +213,7 @@ namespace Apache
 
         /// <summary>
         /// Throws the C++ native exception object for this managed
-        /// <c>GemFireException</c>.
+        /// <c>GeodeException</c>.
         /// </summary>
         inline void ThrowNative()
         {
@@ -226,14 +226,14 @@ namespace Apache
         /// <summary>
         /// Default constructor.
         /// </summary>
-        inline GemFireException( )
+        inline GeodeException( )
           : Exception( ) { }
 
         /// <summary>
         /// Constructor to create an exception object with the given message.
         /// </summary>
         /// <param name="message">The exception message.</param>
-        inline GemFireException( String^ message )
+        inline GeodeException( String^ message )
           : Exception( message ) { }
 
         /// <summary>
@@ -242,13 +242,13 @@ namespace Apache
         /// </summary>
         /// <param name="message">The exception message.</param>
         /// <param name="innerException">The inner exception object.</param>
-        inline GemFireException( String^ message, System::Exception^ innerException )
+        inline GeodeException( String^ message, System::Exception^ innerException )
           : Exception( message, innerException ) { }
 
       protected:
 
         /// <summary>
-        /// Initializes a new instance of the <c>GemFireException</c> class with
+        /// Initializes a new instance of the <c>GeodeException</c> class with
         /// serialized data.
         /// This allows deserialization of this exception in .NET remoting.
         /// </summary>
@@ -260,18 +260,18 @@ namespace Apache
         /// contains contextual information about
         /// the source or destination
         /// </param>
-        inline GemFireException( SerializationInfo^ info, StreamingContext context )
+        inline GeodeException( SerializationInfo^ info, StreamingContext context )
           : Exception( info, context ) { }
       };
 
-/// Handle gemfire exceptions from native layer and convert to managed
+/// Handle geode exceptions from native layer and convert to managed
 /// exceptions.
 #define _GF_MG_EXCEPTION_TRY2        \
       try {
 #define _GF_MG_EXCEPTION_CATCH_ALL2  \
       } \
       catch (const apache::geode::client::Exception& ex) { \
-      throw Apache::Geode::Client::GemFireException::Get(ex); \
+      throw Apache::Geode::Client::GeodeException::Get(ex); \
       } \
       catch (System::AccessViolationException^ ex) { \
         throw ex; \
@@ -281,13 +281,13 @@ namespace Apache
 /// Creates a class <c>x</c> named for each exception <c>y</c>.
 #define _GF_MG_EXCEPTION_DEF4(x,y) \
       [Serializable] \
-      public ref class x: public GemFireException \
+      public ref class x: public GeodeException \
       { \
       public: \
       \
         /** <summary>Default constructor</summary> */ \
         x( ) \
-          : GemFireException( ) { } \
+          : GeodeException( ) { } \
         \
         /** <summary>
          *  Constructor to create an exception object with the given message.
@@ -295,7 +295,7 @@ namespace Apache
          *  <param name="message">The exception message.</param>
          */ \
         x( String^ message ) \
-          : GemFireException( message ) { } \
+          : GeodeException( message ) { } \
         \
         /** <summary>
          *  Constructor to create an exception object with the given message
@@ -305,7 +305,7 @@ namespace Apache
          *  <param name="innerException">The inner exception object.</param>
          */ \
         x( String^ message, System::Exception^ innerException ) \
-          : GemFireException( message, innerException ) { } \
+          : GeodeException( message, innerException ) { } \
         \
       protected: \
       \
@@ -321,19 +321,19 @@ namespace Apache
          *  </param>
          */ \
         x( SerializationInfo^ info, StreamingContext context ) \
-          : GemFireException( info, context ) { } \
+          : GeodeException( info, context ) { } \
       \
       internal: \
         x(const apache::geode::client::y& nativeEx) \
-          : GemFireException(ManagedString::Get(nativeEx.getMessage()), \
-              gcnew GemFireException(GemFireException::GetStackTrace( \
+          : GeodeException(ManagedString::Get(nativeEx.getMessage()), \
+              gcnew GeodeException(GeodeException::GetStackTrace( \
                 nativeEx))) { } \
         \
         x(const apache::geode::client::y& nativeEx, Exception^ innerException) \
-          : GemFireException(ManagedString::Get(nativeEx.getMessage()), \
+          : GeodeException(ManagedString::Get(nativeEx.getMessage()), \
               innerException) { } \
         \
-        static GemFireException^ Create(const apache::geode::client::Exception& ex, \
+        static GeodeException^ Create(const apache::geode::client::Exception& ex, \
             Exception^ innerException) \
         { \
           const apache::geode::client::y* nativeEx = dynamic_cast<const apache::geode::client::y*>( &ex ); \
@@ -353,7 +353,7 @@ namespace Apache
           ManagedString mg_msg(msg); \
           apache::geode::client::ExceptionPtr cause; \
           if (this->InnerException != nullptr) { \
-            cause = GemFireException::GetNative(this->InnerException); \
+            cause = GeodeException::GetNative(this->InnerException); \
           } \
           return apache::geode::client::ExceptionPtr(new apache::geode::client::y(mg_msg.CharPtr, \
               NULL, false, cause)); \
@@ -364,12 +364,12 @@ namespace Apache
 #define _GF_MG_EXCEPTION_DEF3(x) _GF_MG_EXCEPTION_DEF4(x,x)
 
 
-      // For all the native GemFire C++ exceptions, a corresponding definition
+      // For all the native Geode C++ exceptions, a corresponding definition
       // should be added below *AND* it should also be added to the static array
       // in ExceptionTypesMN.cpp using _GF_MG_EXCEPTION_ADD3( x )
 
       /// <summary>
-      /// A gemfire assertion exception.
+      /// A geode assertion exception.
       /// </summary>
       _GF_MG_EXCEPTION_DEF3( AssertionException );
 
@@ -494,12 +494,12 @@ namespace Apache
       /// <summary>
       /// Thrown when there is an input/output error.
       /// </summary>
-      _GF_MG_EXCEPTION_DEF4( GemFireIOException, GemfireIOException );
+      _GF_MG_EXCEPTION_DEF4( GeodeIOException, GeodeIOException );
 
       /// <summary>
-      /// Thrown when gemfire configuration file is incorrect.
+      /// Thrown when geode configuration file is incorrect.
       /// </summary>
-      _GF_MG_EXCEPTION_DEF4( GemFireConfigException, GemfireConfigException );
+      _GF_MG_EXCEPTION_DEF4( GeodeConfigException, GeodeConfigException );
 
       /// <summary>
       /// Thrown when a null argument is provided to a method
@@ -550,7 +550,7 @@ namespace Apache
       _GF_MG_EXCEPTION_DEF3( RegionCreationFailedException );
 
       /// <summary>
-      /// Thrown when there is a fatal internal exception in GemFire.
+      /// Thrown when there is a fatal internal exception in Geode.
       /// </summary>
       _GF_MG_EXCEPTION_DEF3( FatalInternalException );
 

@@ -21,7 +21,7 @@
  * This example takes the following steps:
  *
  * 1. Create CacheFactory using the user specified properties or from the gfcpp.properties file by default.
- * 2. Create a GemFire Cache.
+ * 2. Create a Geode Cache.
  * 3. Get the Portfolios Region from the Pool.
  * 4. Populate some query objects on the Region.
  * 5. Get the Query Service from cache.
@@ -34,7 +34,7 @@
 // Use standard namespaces
 using System;
 
-// Use the GemFire namespace
+// Use the Geode namespace
 using Apache.Geode.Client;
 
 // Use the "Tests" namespace for the query objects.
@@ -81,10 +81,10 @@ namespace Apache.Geode.Client.QuickStart
 
         Console.WriteLine("Created CacheFactory");
 
-        // Create a GemFire Cache with the "clientPoolCqQuery.xml" Cache XML file.
+        // Create a Geode Cache with the "clientPoolCqQuery.xml" Cache XML file.
         Cache cache = cacheFactory.Create();
 
-        Console.WriteLine("Created the GemFire Cache");
+        Console.WriteLine("Created the Geode Cache");
 
         // Get the Portfolios Region from the Cache which is declared in the Cache XML file.
         IRegion<string, Portfolio> region = cache.GetRegion<string, Portfolio>("Portfolios");
@@ -176,15 +176,15 @@ namespace Apache.Geode.Client.QuickStart
 	//Close the cq
         qry.Close();
 
-        // Close the GemFire Cache.
+        // Close the Geode Cache.
         cache.Close();
 
-        Console.WriteLine("Closed the GemFire Cache");
+        Console.WriteLine("Closed the Geode Cache");
       }
       // An exception should not occur
-      catch (GemFireException gfex)
+      catch (GeodeException gfex)
       {
-        Console.WriteLine("PoolCqQuery GemFire Exception: {0}", gfex.Message);
+        Console.WriteLine("PoolCqQuery Geode Exception: {0}", gfex.Message);
       }
     }
   }

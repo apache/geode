@@ -65,7 +65,7 @@ namespace client {
  */
 
 /**
- *@brief A gemfire assertion exception.
+ *@brief A geode assertion exception.
  **/
 _GF_EXCEPTION_DEF(AssertionException);
 
@@ -184,12 +184,12 @@ _GF_EXCEPTION_DEF(EntryNotFoundException);
 /**
  *@brief Thrown when there is an input/output error.
  **/
-_GF_EXCEPTION_DEF(GemfireIOException);
+_GF_EXCEPTION_DEF(GeodeIOException);
 
 /**
- *@brief Thrown when gemfire configuration file is incorrect.
+ *@brief Thrown when geode configuration file is incorrect.
  **/
-_GF_EXCEPTION_DEF(GemfireConfigException);
+_GF_EXCEPTION_DEF(GeodeConfigException);
 
 /**
  *@brief Thrown when a null argument is provided to a method
@@ -240,7 +240,7 @@ _GF_EXCEPTION_DEF(BufferSizeExceededException);
 _GF_EXCEPTION_DEF(RegionCreationFailedException);
 
 /**
- *@brief Thrown when there is a fatal internal exception in gemfire.
+ *@brief Thrown when there is a fatal internal exception in geode.
   */
 _GF_EXCEPTION_DEF(FatalInternalException);
 
@@ -359,7 +359,7 @@ _GF_EXCEPTION_DEF(InvalidDeltaException);
 _GF_EXCEPTION_DEF(KeyNotFoundException);
 /**
 * @brief This is for all Exceptions that may be thrown
-* by a GemFire transaction.
+* by a Geode transaction.
 **/
 _GF_EXCEPTION_DEF(TransactionException);
 /**

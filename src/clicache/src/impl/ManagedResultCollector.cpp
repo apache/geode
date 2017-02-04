@@ -154,7 +154,7 @@ namespace apache
           m_managedptr->AddResult(rs);
           //m_managedptr->AddResult( SafeUMSerializableConvert( result.ptr( ) ) );
         }
-        catch (Apache::Geode::Client::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GeodeException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
@@ -180,7 +180,7 @@ namespace apache
           //return rsptr;
           throw apache::geode::client::IllegalStateException("This should not be get callled.");
         }
-        catch (Apache::Geode::Client::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GeodeException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
@@ -197,7 +197,7 @@ namespace apache
         try {
           m_managedptr->EndResults();
         }
-        catch (Apache::Geode::Client::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GeodeException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
@@ -213,7 +213,7 @@ namespace apache
         try {
           m_managedptr->ClearResults(/*false*/);
         }
-        catch (Apache::Geode::Client::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GeodeException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {

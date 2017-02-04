@@ -591,7 +591,7 @@ namespace Apache
       {
         if (typeId < 0 || typeId > WrapperEndGeneric)
         {
-          throw gcnew GemFireException("The TypeID (" + typeId + ") being "
+          throw gcnew GeodeException("The TypeID (" + typeId + ") being "
                                        "registered is beyond acceptable range of 0-" + WrapperEndGeneric);
         }
         NativeWrappersGeneric[typeId] = wrapperMethod;

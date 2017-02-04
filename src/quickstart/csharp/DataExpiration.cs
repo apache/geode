@@ -20,7 +20,7 @@
  *
  * This example takes the following steps:
  *
- *  1. Create a GemFire Cache programmatically.
+ *  1. Create a Geode Cache programmatically.
  *  2. Create the example Region with generics support programmatically.
  *  3. Set the generic SimpleCacheListener plugin on the Region.
  *  4. Put 3 Entries into the Region.
@@ -36,7 +36,7 @@
 using System;
 using System.Threading;
 
-// Use the GemFire namespace
+// Use the Geode namespace
 using Apache.Geode.Client;
 
 // Use the .NET generics namespace
@@ -51,12 +51,12 @@ namespace Apache.Geode.Client.QuickStart
     {
       try
       {
-        // Create a GemFire Cache Programmatically.
+        // Create a Geode Cache Programmatically.
         CacheFactory cacheFactory = CacheFactory.CreateCacheFactory();
         Cache cache = cacheFactory.SetSubscriptionEnabled(true)
                                   .Create();
 
-        Console.WriteLine("Created the GemFire Cache");
+        Console.WriteLine("Created the Geode Cache");
 
         RegionFactory regionFactory = cache.CreateRegionFactory(RegionShortcut.CACHING_PROXY);
         // Create the example Region programmatically.
@@ -106,16 +106,16 @@ namespace Apache.Geode.Client.QuickStart
 
         Console.WriteLine("Got {0} keys after the Entry Idle Timeout duration elapsed", keys.Count);
 
-        // Close the GemFire Cache.
+        // Close the Geode Cache.
         cache.Close();
 
-        Console.WriteLine("Closed the GemFire Cache");
+        Console.WriteLine("Closed the Geode Cache");
 
       }
       // An exception should not occur
-      catch (GemFireException gfex)
+      catch (GeodeException gfex)
       {
-        Console.WriteLine("DataExpiration GemFire Exception: {0}", gfex.Message);
+        Console.WriteLine("DataExpiration Geode Exception: {0}", gfex.Message);
       }
     }
   }

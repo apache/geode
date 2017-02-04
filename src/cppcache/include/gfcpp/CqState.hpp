@@ -39,7 +39,7 @@ namespace client {
  */
 class CPPCACHE_EXPORT CqState {
  public:
-  // corresponding to gemfire.cache.query.internal.CqStateImpl
+  // corresponding to geode.cache.query.internal.CqStateImpl
   typedef enum {
     STOPPED = 0,
     RUNNING = 1,

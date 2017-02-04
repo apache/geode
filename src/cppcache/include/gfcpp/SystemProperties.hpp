@@ -224,7 +224,7 @@ class CPPCACHE_EXPORT SystemProperties {
    * By default crash dumps are created in the current working directory.
    * If log-file has been specified then they are created in the same
    * directory as the log file, and having the same prefix as log file.
-   * The default prefix is "gemfire_cpp".
+   * The default prefix is "geode_cpp".
    * The actual dump file will have timestamp and process ID in the full name.
    */
   inline const bool crashDumpEnabled() const { return m_crashDumpEnabled; }

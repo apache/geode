@@ -211,7 +211,7 @@ class CredentialGenerator : public SharedBase {
           std::string(" --J=-Dgemfire.security-publickey-filepath=") +
           this->getPublickeyfile();
       securityCmdStr +=
-          std::string(" --J=-Dgemfire.security-publickey-pass=gemfire");
+          std::string(" --J=-Dgemfire.security-publickey-pass=geode");
     }
     if ((securityParams.find("dummy") != std::string::npos) &&
         (!this->getClientDummyAuthorizer().empty())) {

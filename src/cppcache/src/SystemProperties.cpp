@@ -314,7 +314,7 @@ SystemProperties::~SystemProperties() {
 
 void SystemProperties::throwError(const char* msg) {
   LOGERROR(msg);
-  throw GemfireConfigException(msg);
+  throw GeodeConfigException(msg);
 }
 
 void SystemProperties::processProperty(const char* property,
@@ -747,7 +747,7 @@ void SystemProperties::processProperty(const char* property,
 void SystemProperties::logSettings() {
   // *** PLEASE ADD IN ALPHABETICAL ORDER - USER VISIBLE ***
 
-  std::string settings = "GemFire Native Client System Properties:";
+  std::string settings = "Geode Native Client System Properties:";
 
   char buf[2048];
 

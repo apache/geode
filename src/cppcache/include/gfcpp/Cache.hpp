@@ -21,7 +21,7 @@
  */
 #include "gfcpp_globals.hpp"
 #include "gf_types.hpp"
-#include "GemFireCache.hpp"
+#include "GeodeCache.hpp"
 #include "gf_types.hpp"
 #include "Region.hpp"
 #include "DistributedSystem.hpp"
@@ -56,7 +56,7 @@ class Pool;
  * <p>A cache can have multiple root regions, each with a different name.
  *
  */
-class CPPCACHE_EXPORT Cache : public GemFireCache {
+class CPPCACHE_EXPORT Cache : public GeodeCache {
   /**
    * @brief public methods
    */

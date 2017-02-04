@@ -27,7 +27,7 @@
 namespace apache {
 namespace geode {
 namespace client {
-ACE_TSS<TSSTXStateWrapper> TSSTXStateWrapper::s_gemfireTSSTXState;
+ACE_TSS<TSSTXStateWrapper> TSSTXStateWrapper::s_geodeTSSTXState;
 
 TSSTXStateWrapper::TSSTXStateWrapper() { m_txState = NULL; }
 

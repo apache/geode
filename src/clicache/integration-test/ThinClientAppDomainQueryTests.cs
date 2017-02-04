@@ -228,7 +228,7 @@ namespace Apache.Geode.Client.UnitTests
           ErrorOccurred = true;
           qryIdx++;
         }
-        catch (GemFireException)
+        catch (GeodeException)
         {
           // ok, exception expected, do nothing.
           qryIdx++;

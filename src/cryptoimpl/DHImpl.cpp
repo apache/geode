@@ -508,7 +508,7 @@ bool gf_verifyDH(void *dhCtx, const char *subject,
         X509_get_subject_name(dhimpl->m_serverCerts[item]), NULL, 0);
 
     // Ignore first letter for comparision, openssl adds / before subject name
-    // e.g. /CN=gemfire1
+    // e.g. /CN=geode1
     if (strcmp((const char *)certsubject + 1, subject) == 0) {
       evpkey = X509_get_pubkey(dhimpl->m_serverCerts[item]);
       cert = dhimpl->m_serverCerts[item];

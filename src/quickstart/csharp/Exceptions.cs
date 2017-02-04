@@ -21,7 +21,7 @@
  * This example takes the following steps:
  *
  * 1. Create CacheFactory using the user specified settings or from the gfcpp.properties file by default.
- * 2. Create a GemFire Cache.
+ * 2. Create a Geode Cache.
  * 3. Get the example generic Regions from the Cache.
  * 4. Perform some operations which should cause exceptions.
  * 5. Close the Cache.
@@ -32,7 +32,7 @@
 // Use standard namespaces
 using System;
 
-// Use the GemFire namespace
+// Use the Geode namespace
 using Apache.Geode.Client;
 
 namespace Apache.Geode.Client.QuickStart
@@ -52,10 +52,10 @@ namespace Apache.Geode.Client.QuickStart
 
         Console.WriteLine("Created CacheFactory");
 
-        // Create a GemFire Cache with the "clientExceptions.xml" Cache XML file.
+        // Create a Geode Cache with the "clientExceptions.xml" Cache XML file.
         Cache cache = cacheFactory.SetSubscriptionEnabled(true).Create();
 
-        Console.WriteLine("Created the GemFire Cache");
+        Console.WriteLine("Created the Geode Cache");
         
         // Get the example Regions from the Cache which are declared in the Cache XML file.
         IRegion<object, string> region = cache.GetRegion<object, string>("exampleRegion");
@@ -114,10 +114,10 @@ namespace Apache.Geode.Client.QuickStart
           Console.WriteLine("Expected IllegalStateException: {0}", gfex.Message);
         }
         
-        // Close the GemFire Cache.
+        // Close the Geode Cache.
         cache.Close();
 
-        Console.WriteLine("Closed the GemFire Cache");
+        Console.WriteLine("Closed the Geode Cache");
 
         try
         {
@@ -132,9 +132,9 @@ namespace Apache.Geode.Client.QuickStart
         }
       }
       // An exception should not occur
-      catch (GemFireException gfex)
+      catch (GeodeException gfex)
       {
-        Console.WriteLine("Exceptions GemFire Exception: {0}", gfex.Message);
+        Console.WriteLine("Exceptions Geode Exception: {0}", gfex.Message);
       }
     }
   }

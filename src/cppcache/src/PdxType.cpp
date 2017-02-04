@@ -56,7 +56,7 @@ PdxType::PdxType() : Serializable() {
   m_pdxFieldTypes = new std::vector<PdxFieldTypePtr>();
   m_localToRemoteFieldMap = NULL;
   m_remoteToLocalFieldMap = NULL;
-  m_gemfireTypeId = 0;
+  m_geodeTypeId = 0;
   /* adongre
    * Coverity - II
    * CID 29288: Uninitialized scalar field (UNINIT_CTOR)
@@ -80,7 +80,7 @@ PdxType::PdxType(const char* pdxDomainClassName, bool isLocal)
   m_pdxFieldTypes = new std::vector<PdxFieldTypePtr>();
   m_localToRemoteFieldMap = NULL;
   m_remoteToLocalFieldMap = NULL;
-  m_gemfireTypeId = 0;
+  m_geodeTypeId = 0;
   /* adongre
    * Coverity - II
    * CID 29287: Uninitialized scalar field (UNINIT_CTOR)
@@ -104,8 +104,8 @@ void PdxType::toData(DataOutput& output) const {
   // m_noJavaClass
   output.writeBoolean(m_noJavaClass);
 
-  // m_gemfireTypeId
-  output.writeInt(m_gemfireTypeId);
+  // m_geodeTypeId
+  output.writeInt(m_geodeTypeId);
 
   // m_varLenFieldIdx
   output.writeInt(m_varLenFieldIdx);
@@ -136,7 +136,7 @@ Serializable* PdxType::fromData(DataInput& input) {
 
   input.readBoolean(&m_noJavaClass);
 
-  input.readInt(&m_gemfireTypeId);
+  input.readInt(&m_geodeTypeId);
 
   input.readInt(&m_varLenFieldIdx);
 
@@ -478,7 +478,7 @@ PdxTypePtr PdxType::isContains(PdxTypePtr first, PdxTypePtr second) {
 
 PdxTypePtr PdxType::clone() {
   PdxTypePtr clone(new PdxType(m_className, false));
-  clone->m_gemfireTypeId = 0;
+  clone->m_geodeTypeId = 0;
   clone->m_numberOfVarLenFields = m_numberOfVarLenFields;
 
   for (std::vector<PdxFieldTypePtr>::iterator it = m_pdxFieldTypes->begin();
