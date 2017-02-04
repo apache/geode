@@ -24,7 +24,7 @@ import static org.junit.Assert.*;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.After;

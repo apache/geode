@@ -23,7 +23,7 @@ import java.io.File;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 

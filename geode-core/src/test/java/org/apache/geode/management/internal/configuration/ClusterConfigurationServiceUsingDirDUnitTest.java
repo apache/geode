@@ -28,8 +28,8 @@ import static org.apache.geode.test.dunit.Host.getHost;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import com.jayway.awaitility.Awaitility;
-import com.jayway.awaitility.core.ConditionFactory;
+import org.awaitility.Awaitility;
+import org.awaitility.core.ConditionFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;

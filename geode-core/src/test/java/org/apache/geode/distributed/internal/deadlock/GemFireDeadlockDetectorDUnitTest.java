@@ -20,7 +20,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;

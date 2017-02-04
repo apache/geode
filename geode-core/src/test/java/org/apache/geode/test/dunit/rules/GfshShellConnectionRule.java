@@ -16,7 +16,7 @@ package org.apache.geode.test.dunit.rules;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.HeadlessGfsh;

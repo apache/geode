@@ -35,7 +35,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

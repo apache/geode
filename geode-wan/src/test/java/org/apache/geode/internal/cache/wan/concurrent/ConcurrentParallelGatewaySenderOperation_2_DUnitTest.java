@@ -37,7 +37,7 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 
 /**
  *

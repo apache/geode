@@ -50,7 +50,7 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 import org.junit.Assert;
 
 import java.io.IOException;

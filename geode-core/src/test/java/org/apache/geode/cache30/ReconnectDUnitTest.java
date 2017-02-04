@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache30;
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;

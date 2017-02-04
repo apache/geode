@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.IntStream;
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Ignore;

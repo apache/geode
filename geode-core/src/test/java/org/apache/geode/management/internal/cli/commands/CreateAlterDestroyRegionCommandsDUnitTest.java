@@ -14,7 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static com.jayway.awaitility.Awaitility.waitAtMost;
+import static org.awaitility.Awaitility.waitAtMost;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;

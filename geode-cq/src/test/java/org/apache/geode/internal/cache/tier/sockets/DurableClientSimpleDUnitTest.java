@@ -69,7 +69,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 
 @Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class DurableClientSimpleDUnitTest extends DurableClientTestCase {

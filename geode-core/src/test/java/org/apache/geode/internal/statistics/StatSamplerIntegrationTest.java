@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.statistics;
 
-import static com.jayway.awaitility.Awaitility.*;
+import static org.awaitility.Awaitility.*;
 import static java.util.concurrent.TimeUnit.*;
 import static org.junit.Assert.*;
 

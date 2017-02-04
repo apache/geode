@@ -50,7 +50,7 @@ import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.ha.HAContainerRegion;
 import org.apache.geode.test.junit.categories.FlakyTest;
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 
 @Category(DistributedTest.class)
 public class Simple2CacheServerDUnitTest extends WANTestBase {

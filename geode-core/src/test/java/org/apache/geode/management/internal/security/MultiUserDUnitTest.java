@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 import org.apache.geode.security.TestSecurityManager;
 import org.json.JSONException;
 import org.junit.Test;

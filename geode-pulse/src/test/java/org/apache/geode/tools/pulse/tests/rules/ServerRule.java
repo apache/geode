@@ -17,7 +17,7 @@
 package org.apache.geode.tools.pulse.tests.rules;
 
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.management.internal.JettyHelper;

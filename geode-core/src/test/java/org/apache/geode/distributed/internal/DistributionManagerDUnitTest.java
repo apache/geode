@@ -17,7 +17,7 @@ package org.apache.geode.distributed.internal;
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.apache.geode.test.dunit.Assert.*;
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;

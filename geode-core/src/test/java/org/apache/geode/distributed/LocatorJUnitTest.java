@@ -56,7 +56,7 @@ import static org.apache.geode.internal.AvailablePort.SOCKET;
 import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
 import static org.junit.Assert.*;
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 
 @Category({IntegrationTest.class, MembershipTest.class})
 @RunWith(Parameterized.class)

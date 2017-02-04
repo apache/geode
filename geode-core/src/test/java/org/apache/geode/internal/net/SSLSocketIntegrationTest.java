@@ -14,12 +14,12 @@
  */
 package org.apache.geode.internal.net;
 
-import static com.jayway.awaitility.Awaitility.*;
+import static org.awaitility.Awaitility.*;
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.apache.geode.internal.security.SecurableCommunicationChannel.*;
 import static org.assertj.core.api.Assertions.*;
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 import com.sun.tools.hat.internal.model.StackTrace;
 
 import java.io.File;

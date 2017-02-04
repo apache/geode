@@ -43,7 +43,7 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.LogWriter;

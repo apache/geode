@@ -21,7 +21,7 @@ import java.io.StringWriter;
 import java.rmi.RemoteException;
 import java.util.concurrent.Callable;
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 import hydra.MethExecutorResult;
 
 import org.apache.geode.internal.process.ProcessUtils;

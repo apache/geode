@@ -25,7 +25,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import static com.jayway.awaitility.Awaitility.await;
+import static org.awaitility.Awaitility.await;
 
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;

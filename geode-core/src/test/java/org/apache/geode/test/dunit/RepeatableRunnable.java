@@ -18,8 +18,7 @@ package org.apache.geode.test.dunit;
  * A RepeatableRunnable is an object that implements a method that can be invoked repeatably without
  * causing any side affects.
  *
- * @deprecated Please use SerializableRunnable with {@link com.jayway.awaitility.Awaitility}
- *             instead.
+ * @deprecated Please use SerializableRunnable with {@link org.awaitility.Awaitility} instead.
  */
 @Deprecated
 public interface RepeatableRunnable {

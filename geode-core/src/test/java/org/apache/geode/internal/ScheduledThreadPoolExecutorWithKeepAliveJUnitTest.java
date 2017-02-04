@@ -33,7 +33,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 
 @Category(IntegrationTest.class)
 public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {

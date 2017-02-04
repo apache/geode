@@ -128,7 +128,7 @@ public class Invoke {
   }
 
   /**
-   * @deprecated Please use {@link com.jayway.awaitility.Awaitility} with
+   * @deprecated Please use {@link org.awaitility.Awaitility} with
    *             {@link #invokeInEveryVM(SerializableCallableIF)} instead.
    */
   public static void invokeRepeatingIfNecessary(final VM vm, final RepeatableRunnable runnable) {
@@ -136,7 +136,7 @@ public class Invoke {
   }
 
   /**
-   * @deprecated Please use {@link com.jayway.awaitility.Awaitility} with
+   * @deprecated Please use {@link org.awaitility.Awaitility} with
    *             {@link #invokeInEveryVM(SerializableCallableIF)} instead.
    */
   public static void invokeRepeatingIfNecessary(final VM vm, final RepeatableRunnable runnable,
@@ -145,7 +145,7 @@ public class Invoke {
   }
 
   /**
-   * @deprecated Please use {@link com.jayway.awaitility.Awaitility} with
+   * @deprecated Please use {@link org.awaitility.Awaitility} with
    *             {@link #invokeInEveryVM(SerializableCallableIF)} instead.
    */
   public static void invokeInEveryVMRepeatingIfNecessary(final RepeatableRunnable runnable) {
@@ -157,7 +157,7 @@ public class Invoke {
    * <code>run()</code> throws an assertion failure, its execution is repeated, until no assertion
    * failure occurs or <code>repeatTimeoutMs</code> milliseconds have passed.
    * 
-   * @deprecated Please use {@link com.jayway.awaitility.Awaitility} with
+   * @deprecated Please use {@link org.awaitility.Awaitility} with
    *             {@link #invokeInEveryVM(SerializableCallableIF)} instead.
    */
   public static void invokeInEveryVMRepeatingIfNecessary(final RepeatableRunnable runnable,

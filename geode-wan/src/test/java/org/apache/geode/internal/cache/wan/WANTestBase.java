@@ -46,7 +46,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;

@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.locks;
 
-import static com.jayway.awaitility.Awaitility.await;
+import static org.awaitility.Awaitility.await;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

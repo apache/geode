@@ -24,7 +24,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.UnitTest;
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 
 @Category(UnitTest.class)
 public class SystemFailureJUnitTest {

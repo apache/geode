@@ -61,7 +61,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.*;
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 
 @Category({IntegrationTest.class, MembershipTest.class})
 public class GMSHealthMonitorJUnitTest {

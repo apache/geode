@@ -16,7 +16,7 @@ package org.apache.geode.cache.client.internal;
 
 import java.util.concurrent.TimeUnit;
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Rule;

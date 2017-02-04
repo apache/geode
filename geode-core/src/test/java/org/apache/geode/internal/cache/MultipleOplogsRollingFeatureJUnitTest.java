@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.DistributionConfig;

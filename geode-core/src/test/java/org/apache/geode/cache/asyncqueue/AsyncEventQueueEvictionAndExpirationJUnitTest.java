@@ -21,7 +21,7 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 
 import org.junit.After;
 import org.junit.Before;

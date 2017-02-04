@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
 import javax.naming.Context;
 import javax.transaction.UserTransaction;
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 

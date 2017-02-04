@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.concurrent;
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 

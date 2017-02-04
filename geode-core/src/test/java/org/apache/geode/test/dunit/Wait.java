@@ -38,15 +38,15 @@ import org.apache.geode.internal.logging.LogService;
  * Extracted from DistributedTestCase.
  *
  * <p>
- * Deprecated in favor of using {@link com.jayway.awaitility.Awaitility}.
+ * Deprecated in favor of using {@link org.awaitility.Awaitility}.
  *
  * <p>
  * Examples of using Awaitility:
  * 
  * <pre>
  *
- * import static com.jayway.awaitility.Awaitility.*;
- * import static com.jayway.awaitility.Duration.*; // optional
+ * import static org.awaitility.Awaitility.*;
+ * import static org.awaitility.Duration.*; // optional
  * import static java.util.concurrent.TimeUnit.*; // optional
  *
  * await().atMost(2, SECONDS).until(() -> isDone());
@@ -96,8 +96,8 @@ import org.apache.geode.internal.logging.LogService;
  *
  * To:
  *
- * import static com.jayway.awaitility.Awaitility.*;
- * import static com.jayway.awaitility.Duration.*;
+ * import static org.awaitility.Awaitility.*;
+ * import static org.awaitility.Duration.*;
  * import static java.util.concurrent.TimeUnit.*;
  *
  * await("resource never closed").atMost(2, SECONDS).untilCall(() -> isClosed());
@@ -107,11 +107,11 @@ import org.apache.geode.internal.logging.LogService;
  * await("resource never closed").atMost(2, SECONDS).pollDelay(ZERO).pollInterval(200, MILLISECONDS).untilCall(() -> isClosed());
  * </pre>
  *
- * @deprecated Use {@link com.jayway.awaitility.Awaitility} instead.
+ * @deprecated Use {@link org.awaitility.Awaitility} instead.
  *
- * @see com.jayway.awaitility.Awaitility
- * @see com.jayway.awaitility.Duration
- * @see com.jayway.awaitility.core.ConditionFactory
+ * @see org.awaitility.Awaitility
+ * @see org.awaitility.Duration
+ * @see org.awaitility.core.ConditionFactory
  */
 @Deprecated
 public class Wait {
@@ -123,7 +123,7 @@ public class Wait {
   /**
    * Pause for a default interval (250 milliseconds).
    * 
-   * @deprecated Please use {@link com.jayway.awaitility.Awaitility} instead.
+   * @deprecated Please use {@link org.awaitility.Awaitility} instead.
    */
   public static void pause() {
     pause(250);
@@ -133,7 +133,7 @@ public class Wait {
    * Pause for the specified milliseconds. Make sure system clock has advanced by the specified
    * number of millis before returning.
    * 
-   * @deprecated Please use {@link com.jayway.awaitility.Awaitility} instead.
+   * @deprecated Please use {@link org.awaitility.Awaitility} instead.
    */
   public static final void pause(final int milliseconds) {
     if (milliseconds >= 1000 || logger.isDebugEnabled()) { // check for debug but log at info
@@ -160,7 +160,7 @@ public class Wait {
    * @param timeoutMillis total time to wait, in milliseconds
    * @param pollingInterval pause interval between waits
    * @param throwOnTimeout if false, don't generate an error
-   * @deprecated Please use {@link com.jayway.awaitility.Awaitility} instead.
+   * @deprecated Please use {@link org.awaitility.Awaitility} instead.
    */
   @Deprecated
   public static void waitForCriterion(final WaitCriterion waitCriterion, final long timeoutMillis,
@@ -209,7 +209,7 @@ public class Wait {
    * 
    * @param cacheTimeMillisSource region that provides cacheTimeMillis
    * @return the last time stamp observed
-   * @deprecated Please use {@link com.jayway.awaitility.Awaitility} instead.
+   * @deprecated Please use {@link org.awaitility.Awaitility} instead.
    */
   public static final long waitForExpiryClockToChange(final LocalRegion cacheTimeMillisSource) {
     return waitForExpiryClockToChange(cacheTimeMillisSource,
@@ -222,7 +222,7 @@ public class Wait {
    * @param cacheTimeMillisSource region that provides cacheTimeMillis
    * @param baseTime the timestamp that the clock must exceed
    * @return the last time stamp observed
-   * @deprecated Please use {@link com.jayway.awaitility.Awaitility} instead.
+   * @deprecated Please use {@link org.awaitility.Awaitility} instead.
    */
   public static final long waitForExpiryClockToChange(final LocalRegion cacheTimeMillisSource,
       final long baseTime) {
@@ -243,7 +243,7 @@ public class Wait {
    * @param milliseconds total amount of time to wait
    * @param pollingInterval interval to pause for the wait
    * @param throwOnTimeout if false, no error is thrown.
-   * @deprecated Please use {@link com.jayway.awaitility.Awaitility} instead.
+   * @deprecated Please use {@link org.awaitility.Awaitility} instead.
    */
   public static void waitMutex(final WaitCriterion waitCriterion, final Object mutex,
       final long milliseconds, final long pollingInterval, final boolean throwOnTimeout) {

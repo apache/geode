@@ -33,7 +33,7 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.*;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;

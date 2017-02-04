@@ -19,7 +19,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.apache.geode.util.JSR166TestCase.m2;
 import static org.junit.Assert.*;
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 
 import java.io.Serializable;
 import java.util.Iterator;

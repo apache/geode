@@ -15,7 +15,7 @@
 package org.apache.geode.internal.process;
 
 import static com.googlecode.catchexception.CatchException.*;
-import static com.jayway.awaitility.Awaitility.*;
+import static org.awaitility.Awaitility.*;
 import static java.util.concurrent.TimeUnit.*;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;

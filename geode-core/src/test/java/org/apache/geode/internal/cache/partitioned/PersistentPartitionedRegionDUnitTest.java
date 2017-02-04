@@ -15,7 +15,7 @@
 package org.apache.geode.internal.cache.partitioned;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static com.jayway.awaitility.Awaitility.*;
+import static org.awaitility.Awaitility.*;
 import static java.util.concurrent.TimeUnit.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;

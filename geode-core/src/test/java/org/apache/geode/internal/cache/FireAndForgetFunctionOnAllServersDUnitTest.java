@@ -32,7 +32,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static com.jayway.awaitility.Awaitility.*;
+import static org.awaitility.Awaitility.*;
 import static java.util.concurrent.TimeUnit.*;
 
 @Category(DistributedTest.class)

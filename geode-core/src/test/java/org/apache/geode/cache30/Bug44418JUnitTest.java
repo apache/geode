@@ -23,7 +23,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import com.jayway.awaitility.core.ConditionTimeoutException;
+import org.awaitility.core.ConditionTimeoutException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static com.jayway.awaitility.Awaitility.with;
+import static org.awaitility.Awaitility.with;
 import static org.junit.Assert.fail;
 
 /**

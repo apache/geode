@@ -15,8 +15,8 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.test.dunit.Invoke.*;
-import static com.jayway.awaitility.Awaitility.*;
-import static com.jayway.awaitility.Duration.*;
+import static org.awaitility.Awaitility.*;
+import static org.awaitility.Duration.*;
 import static org.junit.Assert.*;
 
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;

@@ -48,7 +48,7 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 
 /**
  * DUnit for ParallelSenderQueue overflow operations.

@@ -61,7 +61,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 
 /**
  *

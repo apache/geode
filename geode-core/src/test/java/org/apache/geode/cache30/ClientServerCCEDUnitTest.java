@@ -17,7 +17,7 @@ package org.apache.geode.cache30;
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 
 import java.util.ArrayList;
 import java.util.Collection;

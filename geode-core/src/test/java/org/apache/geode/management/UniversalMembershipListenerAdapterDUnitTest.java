@@ -18,7 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.apache.geode.test.dunit.Assert.*;
 import static org.apache.geode.test.dunit.LogWriterUtils.*;
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 
 import java.io.IOException;
 import java.util.Collections;

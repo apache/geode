@@ -15,7 +15,7 @@
 package org.apache.geode.management;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static com.jayway.awaitility.Awaitility.*;
+import static org.awaitility.Awaitility.*;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 

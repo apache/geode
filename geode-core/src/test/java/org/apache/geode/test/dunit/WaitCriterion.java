@@ -23,12 +23,12 @@ package org.apache.geode.test.dunit;
  * <p>
  * See javadocs on {@link Wait} for examples and guidelines for converting to Awaitility.
  *
- * @deprecated Use {@link com.jayway.awaitility.Awaitility} instead.
+ * @deprecated Use {@link org.awaitility.Awaitility} instead.
  *
  * @see Wait
- * @see com.jayway.awaitility.Awaitility
- * @see com.jayway.awaitility.Duration
- * @see com.jayway.awaitility.core.ConditionFactory
+ * @see org.awaitility.Awaitility
+ * @see org.awaitility.Duration
+ * @see org.awaitility.core.ConditionFactory
  */
 public interface WaitCriterion {
 

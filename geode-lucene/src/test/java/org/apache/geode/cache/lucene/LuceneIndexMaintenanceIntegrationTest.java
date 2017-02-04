@@ -20,7 +20,7 @@ import static org.junit.Assert.*;
 import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

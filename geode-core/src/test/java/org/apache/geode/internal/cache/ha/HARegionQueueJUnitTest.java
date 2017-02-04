@@ -30,7 +30,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.After;

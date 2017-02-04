@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 
 @Category(DistributedTest.class)
 public class SerialWANStatsDUnitTest extends WANTestBase {

@@ -15,7 +15,7 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static com.jayway.awaitility.Awaitility.*;
+import static org.awaitility.Awaitility.*;
 import static org.junit.Assert.*;
 
 import java.util.Properties;

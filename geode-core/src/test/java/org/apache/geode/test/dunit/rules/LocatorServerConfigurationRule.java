@@ -27,7 +27,7 @@ import java.net.UnknownHostException;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 import org.junit.rules.ExternalResource;
 
 import org.apache.geode.distributed.Locator;

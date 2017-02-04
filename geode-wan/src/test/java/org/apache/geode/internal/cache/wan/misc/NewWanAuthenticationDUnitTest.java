@@ -20,7 +20,7 @@ import static org.apache.geode.test.dunit.Assert.*;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 import org.apache.geode.security.TestSecurityManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;

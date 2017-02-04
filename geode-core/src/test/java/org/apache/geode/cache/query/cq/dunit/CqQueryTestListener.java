@@ -31,7 +31,7 @@ import org.apache.geode.cache.query.CqStatusListener;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 
 /**
  *

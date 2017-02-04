@@ -31,7 +31,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.partitioned.DestroyMessage;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 
 
 @Category(UnitTest.class)

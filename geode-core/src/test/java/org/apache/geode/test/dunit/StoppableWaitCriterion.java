@@ -19,7 +19,7 @@ package org.apache.geode.test.dunit;
  *
  * Extracted from DistributedTestCase.
  * 
- * @deprecated Use {@link com.jayway.awaitility.Awaitility} instead.
+ * @deprecated Use {@link org.awaitility.Awaitility} instead.
  */
 public interface StoppableWaitCriterion extends WaitCriterion {
 

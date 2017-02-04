@@ -22,7 +22,7 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Ignore;

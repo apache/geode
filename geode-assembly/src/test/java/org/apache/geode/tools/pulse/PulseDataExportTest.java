@@ -16,7 +16,7 @@
 
 package org.apache.geode.tools.pulse;
 
-import static com.jayway.awaitility.Awaitility.await;
+import static org.awaitility.Awaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.cache.client.ClientCacheFactory;
