@@ -24,7 +24,7 @@ namespace Apache.Geode.Client.Tests
 
   public class LDAPCredentialGenerator : CredentialGenerator
   {
-    private const string UserPrefix = "gemfire";
+    private const string UserPrefix = "geode";
 
     public LDAPCredentialGenerator()
     {

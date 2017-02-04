@@ -73,13 +73,13 @@ void StatDataOutput::flush() {
   if (len > 0) {
     if (fwrite(buffBegin, sizeOfUInt8, len, m_fp) != static_cast<size_t>(len)) {
       LOGERROR("Could not write into the statistics file");
-      throw GemfireIOException("Could not write into the statistics file");
+      throw GeodeIOException("Could not write into the statistics file");
     }
   }
   int rVal = fflush(m_fp);
   if (rVal != 0) {
     LOGERROR("Could not flush into the statistics file");
-    throw GemfireIOException("Could not flush into the statistics file");
+    throw GeodeIOException("Could not flush into the statistics file");
   }
 }
 

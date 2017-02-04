@@ -20,7 +20,7 @@
  *
  * This example takes the following steps:
  *
- * 1. Create a GemFire Cache.
+ * 1. Create a Geode Cache.
  * 2. Get the example Region from the Cache.
  * 3. Populate some query objects on the Region.
  * 4. Create Execute Objects
@@ -32,7 +32,7 @@
 // Use standard namespaces
 using System;
 
-// Use the GemFire namespace
+// Use the Geode namespace
 using Apache.Geode.Client;
 using System.Collections.Generic;
 using System.Collections;
@@ -54,7 +54,7 @@ namespace Apache.Geode.Client.QuickStart
 
         Cache cache = cacheFactory.SetSubscriptionEnabled(true).AddServer("localhost", 50505).AddServer("localhost", 40404).Create();
 
-        Console.WriteLine("Created the GemFire Cache");
+        Console.WriteLine("Created the Geode Cache");
         IRegion<string, string> region = cache.CreateRegionFactory(RegionShortcut.CACHING_PROXY).Create<string, string>("partition_region");
         Console.WriteLine("Created the Region");
 
@@ -150,15 +150,15 @@ namespace Apache.Geode.Client.QuickStart
           Console.WriteLine("on all servers:result[{0}]={1}.", i, (string)resultList2[i]);
         }
 
-        // Close the GemFire Cache.
+        // Close the Geode Cache.
         cache.Close();
 
-        Console.WriteLine("Closed the GemFire Cache");
+        Console.WriteLine("Closed the Geode Cache");
       }
       // An exception should not occur
-      catch (GemFireException gfex)
+      catch (GeodeException gfex)
       {
-        Console.WriteLine("ExecuteFunctions GemFire Exception: {0}", gfex.Message);
+        Console.WriteLine("ExecuteFunctions Geode Exception: {0}", gfex.Message);
       }
     }
   }

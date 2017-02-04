@@ -484,7 +484,7 @@ class CPPCACHE_EXPORT PoolFactory : public SharedBase {
   void reset();
 
   /**
-   * Creates a new Pool for connecting a client to a set of GemFire Cache
+   * Creates a new Pool for connecting a client to a set of Geode Cache
    * Servers.
    * using this factory's settings for attributes.
    *

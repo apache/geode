@@ -2389,7 +2389,7 @@ namespace Apache.Geode.Client.UnitTests
           string commandline = item["CommandLine"].ToString();
 
           Util.Log("processId:{0} name:{1}", item["ProcessId"], item["Name"]);
-          if (commandline.Contains("geode.jar"))
+          if (commandline.Contains("gemfire.jar"))
           {
             Util.Log("Killing geode process with id {0}", processId);
             Process proc = Process.GetProcessById(processId);

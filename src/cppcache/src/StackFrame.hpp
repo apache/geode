@@ -103,7 +103,7 @@ class StackFrame {
     /*
     This code receives a stacktrace line in the forms:
 
-    /export/hoth2/framework/lib/debug/libeventtest.so(_ZN7gemfire13testframework9EventTest17doEventOperationsEv+0x4a0)
+    /export/hoth2/framework/lib/debug/libeventtest.so(_ZN7geode13testframework9EventTest17doEventOperationsEv+0x4a0)
     [0x93a1a0]
     /export/hoth2/framework/lib/debug/libeventtest.so(doRegionOperations+0x13d)
     [0x92c9e3]

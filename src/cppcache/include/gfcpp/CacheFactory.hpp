@@ -30,7 +30,7 @@
  * @file
  */
 
-#define DEFAULT_POOL_NAME "default_gemfireClientPool"
+#define DEFAULT_POOL_NAME "default_geodeClientPool"
 
 namespace apache {
 namespace geode {
@@ -39,7 +39,7 @@ namespace client {
 class CppCacheLibrary;
 /**
  * @class CacheFactory CacheFactory.hpp
- * Top level class for configuring and using GemFire on a client.This should be
+ * Top level class for configuring and using Geode on a client.This should be
  *called once to create {@link Cache}.
  *<p>
  * For the default values for the pool attributes see {@link PoolFactory}.
@@ -93,7 +93,7 @@ class CPPCACHE_EXPORT CacheFactory : public SharedBase {
   static CachePtr getAnyInstance();
 
   /** Returns the version of the cache implementation.
-   * For the 1.0 release of GemFire, the string returned is <code>1.0</code>.
+   * For the 1.0 release of Geode, the string returned is <code>1.0</code>.
    * @return the version of the cache implementation as a <code>String</code>
    */
   static const char* getVersion();
@@ -450,9 +450,9 @@ class CPPCACHE_EXPORT CacheFactory : public SharedBase {
   CacheFactoryPtr setPdxReadSerialized(bool pdxReadSerialized);
 
   /**
-   * Sets a gemfire property that will be used when creating the {link @Cache}.
-   * @param name the name of the gemfire property
-   * @param value the value of the gemfire property
+   * Sets a geode property that will be used when creating the {link @Cache}.
+   * @param name the name of the geode property
+   * @param value the value of the geode property
    * @return a reference to <code>this</code>
    * @since 3.5
    */

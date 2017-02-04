@@ -742,7 +742,7 @@ void LocalRegion::release(bool invokeCallbacks) {
 * @return true if there is an entry in this region for the specified key
 *@throw RegionDestroyedException,  if region is destroyed.
 *@throw IllegalArgumentException, if the key is 'null'.
-*@throw NotConnectedException, if not connected to gemfire system.
+*@throw NotConnectedException, if not connected to geode system.
 */
 bool LocalRegion::containsKey_internal(const CacheableKeyPtr& keyPtr) const {
   if (keyPtr == NULLPTR) {
@@ -1047,7 +1047,7 @@ class PutActions {
   TXState* m_txState;
 
   inline explicit PutActions(LocalRegion& region) : m_region(region) {
-    m_txState = TSSTXStateWrapper::s_gemfireTSSTXState->getTXState();
+    m_txState = TSSTXStateWrapper::s_geodeTSSTXState->getTXState();
   }
 
   inline static const char* name() { return "Region::put"; }
@@ -1138,7 +1138,7 @@ class CreateActions {
   TXState* m_txState;
 
   inline explicit CreateActions(LocalRegion& region) : m_region(region) {
-    m_txState = TSSTXStateWrapper::s_gemfireTSSTXState->getTXState();
+    m_txState = TSSTXStateWrapper::s_geodeTSSTXState->getTXState();
   }
 
   inline static const char* name() { return "Region::create"; }
@@ -1206,7 +1206,7 @@ class DestroyActions {
   TXState* m_txState;
 
   inline explicit DestroyActions(LocalRegion& region) : m_region(region) {
-    m_txState = TSSTXStateWrapper::s_gemfireTSSTXState->getTXState();
+    m_txState = TSSTXStateWrapper::s_geodeTSSTXState->getTXState();
   }
 
   inline static const char* name() { return "Region::destroy"; }
@@ -1322,7 +1322,7 @@ class RemoveActions {
 
   inline explicit RemoveActions(LocalRegion& region)
       : m_region(region), m_ServerResponse(GF_ENOENT) {
-    m_txState = TSSTXStateWrapper::s_gemfireTSSTXState->getTXState();
+    m_txState = TSSTXStateWrapper::s_geodeTSSTXState->getTXState();
     allowNULLValue = false;
   }
 
@@ -1542,7 +1542,7 @@ class InvalidateActions {
   TXState* m_txState;
 
   inline explicit InvalidateActions(LocalRegion& region) : m_region(region) {
-    m_txState = TSSTXStateWrapper::s_gemfireTSSTXState->getTXState();
+    m_txState = TSSTXStateWrapper::s_geodeTSSTXState->getTXState();
   }
 
   inline static const char* name() { return "Region::invalidate"; }

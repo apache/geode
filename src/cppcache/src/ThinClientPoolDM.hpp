@@ -252,7 +252,7 @@ class ThinClientPoolDM
     if (request.forTransaction()) {
       bool connFound =
           m_manager->getStickyConnection(conn, error, excludeServers, true);
-      TXState* txState = TSSTXStateWrapper::s_gemfireTSSTXState->getTXState();
+      TXState* txState = TSSTXStateWrapper::s_geodeTSSTXState->getTXState();
       if (*error == GF_NOERR && !connFound &&
           (txState == NULL || txState->isDirty())) {
         *error = doFailover(conn);
@@ -482,7 +482,7 @@ class FunctionExecution : public PooledWork<GfErrType> {
   }
 
   GfErrType execute(void) {
-    // TSSUserAttributesWrapper::s_gemfireTSSUserAttributes->setUserAttributes(m_userAttr);
+    // TSSUserAttributesWrapper::s_geodeTSSUserAttributes->setUserAttributes(m_userAttr);
     GuardUserAttribures gua;
 
     if (m_userAttr != NULLPTR) gua.setProxyCache(m_userAttr->getProxyCache());

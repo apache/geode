@@ -27,7 +27,7 @@ namespace Apache.Geode.Client.Tests
     public const string KeyStoreFileProp = "security-keystorepath";
     public const string KeyStoreAliasProp = "security-alias";
     public const string KeyStorePasswordProp = "security-keystorepass";
-    private const string UserPrefix = "gemfire";
+    private const string UserPrefix = "geode";
     private bool IsMultiUserMode = false;
     Apache.Geode.Client.Tests.PkcsAuthInit Pkcs = null;
 
@@ -55,7 +55,7 @@ namespace Apache.Geode.Client.Tests
       Properties<string, string> props = new Properties<string, string>();
       props.Insert(PublicKeyFileProp, GetKeyStoreDir(m_serverDataDir) +
         "publickeyfile");
-      props.Insert(PublicKeyPassProp, "gemfire");
+      props.Insert(PublicKeyPassProp, "geode");
       return props;
     }
 
@@ -85,9 +85,9 @@ namespace Apache.Geode.Client.Tests
       Properties<string, string> props = new Properties<string, string>();
       int aliasnum = (index % 10) + 1;
       props.Insert(KeyStoreFileProp, GetKeyStoreDir(m_clientDataDir) +
-        "gemfire11.keystore");
-      props.Insert(KeyStoreAliasProp, "gemfire11");
-      props.Insert(KeyStorePasswordProp, "gemfire");
+        "geode11.keystore");
+      props.Insert(KeyStoreAliasProp, "geode11");
+      props.Insert(KeyStorePasswordProp, "geode");
       if (!IsMultiUserMode){
         return props;
       }
@@ -111,7 +111,7 @@ namespace Apache.Geode.Client.Tests
       props.Insert(KeyStoreFileProp, GetKeyStoreDir(m_clientDataDir) +
         UserPrefix + aliasnum + ".keystore");
       props.Insert(KeyStoreAliasProp, UserPrefix + aliasnum);
-      props.Insert(KeyStorePasswordProp, "gemfire");
+      props.Insert(KeyStorePasswordProp, "geode");
       if (!IsMultiUserMode){
         return props;
       }
@@ -135,7 +135,7 @@ namespace Apache.Geode.Client.Tests
       props.Insert(KeyStoreFileProp, GetKeyStoreDir(m_clientDataDir) +
         userName + ".keystore");
       props.Insert(KeyStoreAliasProp, userName);
-      props.Insert(KeyStorePasswordProp, "gemfire");
+      props.Insert(KeyStorePasswordProp, "geode");
       if (!IsMultiUserMode)
       {
         return props;

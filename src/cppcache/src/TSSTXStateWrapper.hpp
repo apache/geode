@@ -40,7 +40,7 @@ class TSSTXStateWrapper {
   TSSTXStateWrapper();
   virtual ~TSSTXStateWrapper();
 
-  static ACE_TSS<TSSTXStateWrapper> s_gemfireTSSTXState;
+  static ACE_TSS<TSSTXStateWrapper> s_geodeTSSTXState;
   TXState* getTXState() { return m_txState; }
   void setTXState(TXState* conn) { m_txState = conn; }
 

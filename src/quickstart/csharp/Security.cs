@@ -21,7 +21,7 @@
  * This example takes the following steps:
  *
  * 1. Sets the authinit property and the other security properties.
- * 2. Connect to a GemFire Distributed System.
+ * 2. Connect to a Geode Distributed System.
  * 3. Does all operations. ( for which it has all permissions)
  * 4. Does a put and get. ( for which it have put permission. )
  * 5. Does a get and put. ( for which it have get permission. )
@@ -33,7 +33,7 @@
 // Use standard namespaces
 using System;
 
-// Use the GemFire namespace
+// Use the Geode namespace
 using Apache.Geode.Client;
 
 namespace Apache.Geode.Client.QuickStart
@@ -55,7 +55,7 @@ namespace Apache.Geode.Client.QuickStart
 
       Cache cache = cacheFactory.Create();
 
-      Console.WriteLine("Created the GemFire Cache");
+      Console.WriteLine("Created the Geode Cache");
 
       // Get the example Region from the Cache which is declared in the Cache XML file.
       IRegion<string, string> region = cache.GetRegion<string, string>("exampleRegion");
@@ -98,7 +98,7 @@ namespace Apache.Geode.Client.QuickStart
 
       Cache cache = cacheFactory.Create();
 
-      Console.WriteLine("Created the GemFire Cache");
+      Console.WriteLine("Created the Geode Cache");
 
       // Get the example Region from the Cache which is declared in the Cache XML file.
       IRegion<string, string> region = cache.GetRegion<string, string>("exampleRegion");
@@ -141,7 +141,7 @@ namespace Apache.Geode.Client.QuickStart
 
       Cache cache = cacheFactory.Create();
 
-      Console.WriteLine("Created the GemFire Cache");
+      Console.WriteLine("Created the Geode Cache");
 
       // Get the example Region from the Cache which is declared in the Cache XML file.
       IRegion<string, string> region = cache.GetRegion<string, string>("exampleRegion");
@@ -176,9 +176,9 @@ namespace Apache.Geode.Client.QuickStart
         ex.RunSecurityExampleWithGetPermission();
       }
       // An exception should not occur
-      catch (GemFireException gfex)
+      catch (GeodeException gfex)
       {
-        Console.WriteLine("SecurityExample GemFire Exception: {0}", gfex.Message);
+        Console.WriteLine("SecurityExample Geode Exception: {0}", gfex.Message);
       }
     }
   }

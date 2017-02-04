@@ -33,8 +33,8 @@ namespace geode {
 namespace client {
 
 /**
- * GemFireCache represents the singleton cache that must be created
- * in order to connect to Gemfire server.
+ * GeodeCache represents the singleton cache that must be created
+ * in order to connect to Geode server.
  * Users must create a {@link Cache}.
  * Instances of this interface are created using one of the following methods:
  * <ul>
@@ -44,7 +44,7 @@ namespace client {
  *
  */
 
-class CPPCACHE_EXPORT GemFireCache : public RegionService {
+class CPPCACHE_EXPORT GeodeCache : public RegionService {
   /**
    * @brief public methods
    */

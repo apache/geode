@@ -40,7 +40,7 @@ void GfErrTypeThrowException(const char* str, GfErrType err) {
   switch (err) {
     case GF_NOTCON: {
       NotConnectedException ex(
-          str, (exMsg != NULL ? exMsg : ": not connected to GemFire"));
+          str, (exMsg != NULL ? exMsg : ": not connected to Geode"));
       setTSSExceptionMessage(NULL);
       throw ex;
     }
@@ -124,7 +124,7 @@ void GfErrTypeThrowException(const char* str, GfErrType err) {
       throw ex;
     }
     case GF_IOERR: {
-      GemfireIOException ex(
+      GeodeIOException ex(
           str, (exMsg != NULL ? exMsg : ": Input/Output error in operation"));
       setTSSExceptionMessage(NULL);
       throw ex;

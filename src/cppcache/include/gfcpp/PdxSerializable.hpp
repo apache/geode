@@ -46,7 +46,7 @@ class CPPCACHE_EXPORT PdxSerializable : public CacheableKey {
   // using Serializable::fromData;
 
   /**
-   *@brief serialize this object in gemfire PDX format
+   *@brief serialize this object in geode PDX format
    *@param PdxWriter to serialize the PDX object
    **/
   virtual void toData(PdxWriterPtr output) /*const*/ = 0;

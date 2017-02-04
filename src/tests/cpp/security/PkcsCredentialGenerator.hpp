@@ -99,8 +99,8 @@ class PKCSCredentialGenerator : public CredentialGenerator {
   void setPKCSProperties(PropertiesPtr& p, char* username) {
     char keyStorePassWord[1024];
 
-    sprintf(keyStorePassWord, "%s", "gemfire");
-    p->insert(SECURITY_USERNAME, "gemfire");
+    sprintf(keyStorePassWord, "%s", "geode");
+    p->insert(SECURITY_USERNAME, "geode");
     p->insert(KEYSTORE_ALIAS, username);
     p->insert(KEYSTORE_PASSWORD, keyStorePassWord);
     insertKeyStorePath(p, username);
@@ -108,7 +108,7 @@ class PKCSCredentialGenerator : public CredentialGenerator {
 
   void getValidCredentials(PropertiesPtr& p) {
     char username[20] = {'\0'};
-    sprintf(username, "gemfire%d", (rand() % 10) + 1);
+    sprintf(username, "geode%d", (rand() % 10) + 1);
     setPKCSProperties(p, username);
     FWKINFO("inserted valid security-username "
             << p->find("security-username")->asChar());
@@ -116,7 +116,7 @@ class PKCSCredentialGenerator : public CredentialGenerator {
 
   void getInvalidCredentials(PropertiesPtr& p) {
     char username[20] = {'\0'};
-    sprintf(username, "%dgemfire", (rand() % 11) + 1);
+    sprintf(username, "%dgeode", (rand() % 11) + 1);
     setPKCSProperties(p, username);
     FWKINFO("inserted invalid security-username "
             << p->find("security-username")->asChar());

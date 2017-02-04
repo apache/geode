@@ -47,11 +47,11 @@ namespace apache
           ManagedCacheableKeyGeneric* tmp = const_cast<ManagedCacheableKeyGeneric*>(this);
           tmp->m_objectSize = (int)(output.getBufferLength() - pos);
         }
-        catch (Apache::Geode::Client::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GeodeException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GeodeException::ThrowNative(ex);
         }
       }
 
@@ -71,11 +71,11 @@ namespace apache
 
 
         }
-        catch (Apache::Geode::Client::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GeodeException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GeodeException::ThrowNative(ex);
         }
         return this;
       }
@@ -89,11 +89,11 @@ namespace apache
           else
             return m_objectSize;
         }
-        catch (Apache::Geode::Client::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GeodeException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GeodeException::ThrowNative(ex);
         }
         return 0;
       }
@@ -105,11 +105,11 @@ namespace apache
         try {
         classId = m_managedptr->ClassId;
         }
-        catch (GemFireException^ ex) {
+        catch (GeodeException^ ex) {
         ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-        GemFireException::ThrowNative(ex);
+        GeodeException::ThrowNative(ex);
         }*/
         return (m_classId >= 0x80000000 ? 0 : m_classId);
       }
@@ -154,11 +154,11 @@ namespace apache
             m_managedptr->ToString(), cStr);
           return cStr;
         }
-        catch (Apache::Geode::Client::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GeodeException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GeodeException::ThrowNative(ex);
         }
         return NULLPTR;
       }
@@ -177,11 +177,11 @@ namespace apache
           }
           return false;
         }
-        catch (Apache::Geode::Client::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GeodeException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GeodeException::ThrowNative(ex);
         }
         return false;
       }
@@ -193,11 +193,11 @@ namespace apache
             (Apache::Geode::Client::IGFSerializable^)(Apache::Geode::Client::IGFSerializable^)m_managedptr)->Equals(
             static_cast<Apache::Geode::Client::ICacheableKey^>(other.ptr()));
         }
-        catch (Apache::Geode::Client::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GeodeException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GeodeException::ThrowNative(ex);
         }
         return false;
       }
@@ -214,11 +214,11 @@ namespace apache
                              ->GetHashCode();
           return m_hashcode;
         }
-        catch (Apache::Geode::Client::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GeodeException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GeodeException::ThrowNative(ex);
         }
         return 0;
       }
@@ -233,11 +233,11 @@ namespace apache
             return snprintf(buffer, maxLength, "%s", mg_str.CharPtr);
           }
         }
-        catch (Apache::Geode::Client::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GeodeException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GeodeException::ThrowNative(ex);
         }
         return 0;
       }

@@ -128,7 +128,7 @@ PropertiesPtr UserAttributes::getCredentials() {
 ProxyCachePtr UserAttributes::getProxyCache() { return m_proxyCache; }
 
 ACE_TSS<TSSUserAttributesWrapper>
-    TSSUserAttributesWrapper::s_gemfireTSSUserAttributes;
+    TSSUserAttributesWrapper::s_geodeTSSUserAttributes;
 
 GuardUserAttribures::GuardUserAttribures(ProxyCachePtr proxyCache) {
   setProxyCache(proxyCache);
@@ -138,7 +138,7 @@ void GuardUserAttribures::setProxyCache(ProxyCachePtr proxyCache) {
   m_proxyCache = proxyCache;
   LOGDEBUG("GuardUserAttribures::GuardUserAttribures:");
   if (m_proxyCache != NULLPTR && !proxyCache->isClosed()) {
-    TSSUserAttributesWrapper::s_gemfireTSSUserAttributes->setUserAttributes(
+    TSSUserAttributesWrapper::s_geodeTSSUserAttributes->setUserAttributes(
         proxyCache->m_userAttributes);
   } else {
     throw CacheClosedException("User Cache has been closed");
@@ -149,7 +149,7 @@ GuardUserAttribures::GuardUserAttribures() { m_proxyCache = NULLPTR; }
 
 GuardUserAttribures::~GuardUserAttribures() {
   if (m_proxyCache != NULLPTR) {
-    TSSUserAttributesWrapper::s_gemfireTSSUserAttributes->setUserAttributes(
+    TSSUserAttributesWrapper::s_geodeTSSUserAttributes->setUserAttributes(
         NULLPTR);
   }
 }

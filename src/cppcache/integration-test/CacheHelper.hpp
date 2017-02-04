@@ -304,10 +304,10 @@ class CacheHelper {
   static int staticMcastAddress;
 
  private:
-  static std::string generateGemfireProperties(const std::string& path,
-                                               const bool ssl = false,
-                                               const int dsId = -1,
-                                               const int remoteLocator = 0);
+  static std::string generateGeodeProperties(const std::string& path,
+                                             const bool ssl = false,
+                                             const int dsId = -1,
+                                             const int remoteLocator = 0);
 };
 
 #ifndef test_cppcache_utils_static

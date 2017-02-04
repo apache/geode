@@ -100,7 +100,7 @@ std::string valid_cache_config_body = R"(<root-region name = 'Root1' >
 
 std::string dtd_prefix = R"(<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE cache PUBLIC
-    "-//GemStone Systems, Inc.//GemFire Declarative Caching 3.6//EN"
+    "-//GemStone Systems, Inc.//Geode Declarative Caching 3.6//EN"
     "http://www.gemstone.com/dtd/gfcpp-cache3600.dtd">
 <client-cache>)";
 

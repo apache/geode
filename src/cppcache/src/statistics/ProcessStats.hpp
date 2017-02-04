@@ -33,7 +33,7 @@ namespace statistics {
 
 /**
  * Abstracts the process statistics that are common on all platforms.
- * This is necessary for monitoring the health of GemFire components.
+ * This is necessary for monitoring the health of Geode components.
  *
  */
 class CPPCACHE_EXPORT ProcessStats {

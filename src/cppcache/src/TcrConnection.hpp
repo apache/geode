@@ -152,7 +152,7 @@ class CPPCACHE_EXPORT TcrConnection {
   * @param      recvLen output parameter for length of the received message
   * @param      receiveTimeoutSec read timeout in sec
   * @return     byte arrary of response. '0' ended.
-  * @exception  GemfireIOException  if an I/O error occurs (socket failure).
+  * @exception  GeodeIOException  if an I/O error occurs (socket failure).
   * @exception  TimeoutException  if timeout happens at any of the 3 socket
   * operation: 1 write, 2 read
   */
@@ -169,7 +169,7 @@ class CPPCACHE_EXPORT TcrConnection {
   *             message vector, which will return chunked TcrMessage.
   *             sendTimeoutSec write timeout in sec
   *             receiveTimeoutSec read timeout in sec
-  * @exception  GemfireIOException  if an I/O error occurs (socket failure).
+  * @exception  GeodeIOException  if an I/O error occurs (socket failure).
   * @exception  TimeoutException  if timeout happens at any of the 3 socket
   * operation: 1 write, 2 read
   */
@@ -186,7 +186,7 @@ class CPPCACHE_EXPORT TcrConnection {
   *             len length of the data to send
   *             sendTimeoutSec write timeout in sec
   * @return     no return. Because it either succeeds, or throw exception.
-  * @exception  GemfireIOException  if an I/O error occurs (socket failure).
+  * @exception  GeodeIOException  if an I/O error occurs (socket failure).
   * @exception  TimeoutException  if timeout happens at any of the 3 socket
   * operation: 1 write, 2 read
   */
@@ -207,7 +207,7 @@ class CPPCACHE_EXPORT TcrConnection {
   * @param      recvLen output parameter for length of the received message
   * @param      receiveTimeoutSec read timeout in sec
   * @return     byte arrary of response. '0' ended.
-  * @exception  GemfireIOException  if an I/O error occurs (socket failure).
+  * @exception  GeodeIOException  if an I/O error occurs (socket failure).
   * @exception  TimeoutException  if timeout happens at any of the 3 socket
   * operation: 1 write, 2 read
   */
@@ -222,7 +222,7 @@ class CPPCACHE_EXPORT TcrConnection {
   * @param      receiveTimeoutSec read timeout in seconds
   * @param      doHeaderTimeoutRetries retry when header receive times out
   * @return     byte array of response. '0' ended.
-  * @exception  GemfireIOException  if an I/O error occurs (socket failure).
+  * @exception  GeodeIOException  if an I/O error occurs (socket failure).
   * @exception  TimeoutException  if timeout happens during read
   */
   char* readMessage(size_t* recvLen, uint32_t receiveTimeoutSec,
@@ -236,7 +236,7 @@ class CPPCACHE_EXPORT TcrConnection {
   * @param      reply response message
   * @param      receiveTimeoutSec read timeout in sec
   * @param      doHeaderTimeoutRetries retry when header receive times out
-  * @exception  GemfireIOException  if an I/O error occurs (socket failure).
+  * @exception  GeodeIOException  if an I/O error occurs (socket failure).
   * @exception  TimeoutException  if timeout happens during read
   */
   void readMessageChunked(TcrMessageReply& reply, uint32_t receiveTimeoutSec,

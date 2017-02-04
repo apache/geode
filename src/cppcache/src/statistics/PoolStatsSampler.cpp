@@ -122,7 +122,7 @@ void PoolStatsSampler::putStatsInAdminRegion() {
           dynCast<SharedPtr<NoAvailableLocatorsException> >(ex.getCause());
       LOGDEBUG("No locators available, trying again.");
     } catch (ClassCastException&) {
-      LOGDEBUG("Not connected to gemfire, trying again.");
+      LOGDEBUG("Not connected to geode, trying again.");
     }
   } catch (...) {
     LOGDEBUG("Exception occurred, trying again.");

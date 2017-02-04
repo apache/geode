@@ -61,7 +61,7 @@ namespace Apache
         }
         catch (const apache::geode::client::Exception& ex)
         {
-          throw GemFireException::Get(ex);
+          throw GeodeException::Get(ex);
         }
       }
 
@@ -78,7 +78,7 @@ namespace Apache
         }
         catch (const apache::geode::client::Exception& ex)
         {
-          throw GemFireException::Get(ex);
+          throw GeodeException::Get(ex);
         }
       }
 
@@ -91,7 +91,7 @@ namespace Apache
         }
         catch (const apache::geode::client::Exception& ex)
         {
-          throw GemFireException::Get(ex);
+          throw GeodeException::Get(ex);
         }
       }
 
@@ -112,7 +112,7 @@ namespace Apache
         }
         catch (const apache::geode::client::Exception& ex)
         {
-          throw GemFireException::Get(ex);
+          throw GeodeException::Get(ex);
         }
       }
 
@@ -127,7 +127,7 @@ namespace Apache
         }
         catch (const apache::geode::client::Exception& ex)
         {
-          throw GemFireException::Get(ex);
+          throw GeodeException::Get(ex);
         }
       }
 
@@ -140,7 +140,7 @@ namespace Apache
         }
         catch (const apache::geode::client::Exception& ex)
         {
-          throw GemFireException::Get(ex);
+          throw GeodeException::Get(ex);
         }
       }
 
@@ -153,7 +153,7 @@ namespace Apache
         }
         catch (const apache::geode::client::Exception& ex)
         {
-          throw GemFireException::Get(ex);
+          throw GeodeException::Get(ex);
         }
       }
 
@@ -166,7 +166,7 @@ namespace Apache
         }
         catch (const apache::geode::client::Exception& ex)
         {
-          throw GemFireException::Get(ex);
+          throw GeodeException::Get(ex);
         }
       }
 
@@ -189,7 +189,7 @@ namespace Apache
         }
         catch (const apache::geode::client::Exception& ex)
         {
-          throw GemFireException::Get(ex);
+          throw GeodeException::Get(ex);
         }
       }
     }  // namespace Client

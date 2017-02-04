@@ -165,7 +165,7 @@ class CPPCACHE_EXPORT ProxyRegion : public Region {
   * @throws CacheServerException If an exception is received from the Java cache
   * server.
   *         Only for Native Client regions.
-  * @throws NotConnectedException if not connected to the gemfire system because
+  * @throws NotConnectedException if not connected to the geode system because
   * the client
   *         cannot establish usable connections to any of the servers given to
   * it
@@ -612,7 +612,7 @@ class CPPCACHE_EXPORT ProxyRegion : public Region {
   * and provides a user-defined argument to the <code>CacheListener</code>.
   * Invalidate only removes the value from the entry, the key is kept intact.
   * To completely remove the entry, destroy should be used.
-  * The invalidate is not propogated to the Gemfire cache server to which it is
+  * The invalidate is not propogated to the Geode cache server to which it is
   * connected with.
   * <p>Updates the {@link CacheStatistics::getLastAccessedTime} and
   * {@link CacheStatistics::getLastModifiedTime} for this region and the entry.
@@ -681,7 +681,7 @@ class CPPCACHE_EXPORT ProxyRegion : public Region {
   * Destroy removes
   * not only the value, but also the key and entry from this region.
   *
-  * The destroy is propogated to the Gemfire cache server to which it is
+  * The destroy is propogated to the Geode cache server to which it is
   * connected with. If the destroy fails due to an exception on server
   * throwing back <code>CacheServerException</code> or security exception,
   * then the local entry is still destroyed.
@@ -697,7 +697,7 @@ class CPPCACHE_EXPORT ProxyRegion : public Region {
   * @throws IllegalArgumentException if key is NULLPTR
   * @throws CacheWriterException if CacheWriter aborts the operation
   * @throws CacheListenerException if CacheListener throws an exception
-  * @throws CacheServerException If an exception is received from the Gemfire
+  * @throws CacheServerException If an exception is received from the Geode
   * cache server.
   *         Only for Native Client regions.
   * @throws NotConnectedException if it is not connected to the cache because
@@ -773,7 +773,7 @@ class CPPCACHE_EXPORT ProxyRegion : public Region {
   * remove removes
   * not only the value, but also the key and entry from this region.
   *
-  * The remove is propogated to the Gemfire cache server to which it is
+  * The remove is propogated to the Geode cache server to which it is
   * connected with. If the destroy fails due to an exception on server
   * throwing back <code>CacheServerException</code> or security exception,
   * then the local entry is still removed.
@@ -790,7 +790,7 @@ class CPPCACHE_EXPORT ProxyRegion : public Region {
   * @throws IllegalArgumentException if key is NULLPTR
   * @throws CacheWriterException if CacheWriter aborts the operation
   * @throws CacheListenerException if CacheListener throws an exception
-  * @throws CacheServerException If an exception is received from the Gemfire
+  * @throws CacheServerException If an exception is received from the Geode
   * cache server.
   *         Only for Native Client regions.
   * @throws NotConnectedException if it is not connected to the cache because
@@ -847,7 +847,7 @@ class CPPCACHE_EXPORT ProxyRegion : public Region {
   * remove removes
   * not only the value, but also the key and entry from this region.
   *
-  * The remove is propogated to the Gemfire cache server to which it is
+  * The remove is propogated to the Geode cache server to which it is
   * connected with. If the destroy fails due to an exception on server
   * throwing back <code>CacheServerException</code> or security exception,
   * then the local entry is still removed.
@@ -863,7 +863,7 @@ class CPPCACHE_EXPORT ProxyRegion : public Region {
   * @throws IllegalArgumentException if key is NULLPTR
   * @throws CacheWriterException if CacheWriter aborts the operation
   * @throws CacheListenerException if CacheListener throws an exception
-  * @throws CacheServerException If an exception is received from the Gemfire
+  * @throws CacheServerException If an exception is received from the Geode
   * cache server.
   *         Only for Native Client regions.
   * @throws NotConnectedException if it is not connected to the cache because
@@ -1006,7 +1006,7 @@ class CPPCACHE_EXPORT ProxyRegion : public Region {
   * distributed system.
   * The vector v will contain only the server keys. Any prior contents in the
   * vector will be removed.
-  * @throws CacheServerException If an exception is received from the Gemfire
+  * @throws CacheServerException If an exception is received from the Geode
   * cache server.
   *         Only for Native Client regions.
   * @throws NotConnectedException if it is not connected to the cache because
@@ -1046,7 +1046,7 @@ class CPPCACHE_EXPORT ProxyRegion : public Region {
 
   /**
   * This operations checks for the value in the local cache .
-  * It is not propagated to the Gemfire cache server
+  * It is not propagated to the Geode cache server
   * to which it is connected.
   */
   virtual bool containsValueForKey(const CacheableKeyPtr& keyPtr) const {
@@ -1057,7 +1057,7 @@ class CPPCACHE_EXPORT ProxyRegion : public Region {
   /**
   * Convenience method allowing key to be a const char*
   * This operations checks for the value in the local cache .
-  * It is not propagated to the Gemfire cache server
+  * It is not propagated to the Geode cache server
   * to which it is connected.
   */
   template <class KEYTYPE>
@@ -1107,7 +1107,7 @@ class CPPCACHE_EXPORT ProxyRegion : public Region {
   /**
   * Convenience method allowing key to be a const char*
   * This operations checks for the key in the local cache .
-  * It is not propagated to the Gemfire cache server
+  * It is not propagated to the Geode cache server
   * to which it is connected.
   */
   template <class KEYTYPE>

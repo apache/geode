@@ -146,7 +146,7 @@ namespace apache
           Apache::Geode::Client::CqEvent<Object^, Object^> mevent(&ev);
           m_managedptr->OnEvent(%mevent);
         }
-        catch (Apache::Geode::Client::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GeodeException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
@@ -169,7 +169,7 @@ namespace apache
         try {
           m_managedptr->Close();
         }
-        catch (Apache::Geode::Client::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GeodeException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
@@ -186,7 +186,7 @@ namespace apache
         try {
           m_managedptr->OnCqDisconnected();
         }
-        catch (Apache::Geode::Client::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GeodeException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
@@ -203,7 +203,7 @@ namespace apache
         try {
           m_managedptr->OnCqConnected();
         }
-        catch (Apache::Geode::Client::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GeodeException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {

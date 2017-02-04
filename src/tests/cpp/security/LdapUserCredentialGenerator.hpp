@@ -83,16 +83,16 @@ class LdapUserCredentialGenerator : public CredentialGenerator {
     return "javaobject.DummyAuthorization.create";
   }
   void getValidCredentials(PropertiesPtr& p) {
-    p->insert("security-username", "gemfire1");
-    p->insert("security-password", "gemfire1");
+    p->insert("security-username", "geode1");
+    p->insert("security-password", "geode1");
     FWKDEBUG("inserted valid security-username "
              << p->find("security-username")->asChar() << " password "
              << p->find("security-password")->asChar());
   }
 
   void getInvalidCredentials(PropertiesPtr& p) {
-    p->insert("security-username", "gemfire1");
-    p->insert("security-password", "1gemfire");
+    p->insert("security-username", "geode1");
+    p->insert("security-password", "1geode");
     FWKDEBUG("inserted invalid security-username "
              << p->find("security-username")->asChar() << " password "
              << p->find("security-password")->asChar());

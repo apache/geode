@@ -195,7 +195,7 @@ class XmlAuthzCredentialGenerator : public SharedBase {
   }
 
   std::string getAllowedUser(ROLES role) {
-    const std::string userPrefix = "gemfire";
+    const std::string userPrefix = "geode";
     const int readerIndices[] = {3, 4, 5};
     const int writerIndices[] = {6, 7, 8};
     const int queryIndices[] = {9, 10};
@@ -250,7 +250,7 @@ class XmlAuthzCredentialGenerator : public SharedBase {
   void getAllowedPkcsAuthz(ROLES role) {
     const std::string userName = getAllowedUser(role);
     (*m_prop)->insert("security-alias", userName.c_str());
-    (*m_prop)->insert("security-keystorepass", "gemfire");
+    (*m_prop)->insert("security-keystorepass", "geode");
 
     FWKINFO("inserted  PKCS security-alias"
             << (*m_prop)->find("security-alias")->asChar() << " password "

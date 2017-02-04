@@ -70,7 +70,7 @@ class PdxType : public Serializable,
 
   char* m_className;
 
-  int32 m_gemfireTypeId;
+  int32 m_geodeTypeId;
 
   bool m_isLocal;
 
@@ -163,9 +163,9 @@ class PdxType : public Serializable,
     return size;
   }
 
-  virtual int32 getTypeId() const { return m_gemfireTypeId; }
+  virtual int32 getTypeId() const { return m_geodeTypeId; }
 
-  virtual void setTypeId(int32 typeId) { m_gemfireTypeId = typeId; }
+  virtual void setTypeId(int32 typeId) { m_geodeTypeId = typeId; }
 
   int32 getNumberOfVarLenFields() const { return m_numberOfVarLenFields; }
 

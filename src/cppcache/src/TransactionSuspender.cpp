@@ -29,13 +29,13 @@ namespace geode {
 namespace client {
 
 TransactionSuspender::TransactionSuspender() {
-  TSSTXStateWrapper* txStateWrapper = TSSTXStateWrapper::s_gemfireTSSTXState;
+  TSSTXStateWrapper* txStateWrapper = TSSTXStateWrapper::s_geodeTSSTXState;
   m_TXState = txStateWrapper->getTXState();
   txStateWrapper->setTXState(NULL);
 }
 
 TransactionSuspender::~TransactionSuspender() {
-  TSSTXStateWrapper::s_gemfireTSSTXState->setTXState(m_TXState);
+  TSSTXStateWrapper::s_geodeTSSTXState->setTXState(m_TXState);
 }
 }  // namespace client
 }  // namespace geode

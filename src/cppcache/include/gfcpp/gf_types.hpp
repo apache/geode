@@ -39,7 +39,7 @@ class CacheFactory;
 _GF_PTR_DEF_(DistributedSystem, DistributedSystemPtr);
 _GF_PTR_DEF_(CacheFactory, CacheFactoryPtr);
 _GF_PTR_DEF_(RegionService, RegionServicePtr);
-_GF_PTR_DEF_(GemFireCache, GemFireCachePtr);
+_GF_PTR_DEF_(GeodeCache, GeodeCachePtr);
 _GF_PTR_DEF_(Cache, CachePtr);
 _GF_PTR_DEF_(RegionFactory, RegionFactoryPtr);
 _GF_PTR_DEF_(AttributesFactory, AttributesFactoryPtr);

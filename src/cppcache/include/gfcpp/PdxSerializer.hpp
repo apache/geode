@@ -64,7 +64,7 @@ class CPPCACHE_EXPORT PdxSerializer : public SharedBase {
   virtual void* fromData(const char* className, PdxReaderPtr pr) = 0;
 
   /**
-   * Serializes this object in gemfire PDX format.
+   * Serializes this object in geode PDX format.
    * @param userObject the object which need to serialize
    * @param pw the PdxWriter object to use for serializing the object
    */

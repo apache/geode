@@ -31,7 +31,7 @@ namespace Apache
 #define _GF_MG_EXCEPTION_ADD3(x) { "apache::geode::client::" #x, gcnew CreateException2( x::Create ) }
 #define _GF_MG_EXCEPTION_ADD4(x,y) { "apache::geode::client::" #y, gcnew CreateException2( x::Create ) }
 
-      Dictionary<String^, CreateException2^>^ GemFireException::Init( )
+      Dictionary<String^, CreateException2^>^ GeodeException::Init( )
       {
         if (Native2ManagedExMap != nullptr)
         {
@@ -62,8 +62,8 @@ namespace Apache
           _GF_MG_EXCEPTION_ADD3( UnknownException ),
           _GF_MG_EXCEPTION_ADD3( ClassCastException ),
           _GF_MG_EXCEPTION_ADD3( EntryNotFoundException ),
-          _GF_MG_EXCEPTION_ADD4( GemFireIOException, GemfireIOException ),
-          _GF_MG_EXCEPTION_ADD4( GemFireConfigException, GemfireConfigException ),
+          _GF_MG_EXCEPTION_ADD4( GeodeIOException, GeodeIOException ),
+          _GF_MG_EXCEPTION_ADD4( GeodeConfigException, GeodeConfigException ),
           _GF_MG_EXCEPTION_ADD3( NullPointerException ),
           _GF_MG_EXCEPTION_ADD3( EntryExistsException ),
           _GF_MG_EXCEPTION_ADD3( NotConnectedException ),
@@ -110,12 +110,12 @@ namespace Apache
         return Native2ManagedExMap;
       }
 
-      System::Exception^ GemFireException::Get(const apache::geode::client::Exception& nativeEx)
+      System::Exception^ GeodeException::Get(const apache::geode::client::Exception& nativeEx)
       {
         Exception^ innerException = nullptr;
         const apache::geode::client::ExceptionPtr& cause = nativeEx.getCause();
         if (cause != NULLPTR) {
-          innerException = GemFireException::Get(*cause);
+          innerException = GeodeException::Get(*cause);
         }
         String^ exName = gcnew String( nativeEx.getName( ) );
         CreateException2^ exDelegate;
@@ -123,10 +123,10 @@ namespace Apache
           return exDelegate(nativeEx, innerException);
         }
         String^ exMsg = ManagedString::Get( nativeEx.getMessage( ) );
-        if ( exMsg->StartsWith( GemFireException::MgSysExPrefix ) ) {
+        if ( exMsg->StartsWith( GeodeException::MgSysExPrefix ) ) {
           // Get the exception type
           String^ mgExStr = exMsg->Substring(
-            GemFireException::MgSysExPrefix->Length );
+            GeodeException::MgSysExPrefix->Length );
           int32_t colonIndex = mgExStr->IndexOf( ':' );
           if ( colonIndex > 0 ) {
             String^ mgExName = mgExStr->Substring( 0, colonIndex )->Trim( );
@@ -147,11 +147,11 @@ namespace Apache
 
         }
         if (innerException == nullptr) {
-          return gcnew GemFireException(exName + ": " + exMsg,
-              gcnew GemFireException(GetStackTrace(nativeEx)));
+          return gcnew GeodeException(exName + ": " + exMsg,
+              gcnew GeodeException(GetStackTrace(nativeEx)));
         }
         else {
-          return gcnew GemFireException(exName + ": " + exMsg, innerException);
+          return gcnew GeodeException(exName + ": " + exMsg, innerException);
         }
       }
       } // end namespace generic

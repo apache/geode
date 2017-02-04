@@ -347,7 +347,7 @@ std::string HostStatSampler::getSystemDirectoryPath() {
 }
 
 std::string HostStatSampler::getProductDescription() {
-  return "Pivotal Gemfire Native Client ";
+  return "Pivotal Geode Native Client ";
 }
 
 void HostStatSampler::changeArchive(std::string filename) {

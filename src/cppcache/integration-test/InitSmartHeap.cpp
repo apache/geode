@@ -17,7 +17,7 @@
 
 #include <smrtheap.hpp>
 
-namespace gemfire_smartheap {
+namespace geode_smartheap {
 
 class InitSmartHeap {
  public:

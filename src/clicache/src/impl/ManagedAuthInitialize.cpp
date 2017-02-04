@@ -180,11 +180,11 @@ namespace apache
 
           return PropertiesPtr(m_managedptr->GetCredentials(mprops, mg_server)->NativePtr());
         }
-        catch (Apache::Geode::Client::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GeodeException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GeodeException::ThrowNative(ex);
         }
         return NULLPTR;
       }
@@ -194,11 +194,11 @@ namespace apache
         try {
           m_managedptr->Close();
         }
-        catch (Apache::Geode::Client::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GeodeException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GeodeException::ThrowNative(ex);
         }
       }
 

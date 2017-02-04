@@ -58,7 +58,7 @@ class TssConnectionWrapper {
   TssConnectionWrapper(const TssConnectionWrapper&);
 
  public:
-  static ACE_TSS<TssConnectionWrapper> s_gemfireTSSConn;
+  static ACE_TSS<TssConnectionWrapper> s_geodeTSSConn;
   TcrConnection* getConnection() { return m_tcrConn; }
   TcrConnection* getSHConnection(TcrEndpoint* ep, const char* poolname);
   void setConnection(TcrConnection* conn, PoolPtr& pool) {

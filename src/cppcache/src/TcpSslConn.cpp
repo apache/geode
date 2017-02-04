@@ -90,7 +90,7 @@ void TcpSslConn::listen(ACE_INET_Addr addr, uint32_t waitSeconds) {
     // ACE_OS::strerror(lastError) );
     ACE_OS::snprintf(msg, 255, "TcpSslConn::listen failed with errno: %d: %s",
                      lastError, ACE_OS::strerror(lastError));
-    throw GemfireIOException(msg);
+    throw GeodeIOException(msg);
   }
 }
 
@@ -131,7 +131,7 @@ void TcpSslConn::connect() {
                      lastError, ACE_OS::strerror(lastError));
     // this is only called by constructor, so we must delete m_ssl
     GF_SAFE_DELETE(m_ssl);
-    throw GemfireIOException(msg);
+    throw GeodeIOException(msg);
   }
 }
 

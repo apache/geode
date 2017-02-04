@@ -31,7 +31,7 @@ namespace client {
  * Extension of the apache::geode::client::CacheTransactionManager that enables
  * client
  * application
- * to use Gemfire transaction as part of the global XA transaction.
+ * to use Geode transaction as part of the global XA transaction.
  *
  * The prepare method of this class corresponds to the prepare phases of the
  * 2 phase commit protocol driven by a global transaction manager.
@@ -43,7 +43,7 @@ namespace client {
  *
  * Methods of this class are expected to be called by a custom XA Resource
  * Manager
- * that is wrapping and adapting Gemfire client to XA specification
+ * that is wrapping and adapting Geode client to XA specification
  * requirements.
  *
  * @since 8.3
@@ -60,7 +60,7 @@ class CPPCACHE_EXPORT InternalCacheTransactionManager2PC
    * Calls to subsequent commit() or rollback() methods overridden by this class
    * are
    * expected to succeed after prepare() has returned successfully.
-   * Gemfire commits internal transaction irreversibly on commit() call.
+   * Geode commits internal transaction irreversibly on commit() call.
    *
    */
   virtual void prepare() = 0;

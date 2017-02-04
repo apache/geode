@@ -99,7 +99,7 @@ class PutAllWork : public PooledWork<GfErrType>,
         new VersionedCacheableObjectPartList(keys.ptr(), responseLock);
 
     if (m_poolDM->isMultiUserMode()) {
-      m_userAttribute = TSSUserAttributesWrapper::s_gemfireTSSUserAttributes
+      m_userAttribute = TSSUserAttributesWrapper::s_geodeTSSUserAttributes
                             ->getUserAttributes();
     }
 
@@ -237,7 +237,7 @@ class RemoveAllWork : public PooledWork<GfErrType>,
         new VersionedCacheableObjectPartList(keys.ptr(), responseLock);
 
     if (m_poolDM->isMultiUserMode()) {
-      m_userAttribute = TSSUserAttributesWrapper::s_gemfireTSSUserAttributes
+      m_userAttribute = TSSUserAttributesWrapper::s_geodeTSSUserAttributes
                             ->getUserAttributes();
     }
 
@@ -1780,7 +1780,7 @@ GfErrType ThinClientRegion::putAllNoThrow_remote(
   LOGDEBUG("ThinClientRegion::putAllNoThrow_remote");
 
   ThinClientPoolDM* poolDM = dynamic_cast<ThinClientPoolDM*>(m_tcrdm);
-  TXState* txState = TSSTXStateWrapper::s_gemfireTSSTXState->getTXState();
+  TXState* txState = TSSTXStateWrapper::s_geodeTSSTXState->getTXState();
 
   if (poolDM != NULL) {
     if (poolDM->getPRSingleHopEnabled() &&
@@ -2121,7 +2121,7 @@ GfErrType ThinClientRegion::removeAllNoThrow_remote(
   LOGDEBUG("ThinClientRegion::removeAllNoThrow_remote");
 
   ThinClientPoolDM* poolDM = dynamic_cast<ThinClientPoolDM*>(m_tcrdm);
-  TXState* txState = TSSTXStateWrapper::s_gemfireTSSTXState->getTXState();
+  TXState* txState = TSSTXStateWrapper::s_geodeTSSTXState->getTXState();
 
   if (poolDM != NULL) {
     if (poolDM->getPRSingleHopEnabled() &&
@@ -3352,7 +3352,7 @@ bool ThinClientRegion::executeFunctionSH(
   bool reExecute = false;
   ACE_Recursive_Thread_Mutex resultCollectorLock;
   UserAttributesPtr userAttr =
-      TSSUserAttributesWrapper::s_gemfireTSSUserAttributes->getUserAttributes();
+      TSSUserAttributesWrapper::s_geodeTSSUserAttributes->getUserAttributes();
   std::vector<OnRegionFunctionExecution*> feWorkers;
   ThreadPool* threadPool = TPSingleton::instance();
 

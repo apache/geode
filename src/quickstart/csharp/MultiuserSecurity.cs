@@ -20,7 +20,7 @@
  *
  * This example takes the following steps:
  *
- * 1. Create a GemFire Cache with multiuser enabled.
+ * 1. Create a Geode Cache with multiuser enabled.
  * 2. Creates userCache using user "root". Who is authorized to do get and put operations.
  * 3. Creates userCache using user "writer2". Who is authorized to do only put operation. It tries to do get operation and gets NotAuthorizedException.
  * 4.  Close the Cache.
@@ -30,7 +30,7 @@
 // Use standard namespaces
 using System;
 
-// Use the GemFire namespace
+// Use the Geode namespace
 using Apache.Geode.Client;
 using System.Collections.Generic;
 using System.Collections;
@@ -50,13 +50,13 @@ namespace Apache.Geode.Client.QuickStart
       //to do this one need to setup OpenSSL.
       //secProp.Insert("security-client-dhalgo", "Blowfish:128");
 
-      // Connect to the GemFire Distributed System using the settings from the gfcpp.properties file by default.
-      // Create a GemFire Cache.
+      // Connect to the Geode Distributed System using the settings from the gfcpp.properties file by default.
+      // Create a Geode Cache.
       CacheFactory cacheFactory = CacheFactory.CreateCacheFactory(null);
 
       Cache cache = cacheFactory.SetMultiuserAuthentication(true).Create();
 
-      Console.WriteLine("Created the GemFire Cache");
+      Console.WriteLine("Created the Geode Cache");
 
       RegionFactory regionFactory = cache.CreateRegionFactory(RegionShortcut.PROXY);
 
@@ -69,7 +69,7 @@ namespace Apache.Geode.Client.QuickStart
 
       cache.Close();
 
-      Console.WriteLine("Client disconnected from the GemFire Distributed System");
+      Console.WriteLine("Client disconnected from the Geode Distributed System");
     }
     
     void runWithUserRoot(Cache cache)
@@ -187,9 +187,9 @@ namespace Apache.Geode.Client.QuickStart
 
       }
       // An exception should not occur
-      catch (GemFireException gfex)
+      catch (GeodeException gfex)
       {
-        Console.WriteLine("FAILED: MultiuserSecurityExample GemFire Exception: {0}", gfex.Message);
+        Console.WriteLine("FAILED: MultiuserSecurityExample Geode Exception: {0}", gfex.Message);
       }
     }
   }

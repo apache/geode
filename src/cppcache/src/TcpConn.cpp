@@ -123,7 +123,7 @@ void TcpConn::init() {
     char msg[256];
     ACE_OS::snprintf(msg, 256, "TcpConn::connect failed with errno: %d: %s",
                      lastError, ACE_OS::strerror(lastError));
-    throw GemfireIOException(msg);
+    throw GeodeIOException(msg);
   }
 
   clearNagle(sock);
@@ -208,7 +208,7 @@ void TcpConn::listen(ACE_INET_Addr addr, uint32_t waitSeconds) {
     }
     ACE_OS::snprintf(msg, 256, "TcpConn::listen failed with errno: %d: %s",
                      lastError, ACE_OS::strerror(lastError));
-    throw GemfireIOException(msg);
+    throw GeodeIOException(msg);
   }
 }
 
@@ -270,7 +270,7 @@ void TcpConn::connect() {
                      lastError, ACE_OS::strerror(lastError));
     //  this is only called by constructor, so we must delete m_io
     GF_SAFE_DELETE(m_io);
-    throw GemfireIOException(msg);
+    throw GeodeIOException(msg);
   }
   int rc = this->m_io->enable(ACE_NONBLOCK);
   if (-1 == rc) {

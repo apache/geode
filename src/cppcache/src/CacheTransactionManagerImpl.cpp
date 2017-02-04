@@ -44,12 +44,12 @@ CacheTransactionManagerImpl::CacheTransactionManagerImpl(Cache* cache)
 CacheTransactionManagerImpl::~CacheTransactionManagerImpl() {}
 
 void CacheTransactionManagerImpl::begin() {
-  if (TSSTXStateWrapper::s_gemfireTSSTXState->getTXState() != NULL) {
+  if (TSSTXStateWrapper::s_geodeTSSTXState->getTXState() != NULL) {
     GfErrTypeThrowException("Transaction already in progress",
                             GF_CACHE_ILLEGAL_STATE_EXCEPTION);
   }
   TXState* txState = new TXState(m_cache);
-  TSSTXStateWrapper::s_gemfireTSSTXState->setTXState(txState);
+  TSSTXStateWrapper::s_geodeTSSTXState->setTXState(txState);
   addTx(txState->getTransactionId()->getId());
 }
 
@@ -313,7 +313,7 @@ GfErrType CacheTransactionManagerImpl::rollback(TXState* txState,
 }
 
 ThinClientPoolDM* CacheTransactionManagerImpl::getDM() {
-  TcrConnection* conn = TssConnectionWrapper::s_gemfireTSSConn->getConnection();
+  TcrConnection* conn = TssConnectionWrapper::s_geodeTSSConn->getConnection();
   if (conn != NULL) {
     ThinClientPoolDM* dm = conn->getEndpointObject()->getPoolHADM();
     if (dm != NULL) {
@@ -327,14 +327,14 @@ Cache* CacheTransactionManagerImpl::getCache() { return m_cache; }
 
 TransactionIdPtr CacheTransactionManagerImpl::suspend() {
   // get the current state of the thread
-  TXState* txState = TSSTXStateWrapper::s_gemfireTSSTXState->getTXState();
+  TXState* txState = TSSTXStateWrapper::s_geodeTSSTXState->getTXState();
   if (txState == NULL) {
     LOGFINE("Transaction not in progress. Returning NULL transaction Id.");
     return NULLPTR;
   }
 
   // get the current connection that this transaction is using
-  TcrConnection* conn = TssConnectionWrapper::s_gemfireTSSConn->getConnection();
+  TcrConnection* conn = TssConnectionWrapper::s_geodeTSSConn->getConnection();
   if (conn == NULL) {
     LOGFINE("Thread local connection is null. Returning NULL transaction Id.");
     return NULLPTR;
@@ -366,7 +366,7 @@ TransactionIdPtr CacheTransactionManagerImpl::suspend() {
   addSuspendedTx(txState->getTransactionId()->getId(), txState);
 
   // set the current transaction state as null
-  TSSTXStateWrapper::s_gemfireTSSTXState->setTXState(NULL);
+  TSSTXStateWrapper::s_geodeTSSTXState->setTXState(NULL);
 
   // return the transaction ID
   return txState->getTransactionId();
@@ -374,7 +374,7 @@ TransactionIdPtr CacheTransactionManagerImpl::suspend() {
 
 void CacheTransactionManagerImpl::resume(TransactionIdPtr transactionId) {
   // get the current state of the thread
-  if (TSSTXStateWrapper::s_gemfireTSSTXState->getTXState() != NULL) {
+  if (TSSTXStateWrapper::s_geodeTSSTXState->getTXState() != NULL) {
     GfErrTypeThrowException("A transaction is already in progress",
                             GF_CACHE_ILLEGAL_STATE_EXCEPTION);
   }
@@ -400,7 +400,7 @@ bool CacheTransactionManagerImpl::tryResume(TransactionIdPtr transactionId) {
 bool CacheTransactionManagerImpl::tryResume(TransactionIdPtr transactionId,
                                             bool cancelExpiryTask) {
   // get the current state of the thread
-  if (TSSTXStateWrapper::s_gemfireTSSTXState->getTXState() != NULL) {
+  if (TSSTXStateWrapper::s_geodeTSSTXState->getTXState() != NULL) {
     LOGFINE("A transaction is already in progress. Cannot resume transaction.");
     return false;
   }
@@ -417,7 +417,7 @@ bool CacheTransactionManagerImpl::tryResume(TransactionIdPtr transactionId,
 bool CacheTransactionManagerImpl::tryResume(TransactionIdPtr transactionId,
                                             int32_t waitTimeInMillisec) {
   // get the current state of the thread
-  if (TSSTXStateWrapper::s_gemfireTSSTXState->getTXState() != NULL) {
+  if (TSSTXStateWrapper::s_geodeTSSTXState->getTXState() != NULL) {
     LOGFINE("A transaction is already in progress. Cannot resume transaction.");
     return false;
   }
@@ -452,7 +452,7 @@ void CacheTransactionManagerImpl::resumeTxUsingTxState(TXState* txState,
   }
 
   // set the current state as the state of the suspended transaction
-  TSSTXStateWrapper::s_gemfireTSSTXState->setTXState(txState);
+  TSSTXStateWrapper::s_geodeTSSTXState->setTXState(txState);
 
   LOGFINE("Get connection for transaction id %d",
           txState->getTransactionId()->getId());
@@ -462,7 +462,7 @@ void CacheTransactionManagerImpl::resumeTxUsingTxState(TXState* txState,
   if (conn == NULL || error != GF_NOERR) {
     // throw an exception and set the current state as NULL because
     // the transaction cannot be resumed
-    TSSTXStateWrapper::s_gemfireTSSTXState->setTXState(NULL);
+    TSSTXStateWrapper::s_geodeTSSTXState->setTXState(NULL);
     GfErrTypeThrowException(
         "Could not get a connection for the transaction id.",
         GF_CACHE_ILLEGAL_STATE_EXCEPTION);
@@ -478,7 +478,7 @@ bool CacheTransactionManagerImpl::exists(TransactionIdPtr transactionId) {
 }
 
 bool CacheTransactionManagerImpl::exists() {
-  return TSSTXStateWrapper::s_gemfireTSSTXState->getTXState() != NULL;
+  return TSSTXStateWrapper::s_geodeTSSTXState->getTXState() != NULL;
 }
 
 void CacheTransactionManagerImpl::addTx(int32_t txId) {
@@ -564,7 +564,7 @@ bool CacheTransactionManagerImpl::isSuspendedTx(int32_t txId) {
   }
 }
 TransactionIdPtr CacheTransactionManagerImpl::getTransactionId() {
-  TXState* txState = TSSTXStateWrapper::s_gemfireTSSTXState->getTXState();
+  TXState* txState = TSSTXStateWrapper::s_geodeTSSTXState->getTXState();
   if (txState == NULL) {
     return NULLPTR;
   } else {

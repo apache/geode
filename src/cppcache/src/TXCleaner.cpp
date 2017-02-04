@@ -28,7 +28,7 @@ namespace geode {
 namespace client {
 
 TXCleaner::TXCleaner(CacheTransactionManagerImpl* cacheTxMgr) {
-  m_txStateWrapper = TSSTXStateWrapper::s_gemfireTSSTXState;
+  m_txStateWrapper = TSSTXStateWrapper::s_geodeTSSTXState;
   m_txState = m_txStateWrapper->getTXState();
   m_cacheTxMgr = cacheTxMgr;
 }

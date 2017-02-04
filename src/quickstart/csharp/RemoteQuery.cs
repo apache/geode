@@ -20,7 +20,7 @@
  *
  * This example takes the following steps:
  *
- * 1. Create a GemFire Cache Programmatically.
+ * 1. Create a Geode Cache Programmatically.
  * 2. Create the example Region Programmatically.
  * 3. Populate some query objects on the Region.
  * 4. Execute a query that returns a Result Set.
@@ -33,7 +33,7 @@
 // Use standard namespaces
 using System;
 
-// Use the GemFire namespace
+// Use the Geode namespace
 using Apache.Geode.Client;
 
 // Use the "Tests" namespace for the query objects.
@@ -48,11 +48,11 @@ namespace Apache.Geode.Client.QuickStart
     {
       try
       {
-        // Create a GemFire Cache Programmatically.
+        // Create a Geode Cache Programmatically.
         CacheFactory cacheFactory = CacheFactory.CreateCacheFactory();
         Cache cache = cacheFactory.SetSubscriptionEnabled(true).Create();
 
-        Console.WriteLine("Created the GemFire Cache");
+        Console.WriteLine("Created the Geode Cache");
 
         RegionFactory regionFactory = cache.CreateRegionFactory(RegionShortcut.CACHING_PROXY);
 
@@ -143,16 +143,16 @@ namespace Apache.Geode.Client.QuickStart
           Console.WriteLine("Row {0} Column 2 is named {1}, value is {2}", rowCount, st.Set.GetFieldName(0), st[1].ToString());
         }
         
-        // Close the GemFire Cache.
+        // Close the Geode Cache.
         cache.Close();
 
-        Console.WriteLine("Closed the GemFire Cache");
+        Console.WriteLine("Closed the Geode Cache");
         
       }
       // An exception should not occur
-      catch (GemFireException gfex)
+      catch (GeodeException gfex)
       {
-        Console.WriteLine("RemoteQuery GemFire Exception: {0}", gfex.Message);
+        Console.WriteLine("RemoteQuery Geode Exception: {0}", gfex.Message);
       }
     }
   }

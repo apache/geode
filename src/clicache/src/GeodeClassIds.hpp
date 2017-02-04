@@ -329,7 +329,7 @@ namespace Apache
           literal Byte USERMAP = 94;
           literal Byte USERCOLLECTION = 95;
           literal Byte ARRAYOFBYTEARRAYS = 91;
-          literal Byte GEMFIREREGION =  98;
+          literal Byte GEODEREGION =  98;
 
           literal Byte BOOLEAN_TYPE = 17;
           literal Byte CHARACTER_TYPE = 18;

@@ -20,7 +20,7 @@
  *
  * This example takes the following steps:
  *
- * 1. Create a GemFire Cache with durable client properties Programmatically.
+ * 1. Create a Geode Cache with durable client properties Programmatically.
  * 2. Create the example generic Region programmatically.
  * 3. Set DurableCacheListener with "AfterRegionLive" implementation to region.
  * 4. Register Interest to region with durable option.
@@ -32,7 +32,7 @@
 // Use standard namespaces
 using System;
 
-// Use the GemFire namespace
+// Use the Geode namespace
 using Apache.Geode.Client;
 
 namespace Apache.Geode.Client.QuickStart
@@ -47,13 +47,13 @@ namespace Apache.Geode.Client.QuickStart
         durableProp.Insert("durable-client-id", "DurableClientId");
         durableProp.Insert("durable-timeout", "300");
 
-        // Create a Gemfire Cache programmatically.
+        // Create a Geode Cache programmatically.
         CacheFactory cacheFactory = CacheFactory.CreateCacheFactory(durableProp);
 
         Cache cache = cacheFactory.SetSubscriptionEnabled(true)
                                   .Create();
 
-        Console.WriteLine("Created the GemFire Cache");
+        Console.WriteLine("Created the Geode Cache");
              
         // Create the example Region programmatically.
         RegionFactory regionFactory = cache.CreateRegionFactory(RegionShortcut.CACHING_PROXY);
@@ -86,21 +86,21 @@ namespace Apache.Geode.Client.QuickStart
         //wait for some time to recieve events
         System.Threading.Thread.Sleep(1000);
 
-        // Close the GemFire Cache with keepalive = true.  Server will queue events for
+        // Close the Geode Cache with keepalive = true.  Server will queue events for
         // durable registered keys and will deliver all events when client will reconnect
         // within timeout period and send "readyForEvents()"
         cache.Close(true);
 
-        Console.WriteLine("Closed the GemFire Cache with keepalive as true");
+        Console.WriteLine("Closed the Geode Cache with keepalive as true");
     }
 
     public void RunFeeder()
     {
-        // Create a GemFire Cache Programmatically.
+        // Create a Geode Cache Programmatically.
         CacheFactory cacheFactory = CacheFactory.CreateCacheFactory();
         Cache cache = cacheFactory.SetSubscriptionEnabled(true).Create();
 
-        Console.WriteLine("Created the GemFire Cache");
+        Console.WriteLine("Created the Geode Cache");
 
         RegionFactory regionFactory = cache.CreateRegionFactory(RegionShortcut.PROXY);
 
@@ -119,10 +119,10 @@ namespace Apache.Geode.Client.QuickStart
 
         Console.WriteLine("Created Key-1 and Key-2 in region. Durable interest was registered only for Key-1.");
 
-        // Close the GemFire Cache
+        // Close the Geode Cache
         cache.Close();
 
-        Console.WriteLine("Closed the GemFire Cache");
+        Console.WriteLine("Closed the Geode Cache");
 
     }
     static void Main(string[] args)
@@ -142,9 +142,9 @@ namespace Apache.Geode.Client.QuickStart
 
       }
       // An exception should not occur
-      catch (GemFireException gfex)
+      catch (GeodeException gfex)
       {
-        Console.WriteLine("DurableClient GemFire Exception: {0}", gfex.Message);
+        Console.WriteLine("DurableClient Geode Exception: {0}", gfex.Message);
       }
     }
   }

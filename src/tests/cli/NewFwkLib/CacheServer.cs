@@ -228,7 +228,7 @@ namespace Apache.Geode.Client.FwkLib
                                     (errStr.IndexOf("Deserializ") >= 0))
                                 {
                                     throw new Exception("Test got " + errStr + ", but this error text " +
-                                          "might contain GemFire internal values\n" + ex.Message);
+                                          "might contain Geode internal values\n" + ex.Message);
                                 }
                             }
                            
@@ -4370,7 +4370,7 @@ private void checkUpdatedValue(TKey key, TVal value)
           userProp.Insert(KeyStoreFileProp, GetKeyStoreDir(dataDir) +
             userName + ".keystore");
           userProp.Insert(KeyStoreAliasProp, userName);
-          userProp.Insert(KeyStorePasswordProp, "gemfire");
+          userProp.Insert(KeyStorePasswordProp, "geode");
           //mu_cache = pool.CreateSecureUserCache(userProp);
           //IRegionService mu_cache = CacheHelper.DCache.CreateAuthenticatedView(userProp, pool.Name);
           IRegionService mu_cache = CacheHelper<TKey, TVal>.DCache.CreateAuthenticatedView(

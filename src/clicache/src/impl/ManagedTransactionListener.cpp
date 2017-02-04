@@ -209,11 +209,11 @@ namespace apache
           Apache::Geode::Client::Log::Error("ManagedTransactionListenerGeneric::afterCommit in");
 
         }
-        catch (Apache::Geode::Client::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GeodeException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GeodeException::ThrowNative(ex);
         }
       }
       void ManagedTransactionListenerGeneric::afterFailedCommit(apache::geode::client::TransactionEventPtr& te)
@@ -222,11 +222,11 @@ namespace apache
           Apache::Geode::Client::TransactionEvent mevent(te.ptr());
           m_managedptr->AfterFailedCommit(%mevent);
         }
-        catch (Apache::Geode::Client::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GeodeException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GeodeException::ThrowNative(ex);
         }
       }
       void ManagedTransactionListenerGeneric::afterRollback(apache::geode::client::TransactionEventPtr& te)
@@ -235,11 +235,11 @@ namespace apache
           Apache::Geode::Client::TransactionEvent mevent(te.ptr());
           m_managedptr->AfterRollback(%mevent);
         }
-        catch (Apache::Geode::Client::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GeodeException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GeodeException::ThrowNative(ex);
         }
       }
       void ManagedTransactionListenerGeneric::close()
@@ -247,11 +247,11 @@ namespace apache
         try {
           m_managedptr->Close();
         }
-        catch (Apache::Geode::Client::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GeodeException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GeodeException::ThrowNative(ex);
         }
       }
 

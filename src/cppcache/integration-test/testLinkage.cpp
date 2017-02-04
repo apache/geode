@@ -71,8 +71,8 @@ BEGIN_TEST(LinkageTest)
     UnknownException aUnknownException("UnknownException");
     ClassCastException aClassCastException("ClassCastException");
     EntryNotFoundException aEntryNotFoundException("EntryNotFoundException");
-    GemfireIOException aGemfireIOException("GemfireIOException");
-    GemfireConfigException aGemfireConfigException("GemfireConfigException");
+    GeodeIOException aGeodeIOException("GeodeIOException");
+    GeodeConfigException aGeodeConfigException("GeodeConfigException");
     NullPointerException aNullPointerException("NullPointerException");
     EntryExistsException aEntryExistsException("EntryExistsException");
   }

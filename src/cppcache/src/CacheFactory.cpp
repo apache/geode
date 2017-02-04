@@ -37,8 +37,8 @@
 
 #include "version.h"
 
-#define DEFAULT_DS_NAME "default_GemfireDS"
-#define DEFAULT_CACHE_NAME "default_GemfireCache"
+#define DEFAULT_DS_NAME "default_GeodeDS"
+#define DEFAULT_CACHE_NAME "default_GeodeCache"
 #define DEFAULT_SERVER_PORT 40404
 #define DEFAULT_SERVER_HOST "localhost"
 

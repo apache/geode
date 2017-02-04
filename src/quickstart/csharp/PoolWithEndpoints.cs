@@ -21,7 +21,7 @@
  * This example takes the following steps:
  *
  * 1. Create CacheFactory using the settings from the gfcpp.properties file by default.
- * 2. Create a GemFire Cache.
+ * 2. Create a Geode Cache.
  * 3. Create Poolfactory with endpoint and then create pool using poolfactory.
  * 4. Create a Example Region programmatically.
  * 5. Put Entries (Key and Value pairs) into the Region.
@@ -35,7 +35,7 @@
 // Use standard namespaces
 using System;
 
-// Use the GemFire namespace
+// Use the Geode namespace
 using Apache.Geode.Client;
 
 namespace Apache.Geode.Client.QuickStart
@@ -52,10 +52,10 @@ namespace Apache.Geode.Client.QuickStart
 
         Console.WriteLine("Created CacheFactory");
 
-        // Create a GemFire Cache.
+        // Create a Geode Cache.
         Cache cache = cacheFactory.SetSubscriptionEnabled(true).Create();
 
-        Console.WriteLine("Created the GemFire Cache");
+        Console.WriteLine("Created the Geode Cache");
 
         //Create Poolfactory with endpoint and then create pool using poolfactory.
         PoolFactory pfact = PoolManager.CreateFactory();
@@ -101,15 +101,15 @@ namespace Apache.Geode.Client.QuickStart
 
         Console.WriteLine("Destroyed the second Entry in the Region");
 
-        // Close the GemFire Cache.
+        // Close the Geode Cache.
         cache.Close();
 
-        Console.WriteLine("Closed the GemFire Cache");
+        Console.WriteLine("Closed the Geode Cache");
       }
       // An exception should not occur
-      catch (GemFireException gfex)
+      catch (GeodeException gfex)
       {
-        Console.WriteLine("PoolWithEndpoints GemFire Exception: {0}", gfex.Message);
+        Console.WriteLine("PoolWithEndpoints Geode Exception: {0}", gfex.Message);
       }
     }
   }

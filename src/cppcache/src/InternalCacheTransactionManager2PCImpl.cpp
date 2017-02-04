@@ -45,7 +45,7 @@ InternalCacheTransactionManager2PCImpl::
 
 void InternalCacheTransactionManager2PCImpl::prepare() {
   try {
-    TSSTXStateWrapper* txStateWrapper = TSSTXStateWrapper::s_gemfireTSSTXState;
+    TSSTXStateWrapper* txStateWrapper = TSSTXStateWrapper::s_geodeTSSTXState;
     TXState* txState = txStateWrapper->getTXState();
 
     if (txState == NULL) {
@@ -120,7 +120,7 @@ void InternalCacheTransactionManager2PCImpl::rollback() {
 
 void InternalCacheTransactionManager2PCImpl::afterCompletion(int32_t status) {
   try {
-    TSSTXStateWrapper* txStateWrapper = TSSTXStateWrapper::s_gemfireTSSTXState;
+    TSSTXStateWrapper* txStateWrapper = TSSTXStateWrapper::s_geodeTSSTXState;
     TXState* txState = txStateWrapper->getTXState();
 
     if (txState == NULL) {

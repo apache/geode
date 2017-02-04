@@ -399,8 +399,8 @@ bool TcrConnection::InitTcrConnection(
               "connection timed out during diffie-hellman handshake"));
         } else {
           throwException(
-              GemfireIOException("TcrConnection::TcrConnection: "
-                                 "Handshake failure during diffie-hellman"));
+              GeodeIOException("TcrConnection::TcrConnection: "
+                               "Handshake failure during diffie-hellman"));
         }
       }
     }
@@ -553,7 +553,7 @@ bool TcrConnection::InitTcrConnection(
           "TcrConnection::TcrConnection: "
           "connection timed out during handshake");
     } else {
-      throw GemfireIOException(
+      throw GeodeIOException(
           "TcrConnection::TcrConnection: "
           "Handshake failure");
     }
@@ -884,7 +884,7 @@ void TcrConnection::send(uint32_t& timeSpent, const char* buffer, int len,
           TimeoutException("TcrConnection::send: connection timed out"));
     } else {
       throwException(
-          GemfireIOException("TcrConnection::send: connection failure"));
+          GeodeIOException("TcrConnection::send: connection failure"));
     }
   }
 }
@@ -920,7 +920,7 @@ char* TcrConnection::readMessage(size_t* recvLen, uint32_t receiveTimeoutSec,
     //  the !isNotificationMessage ensures that notification channel
     // gets the TimeoutException when no data was received and is ignored by
     // notification channel; when data has been received then it throws
-    // GemfireIOException that causes the channel to close as required
+    // GeodeIOException that causes the channel to close as required
     if (error == CONN_NODATA ||
         (error == CONN_TIMEOUT && !isNotificationMessage)) {
       if (isNotificationMessage) {
@@ -937,7 +937,7 @@ char* TcrConnection::readMessage(size_t* recvLen, uint32_t receiveTimeoutSec,
         *opErr = CONN_IOERR;
         return NULL;
       }
-      throwException(GemfireIOException(
+      throwException(GeodeIOException(
           "TcrConnection::readMessage: "
           "connection failure while receiving message header"));
     }
@@ -978,7 +978,7 @@ char* TcrConnection::readMessage(size_t* recvLen, uint32_t receiveTimeoutSec,
   if (error != CONN_NOERR) {
     delete[] fullMessage;
     //  the !isNotificationMessage ensures that notification channel
-    // gets the GemfireIOException and not TimeoutException;
+    // gets the GeodeIOException and not TimeoutException;
     // this is required since header has already been read meaning there could
     // be stale data on socket and so it should close the notification channel
     // while TimeoutException is normally ignored by notification channel
@@ -991,9 +991,9 @@ char* TcrConnection::readMessage(size_t* recvLen, uint32_t receiveTimeoutSec,
         *opErr = CONN_IOERR;
         return NULL;
       }
-      throwException(GemfireIOException(
-          "TcrConnection::readMessage: "
-          "connection failure while receiving message body"));
+      throwException(
+          GeodeIOException("TcrConnection::readMessage: "
+                           "connection failure while receiving message body"));
     }
   }
 
@@ -1046,7 +1046,7 @@ void TcrConnection::readMessageChunked(TcrMessageReply& reply,
           "TcrConnection::readMessageChunked: "
           "connection timed out while receiving message header"));
     } else {
-      throwException(GemfireIOException(
+      throwException(GeodeIOException(
           "TcrConnection::readMessageChunked: "
           "connection failure while receiving message header"));
     }
@@ -1107,7 +1107,7 @@ void TcrConnection::readMessageChunked(TcrMessageReply& reply,
               "TcrConnection::readMessageChunked: "
               "connection timed out while receiving chunk header"));
         } else {
-          throwException(GemfireIOException(
+          throwException(GeodeIOException(
               "TcrConnection::readMessageChunked: "
               "connection failure while receiving chunk header"));
         }
@@ -1144,9 +1144,9 @@ void TcrConnection::readMessageChunked(TcrMessageReply& reply,
             "TcrConnection::readMessageChunked: "
             "connection timed out while receiving chunk body"));
       } else {
-        throwException(GemfireIOException(
-            "TcrConnection::readMessageChunked: "
-            "connection failure while receiving chunk body"));
+        throwException(
+            GeodeIOException("TcrConnection::readMessageChunked: "
+                             "connection failure while receiving chunk body"));
       }
     }
 
@@ -1224,8 +1224,8 @@ CacheableBytesPtr TcrConnection::readHandshakeData(int32_t msgLength,
       GF_SAFE_DELETE_ARRAY(recvMessage);
       GF_SAFE_DELETE_CON(m_conn);
       throwException(
-          GemfireIOException("TcrConnection::TcrConnection: "
-                             "Handshake failure"));
+          GeodeIOException("TcrConnection::TcrConnection: "
+                           "Handshake failure"));
     }
   } else {
     return CacheableBytes::createNoCopy(reinterpret_cast<uint8_t*>(recvMessage),
@@ -1263,8 +1263,8 @@ CacheableBytesPtr TcrConnection::readHandshakeRawData(int32_t msgLength,
       GF_SAFE_DELETE_ARRAY(recvMessage);
       GF_SAFE_DELETE_CON(m_conn);
       throwException(
-          GemfireIOException("TcrConnection::TcrConnection: "
-                             "Handshake failure"));
+          GeodeIOException("TcrConnection::TcrConnection: "
+                           "Handshake failure"));
     }
     // not expected to be reached
     return NULLPTR;
@@ -1362,8 +1362,8 @@ void TcrConnection::readHandShakeBytes(int numberOfBytes,
       GF_SAFE_DELETE_ARRAY(recvMessage);
       GF_SAFE_DELETE_CON(m_conn);
       throwException(
-          GemfireIOException("TcrConnection::TcrConnection: "
-                             "Handshake failure"));
+          GeodeIOException("TcrConnection::TcrConnection: "
+                           "Handshake failure"));
     }
   }
 
@@ -1387,8 +1387,8 @@ int32_t TcrConnection::readHandShakeInt(uint32_t connectTimeout) {
       GF_SAFE_DELETE_ARRAY(recvMessage);
       GF_SAFE_DELETE_CON(m_conn);
       throwException(
-          GemfireIOException("TcrConnection::TcrConnection: "
-                             "Handshake failure"));
+          GeodeIOException("TcrConnection::TcrConnection: "
+                           "Handshake failure"));
     }
   }
 
@@ -1414,8 +1414,8 @@ CacheableStringPtr TcrConnection::readHandshakeString(uint32_t connectTimeout) {
     } else {
       LOGFINE("IO error receiving string typeid");
       throwException(
-          GemfireIOException("TcrConnection::TcrConnection: "
-                             "Handshake failure reading string type ID"));
+          GeodeIOException("TcrConnection::TcrConnection: "
+                           "Handshake failure reading string type ID"));
     }
   }
 
@@ -1438,8 +1438,8 @@ CacheableStringPtr TcrConnection::readHandshakeString(uint32_t connectTimeout) {
     default: {
       GF_SAFE_DELETE_CON(m_conn);
       throwException(
-          GemfireIOException("TcrConnection::TcrConnection: "
-                             "Handshake failure: Unexpected string type ID"));
+          GeodeIOException("TcrConnection::TcrConnection: "
+                           "Handshake failure: Unexpected string type ID"));
     }
   }
 
@@ -1467,8 +1467,8 @@ CacheableStringPtr TcrConnection::readHandshakeString(uint32_t connectTimeout) {
       GF_SAFE_DELETE_CON(m_conn);
       LOGFINE("IO error receiving string data");
       throwException(
-          GemfireIOException("TcrConnection::TcrConnection: "
-                             "Handshake failure reading string bytes"));
+          GeodeIOException("TcrConnection::TcrConnection: "
+                           "Handshake failure reading string bytes"));
     }
     // not expected to be reached
     return NULLPTR;

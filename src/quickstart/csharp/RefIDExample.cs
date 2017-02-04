@@ -20,7 +20,7 @@
  * This example creates two pools through XML and sets region attributes using refid.
  * This example takes the following steps:
  *
- * 1. Create a GemFire Cache.
+ * 1. Create a Geode Cache.
  * 2. Now it creates 2 Pools with the names poolName1, poolName2 respectively.
  * 3. Sets the region attribute using refid.
  * 4. Gets the region "root1" with poolName1, and region "root2" with poolName2.
@@ -36,7 +36,7 @@
 // Use standard namespaces
 using System;
 
-// Use the GemFire namespace
+// Use the Geode namespace
 using Apache.Geode.Client;
 
 namespace Apache.Geode.Client.QuickStart
@@ -53,7 +53,7 @@ namespace Apache.Geode.Client.QuickStart
         CacheFactory cacheFactory = CacheFactory.CreateCacheFactory(prop);
         Cache cache = cacheFactory.Create();
 
-        Console.WriteLine("Created the GemFire Cache");
+        Console.WriteLine("Created the Geode Cache");
 
         // Get the Regions from the Cache which is declared in the Cache XML file.
         IRegion<string, string> region1 = cache.GetRegion<string, string>("root1");
@@ -105,15 +105,15 @@ namespace Apache.Geode.Client.QuickStart
 
         Console.WriteLine("Destroyed the second Entry in both the Regions");
 
-        // Close the GemFire Cache.
+        // Close the Geode Cache.
         cache.Close();
 
-        Console.WriteLine("Closed the GemFire Cache");        
+        Console.WriteLine("Closed the Geode Cache");        
       }
       // An exception should not occur
-      catch (GemFireException gfex)
+      catch (GeodeException gfex)
       {
-        Console.WriteLine("RefIDExample GemFire Exception: {0}", gfex.Message);
+        Console.WriteLine("RefIDExample Geode Exception: {0}", gfex.Message);
       }
     }
   }

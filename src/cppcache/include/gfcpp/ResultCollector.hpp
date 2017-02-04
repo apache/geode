@@ -37,7 +37,7 @@ namespace client {
  * @class ResultCollector ResultCollector.hpp
  * Defines the interface for a container that gathers results from function
  * execution.<br>
- * GemFire provides a default implementation for ResultCollector.
+ * Geode provides a default implementation for ResultCollector.
  * Applications can choose to implement their own custom ResultCollector.
  * A custom ResultCollector facilitates result sorting or aggregation.
  * Aggregation
@@ -70,7 +70,7 @@ class CPPCACHE_EXPORT ResultCollector : public SharedBase {
   /**
    * Returns the result of function execution, potentially blocking until all
    * the results are available.
-   * If gemfire sendException is called then {@link ResultCollector.getResult}
+   * If geode sendException is called then {@link ResultCollector.getResult}
    * will not
    * throw exception but will have exception {@link
    * UserFunctionExecutionException} as a part of results received.
@@ -90,13 +90,13 @@ class CPPCACHE_EXPORT ResultCollector : public SharedBase {
    */
   virtual void addResult(CacheablePtr& resultOfSingleExecution);
   /**
-   * GemFire will invoke this method when function execution has completed
+   * Geode will invoke this method when function execution has completed
    * and all results for the execution have been obtained and  added to the
    * ResultCollector}
    */
   virtual void endResults();
   /**
-   * GemFire will invoke this method before re-executing function (in case of
+   * Geode will invoke this method before re-executing function (in case of
    * Function Execution HA) This is to clear the previous execution results from
    * the result collector
    * @since 6.5

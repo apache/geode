@@ -37,7 +37,7 @@ namespace geode {
 namespace statistics {
 /**
  * <P>This class provides the interface for statistics about a
- * Linux operating system process that is using a GemFire system.
+ * Linux operating system process that is using a Geode system.
  *
  */
 

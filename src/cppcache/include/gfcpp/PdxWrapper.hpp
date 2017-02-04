@@ -69,7 +69,7 @@ class CPPCACHE_EXPORT PdxWrapper : public PdxSerializable {
   uint32_t hashcode() const;
 
   /**
-  *@brief serialize this object in gemfire PDX format
+  *@brief serialize this object in geode PDX format
   *@param PdxWriter to serialize the PDX object
   **/
   void toData(PdxWriterPtr output);

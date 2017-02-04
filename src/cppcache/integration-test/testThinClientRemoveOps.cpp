@@ -268,8 +268,8 @@ void createEntryTwice(const char* name, const char* key, const char* value) {
   regPtr->create(keyPtr, valPtr);
   try {
     regPtr->create(keyPtr, valPtr);
-  } catch (const EntryExistsException& gemfireExcp) {
-    LOG(gemfireExcp.getMessage());
+  } catch (const EntryExistsException& geodeExcp) {
+    LOG(geodeExcp.getMessage());
     LOG("createEntryTwice() Clean Exit.");
     return;
   }

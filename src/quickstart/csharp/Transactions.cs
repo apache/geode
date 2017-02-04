@@ -20,7 +20,7 @@
  *
  * This example takes the following steps:
  *
- * 1.  Create a GemFire Cache.
+ * 1.  Create a Geode Cache.
  * 2.  Create the example Region Programmatically.
  * 3   Begin Transaction
  * 4.  Put Entries (Key and Value pairs) into the Region.
@@ -38,7 +38,7 @@
 // Use standard namespaces
 using System;
 
-// Use the GemFire namespace
+// Use the Geode namespace
 using Apache.Geode.Client;
 
 // Use the .NET generics namespace
@@ -54,12 +54,12 @@ namespace Apache.Geode.Client.QuickStart
     {
       try
       {
-        // Create a GemFire Cache
+        // Create a Geode Cache
         CacheFactory cacheFactory = CacheFactory.CreateCacheFactory();
         
         Cache cache = cacheFactory.Create();
         
-        Console.WriteLine("Created the GemFire cache.");
+        Console.WriteLine("Created the Geode cache.");
 
         RegionFactory regionFactory = cache.CreateRegionFactory(RegionShortcut.CACHING_PROXY);
 
@@ -122,12 +122,12 @@ namespace Apache.Geode.Client.QuickStart
         
         cache.Close();
 
-        Console.WriteLine("Closed the GemFire Cache");
+        Console.WriteLine("Closed the Geode Cache");
       }
       // An exception should not occur
-      catch (GemFireException gfex)
+      catch (GeodeException gfex)
       {
-        Console.WriteLine("Transactions GemFire Exception: {0}", gfex.Message);
+        Console.WriteLine("Transactions Geode Exception: {0}", gfex.Message);
       }
     }
   }

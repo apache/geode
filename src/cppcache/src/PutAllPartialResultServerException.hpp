@@ -35,7 +35,7 @@ typedef SharedPtr<PutAllPartialResultServerException>
 
 /**
  * @brief PutAllPartialResultServerException class is used to encapsulate
- *gemfire PutAllPartialResultServerException in case of PutAll execution.
+ *geode PutAllPartialResultServerException in case of PutAll execution.
  **/
 class CPPCACHE_EXPORT PutAllPartialResultServerException : public Serializable {
   /**
@@ -123,7 +123,7 @@ class CPPCACHE_EXPORT PutAllPartialResultServerException : public Serializable {
   virtual int8_t typeId() const;
 
   /**
-  *@brief return as CacheableStringPtr the Exception name returned from gemfire
+  *@brief return as CacheableStringPtr the Exception name returned from geode
   *sendException api.
   **/
   CacheableStringPtr getName() {

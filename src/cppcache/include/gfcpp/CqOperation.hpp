@@ -36,7 +36,7 @@ namespace client {
 class CPPCACHE_EXPORT CqOperation {
   // public static methods
  public:
-  // types of operation CORESPONDING TO THE ONES in gemfire.cache.Operation
+  // types of operation CORESPONDING TO THE ONES in geode.cache.Operation
 
   typedef enum {
     OP_TYPE_INVALID = -1,

@@ -110,7 +110,7 @@ void TXState::releaseStickyConnection() {
   // Since this is called during cleanup or through destructor, we should not
   // throw exception from here,
   // which can cause undefined cleanup.
-  TcrConnection* conn = TssConnectionWrapper::s_gemfireTSSConn->getConnection();
+  TcrConnection* conn = TssConnectionWrapper::s_geodeTSSConn->getConnection();
   if (conn != NULL) {
     ThinClientPoolDM* dm = conn->getEndpointObject()->getPoolHADM();
     if (dm != NULL) {

@@ -222,7 +222,7 @@ namespace Apache.Geode.Client.Tests
 
     private string GetLdapUser(Role roleType, int index)
     {
-      const string userPrefix = "gemfire";
+      const string userPrefix = "geode";
       int[] readerIndices = { 3, 4, 5 };
       int[] writerIndices = { 6, 7, 8 };
       int[] queryIndices = { 9, 10 };

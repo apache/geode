@@ -72,20 +72,20 @@ void initClientAuth(char userType, int clientNum = 1) {
                  "createUserPasswordAuthInitInstance");
   switch (userType) {
     case 'W': {
-      config->insert("security-username", "gemfire9");
-      config->insert("security-password", "gemfire9");
+      config->insert("security-username", "geode9");
+      config->insert("security-password", "geode9");
       break;
     }
     case 'R': {
       char clientStr[32];
-      sprintf(clientStr, "gemfire%d", clientNum);
+      sprintf(clientStr, "geode%d", clientNum);
       config->insert("security-username", clientStr);
       config->insert("security-password", clientStr);
       break;
     }
     case 'A': {
-      config->insert("security-username", "gemfire1");
-      config->insert("security-password", "gemfire1");
+      config->insert("security-username", "geode1");
+      config->insert("security-password", "geode1");
       break;
     }
     default: { break; }

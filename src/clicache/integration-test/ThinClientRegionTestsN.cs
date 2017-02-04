@@ -397,7 +397,7 @@ namespace Apache.Geode.Client.UnitTests
             Assert.Fail("Expected an exception in Put");
           }
         }
-        catch (GemFireIOException ex)
+        catch (GeodeIOException ex)
         {
           if (exType == OtherType.ExceptionType.Geode)
           {

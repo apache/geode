@@ -39,11 +39,11 @@ namespace apache
 
           m_visitor->Invoke(mg_key, (Apache::Geode::Client::IGFSerializable^)mg_value);
         }
-        catch (GemFireException^ ex) {
+        catch (GeodeException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          GemFireException::ThrowNative(ex);
+          GeodeException::ThrowNative(ex);
         }
       }
 

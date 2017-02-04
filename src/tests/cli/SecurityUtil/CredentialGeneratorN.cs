@@ -68,7 +68,7 @@ namespace Apache.Geode.Client.Tests
     }
 
     /// <summary>
-    /// A set of properties that should be added to the Gemfire system properties
+    /// A set of properties that should be added to the Geode system properties
     /// before using the authentication module.
     /// </summary>
     private Properties<string, string> m_sysProps = null;
@@ -135,7 +135,7 @@ namespace Apache.Geode.Client.Tests
     }
 
     /// <summary>
-    /// A set of extra properties that should be added to Gemfire system
+    /// A set of extra properties that should be added to Geode system
     /// properties when not null.
     /// </summary>
     public Properties<string, string> SystemProperties
@@ -147,7 +147,7 @@ namespace Apache.Geode.Client.Tests
     }
 
     /// <summary>
-    /// A set of extra properties that should be added to Gemfire system
+    /// A set of extra properties that should be added to Geode system
     /// properties when not null.
     /// </summary>
     public Properties<string, string> JavaProperties
@@ -247,7 +247,7 @@ namespace Apache.Geode.Client.Tests
     /// abstract class.
     /// </remarks>
     /// <returns>
-    /// A set of extra properties that should be added to Gemfire system
+    /// A set of extra properties that should be added to Geode system
     /// properties when not null.
     /// </returns>
     /// <exception cref="IllegalArgumentException">

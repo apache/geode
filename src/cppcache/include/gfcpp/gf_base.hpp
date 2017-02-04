@@ -40,14 +40,14 @@
 #define LIBEXPORT(type) type
 #endif
 
-/** Defines a GemFire C extern */
+/** Defines a Geode C extern */
 #ifdef BUILD_GEMFIRE
 #define GFCEXTERN(type) LIBEXP type LIBCALL
 #else
 #define GFCEXTERN(type) LIBIMP type LIBCALL
 #endif /* BUILD_GEMFIRE    */
 
-/** Defines a GemFire CPPCACHE export */
+/** Defines a Geode CPPCACHE export */
 #if defined(_WIN32)
 #ifdef BUILD_CPPCACHE
 #define CPPCACHE_EXPORT LIBEXP
@@ -193,11 +193,11 @@ typedef uint64_t uint64; /**< unsigned 64 bit integer */
 #endif
 #endif /* _WIN32*/
 
-/**@namespace gemfire This namespace contains all the GemFire
+/**@namespace geode This namespace contains all the Geode
  * C++ API classes, enumerations and globals.
  */
 
-/**@namespace gemfire_statistics This namespace contains all the GemFire
+/**@namespace geode_statistics This namespace contains all the Geode
  * C++ statistics API classes.
  */
 
@@ -210,7 +210,7 @@ typedef uint64_t uint64; /**< unsigned 64 bit integer */
 /**
  * @file
  *
- *  Definitions of types and functions supported in the GemFire C++ interface
+ *  Definitions of types and functions supported in the Geode C++ interface
  */
 
 /** default timeout for query response */
@@ -218,7 +218,7 @@ typedef uint64_t uint64; /**< unsigned 64 bit integer */
 
 /**
  * @enum GfErrType
- *Error codes returned by GemFire C++ interface functions
+ *Error codes returned by Geode C++ interface functions
  */
 typedef enum {
   GF_NOERR = 0,           /**< success - no error               */
@@ -231,7 +231,7 @@ typedef enum {
   GF_ERANGE = 7,          /**< index out of range               */
   GF_ETYPE = 8,           /**< type mismatch                    */
   GF_NOTOBJ = 9,          /**< invalid object reference         */
-  GF_NOTCON = 10,         /**< not connected to GemFire         */
+  GF_NOTCON = 10,         /**< not connected to Geode         */
   GF_NOTOWN = 11,         /**< lock not owned by process/thread */
   GF_NOTSUP = 12,         /**< operation not supported          */
   GF_SCPGBL = 13,         /**< attempt to exit global scope     */
@@ -239,7 +239,7 @@ typedef enum {
   GF_TIMOUT = 15,         /**< operation timed out              */
   GF_OVRFLW = 16,         /**< arithmetic overflow              */
   GF_IOERR = 17,          /**< paging file I/O error            */
-  GF_EINTR = 18,          /**< interrupted GemFire call         */
+  GF_EINTR = 18,          /**< interrupted Geode call         */
   GF_MSG = 19,            /**< message could not be handled     */
   GF_DISKFULL = 20,       /**< disk full                        */
   GF_NOSERVER_FOUND = 21, /** NoServer found */

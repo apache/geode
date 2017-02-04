@@ -36,7 +36,7 @@ namespace geode {
 namespace statistics {
 /**
  * <P>This class provides the interface for statistics about a
- * Solaris operating system process that is using a GemFire system.
+ * Solaris operating system process that is using a Geode system.
  *
  */
 

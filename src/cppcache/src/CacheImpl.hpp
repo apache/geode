@@ -64,7 +64,7 @@ class ExpiryTaskManager;
 
 /**
  * @class Cache Cache.hpp
- * GemFire's implementation of a distributed C++ Cache.
+ * Geode's implementation of a distributed C++ Cache.
  *
  * Caches are obtained from static methods on the {@link CacheFactory} class.
  * <p>

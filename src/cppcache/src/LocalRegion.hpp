@@ -391,7 +391,7 @@ class CPPCACHE_EXPORT LocalRegion : public RegionInternal {
   void setPool(const PoolPtr& p) { m_attachedPool = p; }
 
   TXState* getTXState() const {
-    return TSSTXStateWrapper::s_gemfireTSSTXState->getTXState();
+    return TSSTXStateWrapper::s_geodeTSSTXState->getTXState();
   }
 
   CacheablePtr handleReplay(GfErrType& err, CacheablePtr value) const;

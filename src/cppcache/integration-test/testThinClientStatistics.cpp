@@ -193,7 +193,7 @@ void DoRegionOpsAndVerify() {
     regEntry->getStatistics(cacheStatptr);
   } catch (StatisticsDisabledException& ex) {
     LOGINFO("Exception Caught:: StatisticsDisabledException");
-  } catch (GemfireConfigException& e) {
+  } catch (GeodeConfigException& e) {
     LOGINFO("Exception Caught:: %s", e.getMessage());
   } catch (Exception& ex) {
     LOGINFO("Exception Caught:: %s", ex.getMessage());

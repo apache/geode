@@ -509,7 +509,7 @@ namespace Apache.Geode.Client.UnitTests
           ErrorOccurred = true;
           qryIdx++;
         }
-        catch (GemFireException)
+        catch (GeodeException)
         {
           // ok, exception expected, do nothing.
           qryIdx++;
@@ -578,7 +578,7 @@ namespace Apache.Geode.Client.UnitTests
           ErrorOccurred = true;
           qryIdx++;
         }
-        catch (GemFireException)
+        catch (GeodeException)
         {
           // ok, exception expected, do nothing.
           qryIdx++;
@@ -792,7 +792,7 @@ namespace Apache.Geode.Client.UnitTests
           ErrorOccurred = true;
           qryIdx++;
         }
-        catch (GemFireException)
+        catch (GeodeException)
         {
           // ok, exception expected, do nothing.
           qryIdx++;
@@ -862,7 +862,7 @@ namespace Apache.Geode.Client.UnitTests
           ErrorOccurred = true;
           qryIdx++;
         }
-        catch (GemFireException)
+        catch (GeodeException)
         {
           // ok, exception expected, do nothing.
           qryIdx++;
@@ -1023,7 +1023,7 @@ namespace Apache.Geode.Client.UnitTests
         Util.Log("Result size is {0}", results.Size);
         Assert.Fail("Didnt get expected timeout exception for first execute");
       }
-      catch (GemFireException excp)
+      catch (GeodeException excp)
       {
         Util.Log("First execute expected exception: {0}", excp.Message);
       }
@@ -1044,7 +1044,7 @@ namespace Apache.Geode.Client.UnitTests
         Util.Log("EXECUTE 2 STOP");
         Util.Log("Result size is {0}", results.Size);
       }
-      catch (GemFireException excp)
+      catch (GeodeException excp)
       {
         Assert.Fail("Second execute unwanted exception: {0}", excp.Message);
       }
@@ -1066,7 +1066,7 @@ namespace Apache.Geode.Client.UnitTests
         Util.Log("Result size is {0}", results.Size);
         Assert.Fail("Didnt get expected timeout exception for third execute");
       }
-      catch (GemFireException excp)
+      catch (GeodeException excp)
       {
         Util.Log("Third execute expected exception: {0}", excp.Message);
       }
@@ -1086,7 +1086,7 @@ namespace Apache.Geode.Client.UnitTests
         Util.Log("EXECUTE 4 STOP");
         Util.Log("Result size is {0}", results.Size);
       }
-      catch (GemFireException excp)
+      catch (GeodeException excp)
       {
         Assert.Fail("Fourth execute unwanted exception: {0}", excp.Message);
       }
@@ -1129,7 +1129,7 @@ namespace Apache.Geode.Client.UnitTests
         Util.Log("Result size is {0}", results.Size);
         Assert.Fail("Didnt get expected timeout exception for Fifth execute");
       }
-      catch (GemFireException excp)
+      catch (GeodeException excp)
       {
         Util.Log("Fifth execute expected exception: {0}", excp.Message);
       }
@@ -1170,7 +1170,7 @@ namespace Apache.Geode.Client.UnitTests
         Util.Log("EXECUTE 6 STOP");
         Util.Log("Result size is {0}", results.Size);
       }
-      catch (GemFireException excp)
+      catch (GeodeException excp)
       {
         Assert.Fail("Sixth execute unwanted exception: {0}", excp.Message);
       }

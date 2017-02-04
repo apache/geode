@@ -45,7 +45,7 @@ class RegionEvent;
  * of <code>CacheListener</code> methods.  If event A occurs before event B,
  * there is no guarantee that their corresponding <code>CacheListener</code>
  * method invocations will occur in the same order. Any exceptions thrown by
- * the listener are caught by GemFire and logged. If the exception is due to
+ * the listener are caught by Geode and logged. If the exception is due to
  * listener invocation on the same thread where a region operation has been
  * performed, then a <code>CacheListenerException</code> is thrown back to
  * the application. If the exception is for a notification received from
@@ -55,7 +55,7 @@ class RegionEvent;
  * There are two cases in which listeners are invoked. The first is when a
  * region modification operation (e.g. put, create, destroy, invalidate)
  * is performed. For this case it is important to ensure that minimal work is
- * done in the listener before returning control back to Gemfire since the
+ * done in the listener before returning control back to Geode since the
  * operation will block till the listener has not completed. For example,
  * a listener implementation may choose to hand off the event to a thread pool
  * that then processes the event on its thread rather than the listener thread.

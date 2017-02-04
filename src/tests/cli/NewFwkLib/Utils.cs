@@ -238,7 +238,7 @@ namespace Apache.Geode.Client.FwkLib
       int status = GFNoError;
       Process javaProc;
       string javaExePath = gfeDir + PathSep + "bin" + PathSep + exeName;
-      Util.ServerLog("Executing local GemFire command {0} {1}", javaExePath,
+      Util.ServerLog("Executing local Geode command {0} {1}", javaExePath,
         exeArgs);
       if (!Util.StartProcess(javaExePath, exeArgs, false, TempDir,
         true, false, false, out javaProc))
@@ -309,9 +309,9 @@ namespace Apache.Geode.Client.FwkLib
     private string GetSslProperty(string hostType, bool forServer,string startDir)
     {
       string sslCmdStr = null;
-      //if (!File.Exists(startDir + PathSep + "gemfire.properties"))
+      //if (!File.Exists(startDir + PathSep + "geode.properties"))
       //{
-        TextWriter sw = new StreamWriter(startDir + PathSep + "gemfire.properties", false);
+        TextWriter sw = new StreamWriter(startDir + PathSep + "geode.properties", false);
         String locatorAddress = GetJavaLocator();
         sw.WriteLine("locators={0}", locatorAddress);
         ResetKey("sslEnable");
@@ -324,7 +324,7 @@ namespace Apache.Geode.Client.FwkLib
         FwkInfo("ssl is enable");
         if (!forServer)
         {
-          //StreamWriter sw = new StreamWriter("gemfire.properties",false);
+          //StreamWriter sw = new StreamWriter("geode.properties",false);
           sw.WriteLine("ssl-enabled=true");
           sw.WriteLine("ssl-require-authentication=true");
           sw.WriteLine("mcast-port=0");
@@ -595,12 +595,12 @@ namespace Apache.Geode.Client.FwkLib
             if (locatorType != Util.SystemType)
             {
               FwkInfo(StartRemoteGFExe(locatorHost, locatorType,
-                "gemfire", locatorArgs));
+                "geode", locatorArgs));
             }
             else
             {
               string outStr;
-              int status = StartLocalGFExe("gemfire.bat", gfeDir,
+              int status = StartLocalGFExe("geode.bat", gfeDir,
                 locatorArgs, out outStr);
               if (status == GFTimeout)
               {

@@ -36,8 +36,8 @@ namespace client {
 /**
  * @class DistributedSystem DistributedSystem.hpp
  * DistributedSystem encapsulates this applications "connection" into the
- * GemFire Java servers distributed system. In order to participate in the
- * GemFire Java servers distributed system, each application needs to connect to
+ * Geode Java servers distributed system. In order to participate in the
+ * Geode Java servers distributed system, each application needs to connect to
  * the DistributedSystem.
  * Each application can only be connected to one DistributedSystem.
  */
@@ -54,7 +54,7 @@ class CPPCACHE_EXPORT DistributedSystem : public SharedBase {
  public:
   /**
    * Initializes the Native Client system to be able to connect to the
-   * GemFire Java servers. If the name string is empty, then the default
+   * Geode Java servers. If the name string is empty, then the default
    * "NativeDS" is used as the name of distributed system.
    * @throws LicenseException if no valid license is found.
    * @throws IllegalStateException if GFCPP variable is not set and

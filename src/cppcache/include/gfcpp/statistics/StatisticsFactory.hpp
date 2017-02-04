@@ -45,7 +45,7 @@ namespace statistics {
  * statistic (<code>StatisticDescriptor</code>) can either be a
  * <I>gauge</I> meaning that its value can increase and decrease or a
  * <I>counter</I> meaning that its value is strictly increasing.
- * Marking a statistic as a counter allows the GemFire Manager Console
+ * Marking a statistic as a counter allows the Geode Manager Console
  * to properly display a statistics whose value "wraps around" (that
  * is, exceeds its maximum value).
  *

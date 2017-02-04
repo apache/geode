@@ -38,7 +38,7 @@ namespace client {
  * Delta</code> as well as <code>class Cacheable</code> publicly.
  * The methods <code>hasDelta( ), toDelta( )</code> and <code>fromDelta(
  * )</code> must be implemented by the class, as these methods are used by
- * GemFire
+ * Geode
  * to detect the presence of delta in an object, to serialize the delta, and to
  * apply a serialized delta to an existing object
  * of the class.
@@ -47,7 +47,7 @@ namespace client {
 class Delta {
  public:
   /**
-   * <code>hasDelta( )</code> is invoked by GemFire during <code>Region::put(
+   * <code>hasDelta( )</code> is invoked by Geode during <code>Region::put(
    * CacheableKeyPtr, CacheablePtr )</code> to determine if the object contains
    * a delta.
    * If <code>hasDelta( )</code> returns true, the delta in the object is
@@ -59,7 +59,7 @@ class Delta {
 
   /**
    * Writes out delta information to out in a user-defined format. This is
-   * invoked on an application object after GemFire determines the presence
+   * invoked on an application object after Geode determines the presence
    * of delta in it by calling <code>hasDelta()</code> on the object.
    *
    * @throws IOException
@@ -68,7 +68,7 @@ class Delta {
 
   /**
    * Reads in delta information to this object in a user-defined format. This is
-   * invoked on an existing application object after GemFire determines the
+   * invoked on an existing application object after Geode determines the
    * presence of delta in <code>DataInput</code> instance.
    *
    * @throws IOException

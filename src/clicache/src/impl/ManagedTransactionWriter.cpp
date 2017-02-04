@@ -207,11 +207,11 @@ namespace apache
           Apache::Geode::Client::TransactionEvent  mevent(te.ptr());
           m_managedptr->BeforeCommit(%mevent);
         }
-        catch (Apache::Geode::Client::GemFireException^ ex) {
+        catch (Apache::Geode::Client::GeodeException^ ex) {
           ex->ThrowNative();
         }
         catch (System::Exception^ ex) {
-          Apache::Geode::Client::GemFireException::ThrowNative(ex);
+          Apache::Geode::Client::GeodeException::ThrowNative(ex);
         }
       }
 

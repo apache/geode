@@ -123,7 +123,7 @@ StatisticsManager::~StatisticsManager() {
     GeodeStatisticsFactory::clean();
 
   } catch (const Exception& ex) {
-    Log::warningCatch("~StatisticsManager swallowing GemFire exception", ex);
+    Log::warningCatch("~StatisticsManager swallowing Geode exception", ex);
 
   } catch (const std::exception& ex) {
     std::string what = "~StatisticsManager swallowing std::exception: ";

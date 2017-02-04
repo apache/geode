@@ -562,7 +562,7 @@ namespace Apache
             for (apache::geode::client::HashMapOfException::Iterator iter =
                   exceptionsPtr->begin(); iter != exceptionsPtr->end(); ++iter) {
               TKey key = Serializable::GetManagedValueGeneric<TKey>(iter.first());
-              System::Exception^ ex = GemFireException::Get(*iter.second());
+              System::Exception^ ex = GeodeException::Get(*iter.second());
               exceptions->Add(key, ex);
             }
           }
@@ -617,7 +617,7 @@ namespace Apache
             for (apache::geode::client::HashMapOfException::Iterator iter =
                   exceptionsPtr->begin(); iter != exceptionsPtr->end(); ++iter) {
               TKey key = Serializable::GetManagedValueGeneric<TKey>(iter.first());
-              System::Exception^ ex = GemFireException::Get(*iter.second());
+              System::Exception^ ex = GeodeException::Get(*iter.second());
               exceptions->Add(key, ex);
             }
           }

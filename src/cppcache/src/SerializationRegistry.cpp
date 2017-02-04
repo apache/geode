@@ -103,7 +103,7 @@ class TheTypeMap : private NonCopyable, private NonAssignable {
   }
 
   inline void setup() {
-    // Register GemFire builtins here!!
+    // Register Geode builtins here!!
     // update type ids in GeodeTypeIds.hpp
 
     bind(CacheableByte::createDeserializable);

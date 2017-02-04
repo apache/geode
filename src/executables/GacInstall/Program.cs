@@ -30,7 +30,7 @@ namespace Apache.Geode
 
     private const string DOTNETAssemblyFoldersKey =
       @"SOFTWARE\Microsoft\.NETFramework\AssemblyFolders";
-    private const string GemFireProductKey = "Apache.Geode";
+    private const string GeodeProductKey = "Apache.Geode";
 
     #endregion
 
@@ -100,7 +100,7 @@ namespace Apache.Geode
           Registry.LocalMachine.OpenSubKey(DOTNETAssemblyFoldersKey, true);
         if (dotNETAssemblyFoldersKey != null)
         {
-          dotNETAssemblyFoldersKey.DeleteSubKey(GemFireProductKey, false);
+          dotNETAssemblyFoldersKey.DeleteSubKey(GeodeProductKey, false);
         }
         if (doInstall)
         {
@@ -108,7 +108,7 @@ namespace Apache.Geode
           if (dotNETAssemblyFoldersKey != null)
           {
             RegistryKey productKey =
-              dotNETAssemblyFoldersKey.CreateSubKey(GemFireProductKey);
+              dotNETAssemblyFoldersKey.CreateSubKey(GeodeProductKey);
             if (productKey != null)
             {
               productKey.SetValue(null, finalDirPath, RegistryValueKind.String);

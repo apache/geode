@@ -20,8 +20,8 @@
  *
  * This example takes the following steps:
  *
- * 1. Connect to a GemFire Distributed System which has two cache servers.
- * 2. Create a GemFire Cache with redundancy level = 1.
+ * 1. Connect to a Geode Distributed System which has two cache servers.
+ * 2. Create a Geode Cache with redundancy level = 1.
  * 3. Get the example generic Region from the Cache.
  * 4. Call registerKeys() on the Region.
  * 5. Call registerRegex() on the Region.
@@ -35,7 +35,7 @@
 using System;
 using System.Threading;
 
-// Use the GemFire namespace
+// Use the Geode namespace
 using Apache.Geode.Client;
 
 namespace Apache.Geode.Client.QuickStart
@@ -47,7 +47,7 @@ namespace Apache.Geode.Client.QuickStart
     {
       try
       {
-        // Create a GemFire Cache.
+        // Create a Geode Cache.
         Apache.Geode.Client.CacheFactory cacheFactory = CacheFactory.CreateCacheFactory();
 
         Cache cache = cacheFactory.Set("cache-xml-file", "XMLs/clientHACache.xml")
@@ -57,7 +57,7 @@ namespace Apache.Geode.Client.QuickStart
                   .SetSubscriptionEnabled(true)
                   .Create();
 
-        Console.WriteLine("Created the GemFire Cache");
+        Console.WriteLine("Created the Geode Cache");
 
         // Get the example Region from the Cache which is declared in the Cache XML file.
         IRegion<object, int> region = cache.GetRegion<object, int>("/exampleRegion");
@@ -116,15 +116,15 @@ namespace Apache.Geode.Client.QuickStart
     
         Console.WriteLine("Unregistered keys");
             
-        // Close the GemFire Cache.
+        // Close the Geode Cache.
         cache.Close();
 
-        Console.WriteLine("Closed the GemFire Cache");
+        Console.WriteLine("Closed the Geode Cache");
       }
       // An exception should not occur
-      catch (GemFireException gfex)
+      catch (GeodeException gfex)
       {
-        Console.WriteLine("HACache GemFire Exception: {0}", gfex.Message);
+        Console.WriteLine("HACache Geode Exception: {0}", gfex.Message);
       }
     }
   }

@@ -18,7 +18,7 @@
 #include "TcrConnection.hpp"
 #include "ThinClientPoolDM.hpp"
 using namespace apache::geode::client;
-ACE_TSS<TssConnectionWrapper> TssConnectionWrapper::s_gemfireTSSConn;
+ACE_TSS<TssConnectionWrapper> TssConnectionWrapper::s_geodeTSSConn;
 TssConnectionWrapper::TssConnectionWrapper() {
   PoolPtr p = NULLPTR;
   m_pool = p;

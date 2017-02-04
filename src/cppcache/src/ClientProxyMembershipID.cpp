@@ -380,7 +380,7 @@ Serializable* ClientProxyMembershipID::fromData(DataInput& input) {
   aStringArray->fromData(input);
   // #925 - currently reading empty string keep watch here,
   // server might remove even sending this string
-  // (https://svn.gemstone.com/trac/gemfire/changeset/44566).
+  // (https://svn.gemstone.com/trac/geode/changeset/44566).
   input.readObject(dsName);            // name
   input.readObject(uniqueTag);         // unique tag
   input.readObject(durableClientId);   // durable client id
@@ -439,7 +439,7 @@ Serializable* ClientProxyMembershipID::readEssentialData(DataInput& input) {
 
   // #925 - currently reading empty string keep watch here,
   // server might remove even sending this string
-  // (https://svn.gemstone.com/trac/gemfire/changeset/44566).
+  // (https://svn.gemstone.com/trac/geode/changeset/44566).
   input.readObject(dsName);  // name
 
   if (vmKind != ClientProxyMembershipID::LONER_DM_TYPE) {
@@ -506,7 +506,7 @@ int16_t ClientProxyMembershipID::compareTo(DSMemberForVersionStampPtr other) {
   }
   // #925 - currently reading empty string keep watch here,
   // server might remove even sending this string
-  // (https://svn.gemstone.com/trac/gemfire/changeset/44566).
+  // (https://svn.gemstone.com/trac/geode/changeset/44566).
   // InternalDistributedMember no longer uses "name" in comparisons.
   // std::string myDSName = getDSName();
   // std::string otherDSName = otherMember->getDSName();

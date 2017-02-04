@@ -243,8 +243,8 @@ DUNIT_TASK_DEFINITION(CLIENT1, CheckUpdateBug1001)
       CacheableStringPtr lCStringP = CacheableString::create(
           str, static_cast<int32_t>(wcslen(str) + 1) * sizeof(wchar_t));
       const wchar_t* lRtnCd ATTR_UNUSED = lCStringP->asWChar();
-    } catch (const Exception& gemfireExcp) {
-      printf("%s: %s", gemfireExcp.getName(), gemfireExcp.getMessage());
+    } catch (const Exception& geodeExcp) {
+      printf("%s: %s", geodeExcp.getName(), geodeExcp.getMessage());
       FAIL("Should not have got exception.");
     }
 
@@ -253,8 +253,8 @@ DUNIT_TASK_DEFINITION(CLIENT1, CheckUpdateBug1001)
       CacheableStringPtr lCStringP = CacheableString::create(
           str, static_cast<int32_t>(wcslen(str) + 1) * sizeof(wchar_t));
       const wchar_t* lRtnCd ATTR_UNUSED = lCStringP->asWChar();
-    } catch (const Exception& gemfireExcp) {
-      printf("%s: %s", gemfireExcp.getName(), gemfireExcp.getMessage());
+    } catch (const Exception& geodeExcp) {
+      printf("%s: %s", geodeExcp.getName(), geodeExcp.getMessage());
       FAIL("Should not have got exception.");
     }
 

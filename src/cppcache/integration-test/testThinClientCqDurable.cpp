@@ -181,14 +181,14 @@ void RunDurableCqClient() {
   pp->insert("durable-client-id", "DurableClientId");
   pp->insert("durable-timeout", 3600);
 
-  // Create a GemFire Cache Programmatically.
+  // Create a Geode Cache Programmatically.
   CacheFactoryPtr cacheFactory = CacheFactory::createCacheFactory(pp);
   CachePtr cachePtr = cacheFactory->setSubscriptionEnabled(true)
                           ->setSubscriptionAckInterval(5000)
                           ->setSubscriptionMessageTrackingTimeout(50000)
                           ->create();
 
-  LOGINFO("Created the GemFire Cache Programmatically");
+  LOGINFO("Created the Geode Cache Programmatically");
 
   RegionFactoryPtr regionFactory = cachePtr->createRegionFactory(CACHING_PROXY);
 
@@ -229,23 +229,23 @@ void RunDurableCqClient() {
   // wait for some time to recieve events
   apache::geode::client::millisleep(10000);
 
-  // Close the GemFire Cache with keepalive = true.  Server will queue events
+  // Close the Geode Cache with keepalive = true.  Server will queue events
   // for
   // durable registered keys and will deliver all events when client will
   // reconnect
   // within timeout period and send "readyForEvents()"
   cachePtr->close(true);
 
-  LOGINFO("Closed the GemFire Cache with keepalive as true");
+  LOGINFO("Closed the Geode Cache with keepalive as true");
 }
 
 void RunFeederClient() {
   CacheFactoryPtr cacheFactory = CacheFactory::createCacheFactory();
-  LOGINFO("Feeder connected to the GemFire Distributed System");
+  LOGINFO("Feeder connected to the Geode Distributed System");
 
   CachePtr cachePtr = cacheFactory->create();
 
-  LOGINFO("Created the GemFire Cache");
+  LOGINFO("Created the Geode Cache");
 
   RegionFactoryPtr regionFactory = cachePtr->createRegionFactory(PROXY);
 
@@ -266,19 +266,19 @@ void RunFeederClient() {
   apache::geode::client::millisleep(10000);
   LOGINFO("put on 0-10 keys done.");
 
-  // Close the GemFire Cache
+  // Close the Geode Cache
   cachePtr->close();
 
-  LOGINFO("Closed the GemFire Cache");
+  LOGINFO("Closed the Geode Cache");
 }
 
 void RunFeederClient1() {
   CacheFactoryPtr cacheFactory = CacheFactory::createCacheFactory();
-  LOGINFO("Feeder connected to the GemFire Distributed System");
+  LOGINFO("Feeder connected to the Geode Distributed System");
 
   CachePtr cachePtr = cacheFactory->create();
 
-  LOGINFO("Created the GemFire Cache");
+  LOGINFO("Created the Geode Cache");
 
   RegionFactoryPtr regionFactory = cachePtr->createRegionFactory(PROXY);
 
@@ -299,10 +299,10 @@ void RunFeederClient1() {
   apache::geode::client::millisleep(10000);
   LOGINFO("put on 0-10 keys done.");
 
-  // Close the GemFire Cache
+  // Close the Geode Cache
   cachePtr->close();
 
-  LOGINFO("Closed the GemFire Cache");
+  LOGINFO("Closed the Geode Cache");
 }
 
 DUNIT_TASK_DEFINITION(CLIENT1, RunDurableClient)
