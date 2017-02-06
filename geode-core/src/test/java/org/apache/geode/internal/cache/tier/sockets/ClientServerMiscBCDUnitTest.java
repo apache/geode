@@ -32,7 +32,7 @@ import java.util.List;
 public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTest {
   @Parameterized.Parameters
   public static Collection<String> data() {
-    List<String> result =  VersionManager.getInstance().getVersionsWithoutCurrent();
+    List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
     if (result.size() < 1) {
       throw new RuntimeException("No older versions of Geode were found to test against");
     } else {

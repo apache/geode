@@ -112,7 +112,13 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
 
   @Parameterized.Parameters
   public static Collection<String> data() {
-    return VersionManager.getInstance().getVersionsWithoutCurrent();
+    List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
+    if (result.size() < 1) {
+      throw new RuntimeException("No older versions of Geode were found to test against");
+    } else {
+      System.out.println("running against these versions: " + result);
+    }
+    return result;
   }
 
   // just a test flag that can be set when trying to run a test in eclipse and avoiding IllegalState
