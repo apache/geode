@@ -19,13 +19,17 @@ import org.apache.geode.test.dunit.VM;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * VersionManager loads the class-paths for all of the releases of Geode configured for
@@ -106,17 +110,19 @@ public class VersionManager {
 
   private void findVersions() {
     // this file is created by the gradle task createClasspathsPropertiesFile
-    File propFile = new File("../../../geode-old-versions/build/geodeOldVersionClasspaths.txt");
+    File propFile = new File(
+        "../../../geode-old-versions/build/generated-resources/main/geodeOldVersionClasspaths.txt");
     if (!propFile.exists()) {
       // running under an IDE
-      propFile = new File("../geode-old-versions/build/geodeOldVersionClasspaths.txt");
+      propFile = new File(
+          "../geode-old-versions/build/generated-resources/main/geodeOldVersionClasspaths.txt");
     }
     String oldver = "ZZZ";
     if (propFile.exists()) {
       System.out.println("found geodeOldVersionClasspaths.txt - loading properties");
-      Map<String, String> dunitProperties = loadProperties(propFile);
-      for (Map.Entry<String, String> entry : dunitProperties.entrySet()) {
-        String version = entry.getKey();
+      Properties dunitProperties = loadProperties(propFile);
+      for (Map.Entry<Object, Object> entry : dunitProperties.entrySet()) {
+        String version = (String) entry.getKey();
         if (version.startsWith("test") && version.length() >= "test".length()) {
           if (version.equals("test")) {
             version = CURRENT_VERSION;
@@ -126,7 +132,7 @@ public class VersionManager {
               oldver = version;
             }
           }
-          classPaths.put(version, entry.getValue());
+          classPaths.put(version, (String) entry.getValue());
           testVersions.add(version);
         }
       }
@@ -147,23 +153,15 @@ public class VersionManager {
    * Properties.load() because that method interprets back-slashes as escape characters, causing
    * class-paths on Windows machines to be garbled.
    */
-  private Map<String, String> loadProperties(File propFile) {
-    Map<String, String> dunitProperties = new HashMap<>();
-    try {
-      String propertyLine;
-      FileReader reader = new FileReader(propFile);
-      BufferedReader breader = new BufferedReader(reader);
-      while ((propertyLine = breader.readLine()) != null) {
-        propertyLine = propertyLine.trim();
-        if (propertyLine.length() != 0 || !propertyLine.startsWith("#")) {
-          String[] split = propertyLine.split("=");
-          dunitProperties.put(split[0], split[1]);
-        }
-      }
+  private Properties loadProperties(File propFile) {
+    Properties props = new Properties();
+    try (FileReader reader = new FileReader(propFile)) {
+      props.load(reader);
     } catch (IOException e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
-    return dunitProperties;
+
+    return props;
   }
 
 
