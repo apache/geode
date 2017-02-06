@@ -21,9 +21,11 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.configuration.utils.ZipUtils;
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
@@ -37,20 +39,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import java.io.File;
 import java.util.Properties;
 
 @Category({DistributedTest.class, SecurityTest.class})
 public class ClusterConfigWithSecurityDUnitTest extends JUnit4DistributedTestCase {
-
-  // the zip file is under test/resource/org/apache/geode/management/internal/configuration
-  // it only contains cluster.properites whose content is
-  // mcast-port=0
-  // log-file-size-limit=8000
-  // security-manager=org.apache.geode.example.security.ExampleSecurityManager
-
-  public static final String CLUSTER_CONFIG_ZIP_FILENAME = "cluster_config_security.zip";
-  public static final String CLUSTER_CONFIG_ZIP_PATH =
-      ClusterConfigBaseTest.class.getResource(CLUSTER_CONFIG_ZIP_FILENAME).getPath();
+  public String clusterConfigZipPath;
 
   @Rule
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
@@ -60,6 +54,8 @@ public class ClusterConfigWithSecurityDUnitTest extends JUnit4DistributedTestCas
 
   @Before
   public void before() throws Exception {
+    clusterConfigZipPath = buildSecureClusterConfigZip();
+
     locatorProps = new Properties();
     locatorProps.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
     locator0 = lsRule.startLocatorVM(0, locatorProps);
@@ -92,7 +88,7 @@ public class ClusterConfigWithSecurityDUnitTest extends JUnit4DistributedTestCas
         "cluster");
 
     connector.executeAndVerifyCommand(
-        "import cluster-configuration --zip-file-name=" + CLUSTER_CONFIG_ZIP_PATH);
+        "import cluster-configuration --zip-file-name=" + clusterConfigZipPath);
 
     locator0.invoke(() -> {
       InternalLocator locator = LocatorServerStartupRule.locatorStarter.locator;
@@ -105,5 +101,18 @@ public class ClusterConfigWithSecurityDUnitTest extends JUnit4DistributedTestCas
       assertThat(properties.getProperty(SECURITY_MANAGER))
           .isEqualTo(SimpleTestSecurityManager.class.getName());
     });
+  }
+
+  private String buildSecureClusterConfigZip() throws Exception {
+    File clusterDir = lsRule.getTempFolder().newFolder("cluster");
+    File clusterSubDir = new File(clusterDir, "cluster");
+
+    String clusterProperties = "mcast-port=0\n" + "log-file-size-limit=8000\n"
+        + "security-manager=org.apache.geode.example.security.ExampleSecurityManager";
+    FileUtils.writeStringToFile(new File(clusterSubDir, "cluster.properties"), clusterProperties);
+    File clusterZip = new File(lsRule.getTempFolder().getRoot(), "cluster_config_security.zip");
+    ZipUtils.zipDirectory(clusterDir.getCanonicalPath(), clusterZip.getCanonicalPath());
+    FileUtils.deleteDirectory(clusterDir);
+    return clusterZip.getCanonicalPath();
   }
 }

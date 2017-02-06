@@ -83,7 +83,7 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
     });
 
     CommandResult result = gfshConnector
-        .executeCommand("import cluster-configuration --zip-file-name=" + CLUSTER_CONFIG_ZIP_PATH);
+        .executeCommand("import cluster-configuration --zip-file-name=" + clusterConfigZipPath);
 
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(result.getContent().toString()).contains("existing data in regions: " + regionName);
@@ -105,7 +105,7 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
     // even though we have a region recreated, we can still import since there is no data
     // in the region
     CommandResult result = gfshConnector
-        .executeCommand("import cluster-configuration --zip-file-name=" + CLUSTER_CONFIG_ZIP_PATH);
+        .executeCommand("import cluster-configuration --zip-file-name=" + clusterConfigZipPath);
 
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK)
         .describedAs(result.getContent().toString());
@@ -130,7 +130,7 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
   @Test
   public void testImportClusterConfig() throws Exception {
     CommandResult result = gfshConnector
-        .executeCommand("import cluster-configuration --zip-file-name=" + CLUSTER_CONFIG_ZIP_PATH);
+        .executeCommand("import cluster-configuration --zip-file-name=" + clusterConfigZipPath);
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
     // Make sure that a backup of the old clusterConfig was created
@@ -164,7 +164,7 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
     Locator locator2 = lsRule.startLocatorVM(2, locatorProps);
 
     CommandResult result = gfshConnector
-        .executeCommand("import cluster-configuration --zip-file-name=" + CLUSTER_CONFIG_ZIP_PATH);
+        .executeCommand("import cluster-configuration --zip-file-name=" + clusterConfigZipPath);
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
     CONFIG_FROM_ZIP.verify(locator);

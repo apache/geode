@@ -19,6 +19,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.apache.geode.internal.ClassBuilder;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
@@ -30,6 +31,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import java.io.File;
+import java.io.IOException;
+
 @Category(DistributedTest.class)
 public class ClusterConfigDeployJarDUnitTest extends ClusterConfigBaseTest {
   private GfshShellConnectionRule gfshConnector;
@@ -39,9 +43,10 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigBaseTest {
   @Before
   public void before() throws Exception {
     super.before();
-    clusterJar = getClass().getResource("cluster.jar").getPath();
-    group1Jar = getClass().getResource("group1.jar").getPath();
-    group2Jar = getClass().getResource("group2.jar").getPath();
+
+    clusterJar = createJarFileWithClass("Cluster", "cluster.jar", lsRule.getTempFolder().getRoot());
+    group1Jar = createJarFileWithClass("Group1", "group1.jar", lsRule.getTempFolder().getRoot());
+    group2Jar = createJarFileWithClass("Group2", "group2.jar", lsRule.getTempFolder().getRoot());
   }
 
   @After
@@ -53,7 +58,7 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigBaseTest {
 
   @Test
   public void testDeployToNoServer() throws Exception {
-    String clusterJarPath = getClass().getResource("cluster.jar").getPath();
+    String clusterJarPath = clusterJar;
     // set up the locator/servers
     Locator locator = lsRule.startLocatorVM(0, locatorProps);
 
