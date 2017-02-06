@@ -24,6 +24,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Collection;
+import java.util.List;
 
 @Category({DistributedTest.class, ClientServerTest.class, BackwardCompatibilityTest.class})
 @RunWith(Parameterized.class)
@@ -31,7 +32,13 @@ import java.util.Collection;
 public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTest {
   @Parameterized.Parameters
   public static Collection<String> data() {
-    return VersionManager.getInstance().getVersionsWithoutCurrent();
+    List<String> result =  VersionManager.getInstance().getVersionsWithoutCurrent();
+    if (result.size() < 1) {
+      throw new RuntimeException("No older versions of Geode were found to test against");
+    } else {
+      System.out.println("running against these versions: " + result);
+    }
+    return result;
   }
 
   public ClientServerMiscBCDUnitTest(String version) {
