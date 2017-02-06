@@ -18,7 +18,7 @@
 
 disableMavenPublishing()
 
-def addTestSource(def source, def geodeVersion, def includeEclipse) {
+def addTestSource(def source, def geodeVersion) {
 //  def sourceSet =
   sourceSets.create(source, {
     compileClasspath += configurations.provided
@@ -33,45 +33,36 @@ def addTestSource(def source, def geodeVersion, def includeEclipse) {
   dependencies.add "${source}Compile", "org.apache.geode:geode-cq:$geodeVersion"
   dependencies.add "${source}Compile", "org.apache.geode:geode-rebalancer:$geodeVersion"
 
-  dependencies.add "${source}Compile", sourceSets.test.output
-
-//  dependencies.add "${source}Compile", configurations.testCompile
-//  dependencies.add "${source}Runtime", configurations.testRuntime
-
-  if(!includeEclipse) {
-    eclipse {
-      classpath {
-        file {
-          //Manually remove the source directory from the generated
-          //classpath I could not get this to work with minusConfigurations
-          whenMerged { classpath ->
-            classpath.entries.removeAll {
-              entry -> entry.kind == 'src' && entry.path == "src/${source}/java"
-            }
-          }
-        }
-      }
-    }
-  }
 }
 
 // Add sourceSets for backwards compatibility, rolling upgrade, and
 // pdx testing.
-addTestSource('test100', '1.0.0-incubating', true)
-//addTestSource('test110', '1.1.0', true)
+addTestSource('test100', '1.0.0-incubating')
+//addTestSource('test110', '1.1.0')
 
+def generatedResources = "$buildDir/generated-resources/main"
 
-task createGeodeClasspathsFile {
-    File dir = file("$buildDir");
-    if (!dir.exists()) { dir.mkdirs() }
-    File classpathsFile = file("$buildDir/geodeOldVersionClasspaths.txt")
-    if (classpathsFile.exists()) {
-        classpathsFile.delete();
-    }
-    classpathsFile.createNewFile();
-    // add other backward-compatibility projects here
-    project(':geode-old-versions').sourceSets.each {
-        classpathsFile.append(it.name+"="+it.runtimeClasspath.getAsPath()+"\n") }
+sourceSets {
+  main {
+    output.dir(generatedResources, builtBy: 'createGeodeClasspathsFile')
+  }
 }
 
-createGeodeClasspathsFile
+task createGeodeClasspathsFile  {
+  File classpathsFile = file("$generatedResources/geodeOldVersionClasspaths.txt")
+  outputs.file(classpathsFile);
+
+  doLast {
+    Properties versions = new Properties();
+    project(':geode-old-versions').sourceSets.each {
+      versions.setProperty(it.name,it.runtimeClasspath.getAsPath()) 
+    }
+
+    classpathsFile.getParentFile().mkdirs();
+
+    new FileOutputStream(classpathsFile).withStream { fos ->
+      versions.store(fos, '')
+    }
+  }
+}
+
