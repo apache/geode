@@ -18,18 +18,22 @@ package org.apache.geode.management.internal.configuration;
 
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.geode.internal.ClassBuilder;
+import org.apache.geode.management.internal.configuration.utils.ZipUtils;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.junit.Before;
 import org.junit.Rule;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Properties;
 
 public class ClusterConfigBaseTest extends JUnit4DistributedTestCase {
-  public static final String CLUSTER_CONFIG_ZIP_FILENAME = "cluster_config.zip";
-  public static final String CLUSTER_CONFIG_ZIP_PATH =
-      ClusterConfigBaseTest.class.getResource(CLUSTER_CONFIG_ZIP_FILENAME).getPath();
+  public String clusterConfigZipPath;
 
   public static final ConfigGroup CLUSTER = new ConfigGroup("cluster").regions("regionForCluster")
       .jars("cluster.jar").maxLogFileSize("5000").configFiles("cluster.properties", "cluster.xml");
@@ -56,11 +60,70 @@ public class ClusterConfigBaseTest extends JUnit4DistributedTestCase {
 
   @Before
   public void before() throws Exception {
+    clusterConfigZipPath = buildClusterZipFile();
     locatorProps = new Properties();
     serverProps = new Properties();
 
     // the following are default values, we don't need to set them. We do it for clarity purpose
     locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
     serverProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
+  }
+
+  private String buildClusterZipFile() throws Exception {
+    ClassBuilder classBuilder = new ClassBuilder();
+    File clusterConfigDir = this.lsRule.getTempFolder().newFolder("cluster_config");
+
+    File clusterDir = new File(clusterConfigDir, "cluster");
+    String clusterXml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
+        + "<cache xmlns=\"http://geode.apache.org/schema/cache\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" copy-on-read=\"false\" is-server=\"false\" lock-lease=\"120\" lock-timeout=\"60\" search-timeout=\"300\" version=\"1.0\" xsi:schemaLocation=\"http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd\">\n"
+        + "<region name=\"regionForCluster\">\n"
+        + "    <region-attributes data-policy=\"replicate\" scope=\"distributed-ack\"/>\n"
+        + "  </region>\n" + "</cache>\n";
+    writeFile(clusterDir, "cluster.xml", clusterXml);
+    writeFile(clusterDir, "cluster.properties", "log-file-size-limit=5000");
+    createJarFileWithClass("Cluster", "cluster.jar", clusterDir);
+
+    File group1Dir = new File(clusterConfigDir, "group1");
+    String group1Xml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
+        + "<cache xmlns=\"http://geode.apache.org/schema/cache\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" copy-on-read=\"false\" is-server=\"false\" lock-lease=\"120\" lock-timeout=\"60\" search-timeout=\"300\" version=\"1.0\" xsi:schemaLocation=\"http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd\">\n"
+        + "<region name=\"regionForGroup1\">\n"
+        + "    <region-attributes data-policy=\"replicate\" scope=\"distributed-ack\"/>\n"
+        + "  </region>\n" + "</cache>\n";
+    writeFile(group1Dir, "group1.xml", group1Xml);
+    writeFile(group1Dir, "group1.properties", "log-file-size-limit=6000");
+    createJarFileWithClass("Group1", "group1.jar", group1Dir);
+
+
+    File group2Dir = new File(clusterConfigDir, "group2");
+    String group2Xml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n"
+        + "<cache xmlns=\"http://geode.apache.org/schema/cache\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" copy-on-read=\"false\" is-server=\"false\" lock-lease=\"120\" lock-timeout=\"60\" search-timeout=\"300\" version=\"1.0\" xsi:schemaLocation=\"http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd\">\n"
+        + "<region name=\"regionForGroup2\">\n"
+        + "    <region-attributes data-policy=\"replicate\" scope=\"distributed-ack\"/>\n"
+        + "  </region>\n" + "</cache>\n";
+    writeFile(group2Dir, "group1.xml", group2Xml);
+    writeFile(group2Dir, "group2.properties", "log-file-size-limit=7000");
+    createJarFileWithClass("Group2", "group2.jar", group2Dir);
+
+
+    File clusterConfigZip = lsRule.getTempFolder().newFile("cluster_config.zip");
+    ZipUtils.zipDirectory(clusterConfigDir.getCanonicalPath(), clusterConfigZip.getCanonicalPath());
+
+    FileUtils.deleteDirectory(clusterConfigDir);
+    return clusterConfigZip.getCanonicalPath();
+  }
+
+  private File writeFile(File dir, String fileName, String content) throws IOException {
+    dir.mkdirs();
+    File file = new File(dir, fileName);
+    FileUtils.writeStringToFile(file, content);
+
+    return file;
+  }
+
+  protected String createJarFileWithClass(String className, String jarName, File dir)
+      throws IOException {
+    File jarFile = new File(dir, jarName);
+    new ClassBuilder().writeJarFromName(className, jarFile);
+    return jarFile.getCanonicalPath();
   }
 }

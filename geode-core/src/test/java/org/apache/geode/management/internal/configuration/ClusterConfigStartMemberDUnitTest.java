@@ -89,7 +89,7 @@ public class ClusterConfigStartMemberDUnitTest extends ClusterConfigBaseTest {
     // tempFolder/locator-0/cluster_config/cluster/cluster.jar
     // tempFolder/locator-0/cluster_config/group1/ {group1.xml, group1.properties, group1.jar}
     // tempFolder/locator-0/cluster_config/group2/ ...
-    ZipUtils.unzip(CLUSTER_CONFIG_ZIP_PATH, configDir.getCanonicalPath());
+    ZipUtils.unzip(clusterConfigZipPath, configDir.getCanonicalPath());
 
     Properties properties = new Properties();
     properties.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
