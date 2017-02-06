@@ -1,0 +1,77 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
+disableMavenPublishing()
+
+def addTestSource(def source, def geodeVersion, def includeEclipse) {
+//  def sourceSet =
+  sourceSets.create(source, {
+    compileClasspath += configurations.provided
+    runtimeClasspath += configurations.provided
+  })
+
+  dependencies.add "${source}Compile", "org.apache.geode:geode-common:$geodeVersion"
+  dependencies.add "${source}Compile", "org.apache.geode:geode-core:$geodeVersion"
+  dependencies.add "${source}Compile", "org.apache.geode:geode-lucene:$geodeVersion"
+  dependencies.add "${source}Compile", "org.apache.geode:geode-old-client-support:$geodeVersion"
+  dependencies.add "${source}Compile", "org.apache.geode:geode-wan:$geodeVersion"
+  dependencies.add "${source}Compile", "org.apache.geode:geode-cq:$geodeVersion"
+  dependencies.add "${source}Compile", "org.apache.geode:geode-rebalancer:$geodeVersion"
+
+  dependencies.add "${source}Compile", sourceSets.test.output
+
+//  dependencies.add "${source}Compile", configurations.testCompile
+//  dependencies.add "${source}Runtime", configurations.testRuntime
+
+  if(!includeEclipse) {
+    eclipse {
+      classpath {
+        file {
+          //Manually remove the source directory from the generated
+          //classpath I could not get this to work with minusConfigurations
+          whenMerged { classpath ->
+            classpath.entries.removeAll {
+              entry -> entry.kind == 'src' && entry.path == "src/${source}/java"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Add sourceSets for backwards compatibility, rolling upgrade, and
+// pdx testing.
+addTestSource('test100', '1.0.0-incubating', true)
+//addTestSource('test110', '1.1.0', true)
+
+
+task createGeodeClasspathsFile {
+    File dir = file("$buildDir");
+    if (!dir.exists()) { dir.mkdirs() }
+    File classpathsFile = file("$buildDir/geodeOldVersionClasspaths.txt")
+    if (classpathsFile.exists()) {
+        classpathsFile.delete();
+    }
+    classpathsFile.createNewFile();
+    // add other backward-compatibility projects here
+    project(':geode-old-versions').sourceSets.each {
+        classpathsFile.append(it.name+"="+it.runtimeClasspath.getAsPath()+"\n") }
+}
+
+createGeodeClasspathsFile
