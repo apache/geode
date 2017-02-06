@@ -265,7 +265,7 @@ public class TcpClient {
       sock = socketCreator.connect(ipAddr.getAddress(), ipAddr.getPort(), timeout, null, false);
       sock.setSoTimeout(timeout);
     } catch (SSLHandshakeException e) {
-      throw new LocatorCancelException("Unrecognisable response received");
+      throw new LocatorCancelException("Unrecognisable response received", e);
     }
 
     try {
