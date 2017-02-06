@@ -84,6 +84,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.util.test.TestUtil;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -486,7 +487,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  @Category(FlakyTest.class)
+  @Ignore
   @Test
   public void testSSLEnabledLocatorDiesWhenConnectingToNonSSLLocator() {
     IgnoredException.addIgnoredException("Remote host closed connection during handshake");
