@@ -24,3 +24,5 @@ dependencies {
 jmh {
   duplicateClassesStrategy = 'warn'
 }
+
+disableMavenPublishing()
