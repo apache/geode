@@ -55,6 +55,7 @@ public class LuceneIndexStatsJUnitTest {
     stats.startQuery();
     verifyIncInt("queryExecutionsInProgress", 1);
     stats.endQuery(5, 2);
+    stats.incNumberOfQueryExecuted();
     verifyIncInt("queryExecutionsInProgress", -1);
     verifyIncInt("queryExecutions", 1);
     verifyIncLong("queryExecutionTotalHits", 2);

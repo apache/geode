@@ -138,7 +138,6 @@ public class LuceneIndexStats {
   public void endQuery(long start, final int totalHits) {
     stats.incLong(queryExecutionTimeId, getStatTime() - start);
     stats.incInt(queryExecutionsInProgressId, -1);
-    stats.incInt(queryExecutionsId, 1);
     stats.incLong(queryExecutionTotalHitsId, totalHits);
   }
 
@@ -234,5 +233,9 @@ public class LuceneIndexStats {
 
   public Statistics getStats() {
     return this.stats;
+  }
+
+  public void incNumberOfQueryExecuted() {
+    stats.incInt(queryExecutionsId, 1);
   }
 }
