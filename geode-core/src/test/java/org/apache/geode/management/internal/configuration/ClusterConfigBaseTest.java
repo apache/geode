@@ -100,12 +100,12 @@ public class ClusterConfigBaseTest extends JUnit4DistributedTestCase {
         + "<region name=\"regionForGroup2\">\n"
         + "    <region-attributes data-policy=\"replicate\" scope=\"distributed-ack\"/>\n"
         + "  </region>\n" + "</cache>\n";
-    writeFile(group2Dir, "group1.xml", group2Xml);
+    writeFile(group2Dir, "group2.xml", group2Xml);
     writeFile(group2Dir, "group2.properties", "log-file-size-limit=7000");
     createJarFileWithClass("Group2", "group2.jar", group2Dir);
 
 
-    File clusterConfigZip = lsRule.getTempFolder().newFile("cluster_config.zip");
+    File clusterConfigZip = new File(lsRule.getTempFolder().newFolder(), "cluster_config.zip");
     ZipUtils.zipDirectory(clusterConfigDir.getCanonicalPath(), clusterConfigZip.getCanonicalPath());
 
     FileUtils.deleteDirectory(clusterConfigDir);
