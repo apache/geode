@@ -214,9 +214,8 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
 
     Set<String> expectedZipEntries = new HashSet<>();
     for (ConfigGroup group : expectedExportedClusterConfig.getGroups()) {
-      String groupDir = group.getName() + "/";
+      String groupDir = group.getName() + File.separator;
 
-      expectedZipEntries.add(groupDir);
       for (String jarOrXmlOrPropFile : group.getAllFiles()) {
         expectedZipEntries.add(groupDir + jarOrXmlOrPropFile);
       }
