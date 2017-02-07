@@ -84,7 +84,7 @@ public class LuceneQueriesPersistenceIntegrationTest extends LuceneIntegrationTe
     value = new Type1("lucene world", 1, 2L, 3.0, 4.0f);
     userRegion.put("value3", value);
 
-    index.waitUntilFlushed(60000, TimeUnit.MILLISECONDS);
+    service.waitUntilFlushed(INDEX_NAME, REGION_NAME, 60000, TimeUnit.MILLISECONDS);
 
     PartitionedRegion fileRegion = (PartitionedRegion) cache.getRegion(aeqId + ".files");
     assertNotNull(fileRegion);

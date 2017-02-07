@@ -55,6 +55,9 @@ public class IndexRepositorySpy extends IndexRepositoryFactory {
     LuceneIndexForPartitionedRegion indexForPR = (LuceneIndexForPartitionedRegion) index;
     final IndexRepository indexRepo =
         super.computeIndexRepository(bucketId, serializer, index, userRegion, oldRepository);
+    if (indexRepo == null) {
+      return null;
+    }
     final IndexRepository spy = Mockito.spy(indexRepo);
 
     Answer invokeBeforeWrite = invocation -> {

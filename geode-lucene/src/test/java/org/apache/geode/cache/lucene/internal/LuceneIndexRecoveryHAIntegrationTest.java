@@ -89,7 +89,7 @@ public class LuceneIndexRecoveryHAIntegrationTest {
         (LuceneIndexForPartitionedRegion) service.getIndex("index1", "/userRegion");
     // put an entry to create the bucket
     userRegion.put("rebalance", "test");
-    index.waitUntilFlushed(30000, TimeUnit.MILLISECONDS);
+    service.waitUntilFlushed("index1", "userRegion", 30000, TimeUnit.MILLISECONDS);
 
     RepositoryManager manager = new PartitionedRepositoryManager((LuceneIndexImpl) index, mapper);
     IndexRepository repo = manager.getRepository(userRegion, 0, null);
@@ -116,8 +116,9 @@ public class LuceneIndexRecoveryHAIntegrationTest {
 
   private void verifyIndexFinishFlushing(String indexName, String regionName)
       throws InterruptedException {
-    LuceneIndex index = LuceneServiceProvider.get(cache).getIndex(indexName, regionName);
-    boolean flushed = index.waitUntilFlushed(60000, TimeUnit.MILLISECONDS);
+    LuceneService service = LuceneServiceProvider.get(cache);
+    LuceneIndex index = service.getIndex(indexName, regionName);
+    boolean flushed = service.waitUntilFlushed(indexName, regionName, 60000, TimeUnit.MILLISECONDS);
     assertTrue(flushed);
   }
 }

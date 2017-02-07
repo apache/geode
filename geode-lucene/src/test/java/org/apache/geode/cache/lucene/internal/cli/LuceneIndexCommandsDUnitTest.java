@@ -610,8 +610,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       Region region = getCache().getRegion(REGION_NAME);
       region.putAll(entries);
-      luceneService.getIndex(INDEX_NAME, REGION_NAME).waitUntilFlushed(60000,
-          TimeUnit.MILLISECONDS);
+      luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, 60000, TimeUnit.MILLISECONDS);
       LuceneIndexImpl index = (LuceneIndexImpl) luceneService.getIndex(INDEX_NAME, REGION_NAME);
       Awaitility.await().atMost(65, TimeUnit.SECONDS)
           .until(() -> assertEquals(countOfDocuments, index.getIndexStats().getDocuments()));

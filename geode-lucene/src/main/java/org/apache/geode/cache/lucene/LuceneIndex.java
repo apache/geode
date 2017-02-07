@@ -16,7 +16,6 @@
 package org.apache.geode.cache.lucene;
 
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.analysis.Analyzer;
 
@@ -54,16 +53,5 @@ public interface LuceneIndex {
    * @return the field to analyzer map
    */
   public Map<String, Analyzer> getFieldAnalyzers();
-
-  /*
-   * wait until the current entries in cache are indexed
-   * 
-   * @param timeout max wait time
-   * 
-   * @param unit granularity of the timeout
-   *
-   * @return if entries are flushed within timeout
-   */
-  public boolean waitUntilFlushed(long timeout, TimeUnit unit) throws InterruptedException;
 
 }

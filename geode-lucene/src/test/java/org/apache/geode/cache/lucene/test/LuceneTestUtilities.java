@@ -192,7 +192,8 @@ public class LuceneTestUtilities {
       throws InterruptedException {
     LuceneService luceneService = LuceneServiceProvider.get(cache);
     LuceneIndex index = luceneService.getIndex(indexName, regionName);
-    boolean flushed = index.waitUntilFlushed(60000, TimeUnit.MILLISECONDS);
+    boolean flushed =
+        luceneService.waitUntilFlushed(indexName, regionName, 60000, TimeUnit.MILLISECONDS);
     assertTrue(flushed);
   }
 

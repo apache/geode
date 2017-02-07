@@ -14,19 +14,12 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
-import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
-import static org.mockito.Mockito.*;
-
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -46,33 +39,6 @@ public class LuceneIndexImplJUnitTest {
   public void createLuceneIndex() {
     cache = Fakes.cache();
     index = new LuceneIndexForPartitionedRegion(INDEX, REGION, cache);
-  }
-
-  @Test
-  public void waitUnitFlushedWithMissingAEQThrowsIllegalArgument() throws Exception {
-    thrown.expect(IllegalArgumentException.class);
-    index.waitUntilFlushed(MAX_WAIT, TimeUnit.MILLISECONDS);
-  }
-
-  @Test
-  public void waitUnitFlushedWaitsForFlush() throws Exception {
-    final String expectedIndexName = LuceneServiceImpl.getUniqueIndexName(INDEX, REGION);
-    final AsyncEventQueueImpl queue = mock(AsyncEventQueueImpl.class);
-    when(cache.getAsyncEventQueue(eq(expectedIndexName))).thenReturn(queue);
-
-    AtomicInteger callCount = new AtomicInteger();
-    when(queue.size()).thenAnswer(invocation -> {
-      if (callCount.get() == 0) {
-        // when the waitUnitFlushed() called the 2nd time, queue.size() will return 0
-        callCount.incrementAndGet();
-        return 2;
-      } else {
-        // when the waitUnitFlushed() called the 2nd time, queue.size() will return 0
-        return 0;
-      }
-    });
-    index.waitUntilFlushed(MAX_WAIT, TimeUnit.MILLISECONDS);
-    verify(cache).getAsyncEventQueue(eq(expectedIndexName));
   }
 
 }

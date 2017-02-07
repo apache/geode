@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
+import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
@@ -65,6 +66,7 @@ public abstract class LuceneQueriesBase extends LuceneDUnitTest {
     accessor.invoke(() -> initAccessor(createIndex));
 
     putDataInRegion(accessor);
+    assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
     assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 60000));
     executeTextSearch(accessor);
   }
@@ -79,6 +81,7 @@ public abstract class LuceneQueriesBase extends LuceneDUnitTest {
     dataStore2.invoke(() -> initDataStore(createIndex));
     accessor.invoke(() -> initAccessor(createIndex));
     putDataInRegion(accessor);
+    assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
     assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 60000));
     executeTextSearch(accessor, "world", "text", 3);
     executeTextSearch(accessor, "world", "noEntriesMapped", 0);
@@ -94,6 +97,7 @@ public abstract class LuceneQueriesBase extends LuceneDUnitTest {
     dataStore2.invoke(() -> initDataStore(createIndex));
     accessor.invoke(() -> initAccessor(createIndex));
     putDataInRegion(accessor);
+    assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
     assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 60000));
 
     // Execute a query with a custom lucene query object
@@ -109,6 +113,26 @@ public abstract class LuceneQueriesBase extends LuceneDUnitTest {
     });
   }
 
+  @Test
+  public void verifyWaitForFlushedFunctionOnAccessor() throws InterruptedException {
+    SerializableRunnableIF createIndex = () -> {
+      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
+    };
+    dataStore1.invoke(() -> initDataStore(createIndex));
+    dataStore2.invoke(() -> initDataStore(createIndex));
+    accessor.invoke(() -> initAccessor(createIndex));
+    dataStore1.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
+    dataStore2.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
+    putDataInRegion(accessor);
+    assertFalse(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
+    dataStore1.invoke(() -> LuceneTestUtilities.resumeSender(getCache()));
+    dataStore2.invoke(() -> LuceneTestUtilities.resumeSender(getCache()));
+    assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
+    executeTextSearch(accessor, "world", "text", 3);
+    executeTextSearch(accessor, "world", "noEntriesMapped", 0);
+  }
+
   protected boolean waitForFlushBeforeExecuteTextSearch(VM vm, int ms) {
     return vm.invoke(() -> {
       Cache cache = getCache();
@@ -116,7 +140,7 @@ public abstract class LuceneQueriesBase extends LuceneDUnitTest {
       LuceneService service = LuceneServiceProvider.get(cache);
       LuceneIndexImpl index = (LuceneIndexImpl) service.getIndex(INDEX_NAME, REGION_NAME);
 
-      return index.waitUntilFlushed(ms, TimeUnit.MILLISECONDS);
+      return service.waitUntilFlushed(INDEX_NAME, REGION_NAME, ms, TimeUnit.MILLISECONDS);
     });
   }
 

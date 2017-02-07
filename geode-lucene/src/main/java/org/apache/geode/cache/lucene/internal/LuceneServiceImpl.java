@@ -16,6 +16,7 @@
 package org.apache.geode.cache.lucene.internal;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.lucene.internal.management.LuceneServiceMBean;
 import org.apache.geode.cache.lucene.internal.management.ManagementIndexListener;
@@ -31,7 +32,9 @@ import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneQueryFactory;
 import org.apache.geode.cache.lucene.internal.directory.DumpDirectoryFiles;
@@ -41,6 +44,8 @@ import org.apache.geode.cache.lucene.internal.distributed.LuceneFunctionContext;
 import org.apache.geode.cache.lucene.internal.distributed.TopEntries;
 import org.apache.geode.cache.lucene.internal.distributed.TopEntriesCollector;
 import org.apache.geode.cache.lucene.internal.distributed.TopEntriesCollectorManager;
+import org.apache.geode.cache.lucene.internal.distributed.WaitUntilFlushedFunction;
+import org.apache.geode.cache.lucene.internal.distributed.WaitUntilFlushedFunctionContext;
 import org.apache.geode.cache.lucene.internal.filesystem.ChunkKey;
 import org.apache.geode.cache.lucene.internal.filesystem.File;
 import org.apache.geode.cache.lucene.internal.xml.LuceneServiceXmlGenerator;
@@ -85,6 +90,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
     this.cache = gfc;
 
     FunctionService.registerFunction(new LuceneFunction());
+    FunctionService.registerFunction(new WaitUntilFlushedFunction());
     FunctionService.registerFunction(new DumpDirectoryFiles());
     registerDataSerializables();
   }
@@ -312,6 +318,9 @@ public class LuceneServiceImpl implements InternalLuceneService {
 
     DSFIDFactory.registerDSFID(DataSerializableFixedID.LUCENE_TOP_ENTRIES_COLLECTOR,
         TopEntriesCollector.class);
+
+    DSFIDFactory.registerDSFID(DataSerializableFixedID.WAIT_UNTIL_FLUSHED_FUNCTION_CONTEXT,
+        WaitUntilFlushedFunctionContext.class);
   }
 
   public Collection<LuceneIndexCreationProfile> getAllDefinedIndexes() {
@@ -320,5 +329,26 @@ public class LuceneServiceImpl implements InternalLuceneService {
 
   public LuceneIndexCreationProfile getDefinedIndex(String indexName, String regionPath) {
     return definedIndexMap.get(getUniqueIndexName(indexName, regionPath));
+  }
+
+  public boolean waitUntilFlushed(String indexName, String regionPath, long timeout, TimeUnit unit)
+      throws InterruptedException {
+    Region dataRegion = this.cache.getRegion(regionPath);
+    if (dataRegion == null) {
+      logger.info("Data region " + regionPath + " not found");
+      return false;
+    }
+
+    WaitUntilFlushedFunctionContext context =
+        new WaitUntilFlushedFunctionContext(indexName, timeout, unit);
+    Execution execution = FunctionService.onRegion(dataRegion);
+    ResultCollector rs = execution.withArgs(context).execute(WaitUntilFlushedFunction.ID);
+    List<Boolean> results = (List<Boolean>) rs.getResult();
+    for (Boolean oneResult : results) {
+      if (oneResult == false) {
+        return false;
+      }
+    }
+    return true;
   }
 }

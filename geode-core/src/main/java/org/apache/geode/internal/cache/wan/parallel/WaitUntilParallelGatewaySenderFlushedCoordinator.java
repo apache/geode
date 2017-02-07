@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.*;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -24,14 +22,10 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.WaitUntilGatewaySenderFlushedCoordinator;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.*;
 
 public class WaitUntilParallelGatewaySenderFlushedCoordinator
@@ -43,11 +37,14 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinator
   }
 
   public boolean waitUntilFlushed() throws Throwable {
-    boolean remoteResult = true, localResult = true;
+    boolean localResult = true;
     Throwable exceptionToThrow = null;
     ConcurrentParallelGatewaySenderQueue prq =
         (ConcurrentParallelGatewaySenderQueue) this.sender.getQueue();
     PartitionedRegion pr = (PartitionedRegion) prq.getRegion();
+    if (pr == null) {
+      sender.getCancelCriterion().checkCancelInProgress(null);
+    }
 
     // Create callables for local buckets
     List<WaitUntilBucketRegionQueueFlushedCallable> callables =
@@ -62,20 +59,6 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinator
     if (logger.isDebugEnabled()) {
       logger.debug("WaitUntilParallelGatewaySenderFlushedCoordinator: Created and submitted "
           + callables.size() + " callables=" + callables);
-    }
-
-    // Send message to remote buckets
-    if (this.initiator) {
-      remoteResult = false;
-      try {
-        remoteResult = waitUntilFlushedOnRemoteMembers(pr);
-      } catch (Throwable t) {
-        exceptionToThrow = t;
-      }
-      if (logger.isDebugEnabled()) {
-        logger.debug("WaitUntilParallelGatewaySenderFlushedCoordinator: Processed remote result="
-            + remoteResult + "; exceptionToThrow=" + exceptionToThrow);
-      }
     }
 
     // Process local future results
@@ -97,9 +80,9 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinator
     if (exceptionToThrow == null) {
       if (logger.isDebugEnabled()) {
         logger.debug("WaitUntilParallelGatewaySenderFlushedCoordinator: Returning full result="
-            + (remoteResult && localResult));
+            + (localResult));
       }
-      return remoteResult && localResult;
+      return localResult;
     } else {
       throw exceptionToThrow;
     }
@@ -115,43 +98,6 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinator
       }
     }
     return callables;
-  }
-
-  protected boolean waitUntilFlushedOnRemoteMembers(PartitionedRegion pr) throws Throwable {
-    boolean result = true;
-    DM dm = this.sender.getDistributionManager();
-    Set<InternalDistributedMember> recipients = pr.getRegionAdvisor().adviseDataStore();
-    if (!recipients.isEmpty()) {
-      if (logger.isDebugEnabled()) {
-        logger.debug(
-            "WaitUntilParallelGatewaySenderFlushedCoordinator: About to send message recipients="
-                + recipients);
-      }
-      WaitUntilGatewaySenderFlushedReplyProcessor processor =
-          new WaitUntilGatewaySenderFlushedReplyProcessor(dm, recipients);
-      WaitUntilGatewaySenderFlushedMessage message = new WaitUntilGatewaySenderFlushedMessage(
-          recipients, processor.getProcessorId(), this.sender.getId(), this.timeout, this.unit);
-      dm.putOutgoing(message);
-      if (logger.isDebugEnabled()) {
-        logger.debug("WaitUntilParallelGatewaySenderFlushedCoordinator: Sent message recipients="
-            + recipients);
-      }
-      try {
-        processor.waitForReplies();
-        result = processor.getCombinedResult();
-      } catch (ReplyException e) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("WaitUntilParallelGatewaySenderFlushedCoordinator: Caught e=" + e
-              + "; cause=" + e.getCause());
-        }
-        throw e.getCause();
-      } catch (InterruptedException e) {
-        dm.getCancelCriterion().checkCancelInProgress(e);
-        Thread.currentThread().interrupt();
-        result = false;
-      }
-    }
-    return result;
   }
 
   public static class WaitUntilBucketRegionQueueFlushedCallable implements Callable<Boolean> {
@@ -232,92 +178,4 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinator
     }
   }
 
-  public static class WaitUntilGatewaySenderFlushedMessage extends PooledDistributionMessage
-      implements MessageWithReply {
-
-    private int processorId;
-
-    private String gatewaySenderId;
-
-    private long timeout;
-
-    private TimeUnit unit;
-
-    /* For serialization */
-    public WaitUntilGatewaySenderFlushedMessage() {}
-
-    protected WaitUntilGatewaySenderFlushedMessage(Collection recipients, int processorId,
-        String gatewaySenderId, long timeout, TimeUnit unit) {
-      super();
-      setRecipients(recipients);
-      this.processorId = processorId;
-      this.gatewaySenderId = gatewaySenderId;
-      this.timeout = timeout;
-      this.unit = unit;
-    }
-
-    @Override
-    protected void process(DistributionManager dm) {
-      boolean result = false;
-      ReplyException replyException = null;
-      try {
-        if (logger.isDebugEnabled()) {
-          logger.debug("WaitUntilGatewaySenderFlushedMessage: Processing gatewaySenderId="
-              + this.gatewaySenderId + "; timeout=" + this.timeout + "; unit=" + this.unit);
-        }
-        Cache cache = GemFireCacheImpl.getInstance();
-        if (cache != null) {
-          AbstractGatewaySender sender =
-              (AbstractGatewaySender) cache.getGatewaySender(this.gatewaySenderId);
-          if (sender != null) {
-            try {
-              WaitUntilParallelGatewaySenderFlushedCoordinator coordinator =
-                  new WaitUntilParallelGatewaySenderFlushedCoordinator(sender, this.timeout,
-                      this.unit, false);
-              result = coordinator.waitUntilFlushed();
-            } catch (Throwable e) {
-              replyException = new ReplyException(e);
-            }
-          }
-        }
-      } finally {
-        ReplyMessage replyMsg = new ReplyMessage();
-        replyMsg.setRecipient(getSender());
-        replyMsg.setProcessorId(this.processorId);
-        if (replyException == null) {
-          replyMsg.setReturnValue(result);
-        } else {
-          replyMsg.setException(replyException);
-        }
-        if (logger.isDebugEnabled()) {
-          logger.debug("WaitUntilGatewaySenderFlushedMessage: Sending reply returnValue="
-              + replyMsg.getReturnValue() + "; exception=" + replyMsg.getException());
-        }
-        dm.putOutgoing(replyMsg);
-      }
-    }
-
-    @Override
-    public int getDSFID() {
-      return WAIT_UNTIL_GATEWAY_SENDER_FLUSHED_MESSAGE;
-    }
-
-    @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
-      out.writeInt(this.processorId);
-      DataSerializer.writeString(this.gatewaySenderId, out);
-      out.writeLong(this.timeout);
-      DataSerializer.writeEnum(this.unit, out);
-    }
-
-    @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
-      this.processorId = in.readInt();
-      this.gatewaySenderId = DataSerializer.readString(in);
-      this.timeout = in.readLong();
-      this.unit = DataSerializer.readEnum(TimeUnit.class, in);
-    }
-  }
 }

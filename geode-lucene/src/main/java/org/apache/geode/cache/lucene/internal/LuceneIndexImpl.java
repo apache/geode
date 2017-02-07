@@ -16,6 +16,7 @@
 package org.apache.geode.cache.lucene.internal;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -31,6 +32,11 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.cache.lucene.internal.distributed.WaitUntilFlushedFunction;
+import org.apache.geode.cache.lucene.internal.distributed.WaitUntilFlushedFunctionContext;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
 import org.apache.geode.cache.lucene.internal.xml.LuceneIndexCreation;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -87,18 +93,6 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
 
   protected void setSearchableFields(String[] fields) {
     searchableFieldNames = fields;
-  }
-
-  @Override
-  public boolean waitUntilFlushed(long timeout, TimeUnit unit) throws InterruptedException {
-    String aeqId = LuceneServiceImpl.getUniqueIndexName(indexName, regionPath);
-    AsyncEventQueueImpl queue = (AsyncEventQueueImpl) cache.getAsyncEventQueue(aeqId);
-    if (queue != null) {
-      return queue.waitUntilFlushed(timeout, unit);
-    } else {
-      throw new IllegalArgumentException(
-          "The AEQ does not exist for the index " + indexName + " region " + regionPath);
-    }
   }
 
   @Override

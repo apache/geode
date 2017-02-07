@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.lucene.test.IndexRegionSpy;
@@ -33,7 +34,6 @@ import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage.Be
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 import org.awaitility.Awaitility;
 
@@ -67,7 +67,6 @@ public class LuceneQueriesPeerPRRedundancyDUnitTest extends LuceneQueriesPRBase 
     putEntriesAndValidateResultsWithRedundancy();
   }
 
-  @Category(FlakyTest.class) // GEODE-1956
   @Test
   public void returnCorrectResultsWhenCloseCacheHappensOnIndexUpdate() throws InterruptedException {
     dataStore1.invoke(() -> {
@@ -76,6 +75,9 @@ public class LuceneQueriesPeerPRRedundancyDUnitTest extends LuceneQueriesPRBase 
       spy.beforeWriteIndexRepository(doAfterN(key -> getCache().close(), 2));
     });
 
+    final String expectedExceptions = CacheClosedException.class.getName();
+    dataStore1.invoke(addExceptionTag1(expectedExceptions));
+
     putEntriesAndValidateResultsWithRedundancy();
 
     // Wait until the cache is closed in datastore1
@@ -83,7 +85,6 @@ public class LuceneQueriesPeerPRRedundancyDUnitTest extends LuceneQueriesPRBase 
         () -> Awaitility.await().atMost(60, TimeUnit.SECONDS).until(basicGetCache()::isClosed));
   }
 
-  @Category(FlakyTest.class) // GEODE-1824
   @Test
   public void returnCorrectResultsWhenCloseCacheHappensOnPartialIndexWrite()
       throws InterruptedException {

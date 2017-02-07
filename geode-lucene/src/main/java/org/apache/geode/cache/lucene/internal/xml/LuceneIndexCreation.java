@@ -101,8 +101,4 @@ public class LuceneIndexCreation implements LuceneIndex, Extension<Region<?, ?>>
     this.fieldNames.addAll(Arrays.asList(fieldNames));
   }
 
-  @Override
-  public boolean waitUntilFlushed(long timeout, TimeUnit unit) {
-    return true;
-  }
 }

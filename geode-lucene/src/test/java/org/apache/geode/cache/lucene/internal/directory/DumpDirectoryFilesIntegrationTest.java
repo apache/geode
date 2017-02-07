@@ -56,7 +56,7 @@ public class DumpDirectoryFilesIntegrationTest extends LuceneIntegrationTest {
     InternalLuceneIndex index =
         (InternalLuceneIndex) luceneService.getIndex(INDEX_NAME, REGION_NAME);
 
-    index.waitUntilFlushed(60000, TimeUnit.MILLISECONDS);
+    luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, 60000, TimeUnit.MILLISECONDS);
 
     index.dumpFiles(diskDirRule.get().getAbsolutePath());
 

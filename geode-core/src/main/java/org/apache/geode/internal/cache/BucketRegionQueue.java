@@ -42,6 +42,7 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.internal.cache.persistence.query.mock.ByteComparator;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
@@ -464,9 +465,10 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
   }
 
   public boolean waitUntilFlushed(long timeout, TimeUnit unit) throws InterruptedException {
+    long then = System.currentTimeMillis();
     if (logger.isDebugEnabled()) {
-      logger.debug("BucketRegionQueue: waitUntilFlushed bucket=" + getId() + "; time="
-          + System.currentTimeMillis() + "; timeout=" + timeout + "; unit=" + unit);
+      logger.debug("BucketRegionQueue: waitUntilFlushed bucket=" + getId() + "; timeout=" + timeout
+          + "; unit=" + unit);
     }
     boolean result = false;
     // Wait until latestAcknowledgedKey > latestQueuedKey or the queue is empty
@@ -475,17 +477,24 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
       long nanosRemaining = unit.toNanos(timeout);
       long endTime = System.nanoTime() + nanosRemaining;
       while (nanosRemaining > 0) {
-        if (latestAcknowledgedKey.get() > latestQueuedKeyToCheck || isEmpty()) {
-          result = true;
-          break;
+        try {
+          if (latestAcknowledgedKey.get() > latestQueuedKeyToCheck || isEmpty()) {
+            result = true;
+            break;
+          }
+        } catch (RegionDestroyedException e) {
+          if (this.isBucketDestroyed()) {
+            getCancelCriterion().checkCancelInProgress(e);
+            throw new BucketMovedException(this.getFullPath());
+          }
         }
         Thread.sleep(Math.min(TimeUnit.NANOSECONDS.toMillis(nanosRemaining) + 1, 100));
         nanosRemaining = endTime - System.nanoTime();
       }
     }
     if (logger.isDebugEnabled()) {
-      logger.debug("BucketRegionQueue: waitUntilFlushed completed bucket=" + getId() + "; time="
-          + System.currentTimeMillis() + "; result=" + result);
+      logger.debug("BucketRegionQueue: waitUntilFlushed completed bucket=" + getId() + "; duration="
+          + (System.currentTimeMillis() - then) + "; result=" + result);
     }
     return result;
   }

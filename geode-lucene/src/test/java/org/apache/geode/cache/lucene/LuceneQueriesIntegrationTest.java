@@ -90,7 +90,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     // <field1:one two three> <field2:one two three>
     // <field1:one@three> <field2:one@three>
 
-    index.waitUntilFlushed(60000, TimeUnit.MILLISECONDS);
+    luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, 60000, TimeUnit.MILLISECONDS);
 
     // standard analyzer with double quote
     // this query string will be parsed as "one three"
@@ -140,7 +140,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     region.put("primitiveInt2", 223);
     region.put("primitiveInt3", 224);
 
-    index.waitUntilFlushed(60000, TimeUnit.MILLISECONDS);
+    luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, 60000, TimeUnit.MILLISECONDS);
     verifyQueryUsingCustomizedProvider(LuceneService.REGION_VALUE_FIELD, 123, 223, "primitiveInt1",
         "primitiveInt2");
   }
@@ -159,14 +159,14 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     region.put("primitiveInt2", 223);
     region.put("primitiveInt3", 224);
 
-    index.waitUntilFlushed(60000, TimeUnit.MILLISECONDS);
+    luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, 60000, TimeUnit.MILLISECONDS);
 
     // Note: current QueryParser cannot query by range. It's a known issue in lucene
     verifyQuery(LuceneService.REGION_VALUE_FIELD + ":[123 TO 223]",
         LuceneService.REGION_VALUE_FIELD);
 
     region.put("primitiveDouble1", 123.0);
-    index.waitUntilFlushed(60000, TimeUnit.MILLISECONDS);
+    luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, 60000, TimeUnit.MILLISECONDS);
 
     thrown.expectMessage("java.lang.IllegalArgumentException");
     verifyQueryUsingCustomizedProvider(LuceneService.REGION_VALUE_FIELD, 123, 223, "primitiveInt1",
@@ -221,7 +221,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     region.put("F", new TestObject(value3, value3));
     region.put("G", new TestObject(value1, value2));
 
-    index.waitUntilFlushed(60000, TimeUnit.MILLISECONDS);
+    luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, 60000, TimeUnit.MILLISECONDS);
     return luceneService.createLuceneQueryFactory().setPageSize(pagesize).create(INDEX_NAME,
         REGION_NAME, "one", "field1");
   }
@@ -246,7 +246,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     region.put("C", new TestObject(value3, value3));
     region.put("D", new TestObject(value4, value4));
 
-    index.waitUntilFlushed(60000, TimeUnit.MILLISECONDS);
+    luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, 60000, TimeUnit.MILLISECONDS);
 
     verifyQuery("field1:one AND field2:two_four", DEFAULT_FIELD, "A");
     verifyQuery("field1:one AND field2:two", DEFAULT_FIELD, "A");
@@ -265,7 +265,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     // Put two values with some of the same tokens
     String value1 = "one three";
     region.put("A", new TestObject(value1, null));
-    index.waitUntilFlushed(60000, TimeUnit.MILLISECONDS);
+    luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, 60000, TimeUnit.MILLISECONDS);
 
     verifyQuery("field1:one", DEFAULT_FIELD, "A");
   }
@@ -284,7 +284,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     PdxInstance pdx1 = insertAJson(region, "jsondoc1");
     PdxInstance pdx2 = insertAJson(region, "jsondoc2");
     PdxInstance pdx10 = insertAJson(region, "jsondoc10");
-    index.waitUntilFlushed(60000, TimeUnit.MILLISECONDS);
+    luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, 60000, TimeUnit.MILLISECONDS);
 
     HashMap expectedResults = new HashMap();
     expectedResults.put("jsondoc1", pdx1);
@@ -299,7 +299,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
 
     region.put("A", "one three");
-    index.waitUntilFlushed(60000, TimeUnit.MILLISECONDS);
+    luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, 60000, TimeUnit.MILLISECONDS);
 
     verifyQuery("one", LuceneService.REGION_VALUE_FIELD, "A");
   }

@@ -20,6 +20,7 @@ import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 
+import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 import org.junit.After;
@@ -29,8 +30,10 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.RebalanceResults;
+import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.test.IndexRepositorySpy;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
@@ -93,7 +96,7 @@ public abstract class LuceneQueriesPRBase extends LuceneQueriesBase {
     putEntryInEachBucket();
 
     dataStore2.invoke(() -> initDataStore(createIndex));
-    assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore2, 60000)); // accessor?
+    assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
     assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 60000));
 
     rebalanceRegion(dataStore2);
@@ -118,7 +121,7 @@ public abstract class LuceneQueriesPRBase extends LuceneQueriesBase {
     rebalanceRegion(dataStore2);
     dataStore1.invoke(() -> LuceneTestUtilities.resumeSender(getCache()));
 
-    assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore2, 60000)); // accessor?
+    assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
     assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 60000));
 
     executeTextSearch(accessor, "world", "text", NUM_BUCKETS);

@@ -86,7 +86,6 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinatorJUnitTest
     WaitUntilParallelGatewaySenderFlushedCoordinator coordinatorSpy = spy(coordinator);
     doReturn(getSuccessfulCallables()).when(coordinatorSpy)
         .buildWaitUntilBucketRegionQueueFlushedCallables(this.region);
-    doReturn(true).when(coordinatorSpy).waitUntilFlushedOnRemoteMembers(this.region);
     boolean result = coordinatorSpy.waitUntilFlushed();
     assertTrue(result);
   }
@@ -99,7 +98,6 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinatorJUnitTest
     WaitUntilParallelGatewaySenderFlushedCoordinator coordinatorSpy = spy(coordinator);
     doReturn(getSuccessfulCallables()).when(coordinatorSpy)
         .buildWaitUntilBucketRegionQueueFlushedCallables(this.region);
-    doReturn(false).when(coordinatorSpy).waitUntilFlushedOnRemoteMembers(this.region);
     boolean result = coordinatorSpy.waitUntilFlushed();
     assertFalse(result);
   }

@@ -1242,31 +1242,24 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
   }
 
   public boolean waitUntilFlushed(long timeout, TimeUnit unit) throws InterruptedException {
-    int attempts = 0;
     boolean result = false;
     if (isParallel()) {
-      // Wait until the sender is flushed. Retry if necessary.
-      while (true) {
-        try {
-          WaitUntilParallelGatewaySenderFlushedCoordinator coordinator =
-              new WaitUntilParallelGatewaySenderFlushedCoordinator(this, timeout, unit, true);
-          result = coordinator.waitUntilFlushed();
-          break;
-        } catch (BucketMovedException | CancelException | RegionDestroyedException e) {
-          attempts++;
-          logger.warn(
-              LocalizedStrings.AbstractGatewaySender_CAUGHT_EXCEPTION_ATTEMPTING_WAIT_UNTIL_FLUSHED_RETRYING
-                  .toLocalizedString(),
-              e);
-          Thread.sleep(100);
-        } catch (Throwable t) {
-          attempts++;
-          logger.warn(
-              LocalizedStrings.AbstractGatewaySender_CAUGHT_EXCEPTION_ATTEMPTING_WAIT_UNTIL_FLUSHED_RETURNING
-                  .toLocalizedString(),
-              t);
-          throw new InternalGemFireError(t);
-        }
+      try {
+        WaitUntilParallelGatewaySenderFlushedCoordinator coordinator =
+            new WaitUntilParallelGatewaySenderFlushedCoordinator(this, timeout, unit, true);
+        result = coordinator.waitUntilFlushed();
+      } catch (BucketMovedException | CancelException | RegionDestroyedException e) {
+        logger.warn(
+            LocalizedStrings.AbstractGatewaySender_CAUGHT_EXCEPTION_ATTEMPTING_WAIT_UNTIL_FLUSHED_RETRYING
+                .toLocalizedString(),
+            e);
+        throw e;
+      } catch (Throwable t) {
+        logger.warn(
+            LocalizedStrings.AbstractGatewaySender_CAUGHT_EXCEPTION_ATTEMPTING_WAIT_UNTIL_FLUSHED_RETURNING
+                .toLocalizedString(),
+            t);
+        throw new InternalGemFireError(t);
       }
       return result;
     } else {

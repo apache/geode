@@ -16,6 +16,7 @@ package org.apache.geode.cache.lucene;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.analysis.Analyzer;
 
@@ -130,4 +131,19 @@ public interface LuceneService {
    */
   public LuceneQueryFactory createLuceneQueryFactory();
 
+  /*
+   * wait until the current entries in cache are indexed
+   * 
+   * @param indexName index name
+   * 
+   * @param regionPath region name
+   * 
+   * @param timeout max wait time
+   * 
+   * @param unit granularity of the timeout
+   *
+   * @return if entries are flushed within timeout
+   */
+  public boolean waitUntilFlushed(String indexName, String regionPath, long timeout, TimeUnit unit)
+      throws InterruptedException;
 }

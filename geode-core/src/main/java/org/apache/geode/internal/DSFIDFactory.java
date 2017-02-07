@@ -922,8 +922,6 @@ public final class DSFIDFactory implements DataSerializableFixedID {
     registerDSFID(PR_DESTROY_ON_DATA_STORE_MESSAGE, DestroyRegionOnDataStoreMessage.class);
     registerDSFID(SHUTDOWN_ALL_GATEWAYHUBS_REQUEST, ShutdownAllGatewayHubsRequest.class);
     registerDSFID(BUCKET_COUNT_LOAD_PROBE, BucketCountLoadProbe.class);
-    registerDSFID(WAIT_UNTIL_GATEWAY_SENDER_FLUSHED_MESSAGE,
-        WaitUntilParallelGatewaySenderFlushedCoordinator.WaitUntilGatewaySenderFlushedMessage.class);
   }
 
   /**
