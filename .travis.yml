@@ -13,22 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-language: cpp
+# cpp tools are outdated, so use docker
+language: generic
+
+# required for docker
 sudo: required
 
-before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get -y build-essential
-  - sudo apt-get install -y cmake
-  - sudo apt-get install -y doxygen
-  - sudo apt-get install -y git
-  - sudo apt-get install -y openjdk-8-jdk
-  - sudo apt-get install -y wget
-  - sudo apt-get install -y zlib1g-dev
+services:
+  - docker
 
-install: mkdir build && cd build && cmake ../src && cmake --build . -- -j 8
+install:
+  - docker build -t apachegeode/geode-native-build:1.0 --build-arg GEODE_VERSION=1.0.0-incubating docker/
 
-script: ./build/cppcache/test/apache-geode_unittests
+script: 
+  - DOCKER_ARGS="--volume=${TRAVIS_BUILD_DIR}:/geode-native --workdir=/geode-native"
+  - docker run ${DOCKER_ARGS} apachegeode/geode-native-build:1.0 bash -lc "mkdir build && cd build && cmake ../src && cmake --build . -- -j 8 && ./build/cppcache/test/apache-geode_unittests"
+  - docker stop $(docker ps -l -q)
 
 notifications:
   email:
