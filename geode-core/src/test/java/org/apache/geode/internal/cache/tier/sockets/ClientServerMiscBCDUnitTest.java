@@ -23,6 +23,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.List;
 
@@ -34,7 +35,8 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTest {
   public static Collection<String> data() {
     List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
     if (result.size() < 1) {
-      throw new RuntimeException("No older versions of Geode were found to test against");
+      throw new RuntimeException("No older versions of Geode were found to test against.  "
+          + "Current directory is " + new File(".").getAbsolutePath());
     } else {
       System.out.println("running against these versions: " + result);
     }

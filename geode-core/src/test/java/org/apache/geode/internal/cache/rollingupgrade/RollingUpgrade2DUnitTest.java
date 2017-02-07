@@ -114,7 +114,8 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
   public static Collection<String> data() {
     List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
     if (result.size() < 1) {
-      throw new RuntimeException("No older versions of Geode were found to test against");
+      throw new RuntimeException("No older versions of Geode were found to test against.  "
+          + "Current directory is " + new File(".").getAbsolutePath());
     } else {
       System.out.println("running against these versions: " + result);
     }

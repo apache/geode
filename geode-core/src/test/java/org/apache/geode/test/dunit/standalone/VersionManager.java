@@ -137,7 +137,8 @@ public class VersionManager {
       }
     } else {
       System.out.println(
-          "WARNING: could not find geodeTestClasspaths.txt - tests will use current version");
+          "WARNING: could not find geodeTestClasspaths.txt - tests will use current version\n"
+              + "working directory is " + new File(".").getAbsolutePath());
     }
   }
 
