@@ -22,7 +22,7 @@ import java.io.File;
 
 public class Locator extends Member {
 
-  public Locator(VM vm, int port, File workingDir, String name) {
-    super(vm, port, workingDir, name);
+  public Locator(VM vm, int port, File workingDir) {
+    super(vm, port, workingDir);
   }
 }

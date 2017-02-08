@@ -27,6 +27,7 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
 import org.apache.geode.security.SimpleTestSecurityManager;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.Locator;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
@@ -42,14 +43,11 @@ import java.io.File;
 import java.util.Properties;
 
 @Category({DistributedTest.class, SecurityTest.class})
-public class ClusterConfigWithSecurityDUnitTest {
+public class ClusterConfigWithSecurityDUnitTest extends JUnit4DistributedTestCase {
   public String clusterConfigZipPath;
 
   @Rule
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
-
-  @Rule
-  public GfshShellConnectionRule connector = new GfshShellConnectionRule();
 
   Locator locator0;
   Properties locatorProps;
@@ -85,8 +83,9 @@ public class ClusterConfigWithSecurityDUnitTest {
 
   @Test
   public void testImportNotOverwriteSecurity() throws Exception {
-    connector.connect(locator0, CliStrings.CONNECT__USERNAME, "cluster",
-        CliStrings.CONNECT__PASSWORD, "cluster");
+    GfshShellConnectionRule connector = new GfshShellConnectionRule(locator0);
+    connector.connect(CliStrings.CONNECT__USERNAME, "cluster", CliStrings.CONNECT__PASSWORD,
+        "cluster");
 
     connector.executeAndVerifyCommand(
         "import cluster-configuration --zip-file-name=" + clusterConfigZipPath);

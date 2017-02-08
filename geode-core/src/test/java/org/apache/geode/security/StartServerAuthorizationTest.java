@@ -16,40 +16,34 @@
 package org.apache.geode.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.test.dunit.Host.getHost;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.apache.geode.test.dunit.rules.Locator;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.junit.After;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.util.Properties;
 
 @Category({DistributedTest.class, SecurityTest.class})
-public class StartServerAuthorizationTest {
+public class StartServerAuthorizationTest extends JUnit4DistributedTestCase {
 
-  @ClassRule
-  public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
-  private static Locator locator = null;
-  private ServerStarterRule serverStarter = null;
+  @Rule
+  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
-  @BeforeClass
-  public static void beforeClass() throws Exception {
+  @Before
+  public void before() throws Exception {
     Properties props = new Properties();
     props.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
-    locator = lsRule.startLocatorVM(0, props);
-  }
-
-  @After
-  public void after() throws Exception {
-    if (serverStarter != null)
-      serverStarter.after();
+    lsRule.startLocatorVM(0, props);
   }
 
   @Test
@@ -59,10 +53,13 @@ public class StartServerAuthorizationTest {
     props.setProperty("security-username", "user");
     props.setProperty("security-password", "wrongPswd");
 
-    serverStarter = new ServerStarterRule(props);
-    assertThatThrownBy(() -> serverStarter.startServer(locator.getPort()))
-        .isInstanceOf(GemFireSecurityException.class).hasMessageContaining(
-            "Security check failed. Authentication error. Please check your credentials");
+    VM server = getHost(0).getVM(1);
+    server.invoke(() -> {
+      ServerStarterRule serverStarter = new ServerStarterRule(props);
+      assertThatThrownBy(() -> serverStarter.startServer(lsRule.getMember(0).getPort()))
+          .isInstanceOf(GemFireSecurityException.class).hasMessageContaining(
+              "Security check failed. Authentication error. Please check your credentials");
+    });
   }
 
   @Test
@@ -73,10 +70,13 @@ public class StartServerAuthorizationTest {
     props.setProperty("security-username", "user");
     props.setProperty("security-password", "user");
 
-    serverStarter = new ServerStarterRule(props);
-    assertThatThrownBy(() -> serverStarter.startServer(locator.getPort()))
-        .isInstanceOf(GemFireSecurityException.class)
-        .hasMessageContaining("user not authorized for CLUSTER:MANAGE");
+    VM server = getHost(0).getVM(1);
+    server.invoke(() -> {
+      ServerStarterRule serverStarter = new ServerStarterRule(props);
+      assertThatThrownBy(() -> serverStarter.startServer(lsRule.getMember(0).getPort()))
+          .isInstanceOf(GemFireSecurityException.class)
+          .hasMessageContaining("user not authorized for CLUSTER:MANAGE");
+    });
   }
 
   @Test

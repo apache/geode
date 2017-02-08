@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.configuration;
 
 import static org.apache.commons.io.FileUtils.writeByteArrayToFile;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -28,7 +29,9 @@ import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.internal.ClassBuilder;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.Locator;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
@@ -44,7 +47,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 @Category(DistributedTest.class)
-public class ClusterConfigDistributionDUnitTest {
+public class ClusterConfigDistributionDUnitTest extends JUnit4DistributedTestCase {
   private static final String REPLICATE_REGION = "ReplicateRegion1";
   private static final String PARTITION_REGION = "PartitionRegion1";
   private static final String INDEX1 = "ID1";
@@ -52,22 +55,22 @@ public class ClusterConfigDistributionDUnitTest {
   private static final String AsyncEventQueue1 = "Q1";
 
   private Locator locator;
-
-  @Rule
-  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
-  @Rule
-  public GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
+  private GfshShellConnectionRule gfshConnector;
 
   @Before
   public void before() throws Exception {
     locator = lsRule.startLocatorVM(0);
-    gfshConnector.connect(locator);
+
+    gfshConnector = new GfshShellConnectionRule(locator);
+    gfshConnector.connect();
     assertThat(gfshConnector.isConnected()).isTrue();
 
     // start a server so that we can execute data commands that requires at least a server running
     lsRule.startServerVM(1, locator.getPort());
   }
 
+  @Rule
+  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
   @Test
   public void testIndexAndAsyncEventQueueCommands() throws Exception {
@@ -170,7 +173,9 @@ public class ClusterConfigDistributionDUnitTest {
     csb.addOptionWithValueCheck(CliStrings.CONFIGURE_PDX__PERSISTENT, "true");
     csb.addOptionWithValueCheck(CliStrings.CONFIGURE_PDX__READ__SERIALIZED, "true");
 
-    String message = gfshConnector.execute(csb.getCommandString());
-    assertThat(message).contains(CliStrings.CONFIGURE_PDX__NORMAL__MEMBERS__WARNING);
+    CommandResult result = gfshConnector.executeAndVerifyCommand(csb.getCommandString());
+    String message = (String) result.getResultData().getGfJsonObject().getJSONObject("content")
+        .getJSONArray("message").get(0);
+    assertEquals(CliStrings.CONFIGURE_PDX__NORMAL__MEMBERS__WARNING, message);
   }
 }

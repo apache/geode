@@ -18,10 +18,12 @@ package org.apache.geode.management.internal.configuration;
 
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.geode.internal.ClassBuilder;
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.junit.Before;
 import org.junit.Rule;
@@ -30,7 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
-public class ClusterConfigBaseTest {
+public class ClusterConfigBaseTest extends JUnit4DistributedTestCase {
   public String clusterConfigZipPath;
 
   public static final ConfigGroup CLUSTER = new ConfigGroup("cluster").regions("regionForCluster")

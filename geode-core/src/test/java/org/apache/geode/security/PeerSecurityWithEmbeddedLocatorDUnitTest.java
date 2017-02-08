@@ -15,26 +15,28 @@
 
 package org.apache.geode.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
-import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTHENTICATOR;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.security.templates.DummyAuthenticator;
-import org.apache.geode.test.dunit.VM;
+import java.util.Properties;
+
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.SecurityTest;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.util.Properties;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.security.templates.DummyAuthenticator;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({DistributedTest.class, SecurityTest.class})
-public class PeerSecurityWithEmbeddedLocatorDUnitTest {
+public class PeerSecurityWithEmbeddedLocatorDUnitTest extends JUnit4DistributedTestCase {
 
   @Rule
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
