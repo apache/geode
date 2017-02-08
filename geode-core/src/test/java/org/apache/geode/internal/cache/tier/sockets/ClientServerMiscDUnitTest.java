@@ -755,142 +755,72 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
   }
 
 
+  private void proxyRegionClientServerOp(RegionShortcut shortcut) throws Exception {
+    // start server first
+    final String REGION_NAME = "proxyRegionClientServerOp";
+    PORT1 = initServerCache(false);
+    // Create regions on servers.
+    server1.invoke(new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        Cache c = CacheFactory.getAnyInstance();
+        assertNotNull(c);
+        Region<Object, Object> r =
+            c.createRegionFactory(shortcut).create(REGION_NAME);
+        assertNotNull(r);
+        return null;
+      }
+    });
+
+    String host = NetworkUtils.getServerHostName(server1.getHost());
+
+    Properties props = new Properties();
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
+    ClientCacheFactory ccf = new ClientCacheFactory(props);
+    ccf.addPoolServer(host, PORT1);
+
+    ClientCache clientCache = ccf.create();
+    Region<Object, Object> clientRegion =
+        clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
+    assertNotNull(clientRegion);
+
+    // let us populate this region from client.
+    for (int i = 0; i < 10; i++) {
+      clientRegion.put(i, i * 10);
+    }
+    // Verify using gets
+    for (int i = 0; i < 10; i++) {
+      assertEquals(i * 10, clientRegion.get(i));
+    }
+    assertEquals(10, clientRegion.size());
+    assertFalse(clientRegion.isEmpty());
+    // delete all the entries from the server
+    server1.invoke(new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        Cache c = CacheFactory.getAnyInstance();
+        assertNotNull(c);
+        Region<Object, Object> r = c.getRegion(REGION_NAME);
+        assertNotNull(r);
+        for (int i = 0; i < 10; i++) {
+          r.remove(i);
+        }
+        return null;
+      }
+    });
+    assertEquals(0, clientRegion.size());
+    assertTrue(clientRegion.isEmpty());
+
+    clientRegion.destroyRegion();
+    clientCache.close();
+  }
+
   @Test
   public void testProxyRegionClientServerOp() throws Exception {
-    // start server first
-    final String REGION_NAME = "testProxyRegionClientServerOp";
-    PORT1 = initServerCache(false);
-    // Create regions on servers.
-    server1.invoke(new SerializableCallable() {
-      @Override
-      public Object call() throws Exception {
-        Cache c = CacheFactory.getAnyInstance();
-        assertNotNull(c);
-        Region<Object, Object> r =
-            c.createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
-        assertNotNull(r);
-        return null;
-      }
-    });
-
-    String host = NetworkUtils.getServerHostName(server1.getHost());
-
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "");
-    ClientCacheFactory ccf = new ClientCacheFactory(props);
-    ccf.addPoolServer(host, PORT1);
-
-    ClientCache clientCache = ccf.create();
-    Region<Object, Object> clientRegion =
-        clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
-    assertNotNull(clientRegion);
-
-    // let us populate this region from client.
-    for (int i = 0; i < 10; i++) {
-      clientRegion.put(i, i * 10);
-    }
-    // Verify using gets
-    for (int i = 0; i < 10; i++) {
-      assertEquals(i * 10, clientRegion.get(i));
-    }
-    assertEquals(10, clientRegion.size());
-    assertFalse(clientRegion.isEmpty());
-    // delete all the entries from the server
-    server1.invoke(new SerializableCallable() {
-      @Override
-      public Object call() throws Exception {
-        Cache c = CacheFactory.getAnyInstance();
-        assertNotNull(c);
-        Region<Object, Object> r = c.getRegion(REGION_NAME);
-        assertNotNull(r);
-        for (int i = 0; i < 10; i++) {
-          r.remove(i);
-        }
-        return null;
-      }
-    });
-    assertEquals(0, clientRegion.size());
-    assertTrue(clientRegion.isEmpty());
-
-    clientRegion.destroyRegion();
+    proxyRegionClientServerOp(RegionShortcut.PARTITION);
+    proxyRegionClientServerOp(RegionShortcut.REPLICATE);
   }
-
-
-  @Test
-  public void testProxyRegionClientServerOpPR() throws Exception {
-    // start server first
-    final String REGION_NAME = "testProxyRegionClientServerOpPR";
-    PORT1 = initServerCache(false);
-    int PORT2 = initServerCache2(false);
-    // Create regions on servers.
-    server1.invoke(new SerializableCallable() {
-      @Override
-      public Object call() throws Exception {
-        Cache c = CacheFactory.getAnyInstance();
-        assertNotNull(c);
-        Region<Object, Object> r =
-            c.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
-        assertNotNull(r);
-        return null;
-      }
-    });
-
-    server2.invoke(new SerializableCallable() {
-      @Override
-      public Object call() throws Exception {
-        Cache c = CacheFactory.getAnyInstance();
-        assertNotNull(c);
-        Region<Object, Object> r =
-            c.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
-        assertNotNull(r);
-        return null;
-      }
-    });
-    String host = NetworkUtils.getServerHostName(server1.getHost());
-
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "");
-    ClientCacheFactory ccf = new ClientCacheFactory(props);
-    ccf.addPoolServer(host, PORT1);
-    ccf.addPoolServer(host, PORT2);
-
-    ClientCache clientCache = ccf.create();
-    Region<Object, Object> clientRegion =
-        clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
-    assertNotNull(clientRegion);
-
-    // let us populate this region from client.
-    for (int i = 0; i < 10; i++) {
-      clientRegion.put(i, i * 10);
-    }
-    // Verify using gets
-    for (int i = 0; i < 10; i++) {
-      assertEquals(i * 10, clientRegion.get(i));
-    }
-    assertEquals(10, clientRegion.size());
-    assertFalse(clientRegion.isEmpty());
-    // delete all the entries from the server
-    server1.invoke(new SerializableCallable() {
-      @Override
-      public Object call() throws Exception {
-        Cache c = CacheFactory.getAnyInstance();
-        assertNotNull(c);
-        Region<Object, Object> r = c.getRegion(REGION_NAME);
-        assertNotNull(r);
-        for (int i = 0; i < 10; i++) {
-          r.remove(i);
-        }
-        return null;
-      }
-    });
-    assertEquals(0, clientRegion.size());
-    assertTrue(clientRegion.isEmpty());
-
-    clientRegion.destroyRegion();
-  }
-
 
 
   private void createCache(Properties props) throws Exception {
