@@ -765,8 +765,7 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws Exception {
         Cache c = CacheFactory.getAnyInstance();
         assertNotNull(c);
-        Region<Object, Object> r =
-            c.createRegionFactory(shortcut).create(REGION_NAME);
+        Region<Object, Object> r = c.createRegionFactory(shortcut).create(REGION_NAME);
         assertNotNull(r);
         return null;
       }
