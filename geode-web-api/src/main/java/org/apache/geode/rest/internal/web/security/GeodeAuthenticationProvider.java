@@ -16,6 +16,9 @@
 
 package org.apache.geode.rest.internal.web.security;
 
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.management.internal.security.ResourceConstants;
+import org.apache.geode.security.GemFireSecurityException;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,8 +27,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.stereotype.Component;
 
-import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.security.GemFireSecurityException;
+import java.util.Properties;
 
 
 @Component
@@ -36,9 +38,14 @@ public class GeodeAuthenticationProvider implements AuthenticationProvider {
   public Authentication authenticate(Authentication authentication) throws AuthenticationException {
     String username = authentication.getName();
     String password = authentication.getCredentials().toString();
+    Properties credentials = new Properties();
+    if (username != null)
+      credentials.put(ResourceConstants.USER_NAME, username);
+    if (password != null)
+      credentials.put(ResourceConstants.PASSWORD, password);
 
     try {
-      securityService.login(username, password);
+      securityService.login(credentials);
       return new UsernamePasswordAuthenticationToken(username, password,
           AuthorityUtils.NO_AUTHORITIES);
     } catch (GemFireSecurityException e) {

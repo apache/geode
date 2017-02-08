@@ -14,22 +14,21 @@
  */
 package org.apache.geode.management.internal.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_SHIRO_INIT;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.Properties;
-
+import org.apache.geode.internal.security.IntegratedSecurityService;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.security.IntegratedSecurityService;
-import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.security.GemFireSecurityException;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.SecurityTest;
+import java.util.Properties;
 
 /**
  * Integration tests for {@link IntegratedSecurityService} using shiro.ini
@@ -53,7 +52,7 @@ public class IntegratedSecurityServiceWithIniFileJUnitTest {
 
   @Test
   public void testRoot() {
-    this.securityService.login("root", "secret");
+    this.securityService.login(loginCredentials("root", "secret"));
     this.securityService.authorize(TestCommand.none);
     this.securityService.authorize(TestCommand.everyOneAllowed);
     this.securityService.authorize(TestCommand.dataRead);
@@ -66,7 +65,7 @@ public class IntegratedSecurityServiceWithIniFileJUnitTest {
 
   @Test
   public void testGuest() {
-    this.securityService.login("guest", "guest");
+    this.securityService.login(loginCredentials("guest", "guest"));
     this.securityService.authorize(TestCommand.none);
     this.securityService.authorize(TestCommand.everyOneAllowed);
 
@@ -81,7 +80,7 @@ public class IntegratedSecurityServiceWithIniFileJUnitTest {
 
   @Test
   public void testRegionAReader() {
-    this.securityService.login("regionAReader", "password");
+    this.securityService.login(loginCredentials("regionAReader", "password"));
     this.securityService.authorize(TestCommand.none);
     this.securityService.authorize(TestCommand.everyOneAllowed);
     this.securityService.authorize(TestCommand.regionARead);
@@ -96,7 +95,7 @@ public class IntegratedSecurityServiceWithIniFileJUnitTest {
 
   @Test
   public void testRegionAUser() {
-    this.securityService.login("regionAUser", "password");
+    this.securityService.login(loginCredentials("regionAUser", "password"));
     this.securityService.authorize(TestCommand.none);
     this.securityService.authorize(TestCommand.everyOneAllowed);
     this.securityService.authorize(TestCommand.regionAWrite);
@@ -111,7 +110,7 @@ public class IntegratedSecurityServiceWithIniFileJUnitTest {
 
   @Test
   public void testDataReader() {
-    this.securityService.login("dataReader", "12345");
+    this.securityService.login(loginCredentials("dataReader", "12345"));
     this.securityService.authorize(TestCommand.none);
     this.securityService.authorize(TestCommand.everyOneAllowed);
     this.securityService.authorize(TestCommand.regionARead);
@@ -126,7 +125,7 @@ public class IntegratedSecurityServiceWithIniFileJUnitTest {
 
   @Test
   public void testReader() {
-    this.securityService.login("reader", "12345");
+    this.securityService.login(loginCredentials("reader", "12345"));
     this.securityService.authorize(TestCommand.none);
     this.securityService.authorize(TestCommand.everyOneAllowed);
     this.securityService.authorize(TestCommand.regionARead);
@@ -142,5 +141,12 @@ public class IntegratedSecurityServiceWithIniFileJUnitTest {
   private void assertNotAuthorized(ResourcePermission context) {
     assertThatThrownBy(() -> this.securityService.authorize(context))
         .isInstanceOf(GemFireSecurityException.class).hasMessageContaining(context.toString());
+  }
+
+  private Properties loginCredentials(String username, String password) {
+    Properties credentials = new Properties();
+    credentials.put(ResourceConstants.USER_NAME, username);
+    credentials.put(ResourceConstants.PASSWORD, password);
+    return credentials;
   }
 }

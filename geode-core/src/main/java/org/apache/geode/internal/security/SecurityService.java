@@ -36,8 +36,6 @@ public interface SecurityService {
 
   Subject login(Properties credentials);
 
-  Subject login(String username, String password);
-
   void logout();
 
   Callable associateWith(Callable callable);

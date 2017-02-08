@@ -25,12 +25,10 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.security.shiro.CustomAuthRealm;
 import org.apache.geode.internal.security.shiro.GeodeAuthenticationToken;
 import org.apache.geode.internal.security.shiro.ShiroPrincipal;
 import org.apache.geode.internal.util.BlobHelper;
-import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.GemFireSecurityException;
@@ -118,19 +116,6 @@ public class IntegratedSecurityService implements SecurityService {
     }
 
     return currentUser;
-  }
-
-  /**
-   * convenient method for testing
-   */
-  public Subject login(String username, String password) {
-    if (StringUtils.isBlank(username) || StringUtils.isBlank(password))
-      return null;
-
-    Properties credentials = new Properties();
-    credentials.setProperty(ResourceConstants.USER_NAME, username);
-    credentials.setProperty(ResourceConstants.PASSWORD, password);
-    return login(credentials);
   }
 
   /**
