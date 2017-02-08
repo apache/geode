@@ -1,3 +1,7 @@
+[<img src="https://geode.apache.org/img/apache_geode_logo.png" align="center"/>](http://geode.apache.org)
+
+[![Build Status](https://travis-ci.org/apache/geode.svg?branch=next-gen-native-client-software-grant)](https://travis-ci.org/apache/geode) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0) 
+
 **[Overview](#overview)**  
 **[Building from Source](#building)**  
 **[Introduction](#started)**  

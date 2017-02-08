@@ -27,7 +27,7 @@ install:
 
 script: 
   - DOCKER_ARGS="--volume=${TRAVIS_BUILD_DIR}:/geode-native --workdir=/geode-native"
-  - docker run ${DOCKER_ARGS} apachegeode/geode-native-build:1.0 bash -lc "mkdir build && cd build && cmake ../src && cmake --build . -- -j 8 && ./cppcache/test/apache-geode_unittests"
+  - docker run ${DOCKER_ARGS} apachegeode/geode-native-build:1.0 bash -c "mkdir build && cd build && cmake ../src && cmake --build . -- -j 8 && ./cppcache/test/apache-geode_unittests"
   - docker stop $(docker ps -l -q)
 
 notifications:
