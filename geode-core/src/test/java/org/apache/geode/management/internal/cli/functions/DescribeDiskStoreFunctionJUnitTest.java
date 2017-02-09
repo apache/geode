@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assert.*;
 
 import java.io.File;
@@ -283,14 +284,11 @@ public class DescribeDiskStoreFunctionJUnitTest {
     DescribeDiskStoreFunction.assertState(true, "null");
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test
   public void testAssertStateThrowsIllegalStateException() {
-    try {
-      DescribeDiskStoreFunction.assertState(false, "Expected (%1$s) message!", "test");
-    } catch (IllegalStateException e) {
-      assertEquals("Expected (test) message!", e.getMessage());
-      throw e;
-    }
+    assertThatThrownBy(() ->
+      DescribeDiskStoreFunction.assertState(false, "Expected (%1$s) message!", "test"))
+      .isInstanceOf(IllegalStateException.class).hasMessage("Expected (test) message!");
   }
 
   private void setupEmptyRegionsPdxGatewaysCacheServersAndAsyncEventQueues(
@@ -608,8 +606,8 @@ public class DescribeDiskStoreFunctionJUnitTest {
     assertTrue(results.isEmpty());
   }
 
-  @Test(expected = DiskStoreNotFoundException.class)
-  public void testExecuteThrowingDiskStoreNotFoundException() throws Throwable {
+  @Test
+  public void testExecuteThrowingDiskStoreNotFoundException() throws Exception {
     final String diskStoreName = "testDiskStore";
     final String memberId = "mockMemberId";
     final String memberName = "mockMemberName";
@@ -645,17 +643,14 @@ public class DescribeDiskStoreFunctionJUnitTest {
 
     function.execute(mockFunctionContext);
 
-    try {
-      testResultSender.getResults();
-    } catch (DiskStoreNotFoundException e) {
-      assertEquals(String.format("A disk store with name (%1$s) was not found on member (%2$s).",
-          diskStoreName, memberName), e.getMessage());
-      throw e;
-    }
+    String expected = String.format("A disk store with name (%1$s) was not found on member (%2$s).",
+      diskStoreName, memberName);
+    assertThatThrownBy(() -> testResultSender.getResults())
+      .isInstanceOf(DiskStoreNotFoundException.class).hasMessage(expected);
   }
 
-  @Test(expected = RuntimeException.class)
-  public void testExecuteThrowingRuntimeException() throws Throwable {
+  @Test
+  public void testExecuteThrowingRuntimeException() throws Exception {
     final String diskStoreName = "testDiskStore";
     final String memberId = "mockMemberId";
     final String memberName = "mockMemberName";
@@ -691,16 +686,12 @@ public class DescribeDiskStoreFunctionJUnitTest {
 
     function.execute(mockFunctionContext);
 
-    try {
-      testResultSender.getResults();
-    } catch (RuntimeException e) {
-      assertEquals("ExpectedStrings", e.getMessage());
-      throw e;
-    }
+    assertThatThrownBy(() -> testResultSender.getResults())
+      .isInstanceOf(RuntimeException.class).hasMessage("ExpectedStrings");
   }
 
-  @Test(expected = IllegalStateException.class)
-  public void testExecuteWithDiskDirsAndDiskSizesMismatch() throws Throwable {
+  @Test
+  public void testExecuteWithDiskDirsAndDiskSizesMismatch() throws Exception {
     logger.info("<ExpectedException action=add>" + IllegalStateException.class.getName()
         + "</ExpectedException>");
     try {
@@ -711,7 +702,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
     }
   }
 
-  private void doTestExecuteWithDiskDirsAndDiskSizesMismatch() throws Throwable {
+  private void doTestExecuteWithDiskDirsAndDiskSizesMismatch() throws Exception {
     final String diskStoreName = "mockDiskStore";
     final String memberId = "mockMemberId";
     final String memberName = "mockMemberName";
@@ -753,14 +744,8 @@ public class DescribeDiskStoreFunctionJUnitTest {
 
     function.execute(mockFunctionContext);
 
-    try {
-      testResultSender.getResults();
-    } catch (IllegalStateException e) {
-      assertEquals(
-          "The number of disk directories with a specified size (0) does not match the number of disk directories (1)!",
-          e.getMessage());
-      throw e;
-    }
+    String expected = "The number of disk directories with a specified size (0) does not match the number of disk directories (1)!";
+    assertThatThrownBy(() -> testResultSender.getResults()).hasMessage(expected);
   }
 
   @Test
@@ -1827,7 +1812,7 @@ public class DescribeDiskStoreFunctionJUnitTest {
 
   private static class TestResultSender implements ResultSender {
 
-    private final List<Object> results = new LinkedList<Object>();
+    private final List<Object> results = new LinkedList<>();
 
     private Throwable t;
 
