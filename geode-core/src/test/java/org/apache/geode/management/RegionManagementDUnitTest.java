@@ -578,8 +578,7 @@ public class RegionManagementDUnitTest extends ManagementTestBase {
   private void verifyMemberNotifications(final VM managerVM, final String regionName,
       final int expectedMembers) {
     managerVM.invoke("verifyMemberNotifications", () -> {
-      assertThat(MEMBER_NOTIFICATIONS_REF.get()).isNotNull();
-      assertThat(MEMBER_NOTIFICATIONS_REF.get()).hasSize(expectedMembers * 2);
+      await().until(() -> assertThat(MEMBER_NOTIFICATIONS_REF.get()).hasSize(expectedMembers * 2));
 
       int regionCreatedCount = 0;
       int regionDestroyedCount = 0;
