@@ -15,7 +15,7 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
-import com.jayway.awaitility.Awaitility;
+import org.awaitility.Awaitility;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.GemFireCache;
