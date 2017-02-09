@@ -450,12 +450,8 @@ class GFIGNORE(TESTOBJECT_EXPORT) PdxType : public PdxSerializable {
     m_charArray[0] = L'c';
     m_charArray[1] = L'v';
 
-    // time_t offset = 1310447869154L;
-    // m_date = CacheableDate::create(offset);
-    struct timeval now;
-    now.tv_sec = 1310447869;
-    now.tv_usec = 154000;
-    m_dateTime = CacheableDate::create(now);
+    int64_t d = 1310447869154L;
+    m_dateTime = CacheableDate::create(CacheableDate::duration(d));
 
     m_int16Array = new int16_t[2];
     m_int16Array[0] = 0x2332;

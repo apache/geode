@@ -26,16 +26,10 @@
 #include "CacheableString.hpp"
 #include "GeodeTypeIds.hpp"
 #include "ExceptionTypes.hpp"
-#include <time.h>
-#ifdef _WIN32
-#include <WinSock2.h>  //for struct timeval
-#define GF_LOCALTIME(X, Y) localtime_s(Y, X)
-#else
-#include <sys/time.h>
-#if defined(_LINUX) || defined(_SOLARIS) || defined(_MACOSX)
-#define GF_LOCALTIME(X, Y) localtime_r(X, Y)
-#endif
-#endif
+
+#include <string>
+#include <chrono>
+#include <ctime>
 
 /** @file
 */
@@ -44,22 +38,30 @@ namespace geode {
 namespace client {
 
 /**
- * Implement a date object based on system epoch that can serve as a
- * distributable key object for caching as well as being a date value.
+ * Implement a date object based on epoch of January 1, 1970 00:00:00 GMT that
+ * can serve as a distributable key object for caching as well as being a date
+ * value.
  */
 class CPPCACHE_EXPORT CacheableDate : public CacheableKey {
  private:
-  struct timeval m_timevalue;
-  uint32_t m_hash;
+  /**
+   * Milliseconds since January 1, 1970, 00:00:00 GMT to be consistent with Java
+   * Date.
+   */
+  int64_t m_timevalue;
 
  public:
+  typedef std::chrono::system_clock clock;
+  typedef std::chrono::time_point<clock> time_point;
+  typedef std::chrono::milliseconds duration;
+
   /**
-   *@brief serialize this object
+   * @brief serialize this object
    **/
   virtual void toData(DataOutput& output) const;
 
   /**
-   *@brief deserialize this object
+   * @brief deserialize this object
    **/
   virtual Serializable* fromData(DataInput& input);
 
@@ -69,7 +71,7 @@ class CPPCACHE_EXPORT CacheableDate : public CacheableKey {
   static Serializable* createDeserializable();
 
   /**
-   *@brief Return the classId of the instance being serialized.
+   * @brief Return the classId of the instance being serialized.
    * This is used by deserialization to determine what instance
    * type to create and deserialize into.
    */
@@ -88,20 +90,43 @@ class CPPCACHE_EXPORT CacheableDate : public CacheableKey {
   /** @return true if this key matches other. */
   virtual bool operator==(const CacheableKey& other) const;
 
-  /** @return day of the month. */
+  /**
+   * @return day of the month.
+   * @deprecated Use localtime or similar for calendar conversions.
+   */
+  __DEPRECATED__("Use localtime or similar for calendar conversions.")
   virtual int day() const;
 
-  /** @return month 1(Jan) - 12(Dec) . */
+  /**
+   * @return month 1(Jan) - 12(Dec) .
+   * @deprecated Use localtime or similar for calendar conversions.
+   */
+  __DEPRECATED__("Use localtime or similar for calendar conversions.")
   virtual int month() const;
 
-  /** @return year, example 1999. */
+  /**
+   * @return year, example 1999.
+   * @deprecated Use localtime or similar for calendar conversions.
+   */
+  __DEPRECATED__("Use localtime or similar for calendar conversions.")
   virtual int year() const;
 
-  /** @return milliseconds elapsed as per epoch time. */
+  /** @return milliseconds elapsed since January 1, 1970, 00:00:00 GMT. */
   virtual int64_t milliseconds() const;
 
-  /** @return the hashcode for this key. */
+  /**
+   * Returns a hash code value for this object. The result is the exclusive OR
+   * of the two halves of the primitive long value returned by the
+   * milliseconds() method.
+   *
+   * @return the hashcode for this object. */
   virtual uint32_t hashcode() const;
+
+  operator time_t() const { return m_timevalue / 1000; }
+  operator time_point() const {
+    return clock::from_time_t(0) + duration(m_timevalue);
+  }
+  operator duration() const { return duration(m_timevalue); }
 
   /**
    * Factory method for creating an instance of CacheableDate
@@ -114,7 +139,11 @@ class CPPCACHE_EXPORT CacheableDate : public CacheableKey {
     return CacheableDatePtr(new CacheableDate(value));
   }
 
-  static CacheableDatePtr create(const timeval& value) {
+  static CacheableDatePtr create(const time_point& value) {
+    return CacheableDatePtr(new CacheableDate(value));
+  }
+
+  static CacheableDatePtr create(const duration& value) {
     return CacheableDatePtr(new CacheableDate(value));
   }
 
@@ -127,11 +156,18 @@ class CPPCACHE_EXPORT CacheableDate : public CacheableKey {
   virtual int32_t logString(char* buffer, int32_t maxLength) const;
 
  protected:
-  /** Constructor, given a timeval value. */
-  CacheableDate(const timeval& value);
-
   /** Constructor, used for deserialization. */
   CacheableDate(const time_t value = 0);
+
+  /**
+   * Construct from std::chrono::time_point<std::chrono::system_clock>.
+   */
+  CacheableDate(const time_point& value);
+
+  /**
+   * Construct from std::chrono::seconds since POSIX epoch.
+   */
+  CacheableDate(const duration& value);
 
  private:
   // never implemented.
@@ -139,13 +175,14 @@ class CPPCACHE_EXPORT CacheableDate : public CacheableKey {
   CacheableDate(const CacheableDate& other);
 };
 
-inline CacheableKeyPtr createKey(const timeval& value) {
+inline CacheableKeyPtr createKey(const CacheableDate::time_point& value) {
   return CacheableKeyPtr(CacheableDate::create(value));
 }
 
-inline CacheablePtr createValue(const timeval& value) {
+inline CacheablePtr createValue(const CacheableDate::time_point& value) {
   return CacheablePtr(CacheableDate::create(value));
 }
+
 }  // namespace client
 }  // namespace geode
 }  // namespace apache

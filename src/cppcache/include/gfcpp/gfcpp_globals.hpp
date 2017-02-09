@@ -92,6 +92,16 @@
 
 #endif
 
+#if defined(__has_cpp_attribute) && __has_cpp_attribute(deprecated)
+#define __DEPRECATED__(msg) [[deprecated(msg)]]
+#elif defined(__GNUC__)
+#define __DEPRECATED__(msg) __attribute__(deprecated(msg))
+#elif defined(_MSC_VER)
+#define __DEPRECATED__(msg) __declspec(deprecated(msg))
+#else
+#define __DEPRECATED__(msg)
+#endif
+
 #ifdef _WIN32
 #if WINVER == 0x0500
 #endif
