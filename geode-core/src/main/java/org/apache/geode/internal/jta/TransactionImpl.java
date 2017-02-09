@@ -271,4 +271,8 @@ public class TransactionImpl implements Transaction {
   List getSyncList() {
     return syncList;
   }
+
+  public boolean notifyBeforeCompletionForTest() {
+    return notifyBeforeCompletion();
+  }
 }

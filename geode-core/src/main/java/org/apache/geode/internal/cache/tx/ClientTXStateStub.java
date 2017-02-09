@@ -79,6 +79,8 @@ public class ClientTXStateStub extends TXStateStub {
     return !DISABLE_CONFLICT_CHECK_ON_CLIENT || recordedTransactionalOperations != null;
   }
 
+  private boolean txRolledback = false;
+
   /**
    * test hook
    * 
@@ -199,6 +201,7 @@ public class ClientTXStateStub extends TXStateStub {
       this.internalAfterSendRollback.run();
     }
     try {
+      txRolledback = true;
       this.firstProxy.rollback(proxy.getTxId().getUniqId());
     } finally {
       this.firstProxy.getPool().releaseServerAffinity();
@@ -208,6 +211,9 @@ public class ClientTXStateStub extends TXStateStub {
   @Override
   public void afterCompletion(int status) {
     try {
+      if (txRolledback) {
+        return;
+      }
       TXCommitMessage txcm = this.firstProxy.afterCompletion(status, proxy.getTxId().getUniqId());
       if (status == Status.STATUS_COMMITTED) {
         if (txcm == null) {
