@@ -14,24 +14,16 @@
  */
 package org.apache.geode.cache.lucene.internal.configuration;
 
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.internal.AvailablePortHelper.*;
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Properties;
-
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.dunit.rules.Member;
-import org.apache.lucene.analysis.Analyzer;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.lucene.LuceneIndex;
@@ -39,32 +31,42 @@ import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.cache.lucene.internal.cli.LuceneCliStrings;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexCommands;
-import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.CommandManager;
-import org.apache.geode.management.internal.cli.HeadlessGfsh;
-import org.apache.geode.management.internal.cli.commands.CliCommandTestBase;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.dunit.rules.Locator;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.Member;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.lucene.analysis.Analyzer;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Properties;
 
 
 @Category(DistributedTest.class)
-public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
+public class LuceneClusterConfigurationDUnitTest {
 
   private String groupName = "Lucene";
 
   @Rule
   public LocatorServerStartupRule ls = new LocatorServerStartupRule();
 
+  @Rule
+  public GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
+
   @Test
   public void indexGetsCreatedUsingClusterConfiguration() throws Exception {
-    Member locator = startLocatorWithClusterConfigurationEnabled();
+    Locator locator = startLocatorWithClusterConfigurationEnabled();
     Member vm1 = startNodeUsingClusterConfiguration(1, false);
 
     // Connect Gfsh to locator.
-    createAndConnectGfshToLocator();
+    gfshConnector.connect(locator);
 
     // Create lucene index.
     createLuceneIndexUsingGfsh(false);
@@ -75,7 +77,8 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
     // configuration.
     Member vm2 = startNodeUsingClusterConfiguration(2, false);
     vm2.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(ls.serverStarter.cache);
+      LuceneService luceneService =
+          LuceneServiceProvider.get(LocatorServerStartupRule.serverStarter.cache);
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
       assertNotNull(index);
       validateIndexFields(new String[] {"field1", "field2", "field3"}, index);
@@ -84,11 +87,11 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
 
   @Test
   public void indexWithAnalyzerGetsCreatedUsingClusterConfiguration() throws Exception {
-    Member locator = startLocatorWithClusterConfigurationEnabled();
+    Locator locator = startLocatorWithClusterConfigurationEnabled();
     Member vm1 = startNodeUsingClusterConfiguration(1, false);
 
     // Connect Gfsh to locator.
-    createAndConnectGfshToLocator();
+    gfshConnector.connect(locator);
 
     // Create lucene index.
     // createLuceneIndexUsingGfsh(false);
@@ -100,13 +103,14 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
     // configuration.
     Member vm2 = startNodeUsingClusterConfiguration(2, false);
     vm2.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(ls.serverStarter.cache);
+      LuceneService luceneService =
+          LuceneServiceProvider.get(LocatorServerStartupRule.serverStarter.cache);
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
       assertNotNull(index);
       String[] fields = new String[] {"field1", "field2", "field3"};
       validateIndexFields(fields, index);
       // Add this check back when we complete xml generation for analyzer.
-      this.validateIndexFieldAnalyzer(fields,
+      validateIndexFieldAnalyzer(fields,
           new String[] {"org.apache.lucene.analysis.standard.StandardAnalyzer",
               "org.apache.lucene.analysis.standard.StandardAnalyzer",
               "org.apache.lucene.analysis.standard.StandardAnalyzer"},
@@ -116,7 +120,7 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
 
   @Test
   public void indexGetsCreatedOnGroupOfNodes() throws Exception {
-    Member locator = startLocatorWithClusterConfigurationEnabled();
+    Locator locator = startLocatorWithClusterConfigurationEnabled();
 
     // Start vm1, vm2 in group
     Member vm1 = startNodeUsingClusterConfiguration(1, true);
@@ -126,7 +130,7 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
     Member vm3 = startNodeUsingClusterConfiguration(3, true);
 
     // Connect Gfsh to locator.
-    createAndConnectGfshToLocator();
+    gfshConnector.connect(locator);
 
     // Create lucene index on group.
     createLuceneIndexUsingGfsh(true);
@@ -136,7 +140,8 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
 
     // VM2 should have lucene index created using gfsh execution.
     vm2.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(ls.serverStarter.cache);
+      LuceneService luceneService =
+          LuceneServiceProvider.get(LocatorServerStartupRule.serverStarter.cache);
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
       assertNotNull(index);
       validateIndexFields(new String[] {"field1", "field2", "field3"}, index);
@@ -144,7 +149,8 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
 
     // The Lucene index is present in vm3.
     vm3.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(ls.serverStarter.cache);
+      LuceneService luceneService =
+          LuceneServiceProvider.get(LocatorServerStartupRule.serverStarter.cache);
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
       assertNotNull(index);
     });
@@ -152,7 +158,7 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
 
   @Test
   public void indexNotCreatedOnNodeOutSideTheGroup() throws Exception {
-    Member locator = startLocatorWithClusterConfigurationEnabled();
+    Locator locator = startLocatorWithClusterConfigurationEnabled();
 
     // Start vm1, vm2 in group
     Member vm1 = startNodeUsingClusterConfiguration(1, true);
@@ -162,7 +168,7 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
     Member vm3 = startNodeUsingClusterConfiguration(3, false);
 
     // Connect Gfsh to locator.
-    createAndConnectGfshToLocator();
+    gfshConnector.connect(locator);
 
     // Create lucene index on group.
     createLuceneIndexUsingGfsh(true);
@@ -172,7 +178,8 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
 
     // VM2 should have lucene index created using gfsh execution
     vm2.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(ls.serverStarter.cache);
+      LuceneService luceneService =
+          LuceneServiceProvider.get(LocatorServerStartupRule.serverStarter.cache);
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
       assertNotNull(index);
       validateIndexFields(new String[] {"field1", "field2", "field3"}, index);
@@ -180,7 +187,8 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
 
     // The Lucene index should not be present in vm3.
     vm3.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(ls.serverStarter.cache);
+      LuceneService luceneService =
+          LuceneServiceProvider.get(LocatorServerStartupRule.serverStarter.cache);
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
       assertNull(index);
     });
@@ -188,12 +196,12 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
 
   @Test
   public void indexAreCreatedInValidGroupOfNodesJoiningLater() throws Exception {
-    Member locator = startLocatorWithClusterConfigurationEnabled();
+    Locator locator = startLocatorWithClusterConfigurationEnabled();
 
     // Start vm1 in group
     Member vm1 = startNodeUsingClusterConfiguration(1, true);
     // Connect Gfsh to locator.
-    createAndConnectGfshToLocator();
+    gfshConnector.connect(locator);
 
     // Create lucene index on group.
     createLuceneIndexUsingGfsh(true);
@@ -208,7 +216,8 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
 
     // VM2 should have lucene index created using gfsh execution
     vm2.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(ls.serverStarter.cache);
+      LuceneService luceneService =
+          LuceneServiceProvider.get(LocatorServerStartupRule.serverStarter.cache);
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
       assertNotNull(index);
       validateIndexFields(new String[] {"field1", "field2", "field3"}, index);
@@ -216,50 +225,29 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
 
     // The Lucene index should not be present in vm3.
     vm3.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(ls.serverStarter.cache);
+      LuceneService luceneService =
+          LuceneServiceProvider.get(LocatorServerStartupRule.serverStarter.cache);
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
       assertNull(index);
     });
   }
 
-  private void createAndConnectGfshToLocator() {
-    HeadlessGfsh gfsh = getDefaultShell();
-    connect(jmxHost, jmxPort, httpPort, gfsh);
-  }
 
   private Member startNodeUsingClusterConfiguration(int vmIndex, boolean addGroup)
       throws Exception {
-    File dir = this.temporaryFolder.newFolder();
     Properties nodeProperties = new Properties();
-    nodeProperties.setProperty(USE_CLUSTER_CONFIGURATION, "true");
-    nodeProperties.setProperty(DEPLOY_WORKING_DIR, dir.getCanonicalPath());
     if (addGroup) {
       nodeProperties.setProperty(GROUPS, groupName);
     }
     return ls.startServerVM(vmIndex, nodeProperties, ls.getMember(0).getPort());
   }
 
-  private Member startLocatorWithClusterConfigurationEnabled() throws Exception {
-    try {
-      jmxHost = InetAddress.getLocalHost().getHostName();
-    } catch (UnknownHostException ignore) {
-      jmxHost = "localhost";
-    }
-
-    File dir = this.temporaryFolder.newFolder();
-
-    final int[] ports = getRandomAvailableTCPPorts(2);
-    jmxPort = ports[0];
-    httpPort = ports[1];
+  private Locator startLocatorWithClusterConfigurationEnabled() throws Exception {
 
     Properties locatorProps = new Properties();
     locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
     locatorProps.setProperty(JMX_MANAGER, "true");
     locatorProps.setProperty(JMX_MANAGER_START, "true");
-    locatorProps.setProperty(JMX_MANAGER_BIND_ADDRESS, String.valueOf(jmxHost));
-    locatorProps.setProperty(JMX_MANAGER_PORT, String.valueOf(jmxPort));
-    locatorProps.setProperty(HTTP_SERVICE_PORT, String.valueOf(httpPort));
-    locatorProps.setProperty(CLUSTER_CONFIGURATION_DIR, dir.getCanonicalPath());
     return ls.startLocatorVM(0, locatorProps);
   }
 
@@ -273,7 +261,7 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
       csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__GROUP, groupName);
     }
     csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
-    executeCommand(csb.toString());
+    gfshConnector.executeAndVerifyCommand(csb.toString());
   }
 
   private void createLuceneIndexWithAnalyzerUsingGfsh(boolean addGroup) throws Exception {
@@ -292,33 +280,27 @@ public class LuceneClusterConfigurationDUnitTest extends CliCommandTestBase {
       csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__GROUP, groupName);
     }
     // Execute Gfsh command.
-    executeCommand(csb.toString());
+    gfshConnector.executeAndVerifyCommand(csb.toString());
   }
 
-  private void createRegionUsingGfsh(String regionName, RegionShortcut regionShortCut,
-      String group) {
+  private void createRegionUsingGfsh(String regionName, RegionShortcut regionShortCut, String group)
+      throws Exception {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_REGION);
     csb.addOption(CliStrings.CREATE_REGION__REGION, regionName);
     csb.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, regionShortCut.name());
     csb.addOptionWithValueCheck(CliStrings.CREATE_REGION__GROUP, group);
-    executeAndVerifyCommand(csb.toString());
+    gfshConnector.executeAndVerifyCommand(csb.toString());
   }
 
-  private void executeAndVerifyCommand(String commandString) {
-    CommandResult cmdResult = executeCommand(commandString);
-    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Command : " + commandString);
-    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
-        .info("Command Result : " + commandResultToString(cmdResult));
-    assertEquals(Status.OK, cmdResult.getStatus());
-  }
 
-  private void validateIndexFields(String[] indexFields, LuceneIndex index) {
+  private static void validateIndexFields(String[] indexFields, LuceneIndex index) {
     String[] indexFieldNames = index.getFieldNames();
     Arrays.sort(indexFieldNames);
     assertArrayEquals(indexFields, indexFieldNames);
   }
 
-  private void validateIndexFieldAnalyzer(String[] fields, String[] analyzers, LuceneIndex index) {
+  private static void validateIndexFieldAnalyzer(String[] fields, String[] analyzers,
+      LuceneIndex index) {
     Map<String, Analyzer> indexfieldAnalyzers = index.getFieldAnalyzers();
     for (int i = 0; i < fields.length; i++) {
       Analyzer a = indexfieldAnalyzers.get(fields[i]);

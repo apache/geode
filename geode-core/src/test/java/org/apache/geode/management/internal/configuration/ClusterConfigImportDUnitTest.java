@@ -31,8 +31,8 @@ import org.apache.geode.test.dunit.rules.Locator;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.Server;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -46,7 +46,8 @@ import java.util.zip.ZipFile;
 
 @Category(DistributedTest.class)
 public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
-  private GfshShellConnectionRule gfshConnector;
+  @Rule
+  public GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
 
   public static final ClusterConfig INITIAL_CONFIG = new ClusterConfig(new ConfigGroup("cluster"));
 
@@ -58,19 +59,9 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
     locator = lsRule.startLocatorVM(0, locatorProps);
     INITIAL_CONFIG.verify(locator);
 
-    gfshConnector = new GfshShellConnectionRule(locator);
-    gfshConnector.connect();
+    gfshConnector.connect(locator);
     assertThat(gfshConnector.isConnected()).isTrue();
   }
-
-
-  @After
-  public void after() throws Exception {
-    if (gfshConnector != null) {
-      gfshConnector.close();
-    }
-  }
-
 
   @Test
   public void testImportWithRunningServerWithData() throws Exception {
@@ -106,9 +97,6 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
     // in the region
     CommandResult result = gfshConnector
         .executeCommand("import cluster-configuration --zip-file-name=" + clusterConfigZipPath);
-
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK)
-        .describedAs(result.getContent().toString());
     assertThat(result.getContent().toString())
         .contains("Successfully applied the imported cluster configuration on server-1");
     assertThat(result.getContent().toString())
@@ -129,9 +117,8 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
 
   @Test
   public void testImportClusterConfig() throws Exception {
-    CommandResult result = gfshConnector
-        .executeCommand("import cluster-configuration --zip-file-name=" + clusterConfigZipPath);
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+    gfshConnector.executeAndVerifyCommand(
+        "import cluster-configuration --zip-file-name=" + clusterConfigZipPath);
 
     // Make sure that a backup of the old clusterConfig was created
     assertThat(locator.getWorkingDir().listFiles())
@@ -163,9 +150,8 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
         "localhost[" + locator.getPort() + "],localhost[" + locator1.getPort() + "]");
     Locator locator2 = lsRule.startLocatorVM(2, locatorProps);
 
-    CommandResult result = gfshConnector
-        .executeCommand("import cluster-configuration --zip-file-name=" + clusterConfigZipPath);
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+    gfshConnector.executeAndVerifyCommand(
+        "import cluster-configuration --zip-file-name=" + clusterConfigZipPath);
 
     CONFIG_FROM_ZIP.verify(locator);
     REPLICATED_CONFIG_FROM_ZIP.verify(locator1);
@@ -188,20 +174,16 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
   public void testExportClusterConfig(String zipFilePath) throws Exception {
     Server server1 = lsRule.startServerVM(1, serverProps, locator.getPort());
 
-    CommandResult result =
-        gfshConnector.executeCommand("create region --name=myRegion --type=REPLICATE");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+
+    gfshConnector.executeAndVerifyCommand("create region --name=myRegion --type=REPLICATE");
 
     ConfigGroup cluster = new ConfigGroup("cluster").regions("myRegion");
     ClusterConfig expectedClusterConfig = new ClusterConfig(cluster);
     expectedClusterConfig.verify(server1);
     expectedClusterConfig.verify(locator);
 
-    result =
-        gfshConnector.executeCommand("export cluster-configuration --zip-file-name=" + zipFilePath);
-    System.out.println(result.getContent());
-
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+    gfshConnector
+        .executeAndVerifyCommand("export cluster-configuration --zip-file-name=" + zipFilePath);
 
     File exportedZip = new File(zipFilePath);
     assertThat(exportedZip).exists();

@@ -21,16 +21,14 @@ import static org.apache.geode.test.dunit.Host.getHost;
 
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -60,16 +58,20 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
   private TemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
   private List<Member> members;
 
-  @Before
-  public void before() throws Throwable {
+  public LocatorServerStartupRule() {
+    DUnitLauncher.launchIfNeeded();
+  }
+
+  @Override
+  protected void before() throws Throwable {
     restoreSystemProperties.before();
     temporaryFolder.create();
     Invoke.invokeInEveryVM("Stop each VM", this::stopServerOrLocatorInThisVM);
     members = new ArrayList<>(4);
   }
 
-  @After
-  public void after() {
+  @Override
+  protected void after() {
     restoreSystemProperties.after();
     temporaryFolder.delete();
     Invoke.invokeInEveryVM("Stop each VM", this::stopServerOrLocatorInThisVM);
@@ -93,7 +95,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
       locatorStarter.startLocator();
       return locatorStarter.locator.getPort();
     });
-    Locator locator = new Locator(locatorVM, locatorPort, workingDir);
+    Locator locator = new Locator(locatorVM, locatorPort, workingDir, name);
     members.add(index, locator);
     return locator;
   }
@@ -112,7 +114,6 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
     System.out.println("Current dir is " + new File(".").getCanonicalPath());
     System.out.println("Setting gemfire.home to " + geodeInstallDir);
 
-
     VM locatorVM = getHost(0).getVM(index);
     int locatorPort = locatorVM.invoke(() -> {
       System.setProperty("user.dir", workingDir.getCanonicalPath());
@@ -121,7 +122,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
       locatorStarter.startLocator();
       return locatorStarter.locator.getPort();
     });
-    Locator locator = new Locator(locatorVM, locatorPort, workingDir);
+    Locator locator = new Locator(locatorVM, locatorPort, workingDir, name);
     members.add(index, locator);
     return locator;
   }
@@ -160,7 +161,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
       serverStarter.startServer(locatorPort);
       return serverStarter.server.getPort();
     });
-    Server server = new Server(serverVM, port, workingDir);
+    Server server = new Server(serverVM, port, workingDir, name);
     members.add(index, server);
     return server;
   }
@@ -179,9 +180,11 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
   private void stopServerOrLocatorInThisVM() {
     if (serverStarter != null) {
       serverStarter.after();
+      serverStarter = null;
     }
     if (locatorStarter != null) {
       locatorStarter.after();
+      locatorStarter = null;
     }
   }
 
