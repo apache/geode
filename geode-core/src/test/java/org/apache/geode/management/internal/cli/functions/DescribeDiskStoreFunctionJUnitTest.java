@@ -286,9 +286,9 @@ public class DescribeDiskStoreFunctionJUnitTest {
 
   @Test
   public void testAssertStateThrowsIllegalStateException() {
-    assertThatThrownBy(() ->
-      DescribeDiskStoreFunction.assertState(false, "Expected (%1$s) message!", "test"))
-      .isInstanceOf(IllegalStateException.class).hasMessage("Expected (test) message!");
+    assertThatThrownBy(
+        () -> DescribeDiskStoreFunction.assertState(false, "Expected (%1$s) message!", "test"))
+            .isInstanceOf(IllegalStateException.class).hasMessage("Expected (test) message!");
   }
 
   private void setupEmptyRegionsPdxGatewaysCacheServersAndAsyncEventQueues(
@@ -644,9 +644,9 @@ public class DescribeDiskStoreFunctionJUnitTest {
     function.execute(mockFunctionContext);
 
     String expected = String.format("A disk store with name (%1$s) was not found on member (%2$s).",
-      diskStoreName, memberName);
+        diskStoreName, memberName);
     assertThatThrownBy(() -> testResultSender.getResults())
-      .isInstanceOf(DiskStoreNotFoundException.class).hasMessage(expected);
+        .isInstanceOf(DiskStoreNotFoundException.class).hasMessage(expected);
   }
 
   @Test
@@ -686,8 +686,8 @@ public class DescribeDiskStoreFunctionJUnitTest {
 
     function.execute(mockFunctionContext);
 
-    assertThatThrownBy(() -> testResultSender.getResults())
-      .isInstanceOf(RuntimeException.class).hasMessage("ExpectedStrings");
+    assertThatThrownBy(() -> testResultSender.getResults()).isInstanceOf(RuntimeException.class)
+        .hasMessage("ExpectedStrings");
   }
 
   @Test
@@ -744,7 +744,8 @@ public class DescribeDiskStoreFunctionJUnitTest {
 
     function.execute(mockFunctionContext);
 
-    String expected = "The number of disk directories with a specified size (0) does not match the number of disk directories (1)!";
+    String expected =
+        "The number of disk directories with a specified size (0) does not match the number of disk directories (1)!";
     assertThatThrownBy(() -> testResultSender.getResults()).hasMessage(expected);
   }
 
