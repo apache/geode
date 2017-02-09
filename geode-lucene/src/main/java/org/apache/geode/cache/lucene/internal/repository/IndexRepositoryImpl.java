@@ -51,7 +51,7 @@ public class IndexRepositoryImpl implements IndexRepository {
   private Region<?, ?> userRegion;
   private LuceneIndexStats stats;
   private DocumentCountSupplier documentCountSupplier;
-  private DistributedLockService lockService;
+  private final DistributedLockService lockService;
   private String lockName;
 
   private static final Logger logger = LogService.getLogger();

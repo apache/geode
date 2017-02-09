@@ -6099,6 +6099,10 @@ public class PartitionedRegion extends LocalRegion
     return Collections.unmodifiableSet(new PREntriesSet());
   }
 
+  public Set<Region.Entry> entries(Set<Integer> bucketIds) {
+    return new PREntriesSet(bucketIds);
+  }
+
   /**
    * Set view of entries. This currently extends the keySet iterator and performs individual
    * getEntry() operations using the keys
@@ -6162,6 +6166,13 @@ public class PartitionedRegion extends LocalRegion
   public Set keySet(boolean allowTombstones) {
     checkReadiness();
     return Collections.unmodifiableSet(new KeysSet(allowTombstones));
+  }
+
+  /**
+   * Get a keyset of the given buckets
+   */
+  public Set keySet(Set<Integer> bucketSet) {
+    return new KeysSet(bucketSet);
   }
 
   public Set keysWithoutCreatesForTests() {

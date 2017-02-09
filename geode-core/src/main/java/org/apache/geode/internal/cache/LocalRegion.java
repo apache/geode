@@ -1020,7 +1020,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return newRegion;
   }
 
-  public final void create(Object key, Object value, Object aCallbackArgument)
+  public void create(Object key, Object value, Object aCallbackArgument)
       throws TimeoutException, EntryExistsException, CacheWriterException {
     long startPut = CachePerfStats.getStatTime();
     @Released
