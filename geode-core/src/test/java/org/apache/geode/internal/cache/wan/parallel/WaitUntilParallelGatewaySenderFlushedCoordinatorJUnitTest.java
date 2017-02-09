@@ -60,7 +60,7 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinatorJUnitTest
         new WaitUntilParallelGatewaySenderFlushedCoordinator(this.sender, 1000l,
             TimeUnit.MILLISECONDS, false);
     WaitUntilParallelGatewaySenderFlushedCoordinator coordinatorSpy = spy(coordinator);
-    doReturn(getSuccessfulCallables()).when(coordinatorSpy)
+    doReturn(getSuccessfulCallables(true)).when(coordinatorSpy)
         .buildWaitUntilBucketRegionQueueFlushedCallables(this.region);
     boolean result = coordinatorSpy.waitUntilFlushed();
     assertTrue(result);
@@ -84,7 +84,7 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinatorJUnitTest
         new WaitUntilParallelGatewaySenderFlushedCoordinator(this.sender, 1000l,
             TimeUnit.MILLISECONDS, true);
     WaitUntilParallelGatewaySenderFlushedCoordinator coordinatorSpy = spy(coordinator);
-    doReturn(getSuccessfulCallables()).when(coordinatorSpy)
+    doReturn(getSuccessfulCallables(true)).when(coordinatorSpy)
         .buildWaitUntilBucketRegionQueueFlushedCallables(this.region);
     boolean result = coordinatorSpy.waitUntilFlushed();
     assertTrue(result);
@@ -96,18 +96,18 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinatorJUnitTest
         new WaitUntilParallelGatewaySenderFlushedCoordinator(this.sender, 1000l,
             TimeUnit.MILLISECONDS, true);
     WaitUntilParallelGatewaySenderFlushedCoordinator coordinatorSpy = spy(coordinator);
-    doReturn(getSuccessfulCallables()).when(coordinatorSpy)
+    doReturn(getSuccessfulCallables(false)).when(coordinatorSpy)
         .buildWaitUntilBucketRegionQueueFlushedCallables(this.region);
     boolean result = coordinatorSpy.waitUntilFlushed();
     assertFalse(result);
   }
 
-  private List<WaitUntilBucketRegionQueueFlushedCallable> getSuccessfulCallables()
-      throws Exception {
+  private List<WaitUntilBucketRegionQueueFlushedCallable> getSuccessfulCallables(
+      boolean expectedResult) throws Exception {
     List callables = new ArrayList();
     WaitUntilBucketRegionQueueFlushedCallable callable =
         mock(WaitUntilBucketRegionQueueFlushedCallable.class);
-    when(callable.call()).thenReturn(true);
+    when(callable.call()).thenReturn(expectedResult);
     callables.add(callable);
     return callables;
   }
