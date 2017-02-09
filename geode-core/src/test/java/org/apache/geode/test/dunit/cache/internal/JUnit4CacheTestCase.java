@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.AttributesFactory;
@@ -41,7 +42,6 @@ import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
-import org.apache.geode.internal.FileUtil;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -568,17 +568,13 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
   }
 
   public static final void cleanDiskDirs() throws IOException {
-    FileUtil.delete(getDiskDir());
+    FileUtils.deleteQuietly(getDiskDir());
     Arrays.stream(new File(".").listFiles()).forEach(file -> deleteBACKUPDiskStoreFile(file));
   }
 
   private static void deleteBACKUPDiskStoreFile(final File file) {
     if (file.getName().startsWith("BACKUPDiskStore-")) {
-      try {
-        FileUtil.delete(file);
-      } catch (IOException e) {
-        throw new RuntimeException("Unable to delete BACKUPDiskStore file", e);
-      }
+      FileUtils.deleteQuietly(file);
     }
   }
 
