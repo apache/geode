@@ -14,10 +14,10 @@
  */
 package org.apache.geode.management.internal.cli;
 
+import jline.console.ConsoleReader;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.GfshConfig;
 import org.apache.geode.management.internal.cli.shell.jline.GfshUnsupportedTerminal;
-import jline.console.ConsoleReader;
 import org.springframework.shell.core.ExitShellRequest;
 import org.springframework.shell.event.ShellStatus.Status;
 
@@ -83,17 +83,13 @@ public class HeadlessGfsh implements ResultHandler {
     });
 
     this.shell.start();
-    this.setThreadLocalInstance();
+    this.shell.setThreadLocalInstance();
 
     try {
       shellStarted.await();
     } catch (InterruptedException e) {
       e.printStackTrace(System.out);
     }
-  }
-
-  public void setThreadLocalInstance() {
-    shell.setThreadLocalInstance();
   }
 
   // TODO : Have non-blocking method also where we move executeCommand call to separate thread-pool

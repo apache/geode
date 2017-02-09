@@ -17,11 +17,10 @@ package org.apache.geode.management.internal.security;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
-import static org.apache.geode.internal.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.management.internal.cli.HeadlessGfsh;
 import org.apache.geode.security.TestPostProcessor;
 import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
@@ -29,8 +28,8 @@ import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -41,6 +40,7 @@ import java.util.Properties;
 public class GfshCommandsPostProcessorTest {
 
   protected static int jmxPort = AvailablePortHelper.getRandomAvailableTCPPort();
+
   static Properties properties = new Properties() {
     {
       setProperty(JMX_MANAGER_PORT, jmxPort + "");
@@ -50,38 +50,34 @@ public class GfshCommandsPostProcessorTest {
           "org/apache/geode/management/internal/security/cacheServer.json");
     }
   };
+
+
+  @ClassRule
+  public static ServerStarterRule serverStarter = new ServerStarterRule(properties);
   @Rule
   public GfshShellConnectionRule gfshConnection =
       new GfshShellConnectionRule(jmxPort, GfshShellConnectionRule.PortType.jmxManger);
-  private HeadlessGfsh gfsh = null;
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    ServerStarterRule serverStarter = new ServerStarterRule(properties);
-    serverStarter.startServer();
     serverStarter.cache.createRegionFactory(RegionShortcut.REPLICATE).create("region1");
-  }
-
-  @Before
-  public void before() {
-    gfsh = gfshConnection.getGfsh();
   }
 
   @Test
   @ConnectionConfiguration(user = "data-user", password = "1234567")
   public void testGetPostProcess() throws Exception {
-    gfsh.executeCommand("put --region=region1 --key=key1 --value=value1");
-    gfsh.executeCommand("put --region=region1 --key=key2 --value=value2");
-    gfsh.executeCommand("put --region=region1 --key=key3 --value=value3");
+    gfshConnection.executeCommand("put --region=region1 --key=key1 --value=value1");
+    gfshConnection.executeCommand("put --region=region1 --key=key2 --value=value2");
+    gfshConnection.executeCommand("put --region=region1 --key=key3 --value=value3");
 
     // for get command, assert the return value is processed
-    gfsh.executeCommand("get --region=region1 --key=key1");
-    assertTrue(gfsh.outputString.contains("data-user/region1/key1/value1"), gfsh.outputString);
+    String result = gfshConnection.execute("get --region=region1 --key=key1");
+    assertThat(result).contains("data-user/region1/key1/value1");
 
     // for query command, assert the return values are processed
-    gfsh.executeCommand("query --query=\"select * from /region1\"");
-    assertTrue(gfsh.outputString.contains("data-user/null/null/value1"), gfsh.outputString);
-    assertTrue(gfsh.outputString.contains("data-user/null/null/value2"), gfsh.outputString);
-    assertTrue(gfsh.outputString.contains("data-user/null/null/value3"), gfsh.outputString);
+    result = gfshConnection.execute("query --query=\"select * from /region1\"");
+    assertThat(result).contains("data-user/null/null/value1");
+    assertThat(result).contains("data-user/null/null/value2");
+    assertThat(result).contains("data-user/null/null/value3");
   }
 }

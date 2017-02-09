@@ -38,11 +38,10 @@ import static org.apache.geode.util.test.TestUtil.getResourcePath;
 
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.security.SecurableCommunicationChannels;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.dunit.rules.Locator;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.junit.After;
 import org.junit.Before;
@@ -57,12 +56,15 @@ import java.io.OutputStream;
 import java.util.Properties;
 
 @Category(DistributedTest.class)
-public class ConnectToLocatorSSLDUnitTest extends JUnit4DistributedTestCase {
+public class ConnectToLocatorSSLDUnitTest {
 
   @Rule
   public TemporaryFolder folder = new SerializableTemporaryFolder();
   @Rule
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+
+  @Rule
+  public GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
 
   private File jks = null;
   private File securityPropsFile = null;
@@ -81,20 +83,16 @@ public class ConnectToLocatorSSLDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private void setUpLocatorAndConnect(Properties securityProps) throws Exception {
-    lsRule.startLocatorVM(0, securityProps);
+    Locator locator = lsRule.startLocatorVM(0, securityProps);
 
     // saving the securityProps to a file
     OutputStream out = new FileOutputStream(securityPropsFile);
     securityProps.store(out, null);
 
-    GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule(
-        lsRule.getMember(0).getPort(), GfshShellConnectionRule.PortType.locator);
-
-    gfshConnector.connect(CliStrings.CONNECT__SECURITY_PROPERTIES,
+    gfshConnector.connect(locator, CliStrings.CONNECT__SECURITY_PROPERTIES,
         securityPropsFile.getCanonicalPath());
 
     assertTrue(gfshConnector.isConnected());
-    gfshConnector.close();
   }
 
   @Test

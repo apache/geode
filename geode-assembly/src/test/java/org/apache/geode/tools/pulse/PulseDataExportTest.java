@@ -16,13 +16,12 @@
 
 package org.apache.geode.tools.pulse;
 
-import static org.awaitility.Awaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.Locator;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
@@ -47,7 +46,6 @@ import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -61,14 +59,15 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 @Category(DistributedTest.class)
-public class PulseDataExportTest extends JUnit4DistributedTestCase {
+public class PulseDataExportTest {
 
   @Rule
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
   private Locator locator;
   private org.apache.geode.test.dunit.rules.Server server;
-  private GfshShellConnectionRule gfshConnector;
+  @Rule
+  public GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
   private HttpClient httpClient;
   private CookieStore cookieStore;
 
@@ -80,8 +79,7 @@ public class PulseDataExportTest extends JUnit4DistributedTestCase {
 
     locator = lsRule.startLocatorVMWithPulse(0, new Properties());
 
-    gfshConnector = new GfshShellConnectionRule(locator);
-    gfshConnector.connect();
+    gfshConnector.connect(locator);
     assertThat(gfshConnector.isConnected()).isTrue();
 
     server = lsRule.startServerVM(1, locator.getPort());

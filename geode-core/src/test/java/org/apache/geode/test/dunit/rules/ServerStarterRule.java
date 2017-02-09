@@ -106,7 +106,7 @@ public class ServerStarterRule extends ExternalResource implements Serializable 
 
   @Override
   public void after() {
-    // make sure this cache is the once currently open. A server cache can be recreated due to
+    // make sure this cache is the one currently open. A server cache can be recreated due to
     // importing a new set of cluster configuration.
     cache = GemFireCacheImpl.getInstance();
     if (cache != null) {

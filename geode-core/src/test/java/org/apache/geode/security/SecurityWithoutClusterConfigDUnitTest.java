@@ -15,32 +15,35 @@
 
 package org.apache.geode.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
-
-import java.util.Properties;
-
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Properties;
 
 @Category({DistributedTest.class, SecurityTest.class})
 
-public class SecurityWithoutClusterConfigDUnitTest extends JUnit4DistributedTestCase {
+public class SecurityWithoutClusterConfigDUnitTest {
 
   @Rule
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+
+  private ServerStarterRule serverStarter = null;
 
   @Before
   public void before() throws Exception {
@@ -53,6 +56,12 @@ public class SecurityWithoutClusterConfigDUnitTest extends JUnit4DistributedTest
     props.setProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName());
     props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
     lsRule.startLocatorVM(0, props);
+  }
+
+  @After
+  public void after() {
+    if (serverStarter != null)
+      serverStarter.after();
   }
 
   @Test
@@ -69,7 +78,7 @@ public class SecurityWithoutClusterConfigDUnitTest extends JUnit4DistributedTest
     props.setProperty("use-cluster-configuration", "true");
 
     // initial security properties should only contain initial set of values
-    ServerStarterRule serverStarter = new ServerStarterRule(props);
+    serverStarter = new ServerStarterRule(props);
     serverStarter.startServer(lsRule.getMember(0).getPort());
     DistributedSystem ds = serverStarter.cache.getDistributedSystem();
     assertEquals(3, ds.getSecurityProperties().size());
