@@ -102,7 +102,7 @@ public class AuthJUnitTest extends RedisTestBase {
   public void testSeparateClientRequests() {
     setupCacheWithPassword();
     try (Jedis authorizedJedis = new Jedis(hostName, Integer.parseInt(redisPort), 100000);
-         Jedis nonAuthorizedJedis = new Jedis(hostName, Integer.parseInt(redisPort), 100000)) {
+        Jedis nonAuthorizedJedis = new Jedis(hostName, Integer.parseInt(redisPort), 100000)) {
       String res = authorizedJedis.auth(PASSWORD);
       assertEquals(res, "OK");
       authorizedJedis.set("foo", "bar"); // No exception for authorized client

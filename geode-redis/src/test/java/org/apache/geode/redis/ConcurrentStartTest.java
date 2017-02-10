@@ -17,69 +17,69 @@ package org.apache.geode.redis;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.experimental.categories.Category;
 
-//TODO I think this test can now be removed
+// TODO I think this test can now be removed
 @Category(IntegrationTest.class)
 public class ConcurrentStartTest extends RedisTestBase {
 
-//  private Cache cache;
-//  private int numServers = 10;
-//
-//  @Rule
-//  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
-//
-//  @Before
-//  public void setUp() {
-//    System.setProperty(DistributedSystem.PROPERTIES_FILE_PROPERTY,
-//        getClass().getSimpleName() + ".properties");
-//  }
-//
-//  @After
-//  public void tearDown() {
-//    if (this.cache != null) {
-//      this.cache.close();
-//      this.cache = null;
-//    }
-//  }
-//
-//  @Test
-//  public void testCachelessStart() throws InterruptedException {
-//    runNServers(numServers);
-//    GemFireCacheImpl.getInstance().close();
-//  }
-//
-//  @Test
-//  public void testCachefulStart() throws InterruptedException {
-//    CacheFactory cf = new CacheFactory();
-//    cf.set(MCAST_PORT, "0");
-//    cf.set(LOCATORS, "");
-//    this.cache = cf.create();
-//
-//    runNServers(numServers);
-//  }
-//
-//  private void runNServers(int n) throws InterruptedException {
-//    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(numServers);
-//    final Thread[] threads = new Thread[n];
-//    for (int i = 0; i < n; i++) {
-//      final int j = i;
-//      Runnable r = new Runnable() {
-//
-//        @Override
-//        public void run() {
-//          GeodeRedisServiceImpl s = new GeodeRedisServiceImpl(ports[j]);
-//          s.start();
-//          s.stop();
-//        }
-//      };
-//
-//      Thread t = new Thread(r);
-//      t.setDaemon(true);
-//      t.start();
-//      threads[i] = t;
-//    }
-//    for (Thread t : threads)
-//      t.join();
-//    this.cache = GemFireCacheImpl.getInstance();
-//    assertFalse(this.cache.isClosed());
-//  }
+  // private Cache cache;
+  // private int numServers = 10;
+  //
+  // @Rule
+  // public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+  //
+  // @Before
+  // public void setUp() {
+  // System.setProperty(DistributedSystem.PROPERTIES_FILE_PROPERTY,
+  // getClass().getSimpleName() + ".properties");
+  // }
+  //
+  // @After
+  // public void tearDown() {
+  // if (this.cache != null) {
+  // this.cache.close();
+  // this.cache = null;
+  // }
+  // }
+  //
+  // @Test
+  // public void testCachelessStart() throws InterruptedException {
+  // runNServers(numServers);
+  // GemFireCacheImpl.getInstance().close();
+  // }
+  //
+  // @Test
+  // public void testCachefulStart() throws InterruptedException {
+  // CacheFactory cf = new CacheFactory();
+  // cf.set(MCAST_PORT, "0");
+  // cf.set(LOCATORS, "");
+  // this.cache = cf.create();
+  //
+  // runNServers(numServers);
+  // }
+  //
+  // private void runNServers(int n) throws InterruptedException {
+  // final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(numServers);
+  // final Thread[] threads = new Thread[n];
+  // for (int i = 0; i < n; i++) {
+  // final int j = i;
+  // Runnable r = new Runnable() {
+  //
+  // @Override
+  // public void run() {
+  // GeodeRedisServiceImpl s = new GeodeRedisServiceImpl(ports[j]);
+  // s.start();
+  // s.stop();
+  // }
+  // };
+  //
+  // Thread t = new Thread(r);
+  // t.setDaemon(true);
+  // t.start();
+  // threads[i] = t;
+  // }
+  // for (Thread t : threads)
+  // t.join();
+  // this.cache = GemFireCacheImpl.getInstance();
+  // assertFalse(this.cache.isClosed());
+  // }
 }

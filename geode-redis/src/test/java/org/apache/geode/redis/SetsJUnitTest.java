@@ -181,7 +181,7 @@ public class SetsJUnitTest extends RedisTestBase {
   }
 
   private void populateListRandomData(int numSets, int elements, String[] keys,
-                                      ArrayList<Set<String>> sets) {
+      ArrayList<Set<String>> sets) {
     for (int j = 0; j < numSets; j++) {
       keys[j] = randString();
       Set<String> newSet = new HashSet<>();
