@@ -2555,7 +2555,10 @@ public class GemFireCacheImpl
   }
 
   private void stopRedisServer() {
-    getService(GeodeRedisService.class).stop();
+    GeodeRedisService geodeRedisService = getService(GeodeRedisService.class);
+    if (geodeRedisService != null) {
+      geodeRedisService.stop();
+    }
   }
 
   private void stopRestAgentServer() {
