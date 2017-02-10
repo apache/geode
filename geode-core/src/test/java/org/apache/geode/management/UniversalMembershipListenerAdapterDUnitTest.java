@@ -415,7 +415,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     ports[0] = startBridgeServer(0);
     assertTrue(ports[0] != 0);
     final DistributedMember serverMember = getMemberId();
-    final String serverMemberId = serverMember.toString();
+    final String serverMemberId = serverMember.getId();
     final Properties serverProperties = getSystem().getProperties();
 
     System.out.println("[testLonerClientEventsInServer] ports[0]=" + ports[0]);
@@ -457,7 +457,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
 
     // create bridge client in vm0...
     DistributedMember clientMember = (DistributedMember) vm0.invoke(createBridgeClient);
-    String clientMemberId = clientMember.toString();
+    String clientMemberId = clientMember.getId();
 
     // should trigger both adapter and bridge listener but not system listener
     synchronized (adapter) {
@@ -589,7 +589,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
 
     // reconnect bridge client to test for crashed event
     clientMember = (DistributedMember) vm0.invoke(createBridgeClient);
-    clientMemberId = clientMember.toString();
+    clientMemberId = clientMember.getId();
 
     synchronized (adapter) {
       if (!firedAdapter[JOINED]) {
@@ -873,7 +873,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     ports[0] = startBridgeServer(0);
     assertTrue(ports[0] != 0);
     final DistributedMember serverMember = getMemberId();
-    final String serverMemberId = serverMember.toString();
+    final String serverMemberId = serverMember.getId();
     final Properties serverProperties = getSystem().getProperties();
 
     // Below removed properties are already got copied as cluster SSL properties
@@ -917,7 +917,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
 
     // create bridge client in vm0...
     DistributedMember clientMember = (DistributedMember) vm0.invoke(createBridgeClient);
-    String clientMemberId = clientMember.toString();
+    String clientMemberId = clientMember.getId();
 
     // should trigger both adapter and bridge listener but not system listener
     synchronized (adapter) {
@@ -1061,7 +1061,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
 
     // reconnect bridge client
     clientMember = (DistributedMember) vm0.invoke(createBridgeClient);
-    clientMemberId = clientMember.toString();
+    clientMemberId = clientMember.getId();
 
     synchronized (adapter) {
       if (!firedAdapter[JOINED]) {
@@ -1204,7 +1204,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
 
     // reconnect bridge client
     clientMember = (DistributedMember) vm0.invoke(createBridgeClient);
-    clientMemberId = clientMember.toString();
+    clientMemberId = clientMember.getId();
 
     synchronized (adapter) {
       if (!firedAdapter[JOINED]) {
@@ -1432,7 +1432,6 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
   }
 
   private void doTestServerEventsInPeerSystem() throws Exception {
-    // KIRK: this test fails intermittently with bug 37482
     final boolean[] firedSystem = new boolean[3];
     final DistributedMember[] memberSystem = new DistributedMember[3];
     final String[] memberIdSystem = new String[3];
@@ -1572,7 +1571,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     ports[0] = startBridgeServer(0);
     assertTrue(ports[0] != 0);
     final DistributedMember serverMember = getMemberId();
-    final String serverMemberId = serverMember.toString();
+    final String serverMemberId = serverMember.getId();
     final Properties serverProperties = getSystem().getProperties();
 
     serverProperties.remove(CLUSTER_SSL_ENABLED);
@@ -1609,7 +1608,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     };
 
     DistributedMember peerMember = (DistributedMember) vm0.invoke(createPeerCache);
-    String peerMemberId = peerMember.toString();
+    String peerMemberId = peerMember.getId();
 
     System.out.println("[testServerEventsInPeerSystem] peerMemberId=" + peerMemberId);
     System.out.println("[testServerEventsInPeerSystem] peerMember=" + peerMember);
@@ -1629,11 +1628,6 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
 
     System.out.println("[testServerEventsInPeerSystem] assert server detected peer join");
     assertArrayFalse(firedSystemDuplicate);
-    // TODO: sometimes get adapter duplicate since memberId isn't endpoint
-    // initial impl uses Endpoint.toString() for memberId of server; final
-    // impl should have server send its real memberId to client via HandShake
-    // assertFalse("Please update testBridgeMembershipEventsInClient to use BridgeServer memberId.",
-    // firedAdapterDuplicate);
 
     assertTrue(firedSystem[JOINED]);
     assertEquals(peerMember, memberSystem[JOINED]);
@@ -1687,8 +1681,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
       }
       synchronized (adapter) {
         if (!firedAdapter[LEFT]) {
-          adapter.wait(ASYNC_EVENT_WAIT_MILLIS); // KIRK: did increasing this solve problem on
-                                                 // balrog?
+          adapter.wait(ASYNC_EVENT_WAIT_MILLIS);
         }
       }
     } finally {
@@ -1699,11 +1692,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
 
     System.out.println("[testServerEventsInPeerSystem] assert server detected peer crashed");
     assertArrayFalse(firedSystemDuplicate);
-    // TODO: sometimes get adapter duplicate since memberId isn't endpoint
-    // initial impl uses Endpoint.toString() for memberId of server; final
-    // impl should have server send its real memberId to client via HandShake
-    // assertFalse("Please update testBridgeMembershipEventsInClient to use BridgeServer memberId.",
-    // firedAdapterDuplicate);
+
     assertArrayFalse(firedAdapterDuplicate);
 
     assertFalse(firedSystem[JOINED]);
@@ -1720,8 +1709,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     assertFalse(isClientSystem[CRASHED]);
     resetArraysForTesting(firedSystem, memberSystem, memberIdSystem, isClientSystem);
 
-    assertFalse("this intermittently fails", firedAdapter[JOINED]); // KIRK --> this fails on balrog
-                                                                    // occasionally
+    assertFalse("this intermittently fails", firedAdapter[JOINED]);
     assertNull(memberIdAdapter[JOINED]);
     assertFalse(isClientAdapter[JOINED]);
     // LEFT fired by System listener
@@ -1900,7 +1888,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     };
 
     DistributedMember serverMember = (DistributedMember) vm0.invoke(createBridgeServer);
-    String serverMemberId = serverMember.toString();
+    String serverMemberId = serverMember.getId();
 
     // gather details for later creation of pool...
     assertEquals(ports[0], (int) vm0.invoke("getServerPort",
@@ -1932,11 +1920,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
         });
 
     System.out.println("[testServerEventsInLonerClient] assert client detected server join");
-    // TODO: sometimes get adapter duplicate since memberId isn't endpoint KIRK
-    // initial impl uses Endpoint.toString() for memberId of server; final
-    // impl should have server send its real memberId to client via HandShake
-    // assertFalse("Please update testBridgeMembershipEventsInClient to use BridgeServer memberId.",
-    // firedAdapterDuplicate);
+
     assertArrayFalse(firedAdapterDuplicate);
     assertArrayFalse(firedBridgeDuplicate);
 
@@ -2018,11 +2002,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     }
 
     System.out.println("[testServerEventsInLonerClient] assert client detected server crashed");
-    // TODO: sometimes get adapter duplicate since memberId isn't endpoint KIRK
-    // initial impl uses Endpoint.toString() for memberId of server; final
-    // impl should have server send its real memberId to client via HandShake
-    // assertFalse("Please update testBridgeMembershipEventsInClient to use BridgeServer memberId.",
-    // firedAdapterDuplicate);
+
     assertArrayFalse(firedAdapterDuplicate);
     assertArrayFalse(firedBridgeDuplicate);
 
@@ -2060,7 +2040,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
 
     // reconnect bridge client to test for crashed event
     serverMember = (DistributedMember) vm0.invoke(createBridgeServer);
-    serverMemberId = serverMember.toString();
+    serverMemberId = serverMember.getId();
 
     // gather details for later creation of pool...
     assertEquals(ports[0], (int) vm0.invoke(
@@ -2086,11 +2066,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
         });
 
     System.out.println("[testServerEventsInLonerClient] assert client detected server re-join");
-    // TODO: sometimes get adapter duplicate since memberId isn't endpoint KIRK
-    // initial impl uses Endpoint.toString() for memberId of server; final
-    // impl should have server send its real memberId to client via HandShake
-    // assertFalse("Please update testBridgeMembershipEventsInClient to use BridgeServer memberId.",
-    // firedAdapterDuplicate);
+
     assertArrayFalse(firedAdapterDuplicate);
     assertArrayFalse(firedBridgeDuplicate);
 
