@@ -125,7 +125,7 @@ public abstract class LuceneQueriesBase extends LuceneDUnitTest {
     dataStore1.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
     dataStore2.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
     putDataInRegion(accessor);
-    assertFalse(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
+    assertFalse(waitForFlushBeforeExecuteTextSearch(accessor, 200));
     dataStore1.invoke(() -> LuceneTestUtilities.resumeSender(getCache()));
     dataStore2.invoke(() -> LuceneTestUtilities.resumeSender(getCache()));
     assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
