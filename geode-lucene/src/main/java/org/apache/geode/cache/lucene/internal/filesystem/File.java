@@ -41,6 +41,7 @@ public class File implements DataSerializableFixedID {
   long created = System.currentTimeMillis();
   long modified = created;
   UUID id = UUID.randomUUID();
+  boolean possiblyRenamed = false;
 
   /**
    * Constructor for serialization only
@@ -130,6 +131,7 @@ public class File implements DataSerializableFixedID {
     out.writeLong(modified);
     out.writeLong(id.getMostSignificantBits());
     out.writeLong(id.getLeastSignificantBits());
+    out.writeBoolean(possiblyRenamed);
   }
 
   @Override
@@ -142,6 +144,7 @@ public class File implements DataSerializableFixedID {
     long high = in.readLong();
     long low = in.readLong();
     id = new UUID(high, low);
+    possiblyRenamed = in.readBoolean();
   }
 
 

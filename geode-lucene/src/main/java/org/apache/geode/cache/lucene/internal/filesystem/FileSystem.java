@@ -115,17 +115,18 @@ public class FileSystem {
       throw new FileNotFoundException(name);
     }
 
-    // TODO consider removeAll with all ChunkKeys listed.
-    final ChunkKey key = new ChunkKey(file.id, 0);
-    while (true) {
-      // TODO consider mutable ChunkKey
-      if (null == chunkRegion.remove(key)) {
-        // no more chunks
-        break;
+    if (file.possiblyRenamed == false) {
+      // TODO consider removeAll with all ChunkKeys listed.
+      final ChunkKey key = new ChunkKey(file.id, 0);
+      while (true) {
+        // TODO consider mutable ChunkKey
+        if (null == chunkRegion.remove(key)) {
+          // no more chunks
+          break;
+        }
+        key.chunkId++;
       }
-      key.chunkId++;
     }
-
     stats.incFileDeletes(1);
   }
 
@@ -137,17 +138,17 @@ public class FileSystem {
     }
 
     final File destFile = new File(this, dest);
-
     destFile.chunks = sourceFile.chunks;
     destFile.created = sourceFile.created;
     destFile.length = sourceFile.length;
     destFile.modified = sourceFile.modified;
     destFile.id = sourceFile.id;
-
+    sourceFile.possiblyRenamed = true;
     // TODO - What is the state of the system if
     // things crash in the middle of moving this file?
     // Seems like we will have two files pointing
     // at the same data
+    updateFile(sourceFile);
     putIfAbsentFile(dest, destFile);
 
     fileRegion.remove(source);
