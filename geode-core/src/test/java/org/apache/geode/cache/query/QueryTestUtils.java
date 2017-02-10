@@ -14,15 +14,9 @@
  */
 package org.apache.geode.cache.query;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
+import org.apache.commons.io.FileUtils;
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -37,6 +31,13 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Utility class for testing supported queries
@@ -1763,12 +1764,11 @@ public class QueryTestUtils implements Serializable {
     Object[] result = new Object[qarr.length];
     String query = null;
     int j = 0;
-    for (int i = 0; i < qarr.length; i++) {
-      query = queries.get(qarr[i]);
-      if (query.indexOf("distinct") == -1)
+    for (final String aQarr : qarr) {
+      query = queries.get(aQarr);
+      if (!query.toLowerCase().contains("distinct")) {
         query = query.replaceFirst("select", "select distinct");
-      else if (query.indexOf("DISTINCT") == -1)
-        query = query.replaceFirst("select", "select distinct");
+      }
 
       // hydra.getLogWriter().info("\nExecuting query: " + query);
       try {
@@ -1799,7 +1799,7 @@ public class QueryTestUtils implements Serializable {
 
   public static void closeCacheInVM(VM vm) {
     vm.invoke(() -> {
-      getInstance().cache.close();
+      cache.close();
     });
   }
 
@@ -1822,7 +1822,7 @@ public class QueryTestUtils implements Serializable {
 
   public static File createTestRootDiskStore(String testName) throws IOException {
     File diskDir = new File(testName).getAbsoluteFile();
-    org.apache.geode.internal.FileUtil.delete(diskDir);
+    FileUtils.deleteDirectory(diskDir);
     diskDir.mkdir();
     diskDir.deleteOnExit();
     return diskDir;

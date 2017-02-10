@@ -15,6 +15,15 @@
 
 package org.apache.geode.cache.client;
 
+import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.junit.runners.MethodSorters.NAME_ASCENDING;
+
+import org.apache.commons.io.FileUtils;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.client.internal.ProxyCache;
@@ -24,7 +33,6 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
-import org.apache.geode.internal.FileUtil;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataInputStream;
@@ -49,11 +57,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.junit.runners.MethodSorters.NAME_ASCENDING;
 
 /**
  * Unit test for the ClientCacheFactory class
@@ -125,7 +128,7 @@ public class ClientCacheFactoryJUnitTest {
     this.tmpFile.deleteOnExit();
     URL url = ClientCacheFactoryJUnitTest.class
         .getResource("ClientCacheFactoryJUnitTest_single_pool.xml");;
-    FileUtil.copy(url, this.tmpFile);
+    FileUtils.copyFile(new File(url.getFile()), this.tmpFile);
     this.cc = new ClientCacheFactory().set(CACHE_XML_FILE, this.tmpFile.getAbsolutePath()).create();
     GemFireCacheImpl gfc = (GemFireCacheImpl) this.cc;
     assertEquals(true, gfc.isClient());

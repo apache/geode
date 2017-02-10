@@ -14,9 +14,24 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.cache.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.util.ObjectSizer;
-import org.apache.geode.internal.FileUtil;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
@@ -26,10 +41,6 @@ import org.junit.experimental.categories.Category;
 import java.io.File;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 @Category(IntegrationTest.class)
 public class PersistentPartitionedRegionJUnitTest {
@@ -48,7 +59,7 @@ public class PersistentPartitionedRegionJUnitTest {
     if (cache != null && !cache.isClosed()) {
       cache.close();
     }
-    FileUtil.delete(dir);
+    FileUtils.deleteDirectory(dir);
   }
 
   @Test

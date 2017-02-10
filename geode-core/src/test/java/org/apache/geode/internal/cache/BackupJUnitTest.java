@@ -14,9 +14,28 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.cache.*;
+import static junit.framework.TestCase.assertNotNull;
+import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.io.filefilter.RegexFileFilter;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.DiskStoreFactory;
+import org.apache.geode.cache.DiskWriteAttributesFactory;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.FileUtil;
 import org.apache.geode.internal.cache.persistence.BackupManager;
 import org.apache.geode.internal.cache.persistence.RestoreScript;
 import org.apache.geode.test.junit.categories.IntegrationTest;
@@ -25,13 +44,19 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.*;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Properties;
+import java.util.Random;
 
 /**
  *
@@ -92,15 +117,15 @@ public class BackupJUnitTest {
   @After
   public void tearDown() throws Exception {
     cache.close();
-    FileUtil.delete(backupDir);
-    FileUtil.delete(diskDirs[0]);
-    FileUtil.delete(diskDirs[1]);
+    FileUtils.deleteDirectory(backupDir);
+    FileUtils.deleteDirectory(diskDirs[0]);
+    FileUtils.deleteDirectory(diskDirs[1]);
   }
 
   private void destroyDiskDirs() throws IOException {
-    FileUtil.delete(diskDirs[0]);
+    FileUtils.deleteDirectory(diskDirs[0]);
     diskDirs[0].mkdir();
-    FileUtil.delete(diskDirs[1]);
+    FileUtils.deleteDirectory(diskDirs[1]);
     diskDirs[1].mkdir();
   }
 
@@ -300,7 +325,10 @@ public class BackupJUnitTest {
     BackupManager backup = cache.startBackup(cache.getDistributedSystem().getDistributedMember());
     backup.prepareBackup();
     backup.finishBackup(backupDir, null, false);
-    File cacheXmlBackup = FileUtil.find(backupDir, ".*config.cache.xml");
+    Collection<File> fileCollection = FileUtils.listFiles(backupDir,
+        new RegexFileFilter("cache.xml"), DirectoryFileFilter.DIRECTORY);
+    assertEquals(1, fileCollection.size());
+    File cacheXmlBackup = fileCollection.iterator().next();
     assertTrue(cacheXmlBackup.exists());
     byte[] expectedBytes = getBytes(cacheXmlFile);
     byte[] backupBytes = getBytes(cacheXmlBackup);
@@ -345,7 +373,9 @@ public class BackupJUnitTest {
   }
 
   private void restoreBackup(boolean expectFailure) throws IOException, InterruptedException {
-    List<File> restoreScripts = FileUtil.findAll(backupDir, ".*restore.*");
+    Collection<File> restoreScripts = FileUtils.listFiles(backupDir,
+        new RegexFileFilter(".*restore.*"), DirectoryFileFilter.DIRECTORY);
+    assertNotNull(restoreScripts);
     assertEquals("Restore scripts " + restoreScripts, 1, restoreScripts.size());
     for (File script : restoreScripts) {
       execute(script, expectFailure);

@@ -14,28 +14,27 @@
  */
 package org.apache.geode;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.RestAPITest;
+import org.apache.geode.util.test.TestUtil;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.List;
+import java.util.Collection;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.apache.geode.test.junit.categories.RestAPITest;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.internal.FileUtil;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.util.test.TestUtil;
 
 @Category({IntegrationTest.class, RestAPITest.class})
 public class BundledJarsJUnitTest {
@@ -93,11 +92,11 @@ public class BundledJarsJUnitTest {
         "Please set the GEODE_HOME environment variable to the product installation directory.",
         geodeHomeDirectory.isDirectory());
 
-    List<File> jars = FileUtil.findAll(geodeHomeDirectory, ".*\\.jar");
+    Collection<File> jars = FileUtils.listFiles(geodeHomeDirectory, new String[] {"jar"}, true);
     TreeMap<String, String> sortedJars = new TreeMap<String, String>();
-    jars.stream().forEach(jar -> sortedJars.put(jar.getName(), jar.getPath()));
+    jars.forEach(jar -> sortedJars.put(jar.getName(), jar.getPath()));
 
-    List<File> wars = FileUtil.findAll(geodeHomeDirectory, ".*\\.war");
+    Collection<File> wars = FileUtils.listFiles(geodeHomeDirectory, new String[] {"war"}, true);
     TreeSet<File> sortedWars = new TreeSet<File>(wars);
     sortedWars.stream().flatMap(BundledJarsJUnitTest::extractJarNames)
         .forEach(jar -> sortedJars.put(jar.getName(), jar.getPath()));

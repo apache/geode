@@ -15,11 +15,9 @@
 package org.apache.geode.internal.io;
 
 import org.apache.geode.i18n.LogWriterI18n;
-import org.apache.geode.internal.FileUtil;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.regex.Pattern;
@@ -42,7 +40,7 @@ public class MainWithChildrenRollingFileHandler implements RollingFileHandler {
     File dir = getParentFile(file.getAbsoluteFile());
     int endIdx1 = file.getName().indexOf('-');
     int endIdx2 = file.getName().lastIndexOf('.');
-    String baseName = file.getName();
+    String baseName;
     if (endIdx1 != -1) {
       baseName = file.getName().substring(0, endIdx1);
     } else {
@@ -222,26 +220,13 @@ public class MainWithChildrenRollingFileHandler implements RollingFileHandler {
   }
 
   private File[] findChildren(final File dir, final Pattern pattern) {
-    return FileUtil.listFiles(dir, new FilenameFilter() {
-      @Override
-      public boolean accept(File dir, String name) {
-        return pattern.matcher(name).matches();
-      }
-    });
+    return dir.listFiles((dir1, name) -> pattern.matcher(name).matches());
   }
 
   private File[] findChildrenExcept(final File dir, final Pattern pattern, final File exception) {
     final String exceptionName = (exception == null) ? null : exception.getName();
-    return FileUtil.listFiles(dir, new FilenameFilter() {
-      @Override
-      public boolean accept(File dir, String name) {
-        if (name.equals(exceptionName)) {
-          return false;
-        } else {
-          return pattern.matcher(name).matches();
-        }
-      }
-    });
+    return dir
+        .listFiles((dir1, name) -> !name.equals(exceptionName) && pattern.matcher(name).matches());
   }
 
 }

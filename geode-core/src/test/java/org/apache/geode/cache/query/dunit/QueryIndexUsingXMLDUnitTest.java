@@ -14,18 +14,9 @@
  */
 package org.apache.geode.cache.query.dunit;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Properties;
-
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
+import org.apache.commons.io.FileUtils;
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheExistsException;
@@ -44,7 +35,6 @@ import org.apache.geode.cache.query.internal.index.PartitionedIndex;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.FileUtil;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -62,6 +52,15 @@ import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.util.test.TestUtil;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Properties;
 
 @Category(DistributedTest.class)
 public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
@@ -70,7 +69,7 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
 
   static private final int WAIT_DEFAULT = (60 * 1000);
 
-  public static final long MAX_TIME = Integer.getInteger(WAIT_PROPERTY, WAIT_DEFAULT).intValue();
+  public static final long MAX_TIME = Integer.getInteger(WAIT_PROPERTY, WAIT_DEFAULT);
 
   final String name = "PartionedPortfolios";
   final String repRegName = "Portfolios";
@@ -120,7 +119,9 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
     // avoid creating a new cache just to get the diskstore name
     Invoke.invokeInEveryVM(resetTestHook());
     disconnectFromDS();
-    FileUtil.delete(new File(GemFireCacheImpl.DEFAULT_DS_NAME).getAbsoluteFile());
+    File deleteMe = new File(GemFireCacheImpl.DEFAULT_DS_NAME).getAbsoluteFile();
+    if (deleteMe.exists())
+      FileUtils.forceDelete(deleteMe);
   }
 
   /**
@@ -882,7 +883,7 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
         // remove the disk store.
         File diskDir = new File(diskStoreName).getAbsoluteFile();
         try {
-          org.apache.geode.internal.FileUtil.delete(diskDir);
+          FileUtils.deleteDirectory(diskDir);
         } catch (Exception ex) {
           fail("Failed to delete the disDir");
         }

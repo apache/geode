@@ -23,8 +23,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.geode.internal.FileUtil;
-
 /**
  * This class is used to automatically generate a restore script for a backup. It keeps a list of
  * files that were backed up, and a list of files that we should test for to avoid overriding when
@@ -100,7 +98,7 @@ public class RestoreScript {
       for (Map.Entry<File, File> entry : backedUpFiles.entrySet()) {
         File backup = entry.getKey();
         boolean backupHasFiles = backup.isDirectory() && backup.list().length != 0;
-        backup = FileUtil.removeParent(outputDir, backup);
+        backup = outputDir.toPath().relativize(backup.toPath()).toFile();
         File original = entry.getValue();
         if (original.isDirectory()) {
           osGenerator.writeCopyDirectoryContents(writer, backup, original, backupHasFiles);
@@ -136,7 +134,7 @@ public class RestoreScript {
   private boolean isWindows() {
     String os = System.getProperty("os.name");
     if (os != null) {
-      if (os.indexOf("Windows") != -1) {
+      if (os.contains("Windows")) {
         return true;
       }
     }

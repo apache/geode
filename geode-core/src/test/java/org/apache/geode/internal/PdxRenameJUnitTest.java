@@ -14,7 +14,17 @@
  */
 package org.apache.geode.internal;
 
-import org.apache.geode.cache.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DiskStoreFactory;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
@@ -29,10 +39,6 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.regex.Pattern;
-
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.assertEquals;
 
 @Category(IntegrationTest.class)
 public class PdxRenameJUnitTest {
@@ -67,7 +73,7 @@ public class PdxRenameJUnitTest {
         }
       }
     } finally {
-      FileUtil.delete(f);
+      FileUtils.deleteDirectory(f);
     }
   }
 
@@ -118,7 +124,7 @@ public class PdxRenameJUnitTest {
         }
       }
     } finally {
-      FileUtil.delete(f);
+      FileUtils.deleteDirectory(f);
     }
   }
 

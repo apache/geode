@@ -14,6 +14,10 @@
  */
 package org.apache.geode.internal.logging;
 
+import org.apache.geode.SystemFailure;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,11 +40,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
-
-import org.apache.geode.SystemFailure;
-import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.FileUtil;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * This program merges entries from multiple GemFire log files (those written using a
@@ -188,17 +187,19 @@ public class MergeLogFiles {
    * @param dirName directory to search
    * @return all of the .log files found (Files)
    */
-  static ArrayList getLogFiles(String dirName) {
-    ArrayList result = new ArrayList();
+  static ArrayList<File> getLogFiles(String dirName) {
+    ArrayList<File> result = new ArrayList<>();
 
     File dir = new File(dirName);
-    File names[] = FileUtil.listFiles(dir);
-    for (int i = 0; i < names.length; i++) {
-      String n = names[i].getAbsolutePath();
-      if (n.endsWith(".log") || n.endsWith(".log.gz")) {
-        result.add(names[i]);
-      }
-    } // for
+    File names[] = dir.listFiles();
+    if (names != null) {
+      for (final File name : names) {
+        String n = name.getAbsolutePath();
+        if (n.endsWith(".log") || n.endsWith(".log.gz")) {
+          result.add(name);
+        }
+      } // for
+    }
     return result;
   }
 

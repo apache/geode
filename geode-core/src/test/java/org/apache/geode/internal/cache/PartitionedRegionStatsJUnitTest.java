@@ -22,17 +22,7 @@ package org.apache.geode.internal.cache;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.Random;
-import java.util.Set;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
+import org.apache.commons.io.FileUtils;
 import org.apache.geode.LogWriter;
 import org.apache.geode.Statistics;
 import org.apache.geode.cache.AttributesFactory;
@@ -43,8 +33,17 @@ import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.PartitionedRegionStorageException;
 import org.apache.geode.cache.RegionExistsException;
-import org.apache.geode.internal.FileUtil;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.Random;
+import java.util.Set;
 
 /**
  *  
@@ -62,7 +61,7 @@ public class PartitionedRegionStatsJUnitTest {
   @After
   public void tearDown() throws IOException {
     PartitionedRegionTestHelper.closeCache();
-    FileUtil.delete(DISK_DIR);
+    FileUtils.deleteDirectory(DISK_DIR);
   }
 
   private PartitionedRegion createPR(String name, int lmax, int redundancy) {

@@ -14,13 +14,9 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Map;
-import java.util.Set;
-
+import org.apache.commons.io.FileUtils;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskStore;
@@ -28,7 +24,6 @@ import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.internal.FileUtil;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Invoke;
@@ -37,6 +32,11 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Map;
+import java.util.Set;
 
 public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
 
@@ -51,7 +51,7 @@ public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
         new Object[] {getUniqueName()});
     setRegionName(getUniqueName());
     diskDir = new File("diskDir-" + getName()).getAbsoluteFile();
-    org.apache.geode.internal.FileUtil.delete(diskDir);
+    FileUtils.deleteDirectory(diskDir);
     diskDir.mkdir();
     diskDir.deleteOnExit();
   }
@@ -62,7 +62,7 @@ public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
 
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
-    org.apache.geode.internal.FileUtil.delete(diskDir);
+    FileUtils.deleteDirectory(diskDir);
     postTearDownPersistentReplicatedTestBase();
   }
 
@@ -216,16 +216,16 @@ public abstract class PersistentReplicatedTestBase extends JUnit4CacheTestCase {
   protected void backupDir(VM vm) throws IOException {
     File dirForVM = getDiskDirForVM(vm);
     File backFile = new File(dirForVM.getParent(), dirForVM.getName() + ".bk");
-    FileUtil.copy(dirForVM, backFile);
+    FileUtils.copyDirectory(dirForVM, backFile);
   }
 
   protected void restoreBackup(VM vm) throws IOException {
     File dirForVM = getDiskDirForVM(vm);
     File backFile = new File(dirForVM.getParent(), dirForVM.getName() + ".bk");
     if (!backFile.renameTo(dirForVM)) {
-      FileUtil.delete(dirForVM);
-      FileUtil.copy(backFile, dirForVM);
-      FileUtil.delete(backFile);
+      FileUtils.deleteDirectory(dirForVM);
+      FileUtils.copyDirectory(backFile, dirForVM);
+      FileUtils.deleteDirectory(backFile);
     }
   }
 

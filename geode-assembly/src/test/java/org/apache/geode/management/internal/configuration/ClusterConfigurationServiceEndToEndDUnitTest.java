@@ -27,8 +27,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
-import static org.apache.geode.internal.FileUtil.delete;
-import static org.apache.geode.internal.FileUtil.deleteMatching;
 import static org.apache.geode.internal.lang.StringUtils.isBlank;
 import static org.apache.geode.management.internal.cli.CliUtil.getAllNormalMembers;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
@@ -48,7 +46,6 @@ import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.ClassBuilder;
-import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.admin.remote.ShutdownAllRequest;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.management.cli.Result.Status;
@@ -321,11 +318,6 @@ public class ClusterConfigurationServiceEndToEndDUnitTest extends CliCommandTest
     csb.addOption(CliStrings.DEPLOY__JAR, jarName);
     executeAndVerifyCommand(csb.getCommandString());
     jarFileNames.add(jarName);
-  }
-
-  private void deleteSavedJarFiles() throws IOException {
-    deleteMatching(new File("."), "^" + JarDeployer.JAR_PREFIX + "Deploy1.*#\\d++$");
-    delete(new File("Deploy1.jar"));
   }
 
   private Object[] setup() throws IOException {

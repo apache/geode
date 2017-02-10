@@ -14,13 +14,13 @@
  */
 package org.apache.geode.util.test;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.SystemUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-
-import org.apache.commons.lang.SystemUtils;
-import org.apache.geode.internal.FileUtil;
 
 public class TestUtil {
 
@@ -46,7 +46,7 @@ public class TestUtil {
         String filename = name.replaceFirst(".*/", "");
         File tmpFile = File.createTempFile(filename, null);
         tmpFile.deleteOnExit();
-        FileUtil.copy(resource, tmpFile);
+        FileUtils.copyFile(new File(resource.getFile()), tmpFile);
         return compatibleWithWindows(tmpFile.getAbsolutePath());
       }
       return compatibleWithWindows(path);

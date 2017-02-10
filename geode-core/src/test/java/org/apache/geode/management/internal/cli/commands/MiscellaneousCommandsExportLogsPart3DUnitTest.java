@@ -14,11 +14,17 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.fail;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+
+import org.apache.commons.io.FileUtils;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.internal.FileUtil;
 import org.apache.geode.internal.logging.LogWriterImpl;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
@@ -35,11 +41,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
-
-import static org.apache.geode.test.dunit.Assert.assertEquals;
-import static org.apache.geode.test.dunit.Assert.fail;
-import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
-import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * Dunit class for testing gemfire function commands : export logs
@@ -115,7 +116,7 @@ public class MiscellaneousCommandsExportLogsPart3DUnitTest extends CliCommandTes
     } else {
       fail("testExportLogsForGroup failed as did not get CommandResult");
     }
-    FileUtil.delete(new File("testExportLogsForGroup" + dir));
+    FileUtils.deleteQuietly(new File("testExportLogsForGroup" + dir));
   }
 
   @Test
@@ -150,6 +151,6 @@ public class MiscellaneousCommandsExportLogsPart3DUnitTest extends CliCommandTes
     } else {
       fail("testExportLogsForMember failed as did not get CommandResult");
     }
-    FileUtil.delete(new File("testExportLogsForMember" + dir));
+    FileUtils.deleteQuietly(new File("testExportLogsForMember" + dir));
   }
 }

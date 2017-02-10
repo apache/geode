@@ -14,19 +14,15 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.test.dunit.Assert.*;
-import static org.apache.geode.test.dunit.LogWriterUtils.*;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.fail;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
+import org.apache.commons.io.FileUtils;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.internal.FileUtil;
 import org.apache.geode.internal.logging.LogWriterImpl;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
@@ -37,6 +33,11 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Dunit class for testing gemfire function commands : export logs
@@ -100,7 +101,7 @@ public class MiscellaneousCommandsExportLogsPart1DUnitTest extends CliCommandTes
     } else {
       fail("testExportLogs failed as did not get CommandResult");
     }
-    FileUtil.delete(new File("./testExportLogs" + dir));
+    FileUtils.deleteDirectory(new File("./testExportLogs" + dir));
   }
 
   @Category(FlakyTest.class) // GEODE-1477 (http)
@@ -132,6 +133,6 @@ public class MiscellaneousCommandsExportLogsPart1DUnitTest extends CliCommandTes
     } else {
       fail("testExportLogsForMerge failed as did not get CommandResult");
     }
-    FileUtil.delete(new File("./testExportLogsForMerge" + dir));
+    FileUtils.deleteDirectory(new File("./testExportLogsForMerge" + dir));
   }
 }
