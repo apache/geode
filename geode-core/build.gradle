@@ -47,9 +47,6 @@ dependencies {
     exclude module: 'xml-apis'
     ext.optional = true
   }
-  compile ('io.netty:netty-all:' + project.'netty-all.version') {
-    ext.optional = true
-  }
   compile 'it.unimi.dsi:fastutil:' + project.'fastutil.version'
   compile ('javax.mail:javax.mail-api:' + project.'javax.mail-api.version') {
     ext.optional = true;
@@ -126,7 +123,6 @@ dependencies {
   testRuntime 'commons-configuration:commons-configuration:' + project.'commons-configuration.version'
   testRuntime 'commons-io:commons-io:' + project.'commons-io.version'
   testCompile 'net.spy:spymemcached:' + project.'spymemcached.version'
-  testCompile 'redis.clients:jedis:' + project.'jedis.version'
 
   testCompile 'org.powermock:powermock-core:' + project.'powermock.version'
   testCompile 'org.powermock:powermock-module-junit4:' + project.'powermock.version'

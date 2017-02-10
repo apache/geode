@@ -15,8 +15,6 @@
 
 package org.apache.geode.distributed;
 
-import org.apache.geode.redis.GeodeRedisServer;
-
 /**
  * This interface defines all the configuration properties that can be used. <U>Since</U>: Geode 1.0
  */
