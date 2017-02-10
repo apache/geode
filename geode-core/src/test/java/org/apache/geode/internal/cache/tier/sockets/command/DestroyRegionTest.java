@@ -14,11 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
-
-import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -29,7 +26,6 @@ import org.mockito.MockitoAnnotations;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.operations.DestroyOperationContext;
 import org.apache.geode.cache.operations.RegionDestroyOperationContext;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.LocalRegion;
