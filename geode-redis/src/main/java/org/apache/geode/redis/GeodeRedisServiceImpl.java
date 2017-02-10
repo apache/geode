@@ -580,9 +580,9 @@ public class GeodeRedisServiceImpl implements GeodeRedisService {
       Future<?> bossGroupFuture = bossGroup.shutdownGracefully(0, 1, TimeUnit.SECONDS);
       ChannelFuture closeFuture = this.serverChannel.close();
 
+      // TODO we need to investigate how the shutdown should work.
       // We are likely brought here by a channel read reading a shutdown message, in which case
-      // calling
-      // await or sync can cause a deadlock.
+      // calling await or sync can cause a deadlock.
       // workerGroupFuture.syncUninterruptibly();
       // bossGroupFuture.syncUninterruptibly();
       this.regionProvider.close();

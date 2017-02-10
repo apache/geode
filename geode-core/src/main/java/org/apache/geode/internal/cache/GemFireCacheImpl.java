@@ -610,11 +610,6 @@ public class GemFireCacheImpl
    */
   private GemFireMemcachedServer memcachedServer;
 
-  // /**
-  // * Redis server is started when {@link DistributionConfig#getRedisPort()} is set
-  // */
-  // private CacheService redisServer;
-
   /**
    * {@link ExtensionPoint} support.
    * 
@@ -1369,7 +1364,12 @@ public class GemFireCacheImpl
     int port = system.getConfig().getRedisPort();
     if (port != 0) {
       GeodeRedisService geodeRedisService = getService(GeodeRedisService.class);
-      geodeRedisService.start();
+      if (geodeRedisService != null) {
+        geodeRedisService.start();
+      } else {
+        throw new GemFireConfigException(
+            "Geode Redis Service could not be started because it was not registered as a service");
+      }
     }
   }
 
