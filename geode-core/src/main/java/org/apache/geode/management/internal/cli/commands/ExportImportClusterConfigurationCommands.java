@@ -38,8 +38,8 @@ import org.apache.geode.management.internal.cli.result.FileResult;
 import org.apache.geode.management.internal.cli.result.InfoResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
+import org.apache.geode.management.internal.configuration.functions.GetRegionNamesFunction;
 import org.apache.geode.management.internal.configuration.functions.RecreateCacheFunction;
-import org.apache.geode.management.internal.configuration.functions.RegionsWithDataOnServerFunction;
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
@@ -140,12 +140,12 @@ public class ExportImportClusterConfigurationCommands extends AbstractCommandsSu
 
     Set<DistributedMember> servers = CliUtil.getAllNormalMembers(cache);
 
-    Set<String> regionsWithData = servers.stream().map(this::getNonEmptyRegionsOnServer)
+    Set<String> regionsWithData = servers.stream().map(this::getRegionNamesOnServer)
         .flatMap(Collection::stream).collect(toSet());
 
     if (!regionsWithData.isEmpty()) {
-      return ResultBuilder.createGemFireErrorResult(
-          "Cannot import cluster configuration with existing data in regions: "
+      return ResultBuilder
+          .createGemFireErrorResult("Cannot import cluster configuration with existing regions: "
               + regionsWithData.stream().collect(joining(",")));
     }
 
@@ -202,9 +202,8 @@ public class ExportImportClusterConfigurationCommands extends AbstractCommandsSu
     return result;
   }
 
-  private Set<String> getNonEmptyRegionsOnServer(DistributedMember server) {
-    ResultCollector rc =
-        CliUtil.executeFunction(new RegionsWithDataOnServerFunction(), null, server);
+  private Set<String> getRegionNamesOnServer(DistributedMember server) {
+    ResultCollector rc = CliUtil.executeFunction(new GetRegionNamesFunction(), null, server);
     List<Set<String>> results = (List<Set<String>>) rc.getResult();
 
     return results.get(0);

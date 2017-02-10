@@ -24,20 +24,20 @@ import org.apache.geode.internal.cache.LocalRegion;
 
 import java.util.Set;
 
-public class RegionsWithDataOnServerFunction implements Function, InternalEntity {
+public class GetRegionNamesFunction implements Function, InternalEntity {
   @Override
   public void execute(FunctionContext context) {
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
 
-    Set<String> nonEmptyRegions = cache.getApplicationRegions().stream()
-        .filter(region -> !region.isEmpty()).map(LocalRegion::getName).collect(toSet());
+    Set<String> regions =
+        cache.getApplicationRegions().stream().map(LocalRegion::getName).collect(toSet());
 
-    context.getResultSender().lastResult(nonEmptyRegions);
+    context.getResultSender().lastResult(regions);
   }
 
   @Override
   public String getId() {
-    return RegionsWithDataOnServerFunction.class.getName();
+    return GetRegionNamesFunction.class.getName();
   }
 
 }

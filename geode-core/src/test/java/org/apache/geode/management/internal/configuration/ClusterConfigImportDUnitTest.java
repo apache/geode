@@ -21,9 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
@@ -64,31 +62,27 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
   }
 
   @Test
-  public void testImportWithRunningServerWithData() throws Exception {
-    Server server = lsRule.startServerVM(1, serverProps, locator.getPort());
+  public void testImportWithRunningServerWithRegion() throws Exception {
+    Server server1 = lsRule.startServerVM(1, serverProps, locator.getPort());
+    // create another server as well
+    Server server2 = lsRule.startServerVM(2, serverProps, locator.getPort());
     String regionName = "regionA";
-    server.invoke(() -> {
+    server1.invoke(() -> {
+      // this region will be created on both servers, but we should only be getting the name once.
       Cache cache = LocatorServerStartupRule.serverStarter.cache;
-      Region region = cache.createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
-      region.put("key", "value");
+      cache.createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
     });
 
     CommandResult result = gfshConnector
         .executeCommand("import cluster-configuration --zip-file-name=" + clusterConfigZipPath);
 
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getContent().toString()).contains("existing data in regions: " + regionName);
+    assertThat(result.getContent().toString()).contains("existing regions: " + regionName);
   }
 
   @Test
   public void testImportWithRunningServer() throws Exception {
     Server server1 = lsRule.startServerVM(1, serverProps, locator.getPort());
-
-    // create a testRegion and verify that after import, this region does not exist anymore
-    server1.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.cache;
-      cache.createRegionFactory(RegionShortcut.REPLICATE).create("testRegion");
-    });
 
     serverProps.setProperty("groups", "group2");
     Server server2 = lsRule.startServerVM(2, serverProps, locator.getPort());
@@ -103,16 +97,6 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
         .contains("Successfully applied the imported cluster configuration on server-2");
     new ClusterConfig(CLUSTER).verify(server1);
     new ClusterConfig(CLUSTER, GROUP2).verify(server2);
-
-    // verify "testRegion" does not exist in either server anymore
-    server1.invoke(() -> {
-      Cache cache = GemFireCacheImpl.getInstance();
-      assertThat(cache.getRegion("testRegion")).isNull();
-    });
-    server2.invoke(() -> {
-      Cache cache = GemFireCacheImpl.getInstance();
-      assertThat(cache.getRegion("testRegion")).isNull();
-    });
   }
 
   @Test
