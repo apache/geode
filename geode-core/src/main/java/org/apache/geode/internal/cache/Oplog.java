@@ -5189,11 +5189,6 @@ public final class Oplog implements CompactableOplog, Flushable {
   private static final int MAX_CHANNEL_RETRIES = 5;
 
   private final void flush(OplogFile olf, boolean doSync) throws IOException {
-    int flushed;
-    int channelBytesWritten;
-    int numChannelRetries = 0;
-    int bbStartPos;
-    long channelStartPos;
     try {
       synchronized (this.lock/* olf */) {
         if (olf.RAFClosed) {
@@ -5202,15 +5197,15 @@ public final class Oplog implements CompactableOplog, Flushable {
         ByteBuffer bb = olf.writeBuf;
         if (bb != null && bb.position() != 0) {
           bb.flip();
-          flushed = 0;
+          int flushed = 0;
+          int numChannelRetries = 0;
           do {
-            channelBytesWritten = 0;
-            bbStartPos = bb.position();
-            channelStartPos = olf.channel.position();
+            int channelBytesWritten = 0;
+            final int bbStartPos = bb.position();
+            final long channelStartPos = olf.channel.position();
             // differentiate between bytes written on this channel.write() iteration and the
             // total number of bytes written to the channel on this call
             channelBytesWritten = olf.channel.write(bb);
-            flushed += channelBytesWritten;
             // Expect channelBytesWritten and the changes in pp.position() and channel.position() to
             // be the same. If they are not, then the channel.write() silently failed. The following
             // retry separates spurious failures from permanent channel failures.
@@ -5218,11 +5213,16 @@ public final class Oplog implements CompactableOplog, Flushable {
               if (numChannelRetries++ < MAX_CHANNEL_RETRIES) {
                 // Reset the ByteBuffer position, but take into account anything that did get
                 // written to the channel
-                bb.position(bbStartPos + (int) (olf.channel.position() - channelStartPos));
+                channelBytesWritten = (int) (olf.channel.position() - channelStartPos);
+                bb.position(bbStartPos + channelBytesWritten);
               } else {
-                throw new IOException("Failed to write Oplog entry to" + olf.f.getName());
+                throw new IOException("Failed to write Oplog entry to" + olf.f.getName() + ": "
+                    + "channel.write() returned " + channelBytesWritten + ", "
+                    + "change in channel position = " + (olf.channel.position() - channelStartPos)
+                    + ", " + "change in source buffer position = " + (bb.position() - bbStartPos));
               }
             }
+            flushed += channelBytesWritten;
           } while (bb.hasRemaining());
           // update bytesFlushed after entire writeBuffer is flushed to fix bug
           // 41201
@@ -5247,11 +5247,6 @@ public final class Oplog implements CompactableOplog, Flushable {
 
   private final void flush(OplogFile olf, ByteBuffer b1, ByteBuffer b2) throws IOException {
     try {
-      long channelStartPos;
-      long expectedWritten;
-      long flushed;
-      int numChannelRetries = 0;
-      boolean retryWrite = false;
       synchronized (this.lock/* olf */) {
         if (olf.RAFClosed) {
           return;
@@ -5259,25 +5254,7 @@ public final class Oplog implements CompactableOplog, Flushable {
         this.bbArray[0] = b1;
         this.bbArray[1] = b2;
         b1.flip();
-        int b1StartPos = b1.position();
-        int b2StartPos = b2.position();
-        expectedWritten = b1.limit() - b1StartPos + b2.limit() - b2StartPos;
-        channelStartPos = olf.channel.position();
-
-        do {
-          retryWrite = false;
-          flushed = olf.channel.write(this.bbArray);
-          if (flushed != expectedWritten) {
-            if (numChannelRetries++ < MAX_CHANNEL_RETRIES) {
-              retryWrite = true;
-              olf.channel.position(channelStartPos);
-              b1.position(b1StartPos);
-              b2.position(b2StartPos);
-            } else {
-              throw new IOException("Failed to write Oplog entry to" + olf.f.getName());
-            }
-          }
-        } while (retryWrite);
+        long flushed = olf.channel.write(this.bbArray);
         this.bbArray[0] = null;
         this.bbArray[1] = null;
         // update bytesFlushed after entire writeBuffer is flushed to fix bug 41201
