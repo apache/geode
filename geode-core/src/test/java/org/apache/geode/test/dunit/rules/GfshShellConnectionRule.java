@@ -26,9 +26,14 @@ import org.apache.geode.test.junit.rules.DescribedExternalResource;
 import org.junit.runner.Description;
 
 /**
- * Class which eases the connection to the jmxManager {@link ConnectionConfiguration} it allows for
- * the creation of per-test connections with different user/password combinations, or no username
- * and password
+ * Class which eases the connection to the locator/jmxManager in Gfsh shell and execute gfsh
+ * commands.
+ *
+ * if used with {@link ConnectionConfiguration}, you will need to specify a port number when
+ * constructing this rule. Then this rule will do auto connect for you before running your test.
+ *
+ * otherwise, you can call connect with the specific port number yourself in your test. This rules
+ * handles closing your connection and gfsh instance.
  *
  * you can use this as Rule
  * 
@@ -59,14 +64,14 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
   @Override
   protected void before(Description description) throws Throwable {
     this.gfsh = new HeadlessGfsh(getClass().getName(), 30, "gfsh_files");
-    // do not connect if no port initialized
+    // do not auto connect if no port initialized
     if (port < 0) {
       return;
     }
 
+    // do not auto connect if it's not used with ConnectionConfiguration
     ConnectionConfiguration config = description.getAnnotation(ConnectionConfiguration.class);
     if (config == null) {
-      connect(port, portType);
       return;
     }
 

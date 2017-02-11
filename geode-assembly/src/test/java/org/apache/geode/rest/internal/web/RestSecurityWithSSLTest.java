@@ -35,7 +35,7 @@ import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.http.HttpResponse;
-import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -46,7 +46,8 @@ import java.util.Properties;
 public class RestSecurityWithSSLTest {
 
   private static int restPort = AvailablePortHelper.getRandomAvailableTCPPort();
-  ServerStarterRule serverStarter = null;
+  @Rule
+  public ServerStarterRule serverStarter = new ServerStarterRule();
 
   @Test
   public void testRestSecurityWithSSL() throws Exception {
@@ -66,20 +67,11 @@ public class RestSecurityWithSSLTest {
     properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
     properties.setProperty(SSL_PROTOCOLS, "TLSv1.2,TLSv1.1");
 
-    serverStarter = new ServerStarterRule(properties);
-    serverStarter.startServer();
+    serverStarter.startServer(properties);
 
     GeodeRestClient restClient = new GeodeRestClient("localhost", restPort, true);
     HttpResponse response = restClient.doGet("/servers", "cluster", "cluster");
 
     assertEquals(200, GeodeRestClient.getCode(response));
   }
-
-  @After
-  public void after() {
-    if (serverStarter != null) {
-      serverStarter.after();
-    }
-  }
-
 }

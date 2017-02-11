@@ -33,7 +33,6 @@ import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,7 +46,8 @@ public class SecurityClusterConfigDUnitTest {
   @Rule
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
-  private ServerStarterRule serverStarter = null;
+  @Rule
+  public ServerStarterRule serverStarter = new ServerStarterRule();
 
   @Before
   public void before() throws Exception {
@@ -64,12 +64,6 @@ public class SecurityClusterConfigDUnitTest {
     lsRule.startLocatorVM(0, props);
   }
 
-  @After
-  public void after() {
-    if (serverStarter != null)
-      serverStarter.after();
-  }
-
   @Category(FlakyTest.class) // GEODE-1977
   @Test
   public void testStartServerWithClusterConfig() throws Exception {
@@ -80,8 +74,7 @@ public class SecurityClusterConfigDUnitTest {
     props.setProperty("use-cluster-configuration", "true");
 
     // initial security properties should only contain initial set of values
-    serverStarter = new ServerStarterRule(props);
-    serverStarter.startServer(lsRule.getMember(0).getPort());
+    serverStarter.startServer(props, lsRule.getMember(0).getPort());
     DistributedSystem ds = serverStarter.cache.getDistributedSystem();
 
     // after cache is created, we got the security props passed in by cluster config
@@ -102,8 +95,7 @@ public class SecurityClusterConfigDUnitTest {
     props.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
 
     // initial security properties should only contain initial set of values
-    serverStarter = new ServerStarterRule(props);
-    serverStarter.startServer(lsRule.getMember(0).getPort());
+    serverStarter.startServer(props, lsRule.getMember(0).getPort());
     DistributedSystem ds = serverStarter.cache.getDistributedSystem();
 
     // after cache is created, we got the security props passed in by cluster config
@@ -124,9 +116,7 @@ public class SecurityClusterConfigDUnitTest {
     props.setProperty("use-cluster-configuration", "true");
 
     // initial security properties should only contain initial set of values
-    serverStarter = new ServerStarterRule(props);
-
-    assertThatThrownBy(() -> serverStarter.startServer(lsRule.getMember(0).getPort()))
+    assertThatThrownBy(() -> serverStarter.startServer(props, lsRule.getMember(0).getPort()))
         .isInstanceOf(GemFireConfigException.class)
         .hasMessage(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION.toLocalizedString());
 
@@ -143,9 +133,7 @@ public class SecurityClusterConfigDUnitTest {
     props.setProperty("use-cluster-configuration", "true");
 
     // initial security properties should only contain initial set of values
-    serverStarter = new ServerStarterRule(props);
-
-    assertThatThrownBy(() -> serverStarter.startServer(lsRule.getMember(0).getPort()))
+    assertThatThrownBy(() -> serverStarter.startServer(props, lsRule.getMember(0).getPort()))
         .isInstanceOf(GemFireConfigException.class)
         .hasMessage(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION.toLocalizedString());
 
@@ -162,9 +150,7 @@ public class SecurityClusterConfigDUnitTest {
     props.setProperty("security-manager", "mySecurityManager");
     props.setProperty("use-cluster-configuration", "false");
 
-    serverStarter = new ServerStarterRule(props);
-
-    assertThatThrownBy(() -> serverStarter.startServer(lsRule.getMember(0).getPort()))
+    assertThatThrownBy(() -> serverStarter.startServer(props, lsRule.getMember(0).getPort()))
         .isInstanceOf(GemFireConfigException.class)
         .hasMessage(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION_2.toLocalizedString());
 

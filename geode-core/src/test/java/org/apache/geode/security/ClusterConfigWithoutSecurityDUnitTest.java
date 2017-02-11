@@ -37,13 +37,13 @@ import org.junit.experimental.categories.Category;
 import java.util.Properties;
 
 @Category({DistributedTest.class, SecurityTest.class})
-
 public class ClusterConfigWithoutSecurityDUnitTest {
 
   @Rule
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
-  private ServerStarterRule serverStarter = null;
+  @Rule
+  public ServerStarterRule serverStarter = new ServerStarterRule();
 
   @Before
   public void before() throws Exception {
@@ -57,8 +57,6 @@ public class ClusterConfigWithoutSecurityDUnitTest {
   @After
   public void after() {
     IgnoredException.removeAllExpectedExceptions();
-    if (serverStarter != null)
-      serverStarter.after();
   }
 
   // when locator is not secured, a secured server should be allowed to start with its own security
@@ -73,8 +71,7 @@ public class ClusterConfigWithoutSecurityDUnitTest {
     props.setProperty("use-cluster-configuration", "false");
 
     // initial security properties should only contain initial set of values
-    serverStarter = new ServerStarterRule(props);
-    serverStarter.startServer(lsRule.getMember(0).getPort());
+    serverStarter.startServer(props, lsRule.getMember(0).getPort());
     DistributedSystem ds = serverStarter.cache.getDistributedSystem();
 
     // after cache is created, the configuration won't chagne
@@ -94,9 +91,7 @@ public class ClusterConfigWithoutSecurityDUnitTest {
     props.setProperty("security-manager", "mySecurityManager");
     props.setProperty("use-cluster-configuration", "true");
 
-    serverStarter = new ServerStarterRule(props);
-
-    assertThatThrownBy(() -> serverStarter.startServer(lsRule.getMember(0).getPort()))
+    assertThatThrownBy(() -> serverStarter.startServer(props, lsRule.getMember(0).getPort()))
         .isInstanceOf(GemFireConfigException.class)
         .hasMessage(LocalizedStrings.GEMFIRE_CACHE_SECURITY_MISCONFIGURATION.toLocalizedString());
   }
