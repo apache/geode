@@ -164,6 +164,10 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
 
   public CommandResult executeAndVerifyCommand(String command) throws Exception {
     CommandResult result = executeCommand(command);
+
+    if (result.getStatus() != Result.Status.OK) {
+      System.out.println("broken");
+    }
     assertThat(result.getStatus()).describedAs(result.getContent().toString())
         .isEqualTo(Result.Status.OK);
     return result;

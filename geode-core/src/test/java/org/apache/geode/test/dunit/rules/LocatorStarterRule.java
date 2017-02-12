@@ -114,6 +114,7 @@ public class LocatorStarterRule extends ExternalResource implements Serializable
         }
       }
     }
+
     locator = (InternalLocator) Locator.startLocatorAndDS(0, null, properties);
     int locatorPort = locator.getPort();
     locator.resetInternalLocatorFileNamesWithCorrectPortNumber(locatorPort);

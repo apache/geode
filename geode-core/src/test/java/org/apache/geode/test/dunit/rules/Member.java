@@ -26,7 +26,7 @@ import java.io.Serializable;
  * A server or locator inside a DUnit {@link VM}.
  */
 public abstract class Member implements Serializable {
-  private VM vm;
+  private transient VM vm;
   private int port;
   private File workingDir;
   private String name;
