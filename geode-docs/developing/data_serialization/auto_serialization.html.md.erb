@@ -27,7 +27,7 @@ You can automatically serialize and deserialize domain objects without coding a 
 You can also extend the ReflectionBasedAutoSerializer to customize its behavior. For example, you could add optimized serialization support for BigInteger and BigDecimal types. See [Extending the ReflectionBasedAutoSerializer](extending_the_autoserializer.html#concept_9E020566EE794A81A48A90BA798EC279) for details.
 
 **Note:**
-Your custom PDX autoserializable classes cannot use the `com.gemstone` package. If they do, the classes will be ignored by the PDX auto serializer.
+Your custom PDX autoserializable classes cannot use the `org.apache.geode` package. If they do, the classes will be ignored by the PDX auto serializer.
 
 <a id="auto_serialization__section_C69046B44729454F8CD464B0289EFDD8"></a>
 
@@ -129,13 +129,4 @@ For each domain class you provide, all fields are considered for serialization e
 
 **Note:**
 The `ReflectionBasedAutoSerializer` traverses the given domain object's class hierarchy to retrieve all fields to be considered for serialization. So if `DomainObjectB` inherits from `DomainObjectA`, you only need to register `DomainObjectB` to have all of `DomainObjectB` serialized.
-
--   **[Customizing Serialization with Class Pattern Strings](../../developing/data_serialization/autoserialization_with_class_pattern_strings.html)**
-
-    Use class pattern strings to name the classes that you want to serialize using Geode's reflection-based autoserializer and to specify object identity fields and to specify fields to exclude from serialization.
-
--   **[Extending the ReflectionBasedAutoSerializer](../../developing/data_serialization/extending_the_autoserializer.html)**
-
-    You can extend the `ReflectionBasedAutoSerializer` to handle serialization in a customized manner. This section provides an overview of the available method-based customization options and an example of extending the serializer to support BigDecimal and BigInteger types.
-
 
