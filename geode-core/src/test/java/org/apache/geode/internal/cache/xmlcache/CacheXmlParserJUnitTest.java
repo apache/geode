@@ -15,12 +15,15 @@
 package org.apache.geode.internal.cache.xmlcache;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.Properties;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -28,6 +31,9 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.distributed.internal.membership.gms.mgr.*;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.*;
 
 /**
  * Test cases for {@link CacheXmlParser}.
@@ -78,6 +84,28 @@ public class CacheXmlParserJUnitTest {
     assertNull(cacheXmlParser.getDelegate("--nothing-should-use-this-namespace--"));
   }
 
+    /**
+		* Test that {@link CacheXmlParser} can parse the test cache.xml file.
+   * 
+   * @since Geode 1.2
+   */
+  @Test
+  public void testCacheXmlParserWithSimplePool() {
+    assertNotNull("Did not find simple config.xml file", this.getClass().getResourceAsStream("CacheXmlParserJUnitTest.testSimpleClientCacheXml.cache.xml"));
+	
+    DM dm = mock(DM.class);	
+    
+    Properties nonDefault = new Properties();
+    nonDefault.setProperty(MCAST_PORT, "0"); // loner
+    
+    InternalDistributedSystem system = InternalDistributedSystem.newInstanceForTesting(dm, nonDefault);
+	when(dm.getSystem()).thenReturn(system);
+	InternalDistributedSystem.connect(nonDefault);
+
+    CacheXmlParser.parse(this.getClass().getResourceAsStream("CacheXmlParserJUnitTest.testSimpleClientCacheXml.cache.xml"));
+  }
+
+  
   /**
    * Test that {@link CacheXmlParser} falls back to DTD parsing when locale language is not English.
    * 
@@ -145,6 +173,8 @@ public class CacheXmlParserJUnitTest {
         throw new IllegalStateException(e);
       }
     }
+	
+	
   }
 
   public static class MockXmlParser extends AbstractXmlParser {
