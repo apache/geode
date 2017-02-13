@@ -1359,17 +1359,12 @@ public class GemFireCacheImpl
   }
 
   private void startRedisServer() {
-    // TODO this needs to be fixed up. Maybe we don't want to leave the starting of redis to the
-    // setting of the port.
-    int port = system.getConfig().getRedisPort();
-    if (port != 0) {
-      GeodeRedisService geodeRedisService = getService(GeodeRedisService.class);
-      if (geodeRedisService != null) {
-        geodeRedisService.start();
-      } else {
-        throw new GemFireConfigException(
-            "Geode Redis Service could not be started because it was not registered as a service");
-      }
+    GeodeRedisService geodeRedisService = getService(GeodeRedisService.class);
+    if (geodeRedisService != null) {
+      geodeRedisService.start();
+    } else {
+      throw new GemFireConfigException(
+          "Geode Redis Service could not be started because it was not registered as a service");
     }
   }
 

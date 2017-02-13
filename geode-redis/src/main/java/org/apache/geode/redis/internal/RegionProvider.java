@@ -34,7 +34,7 @@ import org.apache.geode.redis.GeodeRedisServiceImpl;
 import org.apache.geode.redis.internal.executor.ExpirationExecutor;
 import org.apache.geode.redis.internal.executor.ListQuery;
 import org.apache.geode.redis.internal.executor.SortedSetQuery;
-import org.apache.geode.redis.internal.hll.HyperLogLogPlus;
+import org.apache.geode.internal.hll.HyperLogLogPlus;
 
 import java.io.Closeable;
 import java.util.HashMap;

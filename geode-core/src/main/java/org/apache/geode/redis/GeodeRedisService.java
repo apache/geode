@@ -20,8 +20,14 @@ import org.apache.geode.internal.cache.CacheService;
  * Created by ukohlmeyer on 2/9/17.
  */
 public interface GeodeRedisService extends CacheService {
+  /**
+   * The default Redis port as specified by their protocol, {@value #DEFAULT_REDIS_SERVER_PORT}
+   */
+  int DEFAULT_REDIS_SERVER_PORT = 6379;
 
   void start();
+
+  boolean isRunning();
 
   void stop();
 }

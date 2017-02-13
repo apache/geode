@@ -11,9 +11,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.redis.internal.hll;
-
-import org.apache.geode.redis.internal.executor.hll.Varint;
+package org.apache.geode.internal.hll;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

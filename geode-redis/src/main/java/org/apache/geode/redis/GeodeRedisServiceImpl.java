@@ -54,7 +54,7 @@ import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.RegionProvider;
-import org.apache.geode.redis.internal.hll.HyperLogLogPlus;
+import org.apache.geode.internal.hll.HyperLogLogPlus;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
@@ -141,12 +141,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 
 public class GeodeRedisServiceImpl implements GeodeRedisService {
-
-  /**
-   * The default Redis port as specified by their protocol, {@value #DEFAULT_REDIS_SERVER_PORT}
-   */
-  public static final int DEFAULT_REDIS_SERVER_PORT = 6379;
-
   /**
    * The number of threads that will work on handling requests
    */
@@ -300,8 +294,8 @@ public class GeodeRedisServiceImpl implements GeodeRedisService {
    * This is function to call on a {@link GeodeRedisServiceImpl} instance to start it running
    */
   @Override
-  public synchronized void start() {
-    if (!started) {
+  public void start() {
+    if (!started && redisPort > 0) {
       try {
         initializeRedis();
         startRedisServer();
@@ -310,6 +304,11 @@ public class GeodeRedisServiceImpl implements GeodeRedisService {
       }
       started = true;
     }
+  }
+
+  @Override
+  public boolean isRunning() {
+    return started;
   }
 
   private void initializeRedis() {
@@ -525,7 +524,9 @@ public class GeodeRedisServiceImpl implements GeodeRedisService {
     InternalDistributedSystem internalDistributedSystem = ((GemFireCacheImpl) cache).getSystem();
     DistributionConfig internalDistributedSystemConfig = internalDistributedSystem.getConfig();
     this.redisPort = internalDistributedSystemConfig.getRedisPort();
-    if (redisPort <= 0) { // unset
+    if (redisPort < 0) {
+      return;
+    } else if (redisPort == 0) { // unset, don't start the server.
       this.redisPort = DEFAULT_REDIS_SERVER_PORT;
     }
     this.redisBindAddress = internalDistributedSystemConfig.getRedisBindAddress();
@@ -571,7 +572,7 @@ public class GeodeRedisServiceImpl implements GeodeRedisService {
    */
   @Override
   public void stop() {
-    if (!shutdown) {
+    if (!shutdown && isRunning()) {
       if (logger.isInfoEnabled()) {
         logger.info("GeodeRedisServiceImpl shutting down");
       }

@@ -20,9 +20,11 @@ import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
-import org.apache.geode.redis.internal.hll.HyperLogLogPlus;
+import org.apache.geode.internal.hll.HyperLogLogPlus;
 
 import java.util.List;
+
+import static org.apache.geode.internal.hll.HyperLogLog.DEFAULT_HLL_DENSE;
 
 public class PFAddExecutor extends HllExecutor {
 
