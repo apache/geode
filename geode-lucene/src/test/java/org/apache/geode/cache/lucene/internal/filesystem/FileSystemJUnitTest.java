@@ -17,7 +17,6 @@ package org.apache.geode.cache.lucene.internal.filesystem;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,14 +29,13 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -373,18 +371,22 @@ public class FileSystemJUnitTest {
 
     system.renameFile(name, name2);
 
-    assertTrue(2 <= countOperations.count);
+    // Right now the number of operations is 4.. except if run through a debugger...
+    assertTrue(4 <= countOperations.count);
 
-    countOperations.after((int) Math.ceil(countOperations.count / 2.0), new Runnable() {
+    // This number of operations during a rename actually needs to get to the "putIfAbsent" for the
+    // Assertion to be correct. Right now the number of operations is actually 3 so the limit needs
+    // to be 3...
+    countOperations.after((int) Math.ceil(countOperations.count / 2.0 + 1), new Runnable() {
 
       @Override
       public void run() {
         throw new CacheClosedException();
       }
     });
+    String name3 = "file3";
     countOperations.reset();
 
-    String name3 = "file3";
     try {
       system.renameFile(name2, name3);
       fail("should have seen an error");
@@ -538,6 +540,27 @@ public class FileSystemJUnitTest {
     verify(fileSystemStats, atLeast(1)).incReadBytes(captor.capture());
     final int actualByteCount = captor.getAllValues().stream().mapToInt(Integer::intValue).sum();
     assertEquals(bytes.length, actualByteCount);
+  }
+
+  @Test
+  public void testDeletePossiblyRenamedFileDoesNotDestroyChunks() throws Exception {
+    ConcurrentHashMap<String, File> spyFileRegion = Mockito.spy(fileRegion);
+    system = new FileSystem(spyFileRegion, chunkRegion, fileSystemStats);
+
+    String sourceFileName = "sourceFile";
+    File file1 = system.createFile(sourceFileName);
+    byte[] data = writeRandomBytes(file1);
+
+    Mockito.doReturn(file1).when(spyFileRegion).remove(any());
+
+    String destFileName = "destFile";
+    system.renameFile(sourceFileName, destFileName);
+    File destFile = system.getFile(destFileName);
+
+    assertNotNull(system.getFile(sourceFileName));
+    system.deleteFile(sourceFileName);
+    assertNotNull(system.getChunk(destFile, 0));
+
   }
 
   private void assertExportedFileContents(final byte[] expected, final java.io.File exportedFile)
