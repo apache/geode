@@ -84,28 +84,31 @@ public class CacheXmlParserJUnitTest {
     assertNull(cacheXmlParser.getDelegate("--nothing-should-use-this-namespace--"));
   }
 
-    /**
-		* Test that {@link CacheXmlParser} can parse the test cache.xml file.
+  /**
+   * Test that {@link CacheXmlParser} can parse the test cache.xml file.
    * 
    * @since Geode 1.2
    */
   @Test
   public void testCacheXmlParserWithSimplePool() {
-    assertNotNull("Did not find simple config.xml file", this.getClass().getResourceAsStream("CacheXmlParserJUnitTest.testSimpleClientCacheXml.cache.xml"));
-	
-    DM dm = mock(DM.class);	
-    
+    assertNotNull("Did not find simple config.xml file", this.getClass()
+        .getResourceAsStream("CacheXmlParserJUnitTest.testSimpleClientCacheXml.cache.xml"));
+
+    DM dm = mock(DM.class);
+
     Properties nonDefault = new Properties();
     nonDefault.setProperty(MCAST_PORT, "0"); // loner
-    
-    InternalDistributedSystem system = InternalDistributedSystem.newInstanceForTesting(dm, nonDefault);
-	when(dm.getSystem()).thenReturn(system);
-	InternalDistributedSystem.connect(nonDefault);
 
-    CacheXmlParser.parse(this.getClass().getResourceAsStream("CacheXmlParserJUnitTest.testSimpleClientCacheXml.cache.xml"));
+    InternalDistributedSystem system =
+        InternalDistributedSystem.newInstanceForTesting(dm, nonDefault);
+    when(dm.getSystem()).thenReturn(system);
+    InternalDistributedSystem.connect(nonDefault);
+
+    CacheXmlParser.parse(this.getClass()
+        .getResourceAsStream("CacheXmlParserJUnitTest.testSimpleClientCacheXml.cache.xml"));
   }
 
-  
+
   /**
    * Test that {@link CacheXmlParser} falls back to DTD parsing when locale language is not English.
    * 
@@ -173,8 +176,8 @@ public class CacheXmlParserJUnitTest {
         throw new IllegalStateException(e);
       }
     }
-	
-	
+
+
   }
 
   public static class MockXmlParser extends AbstractXmlParser {
