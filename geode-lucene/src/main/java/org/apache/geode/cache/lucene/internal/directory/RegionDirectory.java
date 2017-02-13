@@ -100,7 +100,13 @@ public class RegionDirectory extends BaseDirectory {
   }
 
   @Override
-  public void renameFile(String source, String dest) throws IOException {
+  public void syncMetaData() throws IOException {
+    ensureOpen();
+    // Region does not need to sync to disk
+  }
+
+  @Override
+  public void rename(String source, String dest) throws IOException {
     ensureOpen();
     fs.renameFile(source, dest);
   }
