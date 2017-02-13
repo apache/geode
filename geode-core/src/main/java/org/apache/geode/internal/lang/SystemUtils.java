@@ -240,7 +240,7 @@ public class SystemUtils {
    * @throws MalformedURLException
    */
   public static boolean isInClassPath(URL location) throws MalformedURLException {
-    String classPath = System.getProperty("java.class.path");
+    String classPath = getClassPath();
     StringTokenizer st = new StringTokenizer(classPath, File.pathSeparator);
     while (st.hasMoreTokens()) {
       String path = st.nextToken();
@@ -251,9 +251,44 @@ public class SystemUtils {
     return false;
   }
 
+  /**
+   * Returns the value of {code System.getProperty("os.name")}.
+   */
+  public static String getOsName() {
+    return System.getProperty("os.name");
+  }
+
+  /**
+   * Returns the value of {code System.getProperty("os.version")}.
+   */
+  public static String getOsVersion() {
+    return System.getProperty("os.version");
+  }
+
+  /**
+   * Returns the value of {code System.getProperty("os.arch")}.
+   */
+  public static String getOsArchitecture() {
+    return System.getProperty("os.arch");
+  }
+
+  /**
+   * Returns the value of {code System.getProperty("java.class.path")}.
+   */
+  public static String getClassPath() {
+    return System.getProperty("java.class.path");
+  }
+
+  /**
+   * Returns the value of {code System.getProperty("sun.boot.class.path")}.
+   */
+  public static String getBootClassPath() {
+    return System.getProperty("sun.boot.class.path");
+  }
+
   // @see java.lang.System#getProperty(String) with "os.name".
   private static boolean isOS(final String expectedOsName) {
-    String osName = System.getProperty("os.name");
+    String osName = getOsName();
     return (osName != null && osName.contains(expectedOsName));
   }
 
