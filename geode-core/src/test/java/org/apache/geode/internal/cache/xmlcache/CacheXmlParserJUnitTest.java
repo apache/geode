@@ -14,20 +14,29 @@
  */
 package org.apache.geode.internal.cache.xmlcache;
 
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Locale;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.util.Properties;
 
 /**
  * Test cases for {@link CacheXmlParser}.
@@ -76,6 +85,30 @@ public class CacheXmlParserJUnitTest {
     assertEquals("Should still be exactly 1 delegate.", 1, cacheXmlParser.getDelegates().size());
 
     assertNull(cacheXmlParser.getDelegate("--nothing-should-use-this-namespace--"));
+  }
+
+  /**
+   * Test that {@link CacheXmlParser} can parse the test cache.xml file.
+   * 
+   * @since Geode 1.2
+   */
+  @Test
+  public void testCacheXmlParserWithSimplePool() {
+    assertNotNull("Did not find simple config.xml file", getClass()
+        .getResourceAsStream("CacheXmlParserJUnitTest.testSimpleClientCacheXml.cache.xml"));
+
+    DM dm = mock(DM.class);
+
+    Properties nonDefault = new Properties();
+    nonDefault.setProperty(MCAST_PORT, "0"); // loner
+
+    InternalDistributedSystem system =
+        InternalDistributedSystem.newInstanceForTesting(dm, nonDefault);
+    when(dm.getSystem()).thenReturn(system);
+    InternalDistributedSystem.connect(nonDefault);
+
+    CacheXmlParser.parse(getClass()
+        .getResourceAsStream("CacheXmlParserJUnitTest.testSimpleClientCacheXml.cache.xml"));
   }
 
   /**
@@ -164,7 +197,5 @@ public class CacheXmlParserJUnitTest {
     public void endElement(String uri, String localName, String qName) throws SAXException {
       throw new UnsupportedOperationException();
     }
-
   }
-
 }

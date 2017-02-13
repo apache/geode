@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.query;
 
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
@@ -25,6 +27,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
+import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
 
@@ -53,6 +56,7 @@ public class LocalQueryServiceJUnitTest {
   public void testLocalQueryServiceWithTransaction() throws Exception {
     ClientCache c = null;
     try {
+      SocketCreatorFactory.setDistributionConfig(new DistributionConfigImpl(new Properties()));
       c = new ClientCacheFactory().create();
       addExpectedException(c, IOException.class.getName());
       Region r = createRegion(c);
