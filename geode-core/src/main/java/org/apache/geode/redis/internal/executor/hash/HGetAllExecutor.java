@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -38,23 +39,34 @@ public class HGetAllExecutor extends HashExecutor {
       return;
     }
 
-    ByteArrayWrapper key = command.getKey();
+    ByteArrayWrapper regionName = HashUtil.toRegionNameByteArray(command.getKey());
+    ByteArrayWrapper entryKey = HashUtil.toEntryKey(command.getKey());
 
-    checkDataType(key, RedisDataType.REDIS_HASH, context);
-    Region<ByteArrayWrapper, ByteArrayWrapper> keyRegion = getRegion(context, key);
+    checkDataType(regionName, RedisDataType.REDIS_HASH, context);
+    Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> keyRegion =
+        getRegion(context, regionName);
 
     if (keyRegion == null) {
       command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
       return;
     }
 
-    Collection<Map.Entry<ByteArrayWrapper, ByteArrayWrapper>> entries =
-        new ArrayList(keyRegion.entrySet()); // This creates a CopyOnRead behavior
+    Map<ByteArrayWrapper, ByteArrayWrapper> results = keyRegion.get(entryKey);
 
-    if (entries.isEmpty()) {
+    if (results == null || results.isEmpty()) {
       command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
       return;
     }
+
+    Collection<Entry<ByteArrayWrapper, ByteArrayWrapper>> entries = results.entrySet();
+
+    if (entries == null || entries.isEmpty()) {
+      command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
+      return;
+    }
+
+    // create a copy
+    entries = new ArrayList<Entry<ByteArrayWrapper, ByteArrayWrapper>>(entries);
 
     command.setResponse(Coder.getKeyValArrayResponse(context.getByteBufAllocator(), entries));
   }

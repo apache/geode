@@ -16,6 +16,7 @@ package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.geode.cache.Region;
@@ -37,17 +38,22 @@ public class HKeysExecutor extends HashExecutor {
       return;
     }
 
-    ByteArrayWrapper key = command.getKey();
+    ByteArrayWrapper regionName = HashUtil.toRegionNameByteArray(command.getKey());
 
-    checkDataType(key, RedisDataType.REDIS_HASH, context);
-    Region<ByteArrayWrapper, ByteArrayWrapper> keyRegion = getRegion(context, key);
+    checkDataType(regionName, RedisDataType.REDIS_HASH, context);
+    Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> keyRegion =
+        getRegion(context, regionName);
 
-    if (keyRegion == null) {
+    ByteArrayWrapper entryKey = HashUtil.toEntryKey(command.getKey());
+
+    Map<ByteArrayWrapper, ByteArrayWrapper> keyMap = keyRegion.get(entryKey);
+    if (keyMap == null || keyMap.isEmpty()) {
       command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
       return;
     }
 
-    Set<ByteArrayWrapper> keys = new HashSet(keyRegion.keySet());
+
+    Set<ByteArrayWrapper> keys = new HashSet<ByteArrayWrapper>(keyMap.keySet());
 
     if (keys.isEmpty()) {
       command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));

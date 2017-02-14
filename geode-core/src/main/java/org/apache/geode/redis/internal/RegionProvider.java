@@ -15,6 +15,7 @@
 package org.apache.geode.redis.internal;
 
 import java.io.Closeable;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -143,7 +144,11 @@ public class RegionProvider implements Closeable {
   }
 
   public Region<?, ?> getRegion(ByteArrayWrapper key) {
+    if (key == null)
+      return null;
+
     return this.regions.get(key);
+
   }
 
   public void removeRegionReferenceLocally(ByteArrayWrapper key, RedisDataType type) {
@@ -259,6 +264,17 @@ public class RegionProvider implements Closeable {
 
   private Region<?, ?> getOrCreateRegion0(ByteArrayWrapper key, RedisDataType type,
       ExecutionHandlerContext context, boolean addToMeta) {
+
+    String regionName = key.toString();
+
+    // check if type is hash
+    int indexOfColonForHashObject = regionName.indexOf(":");
+    if (indexOfColonForHashObject > 0) {
+      // Set HSET region:<key>
+      regionName = regionName.substring(0, indexOfColonForHashObject);
+      key = new ByteArrayWrapper(regionName.getBytes(StandardCharsets.UTF_8));
+    }
+
     checkDataType(key, type);
     Region<?, ?> r = this.regions.get(key);
     if (r != null && r.isDestroyed()) {
@@ -289,7 +305,9 @@ public class RegionProvider implements Closeable {
             Exception concurrentCreateDestroyException = null;
             do {
               concurrentCreateDestroyException = null;
-              r = createRegionGlobally(stringKey);
+
+              r = createRegionGlobally(regionName);
+
               try {
                 if (type == RedisDataType.REDIS_LIST) {
                   doInitializeList(key, r);
@@ -442,9 +460,10 @@ public class RegionProvider implements Closeable {
       return;
     if (currentType == RedisDataType.REDIS_PROTECTED)
       throw new RedisDataTypeMismatchException("The key name \"" + key + "\" is protected");
-    if (currentType != type)
+   /* if (currentType != type)
       throw new RedisDataTypeMismatchException(
           "The key name \"" + key + "\" is already used by a " + currentType.toString());
+    */       
   }
 
   public boolean regionExists(ByteArrayWrapper key) {

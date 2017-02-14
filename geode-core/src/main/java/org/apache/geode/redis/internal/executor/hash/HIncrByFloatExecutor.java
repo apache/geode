@@ -15,8 +15,8 @@
 package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.List;
+import java.util.Map;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
@@ -59,8 +59,7 @@ public class HIncrByFloatExecutor extends HashExecutor {
 
     ByteArrayWrapper key = command.getKey();
 
-    Region<ByteArrayWrapper, ByteArrayWrapper> keyRegion =
-        getOrCreateRegion(context, key, RedisDataType.REDIS_HASH);
+    Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key, RedisDataType.REDIS_HASH);
 
     byte[] byteField = commandElems.get(FIELD_INDEX);
     ByteArrayWrapper field = new ByteArrayWrapper(byteField);
@@ -69,10 +68,12 @@ public class HIncrByFloatExecutor extends HashExecutor {
      * Put incrememnt as value if field doesn't exist
      */
 
-    ByteArrayWrapper oldValue = keyRegion.get(field);
+    ByteArrayWrapper oldValue = map.get(field);
 
     if (oldValue == null) {
-      keyRegion.put(field, new ByteArrayWrapper(incrArray));
+      map.put(field, new ByteArrayWrapper(incrArray));
+
+      this.saveMap(map, context, key);
       command.setResponse(Coder.getBulkStringResponse(context.getByteBufAllocator(), increment));
       return;
     }
@@ -97,7 +98,7 @@ public class HIncrByFloatExecutor extends HashExecutor {
     }
 
     value += increment;
-    keyRegion.put(field, new ByteArrayWrapper(Coder.doubleToBytes(value)));
+    map.put(field, new ByteArrayWrapper(Coder.doubleToBytes(value)));
     command.setResponse(Coder.getBulkStringResponse(context.getByteBufAllocator(), value));
   }
 

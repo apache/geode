@@ -135,8 +135,17 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    */
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-    Command command = (Command) msg;
-    executeCommand(ctx, command);
+    try
+	{
+		Command command = (Command) msg;
+		executeCommand(ctx, command);
+	}
+	catch (Exception e)
+    {
+		logger.error(e);
+		throw e;
+	}
+    
   }
 
   /**
@@ -235,6 +244,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         exec.executeCommand(command, this);
         return;
       } catch (Exception e) {
+    	  logger.error(e);
+    	  
         cause = e;
         if (e instanceof RegionDestroyedException || e instanceof RegionNotFoundException
             || e.getCause() instanceof QueryInvocationTargetException)

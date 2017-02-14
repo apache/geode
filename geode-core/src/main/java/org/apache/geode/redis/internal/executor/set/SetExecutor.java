@@ -14,8 +14,23 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
+import java.util.Map;
+
+import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.redis.internal.Coder;
+import org.apache.geode.redis.internal.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 
 public abstract class SetExecutor extends AbstractExecutor {
 
+	protected static final ByteArrayWrapper SET_REGION_KEY = new ByteArrayWrapper(Coder.stringToBytes("__RedisSET"));
+	
+	@SuppressWarnings("unchecked")
+	Region<ByteArrayWrapper, Map<ByteArrayWrapper,Boolean>> getRegion(ExecutionHandlerContext context)
+	{
+	    return (Region<ByteArrayWrapper, Map<ByteArrayWrapper,Boolean>>) context
+	            .getRegionProvider().getOrCreateRegion(SET_REGION_KEY, RedisDataType.REDIS_SET, context);
+	}
 }

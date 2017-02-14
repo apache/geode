@@ -15,6 +15,7 @@
 package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -35,10 +36,11 @@ public class HGetExecutor extends HashExecutor {
       return;
     }
 
-    ByteArrayWrapper key = command.getKey();
+    ByteArrayWrapper regioName = HashUtil.toEntryKey(command.getKey());
 
-    checkDataType(key, RedisDataType.REDIS_HASH, context);
-    Region<ByteArrayWrapper, ByteArrayWrapper> keyRegion = getRegion(context, key);
+    checkDataType(regioName, RedisDataType.REDIS_HASH, context);
+    Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> keyRegion =
+        getRegion(context, regioName);
 
     if (keyRegion == null) {
       command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
@@ -48,7 +50,15 @@ public class HGetExecutor extends HashExecutor {
     byte[] byteField = commandElems.get(FIELD_INDEX);
     ByteArrayWrapper field = new ByteArrayWrapper(byteField);
 
-    ByteArrayWrapper valueWrapper = keyRegion.get(field);
+    ByteArrayWrapper key = HashUtil.toEntryKey(command.getKey());
+
+    Map<ByteArrayWrapper, ByteArrayWrapper> entry = keyRegion.get(key);
+    if (entry == null) {
+      command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
+      return;
+    }
+
+    ByteArrayWrapper valueWrapper = entry.get(field);
 
     if (valueWrapper != null) {
       command.setResponse(

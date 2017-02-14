@@ -15,8 +15,8 @@
 package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.List;
+import java.util.Map;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
@@ -42,10 +42,9 @@ public class HSetExecutor extends HashExecutor implements Extendable {
       return;
     }
 
-    ByteArrayWrapper key = command.getKey();
+    ByteArrayWrapper key = command.getKey(); // GG: companies:1
 
-    Region<ByteArrayWrapper, ByteArrayWrapper> keyRegion =
-        getOrCreateRegion(context, key, RedisDataType.REDIS_HASH);
+    Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key, RedisDataType.REDIS_HASH);
 
     byte[] byteField = commandElems.get(FIELD_INDEX);
     ByteArrayWrapper field = new ByteArrayWrapper(byteField);
@@ -55,9 +54,11 @@ public class HSetExecutor extends HashExecutor implements Extendable {
     Object oldValue;
 
     if (onlySetOnAbsent())
-      oldValue = keyRegion.putIfAbsent(field, new ByteArrayWrapper(value));
+      oldValue = map.putIfAbsent(field, new ByteArrayWrapper(value));
     else
-      oldValue = keyRegion.put(field, new ByteArrayWrapper(value));
+      oldValue = map.put(field, new ByteArrayWrapper(value));
+
+    this.saveMap(map, context, key);
 
     if (oldValue == null)
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NEW_FIELD));

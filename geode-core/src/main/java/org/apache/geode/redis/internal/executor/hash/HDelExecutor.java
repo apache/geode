@@ -15,6 +15,7 @@
 package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -39,10 +40,12 @@ public class HDelExecutor extends HashExecutor {
 
     int numDeleted = 0;
 
-    ByteArrayWrapper key = command.getKey();
+    ByteArrayWrapper regionName = HashUtil.toRegionNameByteArray(command.getKey());
+    ByteArrayWrapper entryKey = HashUtil.toEntryKey(command.getKey());
 
-    checkDataType(key, RedisDataType.REDIS_HASH, context);
-    Region<ByteArrayWrapper, ByteArrayWrapper> keyRegion = getRegion(context, key);
+    checkDataType(regionName, RedisDataType.REDIS_HASH, context);
+    Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> keyRegion =
+        getRegion(context, regionName);
 
     if (keyRegion == null) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numDeleted));
@@ -51,13 +54,13 @@ public class HDelExecutor extends HashExecutor {
 
 
     for (int i = START_FIELDS_INDEX; i < commandElems.size(); i++) {
-      ByteArrayWrapper field = new ByteArrayWrapper(commandElems.get(i));
-      Object oldValue = keyRegion.remove(field);
+      // ByteArrayWrapper field = new ByteArrayWrapper(commandElems.get(i));
+      Object oldValue = keyRegion.remove(entryKey);
       if (oldValue != null)
         numDeleted++;
     }
     if (keyRegion.isEmpty()) {
-      context.getRegionProvider().removeKey(key, RedisDataType.REDIS_HASH);
+      context.getRegionProvider().removeKey(regionName, RedisDataType.REDIS_HASH);
     }
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numDeleted));
   }

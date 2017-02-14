@@ -14,6 +14,9 @@
  */
 package org.apache.geode.redis.internal.executor.hash;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
@@ -25,16 +28,98 @@ public abstract class HashExecutor extends AbstractExecutor {
   protected final int FIELD_INDEX = 2;
 
   @SuppressWarnings("unchecked")
-  protected Region<ByteArrayWrapper, ByteArrayWrapper> getOrCreateRegion(
+  protected Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> getOrCreateRegion(
       ExecutionHandlerContext context, ByteArrayWrapper key, RedisDataType type) {
-    return (Region<ByteArrayWrapper, ByteArrayWrapper>) context.getRegionProvider()
-        .getOrCreateRegion(key, type, context);
+
+    key = HashUtil.toRegionNameByteArray(key);
+
+    return (Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>>) context
+        .getRegionProvider().getOrCreateRegion(key, type, context);
+  }
+
+  /**
+   * 
+   * @param context the context
+   * @param key the region hash key region:<key>
+   * @return return getMap(context,key,RedisDataType.REDIS_HASH)
+   */
+  protected Map<ByteArrayWrapper, ByteArrayWrapper> getMap(ExecutionHandlerContext context,
+      ByteArrayWrapper key) {
+    return getMap(context, key, RedisDataType.REDIS_HASH);
+  }
+
+  /**
+   * 
+   * @param context the context
+   * @param key the region hash key region:<key>
+   * @param type the command type
+   * @return the map data
+   */
+  protected Map<ByteArrayWrapper, ByteArrayWrapper> getMap(ExecutionHandlerContext context,
+      ByteArrayWrapper key, RedisDataType type) {
+
+    ByteArrayWrapper regionName = HashUtil.toRegionNameByteArray(key);
+
+    Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> region =
+        getOrCreateRegion(context, regionName, type);
+
+    if (region == null)
+      return null;
+
+    ByteArrayWrapper entryKey = HashUtil.toEntryKey(key);
+    Map<ByteArrayWrapper, ByteArrayWrapper> map = region.get(entryKey);
+    if (map == null) {
+      map = new ConcurrentHashMap<ByteArrayWrapper, ByteArrayWrapper>();
+    }
+
+    return map;
+
   }
 
   @SuppressWarnings("unchecked")
-  protected Region<ByteArrayWrapper, ByteArrayWrapper> getRegion(ExecutionHandlerContext context,
-      ByteArrayWrapper key) {
-    return (Region<ByteArrayWrapper, ByteArrayWrapper>) context.getRegionProvider().getRegion(key);
+  protected Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> getRegion(
+      ExecutionHandlerContext context, ByteArrayWrapper key) {
+    return (Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>>) context
+        .getRegionProvider().getRegion(key);
   }
+
+  /**
+   * 
+   * @param map the map to save
+   * @param context the execution handler context
+   * @param key the raw HASH key
+   * @param type the redis data type
+   */
+  protected void saveMap(Map<ByteArrayWrapper, ByteArrayWrapper> map,
+      ExecutionHandlerContext context, ByteArrayWrapper key) {
+
+    saveMap(map, context, key, RedisDataType.REDIS_HASH);
+  }
+
+  /**
+   * 
+   * @param map the map to save
+   * @param context the execution handler context
+   * @param key the raw HASH key
+   * @param type the redis data type
+   */
+  protected void saveMap(Map<ByteArrayWrapper, ByteArrayWrapper> map,
+      ExecutionHandlerContext context, ByteArrayWrapper key, RedisDataType type) {
+
+    if (map == null) {
+      return;
+    }
+
+    ByteArrayWrapper regionName = HashUtil.toRegionNameByteArray(key);
+
+    Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> region =
+        getOrCreateRegion(context, regionName, type);
+
+    ByteArrayWrapper entryKey = HashUtil.toEntryKey(key);
+
+    region.put(entryKey, map);
+
+  }
+
 
 }
