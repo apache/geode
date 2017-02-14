@@ -1363,7 +1363,7 @@ public class GemFireCacheImpl
     GeodeRedisService geodeRedisService = getService(GeodeRedisService.class);
     if (geodeRedisService != null) {
       geodeRedisService.start();
-    } else if (system.getConfig().getRedisPort() >= 0) {
+    } else if (system.getConfig().getRedisPort() > 0) {
       throw new GemFireConfigException(
           "Geode Redis Service could not be started because it was not registered as a service");
     }
